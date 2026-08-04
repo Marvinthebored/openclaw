@@ -1,4 +1,5 @@
 // Diagnostic memory helpers capture process memory facts for support diagnostics.
+import { totalmem } from "node:os";
 import { getHeapStatistics } from "node:v8";
 import {
   emitInternalDiagnosticEvent as emitDiagnosticEvent,
@@ -13,6 +14,16 @@ const MB = 1024 * 1024;
 const GB = 1024 * MB;
 const DEFAULT_RSS_WARNING_BYTES = 1536 * MB;
 const DEFAULT_RSS_CRITICAL_BYTES = 3072 * MB;
+const DEFAULT_RSS_WARNING_RATIO = 0.75;
+const DEFAULT_RSS_CRITICAL_RATIO = 1.5;
+const DEFAULT_RSS_WARNING_MAX_BYTES = 6 * GB;
+const DEFAULT_RSS_CRITICAL_MAX_BYTES = 12 * GB;
+// A scaled RSS threshold is only useful if the host can actually reach it, so
+// cap both levels against total memory as well. Without this, a container whose
+// V8 limit equals its memory limit would compute a critical threshold it can
+// never hit, and would OOM with no diagnostic ever emitted.
+const DEFAULT_RSS_WARNING_HOST_RATIO = 0.5;
+const DEFAULT_RSS_CRITICAL_HOST_RATIO = 0.75;
 const DEFAULT_HEAP_WARNING_BYTES = 1024 * MB;
 const DEFAULT_HEAP_CRITICAL_BYTES = 2048 * MB;
 const DEFAULT_HEAP_WARNING_RATIO = 0.5;
@@ -67,11 +78,28 @@ function normalizeMemoryUsage(memory: NodeJS.MemoryUsage): DiagnosticMemoryUsage
 function resolveThresholds(
   thresholds?: DiagnosticMemoryThresholds,
   heapSizeLimitBytes?: number,
+  totalMemoryBytes?: number,
 ): Required<DiagnosticMemoryThresholds> {
   const hasHeapLimit =
     typeof heapSizeLimitBytes === "number" &&
     Number.isFinite(heapSizeLimitBytes) &&
     heapSizeLimitBytes > 0;
+  const hasTotalMemory =
+    typeof totalMemoryBytes === "number" &&
+    Number.isFinite(totalMemoryBytes) &&
+    totalMemoryBytes > 0;
+  const rssWarningCeiling = hasTotalMemory
+    ? Math.min(
+        DEFAULT_RSS_WARNING_MAX_BYTES,
+        Math.floor(totalMemoryBytes * DEFAULT_RSS_WARNING_HOST_RATIO),
+      )
+    : DEFAULT_RSS_WARNING_MAX_BYTES;
+  const rssCriticalCeiling = hasTotalMemory
+    ? Math.min(
+        DEFAULT_RSS_CRITICAL_MAX_BYTES,
+        Math.floor(totalMemoryBytes * DEFAULT_RSS_CRITICAL_HOST_RATIO),
+      )
+    : DEFAULT_RSS_CRITICAL_MAX_BYTES;
   // Scale both directions with V8's effective limit, but keep a warning/critical
   // ceiling so very large heaps still surface actionable pressure diagnostics.
   const heapWarningBytes = hasHeapLimit
@@ -86,9 +114,34 @@ function resolveThresholds(
         DEFAULT_HEAP_CRITICAL_MAX_BYTES,
       )
     : DEFAULT_HEAP_CRITICAL_BYTES;
+  // RSS is heap plus native overhead, so it has to scale with the same limit the
+  // heap thresholds already track. The flat defaults act as a floor, which keeps
+  // small hosts on exactly their previous thresholds (a 2 GiB heap limit still
+  // warns at 1.5 GiB) while a host sized for a large heap stops reporting its
+  // own configured working set as pressure. The ceilings keep very large heaps
+  // from disabling the signal entirely, and are themselves bounded by total
+  // memory so a threshold is never placed where the host cannot reach it.
+  const rssWarningBytes = hasHeapLimit
+    ? Math.min(
+        Math.max(
+          Math.floor(heapSizeLimitBytes * DEFAULT_RSS_WARNING_RATIO),
+          DEFAULT_RSS_WARNING_BYTES,
+        ),
+        rssWarningCeiling,
+      )
+    : DEFAULT_RSS_WARNING_BYTES;
+  const rssCriticalBytes = hasHeapLimit
+    ? Math.min(
+        Math.max(
+          Math.floor(heapSizeLimitBytes * DEFAULT_RSS_CRITICAL_RATIO),
+          DEFAULT_RSS_CRITICAL_BYTES,
+        ),
+        rssCriticalCeiling,
+      )
+    : DEFAULT_RSS_CRITICAL_BYTES;
   return {
-    rssWarningBytes: thresholds?.rssWarningBytes ?? DEFAULT_RSS_WARNING_BYTES,
-    rssCriticalBytes: thresholds?.rssCriticalBytes ?? DEFAULT_RSS_CRITICAL_BYTES,
+    rssWarningBytes: thresholds?.rssWarningBytes ?? rssWarningBytes,
+    rssCriticalBytes: thresholds?.rssCriticalBytes ?? rssCriticalBytes,
     heapUsedWarningBytes: thresholds?.heapUsedWarningBytes ?? heapWarningBytes,
     heapUsedCriticalBytes: thresholds?.heapUsedCriticalBytes ?? heapCriticalBytes,
     rssGrowthWarningBytes: thresholds?.rssGrowthWarningBytes ?? DEFAULT_RSS_GROWTH_WARNING_BYTES,
@@ -289,6 +342,7 @@ export function emitDiagnosticMemorySample(options?: {
   now?: number;
   memoryUsage?: NodeJS.MemoryUsage;
   heapSizeLimitBytes?: number;
+  totalMemoryBytes?: number;
   uptimeMs?: number;
   thresholds?: DiagnosticMemoryThresholds;
   emitSample?: boolean;
@@ -303,6 +357,7 @@ export function emitDiagnosticMemorySample(options?: {
   const thresholds = resolveThresholds(
     options?.thresholds,
     options?.heapSizeLimitBytes ?? getHeapStatistics().heap_size_limit,
+    options?.totalMemoryBytes ?? totalmem(),
   );
   const shouldEmitSample = options?.emitSample !== false;
 

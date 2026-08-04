@@ -194,6 +194,98 @@ describe("diagnostic memory", () => {
     ]);
   });
 
+  it("scales default RSS pressure thresholds with enlarged V8 limits", () => {
+    const events: DiagnosticEventPayload[] = [];
+    const stop = onDiagnosticEvent((event) => events.push(event));
+    const gb = 1024 ** 3;
+
+    // A gateway sized for an 8 GiB heap routinely holds ~2 GiB RSS. That is its
+    // configured working set, not pressure, so it must stay silent.
+    emitDiagnosticMemorySample({
+      now: 1000,
+      heapSizeLimitBytes: 8 * gb,
+      totalMemoryBytes: 32 * gb,
+      memoryUsage: memoryUsage({ rss: 2.2 * gb, heapUsed: 512 * 1024 * 1024 }),
+    });
+    expect(events.filter((event) => event.type === "diagnostic.memory.pressure")).toEqual([]);
+
+    emitDiagnosticMemorySample({
+      now: 2000,
+      heapSizeLimitBytes: 8 * gb,
+      totalMemoryBytes: 32 * gb,
+      memoryUsage: memoryUsage({ rss: 6.1 * gb, heapUsed: 512 * 1024 * 1024 }),
+    });
+    stop();
+
+    expect(
+      events
+        .filter((event) => event.type === "diagnostic.memory.pressure")
+        .map((event) => ({
+          level: event.level,
+          reason: event.reason,
+          threshold: event.thresholdBytes,
+        })),
+    ).toEqual([{ level: "warning", reason: "rss_threshold", threshold: 6 * gb }]);
+  });
+
+  it("keeps previous RSS thresholds on hosts with a small heap limit", () => {
+    const events: DiagnosticEventPayload[] = [];
+    const stop = onDiagnosticEvent((event) => events.push(event));
+    const mb = 1024 * 1024;
+
+    // 2 GiB heap limit * 0.75 == the historical 1536 MiB floor, so small hosts
+    // must warn at exactly the same point they did before scaling existed.
+    emitDiagnosticMemorySample({
+      now: 1000,
+      heapSizeLimitBytes: 2048 * mb,
+      totalMemoryBytes: 4 * 1024 * mb,
+      memoryUsage: memoryUsage({ rss: 1600 * mb, heapUsed: 128 * mb }),
+    });
+    stop();
+
+    expect(
+      events
+        .filter((event) => event.type === "diagnostic.memory.pressure")
+        .map((event) => ({ reason: event.reason, threshold: event.thresholdBytes })),
+    ).toEqual([{ reason: "rss_threshold", threshold: 1536 * mb }]);
+  });
+
+  it("bounds scaled RSS thresholds by total host memory", () => {
+    const events: DiagnosticEventPayload[] = [];
+    const stop = onDiagnosticEvent((event) => events.push(event));
+    const gb = 1024 ** 3;
+
+    // A container given an 8 GiB heap limit on 8 GiB of memory must not get a
+    // 12 GiB critical threshold it can never reach - it would OOM silently.
+    // Thresholds are capped to half / three-quarters of total memory instead.
+    emitDiagnosticMemorySample({
+      now: 1000,
+      heapSizeLimitBytes: 8 * gb,
+      totalMemoryBytes: 8 * gb,
+      memoryUsage: memoryUsage({ rss: 4.1 * gb, heapUsed: 256 * 1024 * 1024 }),
+    });
+    emitDiagnosticMemorySample({
+      now: 2000,
+      heapSizeLimitBytes: 8 * gb,
+      totalMemoryBytes: 8 * gb,
+      memoryUsage: memoryUsage({ rss: 6.1 * gb, heapUsed: 256 * 1024 * 1024 }),
+    });
+    stop();
+
+    expect(
+      events
+        .filter((event) => event.type === "diagnostic.memory.pressure")
+        .map((event) => ({
+          level: event.level,
+          reason: event.reason,
+          threshold: event.thresholdBytes,
+        })),
+    ).toEqual([
+      { level: "warning", reason: "rss_threshold", threshold: 4 * gb },
+      { level: "critical", reason: "rss_threshold", threshold: 6 * gb },
+    ]);
+  });
+
   it("scales default heap pressure thresholds down for constrained V8 limits", () => {
     const events: DiagnosticEventPayload[] = [];
     const stop = onDiagnosticEvent((event) => events.push(event));
