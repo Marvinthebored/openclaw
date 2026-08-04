@@ -605,6 +605,7 @@ export async function modelsStatusCommand(
       if (
         resolveEnvApiKey(provider, process.env, {
           config: cfg,
+          inspectOnly: true,
           workspaceDir,
           aliasMap,
           candidateMap: envCandidateMap,
