@@ -1,4 +1,5 @@
 // Deepgram provider module implements model/runtime integration.
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/provider-auth";
 import {
   createRealtimeTranscriptionWebSocketSession,
@@ -138,11 +139,14 @@ function toDeepgramRealtimeWsUrl(config: DeepgramRealtimeTranscriptionSessionCon
   return url.toString();
 }
 
-function resolveDeepgramEnvApiKey(): string | undefined {
+function resolveDeepgramEnvApiKey(cfg?: OpenClawConfig): string | undefined {
   // DEEPGRAM_TRANSCRIPTION_API_KEY wins over the generic name; with
   // security.requireScopedApiKeys the generic name is ignored here entirely.
-  return resolveScopedEnvApiKey({ baseEnvKeys: ["DEEPGRAM_API_KEY"], scope: "transcription" })
-    ?.value;
+  return resolveScopedEnvApiKey({
+    baseEnvKeys: ["DEEPGRAM_API_KEY"],
+    scope: "transcription",
+    config: cfg,
+  })?.value;
 }
 
 function normalizeProviderConfig(
@@ -365,11 +369,11 @@ export function buildDeepgramRealtimeTranscriptionProvider(): RealtimeTranscript
     defaultModel: DEFAULT_DEEPGRAM_AUDIO_MODEL,
     autoSelectOrder: 35,
     resolveConfig: ({ rawConfig }) => normalizeProviderConfig(rawConfig),
-    isConfigured: ({ providerConfig }) =>
-      Boolean(normalizeProviderConfig(providerConfig).apiKey || resolveDeepgramEnvApiKey()),
+    isConfigured: ({ cfg, providerConfig }) =>
+      Boolean(normalizeProviderConfig(providerConfig).apiKey || resolveDeepgramEnvApiKey(cfg)),
     createSession: (req) => {
       const config = normalizeProviderConfig(req.providerConfig);
-      const apiKey = config.apiKey || resolveDeepgramEnvApiKey();
+      const apiKey = config.apiKey || resolveDeepgramEnvApiKey(req.cfg);
       if (!apiKey) {
         throw new Error("Deepgram API key missing");
       }

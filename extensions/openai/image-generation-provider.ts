@@ -23,7 +23,6 @@ import {
   hasConfiguredSecretInput,
   isProviderApiKeyConfigured,
   listProfilesForProvider,
-  resolveScopedEnvApiKey,
   type AuthProfileStore,
 } from "openclaw/plugin-sdk/provider-auth";
 import { resolveApiKeyForProvider } from "openclaw/plugin-sdk/provider-auth-runtime";
@@ -370,9 +369,7 @@ function hasDirectOpenAIImageApiKeyAuth(params: {
   if (hasExplicitOpenAIImageApiKeyConfig(params.cfg)) {
     return true;
   }
-  // OPENAI_IMAGE_API_KEY wins over the generic name; with
-  // security.requireScopedApiKeys the generic name is ignored here entirely.
-  if (resolveScopedEnvApiKey({ baseEnvKeys: ["OPENAI_API_KEY"], scope: "image" })?.value) {
+  if (process.env.OPENAI_API_KEY?.trim()) {
     return true;
   }
   const store = params.agentDir

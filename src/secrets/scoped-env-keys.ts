@@ -21,7 +21,6 @@ export type EnvKeyScope =
   | "realtime"
   | "transcription"
   | "embedding"
-  | "image"
   | "video"
   | "media"
   | "search";

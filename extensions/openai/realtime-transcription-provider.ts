@@ -174,10 +174,14 @@ function buildOpenAIRealtimeTranscriptionSessionPayload(
   };
 }
 
-function resolveOpenAITranscriptionEnvApiKey(): string | undefined {
+function resolveOpenAITranscriptionEnvApiKey(cfg: OpenClawConfig | undefined): string | undefined {
   // OPENAI_TRANSCRIPTION_API_KEY wins over the generic name; with
   // security.requireScopedApiKeys the generic name is ignored here entirely.
-  return resolveScopedEnvApiKey({ baseEnvKeys: ["OPENAI_API_KEY"], scope: "transcription" })?.value;
+  return resolveScopedEnvApiKey({
+    baseEnvKeys: ["OPENAI_API_KEY"],
+    scope: "transcription",
+    config: cfg,
+  })?.value;
 }
 
 async function resolveOpenAIRealtimeTranscriptionAuthorization(
@@ -200,7 +204,7 @@ async function resolveOpenAIRealtimeTranscriptionAuthorization(
     });
     return clientSecret.value;
   }
-  const envApiKey = resolveOpenAITranscriptionEnvApiKey();
+  const envApiKey = resolveOpenAITranscriptionEnvApiKey(config.cfg);
   if (envApiKey) {
     return envApiKey;
   }
@@ -611,7 +615,7 @@ export function buildOpenAIRealtimeTranscriptionProvider(): RealtimeTranscriptio
     isConfigured: ({ cfg, providerConfig }) =>
       Boolean(
         normalizeProviderConfig(providerConfig).apiKey ||
-        resolveOpenAITranscriptionEnvApiKey() ||
+        resolveOpenAITranscriptionEnvApiKey(cfg) ||
         isProviderAuthProfileConfigured({ provider: "openai", cfg, profileTypes: ["api_key"] }),
       ),
     createSession: (req) => {

@@ -1,4 +1,5 @@
 // Mistral provider module implements model/runtime integration.
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/provider-auth";
 import {
   createRealtimeTranscriptionWebSocketSession,
@@ -152,11 +153,15 @@ function normalizeMistralApiKey(value: unknown): string | undefined {
   return normalizeSecretInput(resolved) || undefined;
 }
 
-function resolveMistralTranscriptionEnvApiKey(): string | undefined {
+function resolveMistralTranscriptionEnvApiKey(cfg?: OpenClawConfig): string | undefined {
   // MISTRAL_TRANSCRIPTION_API_KEY wins over the generic name; with
   // security.requireScopedApiKeys the generic name is ignored here entirely.
   return normalizeMistralApiKey(
-    resolveScopedEnvApiKey({ baseEnvKeys: ["MISTRAL_API_KEY"], scope: "transcription" })?.value,
+    resolveScopedEnvApiKey({
+      baseEnvKeys: ["MISTRAL_API_KEY"],
+      scope: "transcription",
+      config: cfg,
+    })?.value,
   );
 }
 
@@ -324,13 +329,13 @@ export function buildMistralRealtimeTranscriptionProvider(): RealtimeTranscripti
     defaultModel: MISTRAL_REALTIME_DEFAULT_MODEL,
     autoSelectOrder: 45,
     resolveConfig: ({ rawConfig }) => normalizeProviderConfig(rawConfig),
-    isConfigured: ({ providerConfig }) =>
+    isConfigured: ({ cfg, providerConfig }) =>
       Boolean(
-        normalizeProviderConfig(providerConfig).apiKey || resolveMistralTranscriptionEnvApiKey(),
+        normalizeProviderConfig(providerConfig).apiKey || resolveMistralTranscriptionEnvApiKey(cfg),
       ),
     createSession: (req) => {
       const config = normalizeProviderConfig(req.providerConfig);
-      const apiKey = config.apiKey || resolveMistralTranscriptionEnvApiKey();
+      const apiKey = config.apiKey || resolveMistralTranscriptionEnvApiKey(req.cfg);
       if (!apiKey) {
         throw new Error("Mistral API key missing");
       }

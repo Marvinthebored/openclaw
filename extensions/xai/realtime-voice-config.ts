@@ -229,8 +229,9 @@ export function toXaiRealtimeWsUrl(
   return url.toString();
 }
 
-function resolveXaiRealtimeEnvApiKey(): string | undefined {
-  return resolveScopedEnvApiKey({ baseEnvKeys: ["XAI_API_KEY"], scope: "realtime" })?.value;
+function resolveXaiRealtimeEnvApiKey(cfg: OpenClawConfig | undefined): string | undefined {
+  return resolveScopedEnvApiKey({ baseEnvKeys: ["XAI_API_KEY"], scope: "realtime", config: cfg })
+    ?.value;
 }
 
 export async function resolveXaiRealtimeApiKey(
@@ -240,7 +241,8 @@ export async function resolveXaiRealtimeApiKey(
   // XAI_REALTIME_API_KEY wins over the generic name; with
   // security.requireScopedApiKeys the generic name is ignored here entirely.
   const direct =
-    normalizeOptionalString(configApiKey) ?? normalizeOptionalString(resolveXaiRealtimeEnvApiKey());
+    normalizeOptionalString(configApiKey) ??
+    normalizeOptionalString(resolveXaiRealtimeEnvApiKey(cfg));
   if (direct) {
     return direct;
   }
@@ -260,7 +262,7 @@ export function hasXaiRealtimeApiKeyInput(
 ): boolean {
   if (
     normalizeOptionalString(configApiKey) ||
-    normalizeOptionalString(resolveXaiRealtimeEnvApiKey())
+    normalizeOptionalString(resolveXaiRealtimeEnvApiKey(cfg))
   ) {
     return true;
   }

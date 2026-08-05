@@ -1,4 +1,5 @@
 // Vydra provider module implements model/runtime integration.
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import { resolveGeneratedMediaMaxBytes } from "openclaw/plugin-sdk/media-generation-runtime";
 import {
   assertOkOrThrowHttpError,
@@ -73,10 +74,11 @@ function readVydraSpeechConfig(config: SpeechProviderConfig): VydraSpeechConfig 
   };
 }
 
-function resolveVydraEnvApiKey(): string | undefined {
+function resolveVydraEnvApiKey(cfg?: OpenClawConfig): string | undefined {
   // VYDRA_TTS_API_KEY wins over the generic name; with
   // security.requireScopedApiKeys the generic name is ignored here entirely.
-  return resolveScopedEnvApiKey({ baseEnvKeys: ["VYDRA_API_KEY"], scope: "tts" })?.value;
+  return resolveScopedEnvApiKey({ baseEnvKeys: ["VYDRA_API_KEY"], scope: "tts", config: cfg })
+    ?.value;
 }
 
 function readVydraOverrides(overrides: SpeechProviderOverrides | undefined): {
@@ -100,17 +102,17 @@ export function buildVydraSpeechProvider(): SpeechProviderPlugin {
     voices: VYDRA_SPEECH_VOICES.map((voice) => voice.id),
     resolveConfig: ({ rawConfig }) => normalizeVydraSpeechConfig(rawConfig),
     listVoices: async () => VYDRA_SPEECH_VOICES.map((voice) => Object.assign({}, voice)),
-    isConfigured: ({ providerConfig }) =>
+    isConfigured: ({ cfg, providerConfig }) =>
       Boolean(
         resolveSpeechProviderApiKey(
           readVydraSpeechConfig(providerConfig).apiKey,
-          resolveVydraEnvApiKey(),
+          resolveVydraEnvApiKey(cfg),
         ),
       ),
     synthesize: async (req) => {
       const config = readVydraSpeechConfig(req.providerConfig);
       const overrides = readVydraOverrides(req.providerOverrides);
-      const apiKey = resolveSpeechProviderApiKey(config.apiKey, resolveVydraEnvApiKey());
+      const apiKey = resolveSpeechProviderApiKey(config.apiKey, resolveVydraEnvApiKey(req.cfg));
       if (!apiKey) {
         throw new Error("Vydra API key missing");
       }

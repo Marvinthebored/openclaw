@@ -242,14 +242,14 @@ export function buildXaiRealtimeTranscriptionProvider(): RealtimeTranscriptionPr
     isConfigured: ({ providerConfig, cfg }) =>
       Boolean(
         normalizeProviderConfig(providerConfig).apiKey ??
-        normalizeOptionalString(resolveXaiTranscriptionEnvApiKey()),
+        normalizeOptionalString(resolveXaiTranscriptionEnvApiKey(cfg)),
       ) || isProviderAuthProfileConfigured({ provider: "xai", cfg }),
     createSession: (req) => {
       const config = normalizeProviderConfig(req.providerConfig);
       // createSession must stay sync per RealtimeTranscriptionProviderPlugin; bearer is resolved lazily in headers().
       const seedApiKey =
         normalizeOptionalString(config.apiKey) ??
-        normalizeOptionalString(resolveXaiTranscriptionEnvApiKey());
+        normalizeOptionalString(resolveXaiTranscriptionEnvApiKey(req.cfg));
       return createXaiRealtimeTranscriptionSession({
         ...req,
         apiKey: seedApiKey ?? "",
@@ -265,10 +265,14 @@ export function buildXaiRealtimeTranscriptionProvider(): RealtimeTranscriptionPr
   };
 }
 
-function resolveXaiTranscriptionEnvApiKey(): string | undefined {
+function resolveXaiTranscriptionEnvApiKey(cfg: OpenClawConfig | undefined): string | undefined {
   // XAI_TRANSCRIPTION_API_KEY wins over the generic name; with
   // security.requireScopedApiKeys the generic name is ignored here entirely.
-  return resolveScopedEnvApiKey({ baseEnvKeys: ["XAI_API_KEY"], scope: "transcription" })?.value;
+  return resolveScopedEnvApiKey({
+    baseEnvKeys: ["XAI_API_KEY"],
+    scope: "transcription",
+    config: cfg,
+  })?.value;
 }
 
 // Resolve an xAI bearer for the realtime `/stt` WebSocket:
@@ -281,7 +285,7 @@ async function resolveXaiRealtimeApiKey(
 ): Promise<string> {
   const direct =
     normalizeOptionalString(configApiKey) ??
-    normalizeOptionalString(resolveXaiTranscriptionEnvApiKey());
+    normalizeOptionalString(resolveXaiTranscriptionEnvApiKey(cfg));
   if (direct) {
     return direct;
   }
