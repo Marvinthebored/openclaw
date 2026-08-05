@@ -9,6 +9,7 @@ import {
   resolveProviderHttpRequestConfig,
 } from "../plugin-sdk/provider-http.js";
 import type { SpeechProviderPlugin } from "../plugins/types.js";
+import { resolveScopedEnvApiKey } from "../secrets/scoped-env-keys.js";
 import type {
   SpeechDirectiveTokenParseContext,
   SpeechProviderConfig,
@@ -268,7 +269,9 @@ export function createOpenAiCompatibleSpeechProvider<
         value: readModelProviderConfig(params.cfg, providerConfigKey)?.apiKey,
         path: `models.providers.${providerConfigKey}.apiKey`,
       }) ??
-      trimToUndefined(process.env[options.envKey])
+      // e.g. OPENROUTER_TTS_API_KEY wins over OPENROUTER_API_KEY; with
+      // security.requireScopedApiKeys the generic name is ignored here entirely.
+      resolveScopedEnvApiKey({ baseEnvKeys: [options.envKey], scope: "tts" })?.value
     );
   }
 

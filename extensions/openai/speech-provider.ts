@@ -8,7 +8,10 @@ import type {
   SpeechProviderOverrides,
   SpeechProviderPlugin,
 } from "openclaw/plugin-sdk/speech-core";
-import { parseSpeechDirectiveNumberOverride } from "openclaw/plugin-sdk/speech-core";
+import {
+  parseSpeechDirectiveNumberOverride,
+  resolveScopedEnvApiKey,
+} from "openclaw/plugin-sdk/speech-core";
 import {
   normalizeLowercaseStringOrEmpty,
   normalizeOptionalLowercaseString,
@@ -51,7 +54,12 @@ type OpenAITtsProviderOverrides = {
 };
 
 function resolveOpenAISpeechApiKey(config: OpenAITtsProviderConfig): string | undefined {
-  return trimToUndefined(config.apiKey) ?? trimToUndefined(process.env.OPENAI_API_KEY);
+  // OPENAI_TTS_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return (
+    trimToUndefined(config.apiKey) ??
+    resolveScopedEnvApiKey({ baseEnvKeys: ["OPENAI_API_KEY"], scope: "tts" })?.value
+  );
 }
 
 function normalizeOpenAISpeechResponseFormat(

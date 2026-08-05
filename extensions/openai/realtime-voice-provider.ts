@@ -38,6 +38,7 @@ import {
   normalizeResolvedSecretInputString,
   normalizeSecretInputString,
 } from "openclaw/plugin-sdk/secret-input";
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/speech-core";
 import { isRecord } from "openclaw/plugin-sdk/string-coerce-runtime";
 import WebSocket from "ws";
 import {
@@ -377,7 +378,10 @@ function resolveOpenAIRealtimeSecretInput(
 }
 
 function resolveOpenAIRealtimeEnvApiKey(): OpenAIRealtimeApiKeyResolution {
-  const envValue = normalizeSecretInputString(process.env.OPENAI_API_KEY);
+  // OPENAI_REALTIME_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  const scoped = resolveScopedEnvApiKey({ baseEnvKeys: ["OPENAI_API_KEY"], scope: "realtime" });
+  const envValue = normalizeSecretInputString(scoped?.value);
   if (!envValue) {
     return { status: "missing" };
   }
@@ -416,7 +420,7 @@ function hasOpenAIRealtimeConfiguredApiKeyInput(configuredApiKey: string | undef
 function hasOpenAIRealtimeApiKeyInput(configuredApiKey: string | undefined): boolean {
   return Boolean(
     normalizeSecretInputString(configuredApiKey) ??
-    normalizeSecretInputString(process.env.OPENAI_API_KEY),
+    resolveScopedEnvApiKey({ baseEnvKeys: ["OPENAI_API_KEY"], scope: "realtime" })?.value,
   );
 }
 

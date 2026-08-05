@@ -8,6 +8,7 @@ import {
 } from "openclaw/plugin-sdk/provider-http";
 import type { OpenClawConfig } from "openclaw/plugin-sdk/provider-onboard";
 import { normalizeResolvedSecretInputString } from "openclaw/plugin-sdk/secret-input";
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/speech-core";
 import type {
   SpeechDirectiveTokenParseContext,
   SpeechProviderConfig,
@@ -156,10 +157,12 @@ function normalizeGooglePromptTemplate(
 }
 
 function resolveGoogleTtsEnvApiKey(): string | undefined {
-  return (
-    normalizeOptionalString(process.env.GEMINI_API_KEY) ??
-    normalizeOptionalString(process.env.GOOGLE_API_KEY)
-  );
+  // GEMINI_TTS_API_KEY / GOOGLE_TTS_API_KEY win over the generic names; with
+  // security.requireScopedApiKeys the generic names are ignored here entirely.
+  return resolveScopedEnvApiKey({
+    baseEnvKeys: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+    scope: "tts",
+  })?.value;
 }
 
 function resolveGoogleTtsModelProviderApiKey(cfg?: OpenClawConfig): string | undefined {

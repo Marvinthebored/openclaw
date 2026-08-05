@@ -44,6 +44,17 @@ export type SecurityConfig = {
     /** Accepted security audit findings to omit from active summary/findings. */
     suppressions?: SecurityAuditSuppression[];
   };
+  /**
+   * Require subsystem-scoped environment key names where a subsystem defines one.
+   *
+   * Defaults to false. Subsystems that recognize a scoped variable — for example
+   * OPENAI_TTS_API_KEY for TTS or OPENAI_REALTIME_API_KEY for realtime voice —
+   * always prefer it over the generic PROVIDER_API_KEY. When this is true, the
+   * generic name is ignored for those subsystems entirely: a credential is used
+   * only when the scoped name or explicit configuration provides one. Model
+   * inference keeps the generic name either way; it is the primary consumer.
+   */
+  requireScopedApiKeys?: boolean;
   installPolicy?: {
     /**
      * Enable operator-owned install policy. When true without an exec command,
