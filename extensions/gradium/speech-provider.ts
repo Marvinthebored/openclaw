@@ -7,7 +7,10 @@ import type {
   SpeechProviderPlugin,
 } from "openclaw/plugin-sdk/speech";
 import { asObject, trimToUndefined } from "openclaw/plugin-sdk/speech";
-import { resolveSpeechProviderApiKey } from "openclaw/plugin-sdk/speech-core";
+import {
+  resolveScopedEnvApiKey,
+  resolveSpeechProviderApiKey,
+} from "openclaw/plugin-sdk/speech-core";
 import { DEFAULT_GRADIUM_VOICE_ID, GRADIUM_VOICES, normalizeGradiumBaseUrl } from "./shared.js";
 import { gradiumTTS } from "./tts.js";
 
@@ -40,7 +43,12 @@ function readGradiumProviderConfig(config: SpeechProviderConfig): GradiumProvide
 }
 
 function resolveGradiumApiKey(configApiKey: unknown): string | undefined {
-  return resolveSpeechProviderApiKey(trimToUndefined(configApiKey), process.env.GRADIUM_API_KEY);
+  // GRADIUM_TTS_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return resolveSpeechProviderApiKey(
+    trimToUndefined(configApiKey),
+    resolveScopedEnvApiKey({ baseEnvKeys: ["GRADIUM_API_KEY"], scope: "tts" })?.value,
+  );
 }
 
 function isGradiumProviderConfigured(config: SpeechProviderConfig): boolean {

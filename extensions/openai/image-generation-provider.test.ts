@@ -1,5 +1,9 @@
 // Openai tests cover image generation provider plugin behavior.
 import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
+import {
+  clearRuntimeConfigSnapshot,
+  setRuntimeConfigSnapshot,
+} from "openclaw/plugin-sdk/runtime-config-snapshot";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildOpenAIImageGenerationProvider } from "./image-generation-provider.js";
 
@@ -2749,4 +2753,61 @@ describe("openai image generation provider", () => {
     });
   });
 });
+
+describe("openai image generation provider scoped env names", () => {
+  // A custom (non-public) OpenAI base URL is the path where the env credential
+  // itself decides configuration, so it isolates the scoped-name behavior.
+  const CUSTOM_ENDPOINT_CFG = {
+    models: {
+      providers: {
+        openai: {
+          baseUrl: "https://openai-compatible.example.test/v1",
+          models: [],
+        },
+      },
+    },
+  } as OpenClawConfig;
+
+  afterEach(() => {
+    ensureAuthProfileStoreMock.mockReset();
+    ensureAuthProfileStoreMock.mockReturnValue({ version: 1, profiles: {} });
+    isProviderApiKeyConfiguredMock.mockReset();
+    isProviderApiKeyConfiguredMock.mockReturnValue(false);
+    vi.unstubAllEnvs();
+    clearRuntimeConfigSnapshot();
+  });
+
+  it("accepts OPENAI_IMAGE_API_KEY on its own", () => {
+    vi.stubEnv("OPENAI_API_KEY", "");
+    vi.stubEnv("OPENAI_IMAGE_API_KEY", "scoped");
+    isProviderApiKeyConfiguredMock.mockReturnValue(true);
+    const provider = buildOpenAIImageGenerationProvider();
+
+    expect(provider.isConfigured?.({ agentDir: "/tmp/agent", cfg: CUSTOM_ENDPOINT_CFG })).toBe(
+      true,
+    );
+  });
+
+  it("still accepts OPENAI_API_KEY by default", () => {
+    vi.stubEnv("OPENAI_API_KEY", "generic");
+    isProviderApiKeyConfiguredMock.mockReturnValue(true);
+    const provider = buildOpenAIImageGenerationProvider();
+
+    expect(provider.isConfigured?.({ agentDir: "/tmp/agent", cfg: CUSTOM_ENDPOINT_CFG })).toBe(
+      true,
+    );
+  });
+
+  it("ignores OPENAI_API_KEY when security.requireScopedApiKeys is enabled", () => {
+    vi.stubEnv("OPENAI_API_KEY", "generic");
+    isProviderApiKeyConfiguredMock.mockReturnValue(true);
+    setRuntimeConfigSnapshot({ security: { requireScopedApiKeys: true } } as OpenClawConfig);
+    const provider = buildOpenAIImageGenerationProvider();
+
+    expect(provider.isConfigured?.({ agentDir: "/tmp/agent", cfg: CUSTOM_ENDPOINT_CFG })).toBe(
+      false,
+    );
+  });
+});
+
 /* oxlint-disable max-lines -- TODO: split this grandfathered oversized file. */

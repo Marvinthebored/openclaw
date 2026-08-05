@@ -15,6 +15,11 @@ vi.mock("./tts.js", async (importOriginal) => {
   };
 });
 
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
+import {
+  clearRuntimeConfigSnapshot,
+  setRuntimeConfigSnapshot,
+} from "openclaw/plugin-sdk/runtime-config-snapshot";
 import { buildAzureSpeechProvider } from "./speech-provider.js";
 
 describe("buildAzureSpeechProvider", () => {
@@ -292,5 +297,66 @@ describe("buildAzureSpeechProvider", () => {
 
     expect(listAzureSpeechVoicesMock).not.toHaveBeenCalled();
     expect(azureSpeechTTSMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("buildAzureSpeechProvider scoped env names", () => {
+  const envKeys = [
+    "AZURE_SPEECH_KEY",
+    "AZURE_SPEECH_API_KEY",
+    "AZURE_SPEECH_TTS_API_KEY",
+    "AZURE_SPEECH_REGION",
+    "SPEECH_KEY",
+  ] as const;
+
+  beforeEach(() => {
+    for (const key of envKeys) {
+      vi.stubEnv(key, undefined);
+    }
+    vi.stubEnv("AZURE_SPEECH_REGION", "eastus");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    clearRuntimeConfigSnapshot();
+  });
+
+  it("prefers AZURE_SPEECH_TTS_API_KEY over the generic names", async () => {
+    vi.stubEnv("AZURE_SPEECH_API_KEY", "generic");
+    vi.stubEnv("AZURE_SPEECH_TTS_API_KEY", "scoped");
+    const provider = buildAzureSpeechProvider();
+
+    await provider.synthesize({
+      text: "hello",
+      cfg: {},
+      providerConfig: {},
+      target: "audio-file",
+      timeoutMs: 30_000,
+    });
+
+    expect(azureSpeechTTSMock).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "scoped" }));
+  });
+
+  it("still accepts AZURE_SPEECH_API_KEY by default", () => {
+    vi.stubEnv("AZURE_SPEECH_API_KEY", "generic");
+    const provider = buildAzureSpeechProvider();
+
+    expect(provider.isConfigured({ providerConfig: {}, timeoutMs: 30_000 })).toBe(true);
+  });
+
+  it("ignores AZURE_SPEECH_API_KEY when security.requireScopedApiKeys is enabled", () => {
+    vi.stubEnv("AZURE_SPEECH_API_KEY", "generic");
+    setRuntimeConfigSnapshot({ security: { requireScopedApiKeys: true } } as OpenClawConfig);
+    const provider = buildAzureSpeechProvider();
+
+    expect(provider.isConfigured({ providerConfig: {}, timeoutMs: 30_000 })).toBe(false);
+  });
+
+  it("keeps AZURE_SPEECH_KEY usable under the flag — it has no scoped form", () => {
+    vi.stubEnv("AZURE_SPEECH_KEY", "no-scoped-form");
+    setRuntimeConfigSnapshot({ security: { requireScopedApiKeys: true } } as OpenClawConfig);
+    const provider = buildAzureSpeechProvider();
+
+    expect(provider.isConfigured({ providerConfig: {}, timeoutMs: 30_000 })).toBe(true);
   });
 });

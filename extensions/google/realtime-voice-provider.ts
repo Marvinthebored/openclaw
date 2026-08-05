@@ -47,6 +47,7 @@ import {
 } from "openclaw/plugin-sdk/realtime-voice";
 import { warn } from "openclaw/plugin-sdk/runtime-env";
 import { normalizeResolvedSecretInputString } from "openclaw/plugin-sdk/secret-input";
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/speech-core";
 import {
   asBoolean,
   asFiniteNumber,
@@ -268,7 +269,14 @@ function normalizeProviderConfig(
 }
 
 function resolveEnvApiKey(): string | undefined {
-  return trimToUndefined(process.env.GEMINI_API_KEY) ?? trimToUndefined(process.env.GOOGLE_API_KEY);
+  // GEMINI_REALTIME_API_KEY / GOOGLE_REALTIME_API_KEY win over the generic names; with
+  // security.requireScopedApiKeys the generic names are ignored here entirely.
+  return trimToUndefined(
+    resolveScopedEnvApiKey({
+      baseEnvKeys: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+      scope: "realtime",
+    })?.value,
+  );
 }
 
 // Gemini 3.1 Live replaces client-content text and async tools with realtime text

@@ -1,6 +1,7 @@
 // Tavily helper module supports config behavior.
 import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import { canResolveEnvSecretRefInReadOnlyPath } from "openclaw/plugin-sdk/extension-shared";
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/provider-auth";
 import { resolvePositiveTimeoutSeconds } from "openclaw/plugin-sdk/provider-web-search";
 import { resolveSecretInputString, normalizeSecretInput } from "openclaw/plugin-sdk/secret-input";
 import { normalizeOptionalString } from "openclaw/plugin-sdk/string-coerce-runtime";
@@ -90,7 +91,14 @@ export function resolveTavilyApiKey(cfg?: OpenClawConfig): string | undefined {
   if (resolved.status === "blocked") {
     return undefined;
   }
-  return normalizeSecretInput(process.env.TAVILY_API_KEY) || undefined;
+  // TAVILY_SEARCH_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return (
+    normalizeSecretInput(
+      resolveScopedEnvApiKey({ baseEnvKeys: ["TAVILY_API_KEY"], scope: "search", config: cfg })
+        ?.value,
+    ) || undefined
+  );
 }
 
 export function resolveTavilyBaseUrl(cfg?: OpenClawConfig): string {

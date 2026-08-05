@@ -113,3 +113,30 @@ describe("resolveTavilyApiKey", () => {
     expect(resolveTavilyApiKey(configWithApiKey(apiKey, extra))).toBeUndefined();
   });
 });
+
+describe("resolveTavilyApiKey scoped env names", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("prefers TAVILY_SEARCH_API_KEY over TAVILY_API_KEY", () => {
+    vi.stubEnv("TAVILY_API_KEY", "generic");
+    vi.stubEnv("TAVILY_SEARCH_API_KEY", "scoped");
+
+    expect(resolveTavilyApiKey({} as OpenClawConfig)).toBe("scoped");
+  });
+
+  it("still accepts TAVILY_API_KEY by default", () => {
+    vi.stubEnv("TAVILY_API_KEY", "generic");
+
+    expect(resolveTavilyApiKey({} as OpenClawConfig)).toBe("generic");
+  });
+
+  it("ignores TAVILY_API_KEY when security.requireScopedApiKeys is enabled", () => {
+    vi.stubEnv("TAVILY_API_KEY", "generic");
+
+    expect(
+      resolveTavilyApiKey({ security: { requireScopedApiKeys: true } } as OpenClawConfig),
+    ).toBeUndefined();
+  });
+});

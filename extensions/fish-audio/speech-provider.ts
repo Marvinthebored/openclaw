@@ -14,6 +14,7 @@ import {
   asFiniteNumber,
   asObject,
   parseSpeechDirectiveNumberOverride,
+  resolveScopedEnvApiKey,
   resolveSpeechProviderApiKey,
   trimToUndefined,
 } from "openclaw/plugin-sdk/speech-core";
@@ -130,10 +131,14 @@ function readOverrides(overrides: SpeechProviderOverrides | undefined): FishAudi
 }
 
 function resolveApiKey(configValue?: string): string | undefined {
+  // FISH_TTS_API_KEY / FISH_AUDIO_TTS_API_KEY win over the generic names; with
+  // security.requireScopedApiKeys the generic names are ignored here entirely.
   return resolveSpeechProviderApiKey(
     configValue,
-    process.env.FISH_API_KEY,
-    process.env.FISH_AUDIO_API_KEY,
+    resolveScopedEnvApiKey({
+      baseEnvKeys: ["FISH_API_KEY", "FISH_AUDIO_API_KEY"],
+      scope: "tts",
+    })?.value,
   );
 }
 

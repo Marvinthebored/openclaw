@@ -1,3 +1,8 @@
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
+import {
+  clearRuntimeConfigSnapshot,
+  setRuntimeConfigSnapshot,
+} from "openclaw/plugin-sdk/runtime-config-snapshot";
 // Xai tests cover speech provider plugin behavior.
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildXaiSpeechProvider } from "./speech-provider.js";
@@ -422,5 +427,68 @@ describe("xai speech provider", () => {
     });
     expect(resolveApiKeyForProviderMock).toHaveBeenCalledWith({ provider: "xai", cfg });
     expect(requireLastTtsCall().apiKey).toBe("oauth-bearer");
+  });
+});
+
+describe("xai speech provider scoped env names", () => {
+  afterEach(() => {
+    xaiTTSMock.mockClear();
+    isProviderAuthProfileConfiguredMock.mockReset();
+    isProviderAuthProfileConfiguredMock.mockReturnValue(false);
+    resolveApiKeyForProviderMock.mockReset();
+    resolveApiKeyForProviderMock.mockResolvedValue({ apiKey: undefined });
+    delete process.env.XAI_API_KEY;
+    delete process.env.XAI_TTS_API_KEY;
+    clearRuntimeConfigSnapshot();
+  });
+
+  it("prefers XAI_TTS_API_KEY over XAI_API_KEY", async () => {
+    process.env.XAI_API_KEY = "generic";
+    process.env.XAI_TTS_API_KEY = "scoped";
+    const provider = buildXaiSpeechProvider();
+
+    await provider.synthesize({
+      text: "hello",
+      cfg: {},
+      providerConfig: {},
+      target: "audio-file",
+      timeoutMs: 5_000,
+    });
+
+    expect(requireLastTtsCall().apiKey).toBe("scoped");
+  });
+
+  it("still accepts XAI_API_KEY by default", async () => {
+    process.env.XAI_API_KEY = "generic";
+    const provider = buildXaiSpeechProvider();
+
+    expect(provider.isConfigured({ cfg: {}, providerConfig: {}, timeoutMs: 5_000 })).toBe(true);
+    await provider.synthesize({
+      text: "hello",
+      cfg: {},
+      providerConfig: {},
+      target: "audio-file",
+      timeoutMs: 5_000,
+    });
+
+    expect(requireLastTtsCall().apiKey).toBe("generic");
+  });
+
+  it("ignores XAI_API_KEY when security.requireScopedApiKeys is enabled", async () => {
+    process.env.XAI_API_KEY = "generic";
+    setRuntimeConfigSnapshot({ security: { requireScopedApiKeys: true } } as OpenClawConfig);
+    const provider = buildXaiSpeechProvider();
+
+    expect(provider.isConfigured({ cfg: {}, providerConfig: {}, timeoutMs: 5_000 })).toBe(false);
+    await expect(
+      provider.synthesize({
+        text: "hello",
+        cfg: {},
+        providerConfig: {},
+        target: "audio-file",
+        timeoutMs: 5_000,
+      }),
+    ).rejects.toThrow("xAI credentials missing for TTS");
+    expect(xaiTTSMock).not.toHaveBeenCalled();
   });
 });

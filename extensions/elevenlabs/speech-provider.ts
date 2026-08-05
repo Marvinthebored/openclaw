@@ -24,7 +24,10 @@ import {
   requireInRange,
   trimToUndefined,
 } from "openclaw/plugin-sdk/speech";
-import { resolveSpeechProviderApiKey } from "openclaw/plugin-sdk/speech-core";
+import {
+  resolveScopedEnvApiKey,
+  resolveSpeechProviderApiKey,
+} from "openclaw/plugin-sdk/speech-core";
 import {
   fetchWithSsrFGuard,
   ssrfPolicyFromHttpBaseUrlAllowedHostname,
@@ -181,10 +184,12 @@ function readElevenLabsProviderConfig(config: SpeechProviderConfig): ElevenLabsP
 }
 
 function resolveElevenLabsApiKey(...candidates: Array<string | undefined>): string | undefined {
+  // XI_TTS_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
   return resolveSpeechProviderApiKey(
     ...candidates,
     resolveElevenLabsApiKeyWithProfileFallback() ?? undefined,
-    process.env.XI_API_KEY,
+    resolveScopedEnvApiKey({ baseEnvKeys: ["XI_API_KEY"], scope: "tts" })?.value,
   );
 }
 

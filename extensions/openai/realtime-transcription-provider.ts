@@ -3,6 +3,7 @@ import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import {
   isProviderAuthProfileConfigured,
   resolveProviderAuthProfileApiKey,
+  resolveScopedEnvApiKey,
 } from "openclaw/plugin-sdk/provider-auth";
 import { resolveProviderRequestHeaders } from "openclaw/plugin-sdk/provider-http";
 import {
@@ -173,6 +174,12 @@ function buildOpenAIRealtimeTranscriptionSessionPayload(
   };
 }
 
+function resolveOpenAITranscriptionEnvApiKey(): string | undefined {
+  // OPENAI_TRANSCRIPTION_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return resolveScopedEnvApiKey({ baseEnvKeys: ["OPENAI_API_KEY"], scope: "transcription" })?.value;
+}
+
 async function resolveOpenAIRealtimeTranscriptionAuthorization(
   config: OpenAIRealtimeTranscriptionSessionConfig,
 ): Promise<string> {
@@ -193,7 +200,7 @@ async function resolveOpenAIRealtimeTranscriptionAuthorization(
     });
     return clientSecret.value;
   }
-  const envApiKey = process.env.OPENAI_API_KEY?.trim();
+  const envApiKey = resolveOpenAITranscriptionEnvApiKey();
   if (envApiKey) {
     return envApiKey;
   }
@@ -604,7 +611,7 @@ export function buildOpenAIRealtimeTranscriptionProvider(): RealtimeTranscriptio
     isConfigured: ({ cfg, providerConfig }) =>
       Boolean(
         normalizeProviderConfig(providerConfig).apiKey ||
-        process.env.OPENAI_API_KEY?.trim() ||
+        resolveOpenAITranscriptionEnvApiKey() ||
         isProviderAuthProfileConfigured({ provider: "openai", cfg, profileTypes: ["api_key"] }),
       ),
     createSession: (req) => {

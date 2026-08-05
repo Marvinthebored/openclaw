@@ -1,5 +1,6 @@
 import {
   isProviderAuthProfileConfigured,
+  resolveScopedEnvApiKey,
   type OpenClawConfig,
 } from "openclaw/plugin-sdk/provider-auth";
 import { resolveApiKeyForProvider } from "openclaw/plugin-sdk/provider-auth-runtime";
@@ -228,12 +229,18 @@ export function toXaiRealtimeWsUrl(
   return url.toString();
 }
 
+function resolveXaiRealtimeEnvApiKey(): string | undefined {
+  return resolveScopedEnvApiKey({ baseEnvKeys: ["XAI_API_KEY"], scope: "realtime" })?.value;
+}
+
 export async function resolveXaiRealtimeApiKey(
   configApiKey: string | undefined,
   cfg: OpenClawConfig | undefined,
 ): Promise<string> {
+  // XAI_REALTIME_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
   const direct =
-    normalizeOptionalString(configApiKey) ?? normalizeOptionalString(process.env.XAI_API_KEY);
+    normalizeOptionalString(configApiKey) ?? normalizeOptionalString(resolveXaiRealtimeEnvApiKey());
   if (direct) {
     return direct;
   }
@@ -251,7 +258,10 @@ export function hasXaiRealtimeApiKeyInput(
   configApiKey: string | undefined,
   cfg: OpenClawConfig | undefined,
 ): boolean {
-  if (normalizeOptionalString(configApiKey) || normalizeOptionalString(process.env.XAI_API_KEY)) {
+  if (
+    normalizeOptionalString(configApiKey) ||
+    normalizeOptionalString(resolveXaiRealtimeEnvApiKey())
+  ) {
     return true;
   }
   return isProviderAuthProfileConfigured({ provider: "xai", cfg });

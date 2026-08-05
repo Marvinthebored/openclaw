@@ -13,6 +13,7 @@ import type {
 import {
   asFiniteNumber,
   asObject,
+  resolveScopedEnvApiKey,
   resolveSpeechProviderApiKey,
   trimToUndefined,
 } from "openclaw/plugin-sdk/speech-core";
@@ -48,10 +49,14 @@ type AzureSpeechProviderOverrides = {
 };
 
 function readAzureSpeechEnvApiKey(): string | undefined {
-  return (
-    trimToUndefined(process.env.AZURE_SPEECH_KEY) ??
-    trimToUndefined(process.env.AZURE_SPEECH_API_KEY) ??
-    trimToUndefined(process.env.SPEECH_KEY)
+  // AZURE_SPEECH_TTS_API_KEY wins over the generic names; with
+  // security.requireScopedApiKeys AZURE_SPEECH_API_KEY is ignored here entirely,
+  // while AZURE_SPEECH_KEY and SPEECH_KEY stay usable — neither has a scoped form.
+  return trimToUndefined(
+    resolveScopedEnvApiKey({
+      baseEnvKeys: ["AZURE_SPEECH_KEY", "AZURE_SPEECH_API_KEY", "SPEECH_KEY"],
+      scope: "tts",
+    })?.value,
   );
 }
 

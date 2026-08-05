@@ -1,6 +1,7 @@
 // Xai provider module implements model/runtime integration.
 import {
   isProviderAuthProfileConfigured,
+  resolveScopedEnvApiKey,
   type OpenClawConfig,
 } from "openclaw/plugin-sdk/provider-auth";
 import { resolveApiKeyForProvider } from "openclaw/plugin-sdk/provider-auth-runtime";
@@ -241,13 +242,14 @@ export function buildXaiRealtimeTranscriptionProvider(): RealtimeTranscriptionPr
     isConfigured: ({ providerConfig, cfg }) =>
       Boolean(
         normalizeProviderConfig(providerConfig).apiKey ??
-        normalizeOptionalString(process.env.XAI_API_KEY),
+        normalizeOptionalString(resolveXaiTranscriptionEnvApiKey()),
       ) || isProviderAuthProfileConfigured({ provider: "xai", cfg }),
     createSession: (req) => {
       const config = normalizeProviderConfig(req.providerConfig);
       // createSession must stay sync per RealtimeTranscriptionProviderPlugin; bearer is resolved lazily in headers().
       const seedApiKey =
-        normalizeOptionalString(config.apiKey) ?? normalizeOptionalString(process.env.XAI_API_KEY);
+        normalizeOptionalString(config.apiKey) ??
+        normalizeOptionalString(resolveXaiTranscriptionEnvApiKey());
       return createXaiRealtimeTranscriptionSession({
         ...req,
         apiKey: seedApiKey ?? "",
@@ -263,16 +265,23 @@ export function buildXaiRealtimeTranscriptionProvider(): RealtimeTranscriptionPr
   };
 }
 
+function resolveXaiTranscriptionEnvApiKey(): string | undefined {
+  // XAI_TRANSCRIPTION_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return resolveScopedEnvApiKey({ baseEnvKeys: ["XAI_API_KEY"], scope: "transcription" })?.value;
+}
+
 // Resolve an xAI bearer for the realtime `/stt` WebSocket:
 // 1. Configured `plugins.entries.voice-call.config.streaming.providers.xai.apiKey`
-// 2. `XAI_API_KEY` env var
+// 2. `XAI_TRANSCRIPTION_API_KEY`, then `XAI_API_KEY` env var
 // 3. xAI OAuth auth profile (cfg-scoped)
 async function resolveXaiRealtimeApiKey(
   configApiKey: string | undefined,
   cfg: OpenClawConfig | undefined,
 ): Promise<string> {
   const direct =
-    normalizeOptionalString(configApiKey) ?? normalizeOptionalString(process.env.XAI_API_KEY);
+    normalizeOptionalString(configApiKey) ??
+    normalizeOptionalString(resolveXaiTranscriptionEnvApiKey());
   if (direct) {
     return direct;
   }

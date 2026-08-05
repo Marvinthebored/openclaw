@@ -16,16 +16,41 @@ import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { normalizeOptionalSecretInput } from "../utils/normalize-secret-input.js";
 
 /** Subsystem tokens that may appear inside a scoped variable name. */
-export type EnvKeyScope = "tts" | "realtime" | "transcription" | "embedding" | "image" | "video";
+export type EnvKeyScope =
+  | "tts"
+  | "realtime"
+  | "transcription"
+  | "embedding"
+  | "image"
+  | "video"
+  | "media"
+  | "search";
 
 const GENERIC_SUFFIX = "_API_KEY";
 
+/** True when the name already carries the subsystem token, e.g. VOLCENGINE_TTS_TOKEN under `tts`. */
+function hasScopeToken(baseEnvKey: string, scope: EnvKeyScope): boolean {
+  const token = scope.toUpperCase();
+  return baseEnvKey.split("_").includes(token);
+}
+
 /**
- * Derives the scoped variable name for a generic one.
- * `OPENAI_API_KEY` + `tts` → `OPENAI_TTS_API_KEY`. Names that do not end in
- * `_API_KEY` have no derivable scoped form and return undefined.
+ * Derives the scoped variable name for a base one.
+ *
+ * `OPENAI_API_KEY` + `tts` → `OPENAI_TTS_API_KEY`. A name that already carries the
+ * subsystem token (`VOLCENGINE_TTS_API_KEY`, `VOLCENGINE_TTS_TOKEN`) is returned
+ * unchanged — it is already scoped, and deriving again would invent
+ * `VOLCENGINE_TTS_TTS_API_KEY`.
+ *
+ * A name with neither the `_API_KEY` suffix nor the subsystem token (`AZURE_SPEECH_KEY`,
+ * `SPEECH_KEY`) has no scoped form at all and returns undefined. Such names stay usable
+ * even when `security.requireScopedApiKeys` is enabled: a scoped name cannot be required
+ * where none can be expressed.
  */
 export function deriveScopedEnvKeyName(baseEnvKey: string, scope: EnvKeyScope): string | undefined {
+  if (hasScopeToken(baseEnvKey, scope)) {
+    return baseEnvKey;
+  }
   if (!baseEnvKey.endsWith(GENERIC_SUFFIX)) {
     return undefined;
   }
@@ -52,7 +77,8 @@ function requireScopedApiKeys(config?: OpenClawConfig): boolean {
  * All scoped candidates are consulted before any generic candidate. When
  * `security.requireScopedApiKeys` is enabled, generic candidates are skipped —
  * explicit configuration remains unaffected because callers consult it before
- * reaching environment fallback at all.
+ * reaching environment fallback at all. A base name with no expressible scoped
+ * form is exempt from that rule and stays usable.
  */
 export function resolveScopedEnvApiKey(params: {
   baseEnvKeys: readonly string[];
@@ -71,10 +97,12 @@ export function resolveScopedEnvApiKey(params: {
       return { value, envVar: scopedName, scoped: true };
     }
   }
-  if (requireScopedApiKeys(params.config)) {
-    return undefined;
-  }
+  const requireScoped = requireScopedApiKeys(params.config);
   for (const baseEnvKey of params.baseEnvKeys) {
+    // Under the flag only names with no expressible scoped form remain eligible.
+    if (requireScoped && deriveScopedEnvKeyName(baseEnvKey, params.scope)) {
+      continue;
+    }
     const value = normalizeOptionalSecretInput(env[baseEnvKey]);
     if (value) {
       return { value, envVar: baseEnvKey, scoped: false };

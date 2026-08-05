@@ -15,6 +15,7 @@ import type {
 import {
   asObject,
   parseSpeechDirectiveNumberOverride,
+  resolveScopedEnvApiKey,
   resolveSpeechProviderApiKey,
   trimToUndefined,
 } from "openclaw/plugin-sdk/speech-core";
@@ -86,10 +87,12 @@ async function resolveMinimaxTtsApiKey(params: {
 }
 
 function resolveMinimaxDirectTtsApiKey(configApiKey?: string): string | undefined {
+  // MINIMAX_TTS_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
   return resolveSpeechProviderApiKey(
     configApiKey,
     resolveMinimaxTokenPlanEnvKey(),
-    process.env.MINIMAX_API_KEY,
+    resolveScopedEnvApiKey({ baseEnvKeys: ["MINIMAX_API_KEY"], scope: "tts" })?.value,
   );
 }
 

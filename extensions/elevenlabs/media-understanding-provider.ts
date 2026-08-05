@@ -4,6 +4,7 @@ import type {
   AudioTranscriptionResult,
   MediaUnderstandingProvider,
 } from "openclaw/plugin-sdk/media-understanding";
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/provider-auth";
 import {
   assertOkOrThrowHttpError,
   buildAudioTranscriptionFormData,
@@ -20,7 +21,14 @@ export async function transcribeElevenLabsAudio(
   req: AudioTranscriptionRequest,
 ): Promise<AudioTranscriptionResult> {
   const fetchFn = req.fetchFn ?? fetch;
-  const apiKey = req.apiKey || process.env.ELEVENLABS_API_KEY || process.env.XI_API_KEY;
+  // ELEVENLABS_MEDIA_API_KEY / XI_MEDIA_API_KEY win over the generic names; with
+  // security.requireScopedApiKeys the generic names are ignored here entirely.
+  const apiKey =
+    req.apiKey ||
+    resolveScopedEnvApiKey({
+      baseEnvKeys: ["ELEVENLABS_API_KEY", "XI_API_KEY"],
+      scope: "media",
+    })?.value;
   if (!apiKey) {
     throw new Error("ElevenLabs API key missing");
   }

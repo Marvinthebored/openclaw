@@ -1,9 +1,14 @@
 // Google tests cover realtime voice provider plugin behavior.
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
 import {
   REALTIME_VOICE_AUDIO_FORMAT_PCM16_24KHZ,
   resamplePcm,
 } from "openclaw/plugin-sdk/realtime-voice";
 import type { RealtimeVoiceTool } from "openclaw/plugin-sdk/realtime-voice";
+import {
+  clearRuntimeConfigSnapshot,
+  setRuntimeConfigSnapshot,
+} from "openclaw/plugin-sdk/runtime-config-snapshot";
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildGoogleRealtimeVoiceProvider } from "./realtime-voice-provider.js";
 
@@ -2380,3 +2385,60 @@ describe("buildGoogleRealtimeVoiceProvider", () => {
   });
 });
 /* oxlint-disable max-lines -- TODO: split this grandfathered oversized file. */
+
+describe("buildGoogleRealtimeVoiceProvider scoped env names", () => {
+  const SCOPED_ENV_KEYS = [
+    "GEMINI_API_KEY",
+    "GOOGLE_API_KEY",
+    "GEMINI_REALTIME_API_KEY",
+    "GOOGLE_REALTIME_API_KEY",
+  ] as const;
+
+  beforeEach(() => {
+    createGoogleGenAIMock.mockClear();
+    for (const key of SCOPED_ENV_KEYS) {
+      vi.stubEnv(key, undefined);
+    }
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    clearRuntimeConfigSnapshot();
+  });
+
+  it("prefers GEMINI_REALTIME_API_KEY over the generic names", async () => {
+    vi.stubEnv("GEMINI_API_KEY", "generic");
+    vi.stubEnv("GEMINI_REALTIME_API_KEY", "scoped");
+    const provider = buildGoogleRealtimeVoiceProvider();
+
+    await provider.createBrowserSession?.({ providerConfig: {} });
+
+    expect(requireFirstMockArg(createGoogleGenAIMock, "GoogleGenAI config")).toMatchObject({
+      apiKey: "scoped",
+    });
+  });
+
+  it("still accepts GEMINI_API_KEY by default", () => {
+    vi.stubEnv("GEMINI_API_KEY", "generic");
+    const provider = buildGoogleRealtimeVoiceProvider();
+
+    expect(provider.isConfigured?.({ providerConfig: {} })).toBe(true);
+  });
+
+  it("ignores the generic names when security.requireScopedApiKeys is enabled", () => {
+    vi.stubEnv("GEMINI_API_KEY", "generic");
+    vi.stubEnv("GOOGLE_API_KEY", "generic");
+    setRuntimeConfigSnapshot({ security: { requireScopedApiKeys: true } } as OpenClawConfig);
+    const provider = buildGoogleRealtimeVoiceProvider();
+
+    expect(provider.isConfigured?.({ providerConfig: {} })).toBe(false);
+    expect(() =>
+      provider.createBridge({
+        providerConfig: {},
+        tools: [],
+        onAudio: vi.fn(),
+        onClearAudio: vi.fn(),
+      }),
+    ).toThrow("Google Gemini API key missing");
+  });
+});

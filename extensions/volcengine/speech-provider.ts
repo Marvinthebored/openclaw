@@ -9,6 +9,7 @@ import type {
 import {
   asObject,
   parseSpeechDirectiveNumberOverride,
+  resolveScopedEnvApiKey,
   resolveSpeechProviderApiKey,
   trimToUndefined,
 } from "openclaw/plugin-sdk/speech-core";
@@ -94,10 +95,15 @@ function normalizeVolcengineProviderConfig(
 }
 
 function resolveSeedSpeechApiKey(configApiKey?: string): string | undefined {
+  // VOLCENGINE_TTS_API_KEY already names its subsystem, so it is used as-is;
+  // BYTEPLUS_SEED_SPEECH_TTS_API_KEY wins over the generic BytePlus name, which
+  // security.requireScopedApiKeys ignores here entirely.
   return resolveSpeechProviderApiKey(
     configApiKey,
-    process.env.VOLCENGINE_TTS_API_KEY,
-    process.env.BYTEPLUS_SEED_SPEECH_API_KEY,
+    resolveScopedEnvApiKey({
+      baseEnvKeys: ["VOLCENGINE_TTS_API_KEY", "BYTEPLUS_SEED_SPEECH_API_KEY"],
+      scope: "tts",
+    })?.value,
   );
 }
 
@@ -107,7 +113,11 @@ function resolveLegacyVolcengineCredentials(config: {
 }): Pick<VolcengineTtsProviderConfig, "appId" | "token"> {
   return {
     appId: trimToUndefined(config.appId) ?? trimToUndefined(process.env.VOLCENGINE_TTS_APPID),
-    token: resolveSpeechProviderApiKey(config.token, process.env.VOLCENGINE_TTS_TOKEN),
+    // VOLCENGINE_TTS_TOKEN already names its subsystem and is used as-is.
+    token: resolveSpeechProviderApiKey(
+      config.token,
+      resolveScopedEnvApiKey({ baseEnvKeys: ["VOLCENGINE_TTS_TOKEN"], scope: "tts" })?.value,
+    ),
   };
 }
 

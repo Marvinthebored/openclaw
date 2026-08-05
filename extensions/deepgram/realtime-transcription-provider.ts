@@ -1,4 +1,5 @@
 // Deepgram provider module implements model/runtime integration.
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/provider-auth";
 import {
   createRealtimeTranscriptionWebSocketSession,
   type RealtimeTranscriptionProviderConfig,
@@ -135,6 +136,13 @@ function toDeepgramRealtimeWsUrl(config: DeepgramRealtimeTranscriptionSessionCon
     url.searchParams.set("language", config.language);
   }
   return url.toString();
+}
+
+function resolveDeepgramEnvApiKey(): string | undefined {
+  // DEEPGRAM_TRANSCRIPTION_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return resolveScopedEnvApiKey({ baseEnvKeys: ["DEEPGRAM_API_KEY"], scope: "transcription" })
+    ?.value;
 }
 
 function normalizeProviderConfig(
@@ -358,10 +366,10 @@ export function buildDeepgramRealtimeTranscriptionProvider(): RealtimeTranscript
     autoSelectOrder: 35,
     resolveConfig: ({ rawConfig }) => normalizeProviderConfig(rawConfig),
     isConfigured: ({ providerConfig }) =>
-      Boolean(normalizeProviderConfig(providerConfig).apiKey || process.env.DEEPGRAM_API_KEY),
+      Boolean(normalizeProviderConfig(providerConfig).apiKey || resolveDeepgramEnvApiKey()),
     createSession: (req) => {
       const config = normalizeProviderConfig(req.providerConfig);
-      const apiKey = config.apiKey || process.env.DEEPGRAM_API_KEY;
+      const apiKey = config.apiKey || resolveDeepgramEnvApiKey();
       if (!apiKey) {
         throw new Error("Deepgram API key missing");
       }

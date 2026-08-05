@@ -2,6 +2,10 @@
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
+import {
+  clearRuntimeConfigSnapshot,
+  setRuntimeConfigSnapshot,
+} from "openclaw/plugin-sdk/runtime-config-snapshot";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type WebSocket from "ws";
 import type { RawData } from "ws";
@@ -466,5 +470,45 @@ describe("buildDeepgramRealtimeTranscriptionProvider", () => {
       ),
     );
     session.close();
+  });
+});
+
+describe("deepgram scoped env names", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    clearRuntimeConfigSnapshot();
+  });
+
+  it("prefers DEEPGRAM_TRANSCRIPTION_API_KEY over DEEPGRAM_API_KEY", async () => {
+    vi.stubEnv("DEEPGRAM_API_KEY", "generic");
+    vi.stubEnv("DEEPGRAM_TRANSCRIPTION_API_KEY", "scoped");
+    const headers: Array<Record<string, string | string[] | undefined>> = [];
+    const server = await createDeepgramRealtimeServer({
+      onRequest: (_url, requestHeaders) => headers.push(requestHeaders),
+    });
+    const session = buildDeepgramRealtimeTranscriptionProvider().createSession({
+      providerConfig: { baseUrl: server.baseUrl },
+    });
+
+    await session.connect();
+    session.close();
+
+    expect(headers[0]?.authorization).toBe("Token scoped");
+  });
+
+  it("still accepts DEEPGRAM_API_KEY by default", () => {
+    vi.stubEnv("DEEPGRAM_API_KEY", "generic");
+    const provider = buildDeepgramRealtimeTranscriptionProvider();
+    expect(provider.isConfigured?.({ providerConfig: {} })).toBe(true);
+  });
+
+  it("ignores DEEPGRAM_API_KEY when security.requireScopedApiKeys is enabled", () => {
+    vi.stubEnv("DEEPGRAM_API_KEY", "generic");
+    setRuntimeConfigSnapshot({ security: { requireScopedApiKeys: true } } as OpenClawConfig);
+    const provider = buildDeepgramRealtimeTranscriptionProvider();
+    expect(provider.isConfigured?.({ providerConfig: {} })).toBe(false);
+    expect(() => provider.createSession({ providerConfig: {} })).toThrow(
+      "Deepgram API key missing",
+    );
   });
 });

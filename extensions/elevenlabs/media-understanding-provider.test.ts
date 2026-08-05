@@ -1,4 +1,9 @@
 // Elevenlabs tests cover media understanding provider plugin behavior.
+import type { OpenClawConfig } from "openclaw/plugin-sdk/config-contracts";
+import {
+  clearRuntimeConfigSnapshot,
+  setRuntimeConfigSnapshot,
+} from "openclaw/plugin-sdk/runtime-config-snapshot";
 import { mockPinnedHostnameResolution } from "openclaw/plugin-sdk/test-env";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -92,5 +97,73 @@ describe("elevenLabsMediaUnderstandingProvider", () => {
         fetchFn: fetchMock,
       }),
     ).rejects.toThrow("ElevenLabs audio transcription failed: malformed JSON response");
+  });
+});
+
+describe("transcribeElevenLabsAudio scoped env names", () => {
+  let ssrfMock: { mockRestore: () => void } | undefined;
+
+  beforeEach(() => {
+    ssrfMock = mockPinnedHostnameResolution();
+    vi.unstubAllEnvs();
+    for (const key of [
+      "ELEVENLABS_API_KEY",
+      "XI_API_KEY",
+      "ELEVENLABS_MEDIA_API_KEY",
+      "XI_MEDIA_API_KEY",
+    ]) {
+      vi.stubEnv(key, undefined);
+    }
+    clearRuntimeConfigSnapshot();
+  });
+
+  afterEach(() => {
+    ssrfMock?.mockRestore();
+    ssrfMock = undefined;
+    vi.unstubAllEnvs();
+    clearRuntimeConfigSnapshot();
+  });
+
+  async function transcribeWithEnvKey(fetchMock: ReturnType<typeof vi.fn>) {
+    return await transcribeElevenLabsAudio({
+      buffer: Buffer.from("audio"),
+      fileName: "voice.mp3",
+      mime: "audio/mpeg",
+      apiKey: "",
+      model: "scribe_v2",
+      timeoutMs: 1000,
+      fetchFn: fetchMock as unknown as typeof fetch,
+    });
+  }
+
+  it("prefers ELEVENLABS_MEDIA_API_KEY over the generic names", async () => {
+    vi.stubEnv("ELEVENLABS_API_KEY", "generic");
+    vi.stubEnv("ELEVENLABS_MEDIA_API_KEY", "scoped");
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: "hi" })));
+
+    await transcribeWithEnvKey(fetchMock);
+
+    const [, init] = requireFirstFetchCall(fetchMock);
+    expect(new Headers(init.headers).get("xi-api-key")).toBe("scoped");
+  });
+
+  it("still accepts ELEVENLABS_API_KEY by default", async () => {
+    vi.stubEnv("ELEVENLABS_API_KEY", "generic");
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: "hi" })));
+
+    await transcribeWithEnvKey(fetchMock);
+
+    const [, init] = requireFirstFetchCall(fetchMock);
+    expect(new Headers(init.headers).get("xi-api-key")).toBe("generic");
+  });
+
+  it("ignores the generic names when security.requireScopedApiKeys is enabled", async () => {
+    vi.stubEnv("ELEVENLABS_API_KEY", "generic");
+    vi.stubEnv("XI_API_KEY", "generic");
+    setRuntimeConfigSnapshot({ security: { requireScopedApiKeys: true } } as OpenClawConfig);
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ text: "hi" })));
+
+    await expect(transcribeWithEnvKey(fetchMock)).rejects.toThrow("ElevenLabs API key missing");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

@@ -14,6 +14,7 @@ import type {
 } from "openclaw/plugin-sdk/speech-core";
 import {
   asObject,
+  resolveScopedEnvApiKey,
   resolveSpeechProviderApiKey,
   trimToUndefined,
 } from "openclaw/plugin-sdk/speech-core";
@@ -135,9 +136,11 @@ function readXiaomiTtsProviderConfig(config: SpeechProviderConfig): XiaomiTtsPro
 
 function resolveXiaomiTtsProviderConfig(config: SpeechProviderConfig): XiaomiTtsProviderConfig {
   const providerConfig = readXiaomiTtsProviderConfig(config);
+  // XIAOMI_TTS_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
   const resolvedKey = resolveSpeechProviderApiKey(
     providerConfig.apiKey,
-    process.env.XIAOMI_API_KEY,
+    resolveScopedEnvApiKey({ baseEnvKeys: ["XIAOMI_API_KEY"], scope: "tts" })?.value,
   );
   return {
     ...providerConfig,

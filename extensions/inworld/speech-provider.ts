@@ -9,6 +9,7 @@ import type {
 import {
   asObject,
   parseSpeechDirectiveNumberOverride,
+  resolveScopedEnvApiKey,
   resolveSpeechProviderApiKey,
   trimToUndefined,
 } from "openclaw/plugin-sdk/speech-core";
@@ -68,7 +69,13 @@ function readInworldProviderConfig(config: SpeechProviderConfig): InworldProvide
 }
 
 function resolveInworldApiKey(primary?: string, fallback?: string): string | undefined {
-  return resolveSpeechProviderApiKey(primary, fallback, process.env.INWORLD_API_KEY);
+  // INWORLD_TTS_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return resolveSpeechProviderApiKey(
+    primary,
+    fallback,
+    resolveScopedEnvApiKey({ baseEnvKeys: ["INWORLD_API_KEY"], scope: "tts" })?.value,
+  );
 }
 
 function readInworldOverrides(

@@ -15,7 +15,10 @@ import {
   type SpeechSynthesisRequest,
   type SpeechSynthesisTarget,
 } from "openclaw/plugin-sdk/speech";
-import { resolveSpeechProviderApiKey } from "openclaw/plugin-sdk/speech-core";
+import {
+  resolveScopedEnvApiKey,
+  resolveSpeechProviderApiKey,
+} from "openclaw/plugin-sdk/speech-core";
 import {
   asFiniteNumberInRange,
   normalizeLowercaseStringOrEmpty,
@@ -139,7 +142,12 @@ function readXaiOverrides(overrides: SpeechProviderOverrides | undefined): XaiTt
 }
 
 function resolveDirectXaiAudioApiKey(configApiKey?: string): string | undefined {
-  return resolveSpeechProviderApiKey(configApiKey, process.env.XAI_API_KEY);
+  // XAI_TTS_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
+  return resolveSpeechProviderApiKey(
+    configApiKey,
+    resolveScopedEnvApiKey({ baseEnvKeys: ["XAI_API_KEY"], scope: "tts" })?.value,
+  );
 }
 
 async function resolveXaiSpeechSynthesisRequest(

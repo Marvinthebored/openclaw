@@ -3,6 +3,7 @@ import type { ImageGenerationProvider } from "openclaw/plugin-sdk/image-generati
 import type { MediaUnderstandingProvider } from "openclaw/plugin-sdk/media-understanding";
 import type { MusicGenerationProvider } from "openclaw/plugin-sdk/music-generation";
 import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/provider-auth";
 import type {
   RealtimeVoiceBridge,
   RealtimeVoiceBridgeCreateRequest,
@@ -196,9 +197,13 @@ function resolveGoogleRealtimeProviderConfig(
 }
 
 function resolveGoogleRealtimeEnvApiKey(): string | undefined {
-  return (
-    normalizeOptionalString(process.env.GEMINI_API_KEY) ??
-    normalizeOptionalString(process.env.GOOGLE_API_KEY)
+  // GEMINI_REALTIME_API_KEY / GOOGLE_REALTIME_API_KEY win over the generic names; with
+  // security.requireScopedApiKeys the generic names are ignored here entirely.
+  return normalizeOptionalString(
+    resolveScopedEnvApiKey({
+      baseEnvKeys: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
+      scope: "realtime",
+    })?.value,
   );
 }
 

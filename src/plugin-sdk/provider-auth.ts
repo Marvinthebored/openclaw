@@ -110,6 +110,12 @@ export {
 export { createProviderApiKeyAuthMethod } from "../plugins/provider-api-key-auth.js";
 export { coerceSecretRef, hasConfiguredSecretInput } from "../config/types.secrets.js";
 export { resolveDefaultSecretProviderAlias } from "../secrets/ref-contract.js";
+export {
+  deriveScopedEnvKeyName,
+  resolveScopedEnvApiKey,
+  type EnvKeyScope,
+  type ScopedEnvApiKeyResult,
+} from "../secrets/scoped-env-keys.js";
 export { resolveRequiredHomeDir } from "../infra/home-dir.js";
 export {
   normalizeOptionalSecretInput,

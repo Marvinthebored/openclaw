@@ -1,4 +1,5 @@
 // Elevenlabs provider module implements model/runtime integration.
+import { resolveScopedEnvApiKey } from "openclaw/plugin-sdk/provider-auth";
 import {
   createRealtimeTranscriptionWebSocketSession,
   type RealtimeTranscriptionProviderConfig,
@@ -250,10 +251,14 @@ function createElevenLabsRealtimeTranscriptionSession(
 function resolveElevenLabsRealtimeApiKey(
   config: ElevenLabsRealtimeTranscriptionProviderConfig,
 ): string | null | undefined {
+  // XI_TRANSCRIPTION_API_KEY wins over the generic name; with
+  // security.requireScopedApiKeys the generic name is ignored here entirely.
   return (
     config.apiKey ??
     resolveElevenLabsApiKeyWithProfileFallback() ??
-    normalizeOptionalString(process.env.XI_API_KEY)
+    normalizeOptionalString(
+      resolveScopedEnvApiKey({ baseEnvKeys: ["XI_API_KEY"], scope: "transcription" })?.value,
+    )
   );
 }
 
