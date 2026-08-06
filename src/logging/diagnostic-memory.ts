@@ -85,11 +85,16 @@ function normalizeMemoryUsage(memory: NodeJS.MemoryUsage): DiagnosticMemoryUsage
  * reach, so it would be OOM-killed without ever emitting a critical diagnostic.
  */
 function resolveMemoryLimitBytes(): number {
+  const physical = totalmem();
   const constrained = process.constrainedMemory?.();
-  if (typeof constrained === "number" && Number.isFinite(constrained) && constrained > 0) {
-    return constrained;
+  if (typeof constrained !== "number" || !Number.isFinite(constrained) || constrained <= 0) {
+    return physical;
   }
-  return totalmem();
+  // cgroup "unlimited" is reported as an oversized finite sentinel rather than
+  // 0 or Infinity, so a bare finite/positive check would accept it and keep
+  // ceilings the host can never reach. A limit above physical memory is not a
+  // limit; clamp instead of trusting it.
+  return Math.min(constrained, physical);
 }
 
 function resolveThresholds(

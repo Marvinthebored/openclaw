@@ -250,6 +250,30 @@ describe("diagnostic memory", () => {
     ).toEqual([{ reason: "rss_threshold", threshold: 1536 * mb }]);
   });
 
+  it("derives ceilings from the resolved memory limit, not the raw cgroup value", () => {
+    const events: DiagnosticEventPayload[] = [];
+    const stop = onDiagnosticEvent((event) => events.push(event));
+    const gb = 1024 ** 3;
+
+    // Pins the ceiling contract the clamp feeds: a 4 GiB usable limit yields a
+    // 2 GiB warning ceiling, NOT the 6 GiB maximum. resolveMemoryLimitBytes()
+    // clamps an oversized cgroup "unlimited" sentinel to physical memory so it
+    // lands here rather than retaining an unreachable ceiling.
+    emitDiagnosticMemorySample({
+      now: 1000,
+      heapSizeLimitBytes: 8 * gb,
+      memoryLimitBytes: 4 * gb,
+      memoryUsage: memoryUsage({ rss: 2.1 * gb, heapUsed: 256 * 1024 * 1024 }),
+    });
+    stop();
+
+    expect(
+      events
+        .filter((event) => event.type === "diagnostic.memory.pressure")
+        .map((event) => ({ reason: event.reason, threshold: event.thresholdBytes })),
+    ).toEqual([{ reason: "rss_threshold", threshold: 2 * gb }]);
+  });
+
   it("never lowers RSS thresholds below the historical defaults on a small host", () => {
     const events: DiagnosticEventPayload[] = [];
     const stop = onDiagnosticEvent((event) => events.push(event));
