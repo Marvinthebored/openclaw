@@ -204,7 +204,7 @@ describe("diagnostic memory", () => {
     emitDiagnosticMemorySample({
       now: 1000,
       heapSizeLimitBytes: 8 * gb,
-      totalMemoryBytes: 32 * gb,
+      memoryLimitBytes: 32 * gb,
       memoryUsage: memoryUsage({ rss: 2.2 * gb, heapUsed: 512 * 1024 * 1024 }),
     });
     expect(events.filter((event) => event.type === "diagnostic.memory.pressure")).toEqual([]);
@@ -212,7 +212,7 @@ describe("diagnostic memory", () => {
     emitDiagnosticMemorySample({
       now: 2000,
       heapSizeLimitBytes: 8 * gb,
-      totalMemoryBytes: 32 * gb,
+      memoryLimitBytes: 32 * gb,
       memoryUsage: memoryUsage({ rss: 6.1 * gb, heapUsed: 512 * 1024 * 1024 }),
     });
     stop();
@@ -238,7 +238,38 @@ describe("diagnostic memory", () => {
     emitDiagnosticMemorySample({
       now: 1000,
       heapSizeLimitBytes: 2048 * mb,
-      totalMemoryBytes: 4 * 1024 * mb,
+      memoryLimitBytes: 4 * 1024 * mb,
+      memoryUsage: memoryUsage({ rss: 1600 * mb, heapUsed: 128 * mb }),
+    });
+    stop();
+
+    expect(
+      events
+        .filter((event) => event.type === "diagnostic.memory.pressure")
+        .map((event) => ({ reason: event.reason, threshold: event.thresholdBytes })),
+    ).toEqual([{ reason: "rss_threshold", threshold: 1536 * mb }]);
+  });
+
+  it("never lowers RSS thresholds below the historical defaults on a small host", () => {
+    const events: DiagnosticEventPayload[] = [];
+    const stop = onDiagnosticEvent((event) => events.push(event));
+    const mb = 1024 * 1024;
+
+    // 2 GiB of usable memory: half of it is 1024 MiB, BELOW the historical
+    // 1536 MiB warning default. Capping by memory alone would make this host
+    // warn EARLIER than before the scaling existed, which is a regression.
+    emitDiagnosticMemorySample({
+      now: 1000,
+      heapSizeLimitBytes: 2048 * mb,
+      memoryLimitBytes: 2048 * mb,
+      memoryUsage: memoryUsage({ rss: 1200 * mb, heapUsed: 128 * mb }),
+    });
+    expect(events.filter((event) => event.type === "diagnostic.memory.pressure")).toEqual([]);
+
+    emitDiagnosticMemorySample({
+      now: 2000,
+      heapSizeLimitBytes: 2048 * mb,
+      memoryLimitBytes: 2048 * mb,
       memoryUsage: memoryUsage({ rss: 1600 * mb, heapUsed: 128 * mb }),
     });
     stop();
@@ -261,13 +292,13 @@ describe("diagnostic memory", () => {
     emitDiagnosticMemorySample({
       now: 1000,
       heapSizeLimitBytes: 8 * gb,
-      totalMemoryBytes: 8 * gb,
+      memoryLimitBytes: 8 * gb,
       memoryUsage: memoryUsage({ rss: 4.1 * gb, heapUsed: 256 * 1024 * 1024 }),
     });
     emitDiagnosticMemorySample({
       now: 2000,
       heapSizeLimitBytes: 8 * gb,
-      totalMemoryBytes: 8 * gb,
+      memoryLimitBytes: 8 * gb,
       memoryUsage: memoryUsage({ rss: 6.1 * gb, heapUsed: 256 * 1024 * 1024 }),
     });
     stop();

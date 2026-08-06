@@ -75,29 +75,55 @@ function normalizeMemoryUsage(memory: NodeJS.MemoryUsage): DiagnosticMemoryUsage
   };
 }
 
+/**
+ * Memory the process is actually allowed to use.
+ *
+ * `process.constrainedMemory()` reports the OS-imposed limit (cgroup/container)
+ * and is the same source the managed gateway heap sizing prefers; it returns 0
+ * when unconstrained, in which case physical memory is the right answer. Using
+ * physical memory alone would compute ceilings a constrained process can never
+ * reach, so it would be OOM-killed without ever emitting a critical diagnostic.
+ */
+function resolveMemoryLimitBytes(): number {
+  const constrained = process.constrainedMemory?.();
+  if (typeof constrained === "number" && Number.isFinite(constrained) && constrained > 0) {
+    return constrained;
+  }
+  return totalmem();
+}
+
 function resolveThresholds(
   thresholds?: DiagnosticMemoryThresholds,
   heapSizeLimitBytes?: number,
-  totalMemoryBytes?: number,
+  memoryLimitBytes?: number,
 ): Required<DiagnosticMemoryThresholds> {
   const hasHeapLimit =
     typeof heapSizeLimitBytes === "number" &&
     Number.isFinite(heapSizeLimitBytes) &&
     heapSizeLimitBytes > 0;
-  const hasTotalMemory =
-    typeof totalMemoryBytes === "number" &&
-    Number.isFinite(totalMemoryBytes) &&
-    totalMemoryBytes > 0;
-  const rssWarningCeiling = hasTotalMemory
-    ? Math.min(
-        DEFAULT_RSS_WARNING_MAX_BYTES,
-        Math.floor(totalMemoryBytes * DEFAULT_RSS_WARNING_HOST_RATIO),
+  const hasMemoryLimit =
+    typeof memoryLimitBytes === "number" &&
+    Number.isFinite(memoryLimitBytes) &&
+    memoryLimitBytes > 0;
+  // Cap the scaled thresholds by what the process may actually use, but never
+  // below the historical flat defaults: a small host must not start warning
+  // EARLIER than it did before this scaling existed. Floor first, then cap.
+  const rssWarningCeiling = hasMemoryLimit
+    ? Math.max(
+        DEFAULT_RSS_WARNING_BYTES,
+        Math.min(
+          DEFAULT_RSS_WARNING_MAX_BYTES,
+          Math.floor(memoryLimitBytes * DEFAULT_RSS_WARNING_HOST_RATIO),
+        ),
       )
     : DEFAULT_RSS_WARNING_MAX_BYTES;
-  const rssCriticalCeiling = hasTotalMemory
-    ? Math.min(
-        DEFAULT_RSS_CRITICAL_MAX_BYTES,
-        Math.floor(totalMemoryBytes * DEFAULT_RSS_CRITICAL_HOST_RATIO),
+  const rssCriticalCeiling = hasMemoryLimit
+    ? Math.max(
+        DEFAULT_RSS_CRITICAL_BYTES,
+        Math.min(
+          DEFAULT_RSS_CRITICAL_MAX_BYTES,
+          Math.floor(memoryLimitBytes * DEFAULT_RSS_CRITICAL_HOST_RATIO),
+        ),
       )
     : DEFAULT_RSS_CRITICAL_MAX_BYTES;
   // Scale both directions with V8's effective limit, but keep a warning/critical
@@ -342,7 +368,7 @@ export function emitDiagnosticMemorySample(options?: {
   now?: number;
   memoryUsage?: NodeJS.MemoryUsage;
   heapSizeLimitBytes?: number;
-  totalMemoryBytes?: number;
+  memoryLimitBytes?: number;
   uptimeMs?: number;
   thresholds?: DiagnosticMemoryThresholds;
   emitSample?: boolean;
@@ -357,7 +383,7 @@ export function emitDiagnosticMemorySample(options?: {
   const thresholds = resolveThresholds(
     options?.thresholds,
     options?.heapSizeLimitBytes ?? getHeapStatistics().heap_size_limit,
-    options?.totalMemoryBytes ?? totalmem(),
+    options?.memoryLimitBytes ?? resolveMemoryLimitBytes(),
   );
   const shouldEmitSample = options?.emitSample !== false;
 
