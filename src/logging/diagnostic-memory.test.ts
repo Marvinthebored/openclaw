@@ -250,19 +250,48 @@ describe("diagnostic memory", () => {
     ).toEqual([{ reason: "rss_threshold", threshold: 1536 * mb }]);
   });
 
-  it("derives ceilings from the resolved memory limit, not the raw cgroup value", () => {
+  it("rejects an oversized cgroup limit through the default resolver path", () => {
     const events: DiagnosticEventPayload[] = [];
     const stop = onDiagnosticEvent((event) => events.push(event));
     const gb = 1024 ** 3;
 
-    // Pins the ceiling contract the clamp feeds: a 4 GiB usable limit yields a
-    // 2 GiB warning ceiling, NOT the 6 GiB maximum. resolveMemoryLimitBytes()
-    // clamps an oversized cgroup "unlimited" sentinel to physical memory so it
-    // lands here rather than retaining an unreachable ceiling.
+    // cgroup reports an effectively unlimited quota as an oversized finite
+    // value, not 0 or Infinity. Drive the real resolver (no memoryLimitBytes)
+    // with both OS inputs injected, mirroring gateway-heap.ts. On an 8 GiB host
+    // the sentinel must be rejected and physical memory used: warning caps at
+    // 4 GiB. Trusting the sentinel would leave the 6 GiB maximum, which this
+    // host can never reach.
     emitDiagnosticMemorySample({
       now: 1000,
       heapSizeLimitBytes: 8 * gb,
-      memoryLimitBytes: 4 * gb,
+      constrainedMemoryBytes: Number.MAX_SAFE_INTEGER,
+      physicalMemoryBytes: 8 * gb,
+      // Between the 4 GiB warning and the 6 GiB critical: high enough to warn
+      // on an 8 GiB host, low enough that trusting the sentinel would emit
+      // nothing at all.
+      memoryUsage: memoryUsage({ rss: 4.5 * gb, heapUsed: 256 * 1024 * 1024 }),
+    });
+    stop();
+
+    const thresholds = events
+      .filter((event) => event.type === "diagnostic.memory.pressure")
+      .map((event) => event.thresholdBytes);
+    expect(thresholds).toContain(4 * gb);
+    expect(thresholds).not.toContain(6 * gb);
+  });
+
+  it("uses a genuine cgroup limit below physical memory", () => {
+    const events: DiagnosticEventPayload[] = [];
+    const stop = onDiagnosticEvent((event) => events.push(event));
+    const gb = 1024 ** 3;
+
+    // The other side of the boundary: a real constraint must be honored, not
+    // discarded in favor of physical memory.
+    emitDiagnosticMemorySample({
+      now: 1000,
+      heapSizeLimitBytes: 8 * gb,
+      constrainedMemoryBytes: 4 * gb,
+      physicalMemoryBytes: 32 * gb,
       memoryUsage: memoryUsage({ rss: 2.1 * gb, heapUsed: 256 * 1024 * 1024 }),
     });
     stop();

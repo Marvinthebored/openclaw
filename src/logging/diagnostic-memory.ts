@@ -78,23 +78,29 @@ function normalizeMemoryUsage(memory: NodeJS.MemoryUsage): DiagnosticMemoryUsage
 /**
  * Memory the process is actually allowed to use.
  *
- * `process.constrainedMemory()` reports the OS-imposed limit (cgroup/container)
- * and is the same source the managed gateway heap sizing prefers; it returns 0
- * when unconstrained, in which case physical memory is the right answer. Using
- * physical memory alone would compute ceilings a constrained process can never
- * reach, so it would be OOM-killed without ever emitting a critical diagnostic.
+ * Mirrors `readAvailableMemory` in `src/daemon/gateway-heap.ts`: prefer the
+ * OS-imposed constraint, but only when it is a real constraint. cgroup reports
+ * an effectively unlimited quota as an oversized finite value, so a limit above
+ * physical memory is rejected rather than trusted - accepting it would select
+ * ceilings the host can never reach and lose the critical signal before OOM.
+ *
+ * Both inputs are injectable so the default path itself is testable.
  */
-function resolveMemoryLimitBytes(): number {
-  const physical = totalmem();
-  const constrained = process.constrainedMemory?.();
-  if (typeof constrained !== "number" || !Number.isFinite(constrained) || constrained <= 0) {
-    return physical;
+function resolveMemoryLimitBytes(inputs?: {
+  constrainedMemoryBytes?: number;
+  physicalMemoryBytes?: number;
+}): number {
+  const constrained = inputs?.constrainedMemoryBytes ?? process.constrainedMemory?.();
+  const physical = inputs?.physicalMemoryBytes ?? totalmem();
+  if (
+    typeof constrained === "number" &&
+    Number.isFinite(constrained) &&
+    constrained > 0 &&
+    constrained <= physical
+  ) {
+    return constrained;
   }
-  // cgroup "unlimited" is reported as an oversized finite sentinel rather than
-  // 0 or Infinity, so a bare finite/positive check would accept it and keep
-  // ceilings the host can never reach. A limit above physical memory is not a
-  // limit; clamp instead of trusting it.
-  return Math.min(constrained, physical);
+  return physical;
 }
 
 function resolveThresholds(
@@ -374,6 +380,8 @@ export function emitDiagnosticMemorySample(options?: {
   memoryUsage?: NodeJS.MemoryUsage;
   heapSizeLimitBytes?: number;
   memoryLimitBytes?: number;
+  constrainedMemoryBytes?: number;
+  physicalMemoryBytes?: number;
   uptimeMs?: number;
   thresholds?: DiagnosticMemoryThresholds;
   emitSample?: boolean;
@@ -388,7 +396,11 @@ export function emitDiagnosticMemorySample(options?: {
   const thresholds = resolveThresholds(
     options?.thresholds,
     options?.heapSizeLimitBytes ?? getHeapStatistics().heap_size_limit,
-    options?.memoryLimitBytes ?? resolveMemoryLimitBytes(),
+    options?.memoryLimitBytes ??
+      resolveMemoryLimitBytes({
+        constrainedMemoryBytes: options?.constrainedMemoryBytes,
+        physicalMemoryBytes: options?.physicalMemoryBytes,
+      }),
   );
   const shouldEmitSample = options?.emitSample !== false;
 
