@@ -25,6 +25,7 @@ import { executeNodeHostCommand } from "./bash-tools.exec-host-node.js";
 import {
   createExecRequestPreparation,
   type ExecToolArgs,
+  resolveExecTimeoutSeconds,
   resolveNotifyOnExitEmptySuccess,
   resolvePreparedExecEnvironment,
 } from "./bash-tools.exec-request-preparation.js";
@@ -438,8 +439,7 @@ export function createExecTool(
             strictInlineEval: defaults?.strictInlineEval,
             commandHighlighting: defaults?.commandHighlighting,
             trigger: defaults?.trigger,
-            timeoutSec:
-              typeof params.timeoutSeconds === "number" ? params.timeoutSeconds : undefined,
+            timeoutSec: resolveExecTimeoutSeconds(params),
             defaultTimeoutSec,
             approvalRunningNoticeMs,
             warnings,
@@ -462,8 +462,7 @@ export function createExecTool(
             pathPrepend: defaultPathPrepend,
             requestedEnv,
             pty: params.pty === true && !sandbox,
-            timeoutSec:
-              typeof params.timeoutSeconds === "number" ? params.timeoutSeconds : undefined,
+            timeoutSec: resolveExecTimeoutSeconds(params),
             defaultTimeoutSec,
             security,
             ask,
@@ -518,8 +517,7 @@ export function createExecTool(
           warnings.push(foregroundFallbackWarning);
         }
 
-        const explicitTimeoutSec =
-          typeof params.timeoutSeconds === "number" ? params.timeoutSeconds : null;
+        const explicitTimeoutSec = resolveExecTimeoutSeconds(params) ?? null;
         effectiveTimeout = explicitTimeoutSec ?? defaultTimeoutSec;
         const usePty = params.pty === true && !sandbox;
 
