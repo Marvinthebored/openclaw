@@ -1,8 +1,11 @@
-// The embedded runner must hand its host-owned turn-candidate callback down to the
-// harness attempt params. runSelectedAgentHarnessAttempt reads it from those params to
-// publish a completed plugin-harness turn for durable advancement; a plugin harness has
-// no in-harness after-turn path, so dropping it silently disables context-engine
-// ingestion for every plugin-harness turn.
+// Dispatch-seam coverage only: this asserts which fields `dispatchEmbeddedRunAttempt`
+// puts on the harness attempt params. The harness-selection module is mocked here, so
+// nothing below exercises a real harness, the terminal-anchor gate, or settlement —
+// `selection.test.ts` owns those contracts.
+//
+// The field matters because `runSelectedAgentHarnessAttempt` reads the callback from
+// these params to publish a completed turn to the outer logical-turn owner. Dropping it
+// leaves a plugin-harness turn with no write path at all.
 import "../../test-helpers/fast-coding-tools.js";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -88,8 +91,8 @@ const runOneTurn = async (params: { onContextEngineTurnCandidate?: () => void })
     prompt: "hello",
     provider: "openai",
     model: "mock-1",
-    // Route selection at the plugin-harness ("codex") arm, which is the only arm with
-    // no in-harness after-turn path of its own.
+    // Routing metadata only: the mocked selection module resolves this to a "codex"
+    // harness id. No plugin harness runs in this file.
     agentHarnessRuntimeOverride: "codex",
     timeoutMs: 5_000,
     runId: `run:f5-turn-candidate-${runCounter}`,

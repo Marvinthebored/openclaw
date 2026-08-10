@@ -613,11 +613,11 @@ describe("runAgentHarnessAttempt", () => {
     },
   );
 
-  it("keeps host turn authority out of the plugin harness attempt params", async () => {
-    // The turn-candidate callback and the logical-turn lease are host-owned authority.
-    // They must reach runSelectedAgentHarnessAttempt so a completed plugin-harness turn
-    // can be published, and withoutInternalHarnessAuthority() must strip both before the
-    // harness itself runs.
+  it("strips both host authority fields before a plugin harness runs", async () => {
+    // Both fields are host-owned authority. When a caller supplies both,
+    // withoutInternalHarnessAuthority() must remove both from what the harness sees,
+    // while core keeps its retained copies and still publishes the completed turn.
+    // Callback-only settlement is covered separately below.
     const admission = {
       ...createTranscriptAnchor("user-1", 1, 0),
       logicalTurnId: "authority-turn",
@@ -656,7 +656,7 @@ describe("runAgentHarnessAttempt", () => {
       deferDisposalUntil: vi.fn(),
       dispose: vi.fn(async () => {}),
     } satisfies ContextEngineLogicalTurnLease;
-    let harnessParamKeys: string[] = [];
+    let harnessParams: object | undefined;
     registerAgentHarness(
       {
         id: "codex",
@@ -664,7 +664,7 @@ describe("runAgentHarnessAttempt", () => {
         contextEngineHostCapabilities: OPENCLAW_EMBEDDED_CONTEXT_ENGINE_HOST.capabilities,
         supports: () => ({ supported: true, priority: 100 }),
         runAttempt: async (attemptParams) => {
-          harnessParamKeys = Object.keys(attemptParams);
+          harnessParams = attemptParams;
           return {
             ...createAttemptResult("session-1"),
             contextEngineTerminalAnchor: terminal,
@@ -688,11 +688,96 @@ describe("runAgentHarnessAttempt", () => {
 
     await runAgentHarnessAttempt(params);
 
-    expect(harnessParamKeys).not.toContain("onContextEngineTurnCandidate");
-    expect(harnessParamKeys).not.toContain("contextEngineLogicalTurnLease");
+    // Assert on the object itself, not its own enumerable keys, so an inherited or
+    // non-enumerable reappearance of either field also fails.
+    expect(harnessParams).not.toHaveProperty("onContextEngineTurnCandidate");
+    expect(harnessParams).not.toHaveProperty("contextEngineLogicalTurnLease");
+    expect(onContextEngineTurnCandidate).toHaveBeenCalledTimes(1);
     expect(onContextEngineTurnCandidate).toHaveBeenCalledWith(
       expect.objectContaining({ boundary: { admission, terminal }, harnessId: "codex" }),
     );
+  });
+
+  it("publishes plugin harness turn facts when the caller supplies no logical-turn lease", async () => {
+    // This is the shape production actually uses: the run loop owns the lease and has
+    // already begun it, so the attempt params carry the callback alone. The post-attempt
+    // gate must not depend on a lease being present.
+    const admission = {
+      ...createTranscriptAnchor("user-1", 1, 0),
+      logicalTurnId: "callback-only-turn",
+      role: "user" as const,
+    };
+    const terminal = createTranscriptAnchor("assistant-1", 2, 1);
+    const onContextEngineTurnCandidate = vi.fn();
+    let harnessParams: object | undefined;
+    registerAgentHarness(
+      {
+        id: "codex",
+        label: "Codex",
+        supports: () => ({ supported: true, priority: 100 }),
+        runAttempt: async (attemptParams) => {
+          harnessParams = attemptParams;
+          return {
+            ...createAttemptResult("session-1"),
+            contextEngineTerminalAnchor: terminal,
+          };
+        },
+      },
+      { ownerPluginId: "codex" },
+    );
+    const params = createAttemptParams(providerRuntimeConfig("codex", "codex"));
+    params.agentHarnessRuntimeOverride = "codex";
+    params.sessionKey = admission.sessionKey;
+    params.sessionTarget = {
+      agentId: admission.agentId,
+      sessionId: admission.sessionId,
+      sessionKey: admission.sessionKey,
+      storePath: admission.storePath,
+    };
+    params.userTurnTranscriptRecorder = createTranscriptRecorder(admission);
+    params.onContextEngineTurnCandidate = onContextEngineTurnCandidate;
+
+    const result = await runAgentHarnessAttempt(params);
+
+    expect(params.contextEngineLogicalTurnLease).toBeUndefined();
+    expect(onContextEngineTurnCandidate).toHaveBeenCalledTimes(1);
+    expect(onContextEngineTurnCandidate).toHaveBeenCalledWith(
+      expect.objectContaining({ boundary: { admission, terminal }, harnessId: "codex" }),
+    );
+    expect(harnessParams).not.toHaveProperty("onContextEngineTurnCandidate");
+    // The anchor is host-private: core consumes it and keeps it off the public result.
+    expect(result).not.toHaveProperty("contextEngineTerminalAnchor");
+  });
+
+  it("publishes no turn facts for the built-in harness even when a callback is supplied", async () => {
+    // The built-in harness finalizes its own turn through the legacy after-turn path
+    // because the sanitizer strips the callback from what it receives. It reports no
+    // terminal anchor, so this gate must not publish a second time for the same turn.
+    // Ingesting once, in-harness, is the current built-in behavior; this pins that the
+    // restored plumbing does not add a second durable path on top of it.
+    const admission = {
+      ...createTranscriptAnchor("user-1", 1, 0),
+      logicalTurnId: "builtin-turn",
+      role: "user" as const,
+    };
+    const onContextEngineTurnCandidate = vi.fn();
+    const params = createAttemptParams();
+    params.sessionKey = admission.sessionKey;
+    params.sessionTarget = {
+      agentId: admission.agentId,
+      sessionId: admission.sessionId,
+      sessionKey: admission.sessionKey,
+      storePath: admission.storePath,
+    };
+    params.userTurnTranscriptRecorder = createTranscriptRecorder(admission);
+    params.onContextEngineTurnCandidate = onContextEngineTurnCandidate;
+
+    const result = await runAgentHarnessAttempt(params);
+
+    expect(result.sessionIdUsed).toBe("openclaw");
+    expect(agentRunAttempt).toHaveBeenCalledTimes(1);
+    expect(agentRunAttempt.mock.calls[0]?.[0]).not.toHaveProperty("onContextEngineTurnCandidate");
+    expect(onContextEngineTurnCandidate).not.toHaveBeenCalled();
   });
 
   it("drains pending context-engine turns before pinning a plugin harness", async () => {

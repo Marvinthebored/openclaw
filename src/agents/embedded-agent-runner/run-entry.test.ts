@@ -443,6 +443,10 @@ describe("runEmbeddedAgentEntry", () => {
     expect(primaryReleased).toBe(true);
     expect(fallbackReleased).toBe(true);
     expect(state.finalizedAttempts).toEqual(["fallback"]);
+    // Both attempts published candidate facts before the winner was known. Publishing is
+    // inert: the rejected primary's facts are neither finalized nor discarded, they are
+    // simply superseded, so an early callback can never commit a losing attempt.
+    expect(state.discardedAttempts).toEqual([]);
   });
 
   it("accepts an empty result after a committed side effect and finalizes it once", async () => {
