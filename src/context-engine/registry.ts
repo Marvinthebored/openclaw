@@ -361,6 +361,33 @@ export function registerContextEngineInRegistry(
   return { ok: true };
 }
 
+/** Preserve runtime factories when a prepared registry reloads the same plugin for discovery. */
+export function promoteMatchingRuntimeContextEngineRegistrations(
+  targetRegistry: PluginRegistry,
+  runtimeRegistry: PluginRegistry,
+): void {
+  for (const [id, target] of targetRegistry.contextEngines) {
+    if (target.lifecycle !== "readOnlyDiscovery") {
+      continue;
+    }
+    const runtime = runtimeRegistry.contextEngines.get(id);
+    if (!runtime || runtime.lifecycle !== "runtime" || runtime.owner !== target.owner) {
+      continue;
+    }
+    const pluginId = target.owner.startsWith("plugin:")
+      ? target.owner.slice("plugin:".length).trim()
+      : "";
+    const targetPlugin = targetRegistry.plugins.find((plugin) => plugin.id === pluginId);
+    const runtimePlugin = runtimeRegistry.plugins.find((plugin) => plugin.id === pluginId);
+    // Same ids can come from workspace shadows. Only carry a factory across registry generations
+    // when both registrations came from the exact same trusted plugin source.
+    if (!targetPlugin || !runtimePlugin || targetPlugin.source !== runtimePlugin.source) {
+      continue;
+    }
+    targetRegistry.contextEngines.set(id, runtime);
+  }
+}
+
 /** Clear runtime quarantine only after a complete builder-local registry becomes active. */
 export function activateContextEngineRegistrations(pluginRegistry: PluginRegistry): void {
   for (const [id, registration] of pluginRegistry.contextEngines) {
