@@ -268,6 +268,14 @@ export async function dispatchEmbeddedRunAttempt(input: {
     finalizePromptForResolvedTools:
       pluginHarnessPrompt === undefined ? params.finalizePromptForResolvedTools : undefined,
     userTurnTranscriptRecorder: params.userTurnTranscriptRecorder,
+    // Host-owned turn authority. runSelectedAgentHarnessAttempt reads this from the
+    // attempt params to publish the completed turn to the logical-turn owner, then
+    // withoutInternalHarnessAuthority() strips it before any harness runs. Without it
+    // a plugin harness turn is never handed back for durable advancement, and plugin
+    // harnesses have no in-harness after-turn path of their own.
+    ...(params.onContextEngineTurnCandidate
+      ? { onContextEngineTurnCandidate: params.onContextEngineTurnCandidate }
+      : {}),
     skipPreparedUserTurnMessage: runtime.skipPreparedUserTurnMessage,
     currentInboundEventKind: params.currentInboundEventKind,
     currentInboundContext: params.currentInboundContext,

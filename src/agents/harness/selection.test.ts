@@ -613,6 +613,88 @@ describe("runAgentHarnessAttempt", () => {
     },
   );
 
+  it("keeps host turn authority out of the plugin harness attempt params", async () => {
+    // The turn-candidate callback and the logical-turn lease are host-owned authority.
+    // They must reach runSelectedAgentHarnessAttempt so a completed plugin-harness turn
+    // can be published, and withoutInternalHarnessAuthority() must strip both before the
+    // harness itself runs.
+    const admission = {
+      ...createTranscriptAnchor("user-1", 1, 0),
+      logicalTurnId: "authority-turn",
+      role: "user" as const,
+    };
+    const terminal = createTranscriptAnchor("assistant-1", 2, 1);
+    const onContextEngineTurnCandidate = vi.fn();
+    const configuredEngine = createContextEngineRequiringAssembly();
+    const asEffective = (): ReturnType<ContextEngineLogicalTurnLease["begin"]> => ({
+      engine: configuredEngine,
+      registeredId: configuredEngine.info.id,
+      mode: "configured",
+    });
+    const lease = {
+      get engine() {
+        return configuredEngine;
+      },
+      get effectiveEngine() {
+        return configuredEngine;
+      },
+      get effectiveEngineId() {
+        return configuredEngine.info.id;
+      },
+      get effectiveEnginePluginId() {
+        return undefined;
+      },
+      get degraded() {
+        return false;
+      },
+      get degradedReason() {
+        return undefined;
+      },
+      selectForHost: vi.fn(() => asEffective()),
+      degradeBeforeStart: vi.fn(() => asEffective()),
+      begin: vi.fn(() => asEffective()),
+      deferDisposalUntil: vi.fn(),
+      dispose: vi.fn(async () => {}),
+    } satisfies ContextEngineLogicalTurnLease;
+    let harnessParamKeys: string[] = [];
+    registerAgentHarness(
+      {
+        id: "codex",
+        label: "Codex",
+        contextEngineHostCapabilities: OPENCLAW_EMBEDDED_CONTEXT_ENGINE_HOST.capabilities,
+        supports: () => ({ supported: true, priority: 100 }),
+        runAttempt: async (attemptParams) => {
+          harnessParamKeys = Object.keys(attemptParams);
+          return {
+            ...createAttemptResult("session-1"),
+            contextEngineTerminalAnchor: terminal,
+          };
+        },
+      },
+      { ownerPluginId: "codex" },
+    );
+    const params = createAttemptParams(providerRuntimeConfig("codex", "codex"));
+    params.agentHarnessRuntimeOverride = "codex";
+    params.sessionKey = admission.sessionKey;
+    params.sessionTarget = {
+      agentId: admission.agentId,
+      sessionId: admission.sessionId,
+      sessionKey: admission.sessionKey,
+      storePath: admission.storePath,
+    };
+    params.userTurnTranscriptRecorder = createTranscriptRecorder(admission);
+    params.contextEngineLogicalTurnLease = lease;
+    params.onContextEngineTurnCandidate = onContextEngineTurnCandidate;
+
+    await runAgentHarnessAttempt(params);
+
+    expect(harnessParamKeys).not.toContain("onContextEngineTurnCandidate");
+    expect(harnessParamKeys).not.toContain("contextEngineLogicalTurnLease");
+    expect(onContextEngineTurnCandidate).toHaveBeenCalledWith(
+      expect.objectContaining({ boundary: { admission, terminal }, harnessId: "codex" }),
+    );
+  });
+
   it("drains pending context-engine turns before pinning a plugin harness", async () => {
     const order: string[] = [];
     const configuredEngine = createContextEngineRequiringAssembly();
