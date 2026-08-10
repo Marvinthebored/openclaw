@@ -239,7 +239,7 @@ describe("context-engine turn outbox", () => {
       isHeartbeat: false,
       lease,
       recorder,
-      sessionTarget: { ...target, storePath: admission.storePath },
+      sessionTarget: target,
     });
 
     expect(commitTurn).toHaveBeenCalledOnce();

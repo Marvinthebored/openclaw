@@ -1,5 +1,6 @@
 import {
   readClosedTranscriptTurn,
+  resolveSessionTranscriptDatabasePath,
   type TranscriptTurnBoundary,
 } from "../../config/sessions/session-accessor.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
@@ -71,15 +72,23 @@ export async function drainPendingContextEngineTurnsBeforeRun(params: {
   const warn = params.warn ?? console.warn;
   try {
     const target = params.admission ?? params.sessionTarget;
-    if (!target?.agentId || !target.sessionId || !target.storePath) {
+    if (!target?.agentId || !target.sessionId || !target.sessionKey || !target.storePath) {
       params.lease.degradeBeforeStart(
         "durable transcript target is unavailable before context assembly",
       );
       return;
     }
+    const databasePath = params.admission
+      ? params.admission.storePath
+      : resolveSessionTranscriptDatabasePath({
+          agentId: target.agentId,
+          sessionId: target.sessionId,
+          sessionKey: target.sessionKey,
+          storePath: target.storePath,
+        });
     const database = openOpenClawAgentDatabase({
       agentId: target.agentId,
-      path: target.storePath,
+      path: databasePath,
     });
     recoverContextEngineTurnOutbox({
       database,
@@ -106,7 +115,8 @@ export async function drainPendingContextEngineTurnsBeforeRun(params: {
       if (
         admission.agentId !== target.agentId ||
         admission.sessionId !== target.sessionId ||
-        admission.storePath !== target.storePath
+        admission.sessionKey !== target.sessionKey ||
+        admission.storePath !== databasePath
       ) {
         throw new Error("context-engine transcript target changed before provider dispatch");
       }
