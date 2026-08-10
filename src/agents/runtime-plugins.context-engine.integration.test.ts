@@ -1,4 +1,4 @@
-// Verifies prepared agent turns retain runtime context-engine registrations from Gateway startup.
+// Verifies prepared agent turns retain their selected runtime context-engine owner.
 import { afterAll, afterEach, expect, it } from "vitest";
 import { loadAndActivateRootPluginRegistry } from "../plugins/loader.js";
 import {
@@ -20,10 +20,9 @@ afterAll(() => {
   cleanupPluginLoaderFixturesForTest();
 });
 
-it("keeps the configured context engine active in a prepared turn", async () => {
+it("keeps the configured context engine active in a prepared agent registry", async () => {
   useNoBundledPlugins();
   const engineId = "prepared-context-engine";
-  const extraPluginId = "prepared-extra-plugin";
   const plugin = writePlugin({
     id: engineId,
     body: `module.exports = {
@@ -32,24 +31,17 @@ it("keeps the configured context engine active in a prepared turn", async () => 
         api.registerContextEngine(${JSON.stringify(engineId)}, () => ({
           info: { id: ${JSON.stringify(engineId)}, name: "Prepared Context Engine" },
           async ingest() { return { ingested: false }; },
-          async assemble({ messages }) { return { messages, estimatedTokens: 0 }; },
+          async assemble({ messages }) {
+            return { messages, estimatedTokens: 0, systemPromptAddition: "prepared-engine" };
+          },
           async compact() { return { ok: true, compacted: false }; },
         }));
       },
     };\n`,
   });
-  const extraPlugin = writePlugin({
-    id: extraPluginId,
-    body: `module.exports = { id: ${JSON.stringify(extraPluginId)}, register() {} };\n`,
-  });
   const config = {
     plugins: {
-      allow: [engineId, extraPluginId],
-      load: { paths: [plugin.file, extraPlugin.file] },
-      entries: {
-        [engineId]: { enabled: true },
-        [extraPluginId]: { enabled: true },
-      },
+      load: { paths: [plugin.file] },
       slots: { contextEngine: engineId },
     },
   };
@@ -61,17 +53,20 @@ it("keeps the configured context engine active in a prepared turn", async () => 
     onlyPluginIds: [engineId],
   });
   const preparedRegistry = loadAgentRuntimePluginRegistryHandle({
-    basePluginIds: [engineId, extraPluginId],
+    basePluginIds: [],
     config,
-    workspaceDir: makeTempDir(),
+    workspaceDir: plugin.dir,
   });
 
   expect(preparedRegistry).not.toBe(activeRegistry);
-  expect(preparedRegistry.plugins.some((entry) => entry.id === extraPluginId)).toBe(true);
   await withPluginRuntimeRegistryScope(preparedRegistry, async () => {
     const lease = await createContextEngineLogicalTurnLease({ config, workspaceDir: plugin.dir });
     expect(lease.degraded).toBe(false);
     expect(lease.effectiveEngineId).toBe(engineId);
+    expect(lease.effectiveEnginePluginId).toBe(engineId);
+    await expect(
+      lease.begin().engine.assemble({ messages: [], sessionId: "prepared-session" }),
+    ).resolves.toMatchObject({ systemPromptAddition: "prepared-engine" });
     await lease.dispose();
   });
 });

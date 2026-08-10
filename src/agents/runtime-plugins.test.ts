@@ -44,6 +44,19 @@ describe("agent runtime plugin registries", () => {
     }));
   });
 
+  it("promotes matching active context engines into the prepared registry", () => {
+    const activeRegistry = { active: true };
+    hoisted.getActivePluginRegistry.mockReturnValue(activeRegistry);
+
+    expect(
+      loadAgentRuntimePluginRegistryHandle({ config: {} as never, workspaceDir: "/tmp/workspace" }),
+    ).toEqual({ handle: true });
+    expect(hoisted.promoteMatchingRuntimeContextEngineRegistrations).toHaveBeenCalledWith(
+      { handle: true },
+      activeRegistry,
+    );
+  });
+
   it("returns a non-activating handle for a prepared runtime", () => {
     const config = {} as never;
     const env = { OPENCLAW_STATE_DIR: "/tmp/openclaw-state" };
@@ -76,19 +89,6 @@ describe("agent runtime plugin registries", () => {
       workspaceDir: "/tmp/workspace",
       runtimeOptions: { allowGatewaySubagentBinding: true },
     });
-  });
-
-  it("promotes matching active context engines into the prepared registry", () => {
-    const activeRegistry = { active: true };
-    hoisted.getActivePluginRegistry.mockReturnValue(activeRegistry);
-
-    expect(
-      loadAgentRuntimePluginRegistryHandle({ config: {} as never, workspaceDir: "/tmp/workspace" }),
-    ).toEqual({ handle: true });
-    expect(hoisted.promoteMatchingRuntimeContextEngineRegistrations).toHaveBeenCalledWith(
-      { handle: true },
-      activeRegistry,
-    );
   });
 
   it("loads an explicit empty handle when plugins are globally disabled", () => {
