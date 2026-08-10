@@ -1141,6 +1141,50 @@ describe("Default engine selection", () => {
     expect(warn).not.toHaveBeenCalled();
     await lease.dispose();
   });
+
+  it("still degrades an unpersisted turn when current-turn fencing is not declared", async () => {
+    const engineId = uniqueEngineId("logical-turn-partial-contract");
+    registerTestContextEngine(engineId, () => ({
+      info: {
+        id: engineId,
+        name: "Partial Contract",
+        // Declares durable advancement but omits currentTurnFence. Before the receipt is
+        // available this must not be allowed to slip through unvalidated.
+        transcriptSemantics: {
+          turnAdvancementIdempotency: "atomic-idempotent-v1",
+        },
+      },
+      async ingest() {
+        return { ingested: true };
+      },
+      async assemble({ messages }) {
+        return { messages, estimatedTokens: 0 };
+      },
+      async compact() {
+        return { ok: true, compacted: false };
+      },
+      async commitTurn() {
+        return { status: "committed" };
+      },
+    }));
+    const warn = vi.fn();
+    const lease = await createContextEngineLogicalTurnLease({
+      config: configWithSlot(engineId),
+      warn,
+    });
+
+    const selected = selectContextEngineForTranscriptHost({
+      lease,
+      host: { id: "agent-harness:test", label: "test harness", capabilities: [] },
+      operation: "agent-run",
+      recorder: { getAdmissionReceipt: () => undefined, hasPersisted: () => false },
+    });
+    lease.begin();
+
+    expect(selected.engine.info.id).toBe("legacy");
+    expect(lease.degradedReason).toBe("current-turn transcript fencing is not declared");
+    await lease.dispose();
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════

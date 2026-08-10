@@ -141,7 +141,11 @@ export async function createContextEngineLogicalTurnLease(params: {
       return undefined;
     }
     if (
-      selection.hasAdmissionFence &&
+      // A recorder-backed turn will be admitted during the run, so the declaration is required
+      // whether or not the receipt exists yet at selection time. Gating this on the receipt alone
+      // would let an engine that declares durable advancement but omits current-turn fencing run
+      // on fresh turns, which the documented contract sends to legacy.
+      (selection.hasAdmissionFence || selection.requiresDurableCommit) &&
       effective.engine.info.transcriptSemantics?.currentTurnFence !== "before-current-turn-entry-v1"
     ) {
       return "current-turn transcript fencing is not declared";
