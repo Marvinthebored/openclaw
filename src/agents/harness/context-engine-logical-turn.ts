@@ -31,7 +31,6 @@ export type ContextEngineLogicalTurnLease = {
     host: ContextEngineHostSupport;
     operation: ContextEngineOperation;
     requiresDurableCommit: boolean;
-    hasAdmissionFence: boolean;
   }) => EffectiveContextEngineRef;
   degradeBeforeStart: (reason: string) => EffectiveContextEngineRef;
   begin: () => EffectiveContextEngineRef;
@@ -59,7 +58,6 @@ export function selectContextEngineForTranscriptHost(params: {
     host: params.host,
     operation: params.operation,
     requiresDurableCommit: params.recorder !== undefined,
-    hasAdmissionFence: admission !== undefined,
   });
 }
 
@@ -125,7 +123,6 @@ export async function createContextEngineLogicalTurnLease(params: {
     host: ContextEngineHostSupport;
     operation: ContextEngineOperation;
     requiresDurableCommit: boolean;
-    hasAdmissionFence: boolean;
   }): string | undefined => {
     const support = evaluateContextEngineHostSupport({
       contextEngineInfo: effective.engine.info,
@@ -145,7 +142,7 @@ export async function createContextEngineLogicalTurnLease(params: {
       // whether or not the receipt exists yet at selection time. Gating this on the receipt alone
       // would let an engine that declares durable advancement but omits current-turn fencing run
       // on fresh turns, which the documented contract sends to legacy.
-      (selection.hasAdmissionFence || selection.requiresDurableCommit) &&
+      selection.requiresDurableCommit &&
       effective.engine.info.transcriptSemantics?.currentTurnFence !== "before-current-turn-entry-v1"
     ) {
       return "current-turn transcript fencing is not declared";

@@ -528,6 +528,8 @@ async function runSelectedAgentHarnessAttempt(
       admission: internalParams.userTurnTranscriptRecorder?.getAdmissionReceipt(),
       isHeartbeat: isHeartbeatLifecycleRunKind(internalParams.bootstrapContextRunKind),
       lease: internalParams.contextEngineLogicalTurnLease,
+      recorder: internalParams.userTurnTranscriptRecorder,
+      sessionTarget: internalParams.sessionTarget,
     });
     const effective = internalParams.contextEngineLogicalTurnLease.begin();
     internalParams = {

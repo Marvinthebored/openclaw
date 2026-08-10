@@ -9,6 +9,7 @@ import type {
   ContextEngineRuntimeSettings,
   ContextEngineSessionTarget,
 } from "../../context-engine/types.js";
+import type { UserTurnTranscriptRecorder } from "../../sessions/user-turn-transcript.types.js";
 import { openOpenClawAgentDatabase } from "../../state/openclaw-agent-db.js";
 import type { ContextEngineLogicalTurnLease } from "./context-engine-logical-turn.js";
 import {
@@ -54,10 +55,12 @@ export async function drainPendingContextEngineTurnsBeforeRun(params: {
   admission: TranscriptTurnBoundary["admission"] | undefined;
   isHeartbeat?: boolean;
   lease: ContextEngineLogicalTurnLease;
+  recorder?: UserTurnTranscriptRecorder;
+  sessionTarget?: ContextEngineSessionTarget;
   warn?: (message: string) => void;
 }): Promise<void> {
   if (
-    !params.admission ||
+    (!params.admission && !params.recorder) ||
     params.lease.degraded ||
     params.lease.engine.info.transcriptSemantics?.turnAdvancementIdempotency !==
       "atomic-idempotent-v1" ||
@@ -67,15 +70,22 @@ export async function drainPendingContextEngineTurnsBeforeRun(params: {
   }
   const warn = params.warn ?? console.warn;
   try {
+    const target = params.admission ?? params.sessionTarget;
+    if (!target?.agentId || !target.sessionId || !target.storePath) {
+      params.lease.degradeBeforeStart(
+        "durable transcript target is unavailable before context assembly",
+      );
+      return;
+    }
     const database = openOpenClawAgentDatabase({
-      agentId: params.admission.agentId,
-      path: params.admission.storePath,
+      agentId: target.agentId,
+      path: target.storePath,
     });
     recoverContextEngineTurnOutbox({
-      currentAdmission: params.admission,
       database,
       engineId: params.lease.effectiveEngineId,
       ownerPluginId: params.lease.effectiveEnginePluginId,
+      sessionId: target.sessionId,
       warn,
     });
     const result = await drainContextEngineTurnOutbox({
@@ -83,7 +93,7 @@ export async function drainPendingContextEngineTurnsBeforeRun(params: {
       engine: params.lease.engine,
       engineId: params.lease.effectiveEngineId,
       ownerPluginId: params.lease.effectiveEnginePluginId,
-      sessionId: params.admission.sessionId,
+      sessionId: target.sessionId,
       warn,
     });
     if (result.pending) {
@@ -92,15 +102,33 @@ export async function drainPendingContextEngineTurnsBeforeRun(params: {
       );
       return;
     }
-    // Persist the admission before provider dispatch. A later run can recover an accepted
-    // transcript if this process dies before finalization updates the row.
-    enqueueContextEngineTurnIntent({
-      admission: params.admission,
-      database,
-      engineId: params.lease.effectiveEngineId,
-      isHeartbeat: params.isHeartbeat === true,
-      ownerPluginId: params.lease.effectiveEnginePluginId,
-    });
+    const enqueueAdmission = (admission: TranscriptTurnBoundary["admission"]) => {
+      if (
+        admission.agentId !== target.agentId ||
+        admission.sessionId !== target.sessionId ||
+        admission.storePath !== target.storePath
+      ) {
+        throw new Error("context-engine transcript target changed before provider dispatch");
+      }
+      enqueueContextEngineTurnIntent({
+        admission,
+        database,
+        engineId: params.lease.effectiveEngineId,
+        isHeartbeat: params.isHeartbeat === true,
+        ownerPluginId: params.lease.effectiveEnginePluginId,
+      });
+    };
+    if (params.admission) {
+      enqueueAdmission(params.admission);
+      return;
+    }
+    if (!params.recorder?.setAdmissionHandler) {
+      params.lease.degradeBeforeStart(
+        "current-turn transcript admission cannot be recorded for durable advancement",
+      );
+      return;
+    }
+    params.recorder.setAdmissionHandler(enqueueAdmission);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     warn(`[context-engine] failed to retry pending turn advancement: ${message}`);
