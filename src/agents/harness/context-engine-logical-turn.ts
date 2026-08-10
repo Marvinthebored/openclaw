@@ -43,10 +43,14 @@ export function selectContextEngineForTranscriptHost(params: {
   lease: ContextEngineLogicalTurnLease;
   host: ContextEngineHostSupport;
   operation: ContextEngineOperation;
-  recorder: Pick<UserTurnTranscriptRecorder, "getAdmissionReceipt"> | undefined;
+  recorder: Pick<UserTurnTranscriptRecorder, "getAdmissionReceipt" | "hasPersisted"> | undefined;
 }): EffectiveContextEngineRef {
   const admission = params.recorder?.getAdmissionReceipt();
-  if (params.recorder && !admission) {
+  // Selection runs during turn preparation, before the user turn is written, so an admitted
+  // receipt does not exist yet on the paths that persist during the run. A receipt is only
+  // owed once the turn has actually been persisted: until then there is no admitted entry for
+  // the fence to anchor to, so there is nothing to degrade over.
+  if (params.recorder && !admission && params.recorder.hasPersisted()) {
     return params.lease.degradeBeforeStart(
       "current-turn transcript admission receipt is unavailable",
     );

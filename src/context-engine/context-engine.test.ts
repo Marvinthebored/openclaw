@@ -749,7 +749,7 @@ describe("Default engine selection", () => {
       lease,
       host: { id: "agent-harness:test", label: "test harness", capabilities: [] },
       operation: "agent-run",
-      recorder: { getAdmissionReceipt: () => admission },
+      recorder: { getAdmissionReceipt: () => admission, hasPersisted: () => true },
     });
 
     expect(selected).toMatchObject({ registeredId: "legacy", mode: "configured" });
@@ -788,7 +788,7 @@ describe("Default engine selection", () => {
       lease,
       host: { id: "agent-harness:test", label: "test harness", capabilities: [] },
       operation: "agent-run" as const,
-      recorder: { getAdmissionReceipt: () => undefined },
+      recorder: { getAdmissionReceipt: () => undefined, hasPersisted: () => true },
     };
 
     const first = selectContextEngineForTranscriptHost(selection);
@@ -811,7 +811,7 @@ describe("Default engine selection", () => {
         lease,
         host: { id: "agent-harness:test", label: "test harness", capabilities: [] },
         operation: "agent-run",
-        recorder: { getAdmissionReceipt: () => undefined },
+        recorder: { getAdmissionReceipt: () => undefined, hasPersisted: () => true },
       }),
     ).toThrow("context-engine logical turn selection is already pinned");
   });
@@ -931,7 +931,7 @@ describe("Default engine selection", () => {
       lease,
       host: { id: "agent-harness:test", label: "test harness", capabilities: [] },
       operation: "agent-run",
-      recorder: { getAdmissionReceipt: testAdmissionReceipt },
+      recorder: { getAdmissionReceipt: testAdmissionReceipt, hasPersisted: () => true },
     });
 
     expect(selected).toMatchObject({ registeredId: "legacy", mode: "legacy-degraded" });
@@ -1083,7 +1083,7 @@ describe("Default engine selection", () => {
       lease,
       host: { id: "agent-harness:test", label: "test harness", capabilities: [] },
       operation: "agent-run",
-      recorder: { getAdmissionReceipt: () => undefined },
+      recorder: { getAdmissionReceipt: () => undefined, hasPersisted: () => true },
     });
     lease.begin();
 
@@ -1092,6 +1092,53 @@ describe("Default engine selection", () => {
     expect(warn).toHaveBeenCalledWith(
       `[context-engine] Context engine "${engineId}" degraded to "legacy" for this logical turn: current-turn transcript admission receipt is unavailable. The "legacy" engine will handle only this turn; configuration is unchanged, and "${engineId}" will be retried next turn.`,
     );
+    await lease.dispose();
+  });
+
+  it("keeps the configured engine when the current turn has not been persisted yet", async () => {
+    const engineId = uniqueEngineId("logical-turn-unpersisted");
+    registerTestContextEngine(engineId, () => ({
+      info: {
+        id: engineId,
+        name: "Unpersisted Turn",
+        transcriptSemantics: {
+          currentTurnFence: "before-current-turn-entry-v1",
+          turnAdvancementIdempotency: "atomic-idempotent-v1",
+        },
+      },
+      async ingest() {
+        return { ingested: true };
+      },
+      async assemble({ messages }) {
+        return { messages, estimatedTokens: 0 };
+      },
+      async compact() {
+        return { ok: true, compacted: false };
+      },
+      async commitTurn() {
+        return { status: "committed" };
+      },
+    }));
+    const warn = vi.fn();
+    const lease = await createContextEngineLogicalTurnLease({
+      config: configWithSlot(engineId),
+      warn,
+    });
+
+    // Agent harnesses select during turn preparation and persist the user turn later in the
+    // run, so the recorder legitimately has neither a receipt nor a persisted message here.
+    const selected = selectContextEngineForTranscriptHost({
+      lease,
+      host: { id: "agent-harness:test", label: "test harness", capabilities: [] },
+      operation: "agent-run",
+      recorder: { getAdmissionReceipt: () => undefined, hasPersisted: () => false },
+    });
+    lease.begin();
+
+    expect(selected.engine.info.id).toBe(engineId);
+    expect(lease.degraded).toBe(false);
+    expect(lease.degradedReason).toBeUndefined();
+    expect(warn).not.toHaveBeenCalled();
     await lease.dispose();
   });
 });
