@@ -25,7 +25,6 @@ import { executeNodeHostCommand } from "./bash-tools.exec-host-node.js";
 import {
   createExecRequestPreparation,
   type ExecToolArgs,
-  resolveExecTimeoutSeconds,
   resolveNotifyOnExitEmptySuccess,
   resolvePreparedExecEnvironment,
 } from "./bash-tools.exec-request-preparation.js";
@@ -169,6 +168,9 @@ export function createExecTool(
     finalizeBeforeToolCallParams: requestPreparation.finalizeBeforeToolCallParams,
     execute: async (toolCallId, args, signal, onUpdate) => {
       signal?.throwIfAborted();
+      if (Object.hasOwn(args, "timeout")) {
+        throw new Error('exec parameter "timeout" is unsupported; use "timeoutSeconds" instead');
+      }
       // Review cancellation belongs to this execution, never another call on the shared tool.
       const autoReviewer =
         defaults?.autoReviewer ??
@@ -439,7 +441,7 @@ export function createExecTool(
             strictInlineEval: defaults?.strictInlineEval,
             commandHighlighting: defaults?.commandHighlighting,
             trigger: defaults?.trigger,
-            timeoutSec: resolveExecTimeoutSeconds(params),
+            timeoutSec: params.timeoutSeconds,
             defaultTimeoutSec,
             approvalRunningNoticeMs,
             warnings,
@@ -462,7 +464,7 @@ export function createExecTool(
             pathPrepend: defaultPathPrepend,
             requestedEnv,
             pty: params.pty === true && !sandbox,
-            timeoutSec: resolveExecTimeoutSeconds(params),
+            timeoutSec: params.timeoutSeconds,
             defaultTimeoutSec,
             security,
             ask,
@@ -517,7 +519,7 @@ export function createExecTool(
           warnings.push(foregroundFallbackWarning);
         }
 
-        const explicitTimeoutSec = resolveExecTimeoutSeconds(params) ?? null;
+        const explicitTimeoutSec = params.timeoutSeconds ?? null;
         effectiveTimeout = explicitTimeoutSec ?? defaultTimeoutSec;
         const usePty = params.pty === true && !sandbox;
 
