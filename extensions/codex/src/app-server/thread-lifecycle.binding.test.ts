@@ -409,6 +409,66 @@ describe("Codex app-server thread lifecycle bindings", () => {
     });
   });
 
+  it("cold-resumes a warm thread when final config adds an image-generation deny", async () => {
+    const sessionFile = path.join(tempDir, "warm-image-deny-session.jsonl");
+    const workspaceDir = path.join(tempDir, "warm-image-deny-workspace");
+    const params = createParams(sessionFile, workspaceDir);
+    const request = vi.fn(async (method: string) => {
+      if (method === "configRequirements/read") {
+        return { requirements: null };
+      }
+      if (method === "thread/start" || method === "thread/resume") {
+        return threadStartResult("thread-warm-image-deny");
+      }
+      if (method === "thread/unsubscribe") {
+        return {};
+      }
+      throw new Error(`unexpected method: ${method}`);
+    });
+    const client = {
+      getInstanceId: () => "client-warm-image-deny",
+      request,
+      addNotificationHandler: () => () => undefined,
+      addRequestHandler: () => () => undefined,
+      addCloseHandler: () => () => undefined,
+    } as never;
+    ensureCodexAppServerClientRuntime(client, { agentDir: workspaceDir });
+    const common = {
+      client,
+      params,
+      cwd: workspaceDir,
+      dynamicTools: [],
+      appServer: createThreadLifecycleAppServerOptions(),
+      userMcpServersEnabled: false,
+    };
+
+    const started = await startOrResumeThread(common);
+    await expect(
+      retainCodexAppServerLiveThread(
+        client,
+        started.threadId,
+        undefined,
+        started.liveThreadConfigFingerprint,
+      ),
+    ).resolves.toBe(true);
+    params.pluginHarnessToolPolicySafeDeniedTools = ["image_generate"];
+    const resumed = await startOrResumeThread(common);
+
+    expect(resumed).toMatchObject({
+      threadId: "thread-warm-image-deny",
+      lifecycle: { action: "resumed" },
+    });
+    expect(request.mock.calls.map(([method]) => method)).toEqual([
+      "thread/start",
+      "configRequirements/read",
+      "thread/unsubscribe",
+      "thread/resume",
+    ]);
+    expect(request.mock.calls.find(([method]) => method === "thread/resume")?.[1]).toMatchObject({
+      config: { "features.image_generation": false },
+    });
+  });
+
   it("keeps a warm native session across sticky environment selection changes", async () => {
     const sessionFile = path.join(tempDir, "environment-session.jsonl");
     const workspaceDir = path.join(tempDir, "environment-workspace");
