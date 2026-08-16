@@ -1711,6 +1711,34 @@ describe("Codex app-server thread lifecycle bindings", () => {
     ]);
   });
 
+  it("fails closed when requirements pin denied image generation on", async () => {
+    const sessionFile = path.join(tempDir, "session.jsonl");
+    const workspaceDir = path.join(tempDir, "workspace");
+    const params = createParams(sessionFile, workspaceDir);
+    params.pluginHarnessToolPolicySafeDeniedTools = ["image_generate"];
+    const request = vi.fn(async (method: string) => {
+      if (method === "config/read") {
+        return { config: {}, layers: [] };
+      }
+      if (method === "configRequirements/read") {
+        return { requirements: { featureRequirements: { image_generation: true } } };
+      }
+      throw new Error(`unexpected method: ${method}`);
+    });
+
+    await expect(
+      startOrResumeThread({
+        client: { request } as never,
+        params,
+        cwd: workspaceDir,
+        dynamicTools: [],
+        appServer: createThreadLifecycleAppServerOptions(),
+        userMcpServersEnabled: false,
+      }),
+    ).rejects.toThrow("cannot override required feature image_generation");
+    expect(request.mock.calls.map(([method]) => method)).toEqual(["configRequirements/read"]);
+  });
+
   it.each([
     "apps",
     "artifact",
