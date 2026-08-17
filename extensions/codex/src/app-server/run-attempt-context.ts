@@ -182,6 +182,7 @@ export async function prepareCodexAttemptContext(
   });
   const codexContinuityProjectionMaxChars = resolveCodexContinuityProjectionMaxChars({
     contextTokenBudget: effectiveContextTokenBudget,
+    calibration: connection.mutable.continuityCalibration,
   });
   return {
     runtime,

@@ -2,6 +2,7 @@
 import type { AgentMessage } from "openclaw/plugin-sdk/agent-core";
 import { describe, expect, it } from "vitest";
 import {
+  buildCodexContinuityCalibration,
   fitCodexProjectedContextForTurnStart,
   projectContextEngineAssemblyForCodex,
   resolveCodexContextEngineProjectionMaxChars,
@@ -457,29 +458,84 @@ describe("resolveCodexContinuityProjectionMaxChars", () => {
     expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 16_000 })).toBe(24_000);
   });
 
-  // Scope of the sizing claim: EMPIRICAL, not a worst-case bound. At the density
-  // measured on a live projection (703,134 chars for 226,146 input tokens) the cap costs
-  // at most half the window, and that is all this asserts.
-  it.each([16_000, 30_000, 80_000, 258_400, 300_000, 1_000_000])(
-    "keeps a %i-token window's continuity cap within half that window at the measured density",
-    (contextTokenBudget) => {
-      const maxChars = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
-      const measuredCharsPerToken = 703_134 / 226_146;
-      expect(maxChars / measuredCharsPerToken).toBeLessThanOrEqual(contextTokenBudget * 0.5);
+  // The headroom invariant, for ANY observed density: the cap is sized from the same
+  // ratio the session actually exhibited, so converting the cap back into tokens at
+  // that ratio always lands at (or under) the reserved half of the window.
+  it.each([0.5, 1, 2, 703_134 / 226_146, 4])(
+    "keeps the continuity cap within half the window when the session measured %f chars/token",
+    (charsPerToken) => {
+      for (const contextTokenBudget of [30_000, 80_000, 258_400, 300_000]) {
+        const inputTokens = 200_000;
+        const maxChars = resolveCodexContinuityProjectionMaxChars({
+          contextTokenBudget,
+          calibration: {
+            promptChars: Math.round(inputTokens * charsPerToken),
+            inputTokens,
+          },
+        });
+        expect(maxChars / charsPerToken).toBeLessThanOrEqual(contextTokenBudget * 0.5);
+      }
     },
   );
 
-  // The companion of the test above, stated so the limitation cannot be read as a
-  // guarantee: input denser than 3 chars/token (CJK, base64, minified code) exceeds the
-  // reserved half. Closing that needs a preflight token contract from Codex or a smaller
-  // slice — a maintainer-owned reliability tradeoff, tracked on the PR.
-  it("exceeds the reserved half once input tokenizes denser than the empirical ratio", () => {
-    const contextTokenBudget = 258_400;
-    const maxChars = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
-    const breakEvenCharsPerToken = maxChars / (contextTokenBudget * 0.5);
-    expect(breakEvenCharsPerToken).toBe(3);
-    const denseCharsPerToken = 2;
-    expect(maxChars / denseCharsPerToken).toBeGreaterThan(contextTokenBudget * 0.5);
+  it("sizes the cap from the observed density instead of the empirical default", () => {
+    const contextTokenBudget = 300_000;
+    // Dense session (1 char/token): cap shrinks to the reserved token budget itself.
+    expect(
+      resolveCodexContinuityProjectionMaxChars({
+        contextTokenBudget,
+        calibration: { promptChars: 200_000, inputTokens: 200_000 },
+      }),
+    ).toBe(150_000);
+    // Loose prose (4 chars/token): cap grows to the shared-estimate ceiling.
+    expect(
+      resolveCodexContinuityProjectionMaxChars({
+        contextTokenBudget,
+        calibration: { promptChars: 800_000, inputTokens: 200_000 },
+      }),
+    ).toBe(600_000);
+  });
+
+  it("clamps degenerate samples and ignores unusable ones", () => {
+    const contextTokenBudget = 300_000;
+    const uncalibrated = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
+    // Ratio below 0.5 is treated as measurement noise, clamped up to 0.5.
+    expect(
+      resolveCodexContinuityProjectionMaxChars({
+        contextTokenBudget,
+        calibration: { promptChars: 60_000, inputTokens: 600_000 },
+      }),
+    ).toBe(75_000);
+    // Ratio above the shared estimate clamps down to 4 chars/token.
+    expect(
+      resolveCodexContinuityProjectionMaxChars({
+        contextTokenBudget,
+        calibration: { promptChars: 900_000, inputTokens: 90_000 },
+      }),
+    ).toBe(600_000);
+    // A short-prompt sample is overhead-dominated and ignored.
+    expect(
+      resolveCodexContinuityProjectionMaxChars({
+        contextTokenBudget,
+        calibration: { promptChars: 10_000, inputTokens: 5_000 },
+      }),
+    ).toBe(uncalibrated);
+  });
+
+  it("builds calibration samples only from projection-dominated turns", () => {
+    expect(buildCodexContinuityCalibration({ promptChars: 200_000, inputTokens: 64_000 })).toEqual({
+      promptChars: 200_000,
+      inputTokens: 64_000,
+    });
+    expect(buildCodexContinuityCalibration({ promptChars: 49_999, inputTokens: 64_000 })).toBe(
+      undefined,
+    );
+    expect(buildCodexContinuityCalibration({ promptChars: 200_000, inputTokens: 0 })).toBe(
+      undefined,
+    );
+    expect(buildCodexContinuityCalibration({ promptChars: Number.NaN, inputTokens: 64_000 })).toBe(
+      undefined,
+    );
   });
 
   it("stays strictly under the shared whole-window projection cap", () => {

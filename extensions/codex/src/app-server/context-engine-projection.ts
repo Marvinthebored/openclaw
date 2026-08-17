@@ -125,19 +125,70 @@ const CONTINUITY_PROJECTION_RESERVE_RATIO = 0.5;
 // Codex reports input tokens only after a turn (codex-rs/protocol/src/protocol.rs
 // TokenUsage.input_tokens) and bounds turn input by characters, not tokens
 // (codex-rs/protocol/src/user_input.rs MAX_USER_INPUT_TEXT_CHARS), so a projection cannot
-// be priced in verified tokens before it is sent. This ratio is therefore an EMPIRICAL
-// floor, not a worst-case bound: APPROX_RENDERED_CHARS_PER_TOKEN = 4 overshot a real
-// projection that rendered 703,134 chars for 226,146 input tokens, and 3 keeps the
-// reserved half intact for prose-shaped history of that density or looser. Denser input
-// (CJK, base64, minified code) still tokenizes below it and can exceed the reserved half
-// — that case is bounded only by the cap being strictly smaller than the shared one.
-// Tightening this into a guaranteed bound needs either a preflight token contract from
-// Codex or a deliberately smaller slice; see the sizing note in this module's tests.
+// be priced in verified tokens before it is sent. The remedy is feedback: each completed
+// turn records the density this session's content actually exhibited (prompt chars sent
+// vs provider-reported input tokens, persisted on the thread binding), and the next
+// continuity cap is sized from that observed ratio. capChars = budgetTokens × ratio means
+// real token cost ≈ budget for ANY density, which is the headroom invariant the fuse
+// needs. Before the first sample exists, the empirical default below applies — measured
+// on a real projection (703,134 chars for 226,146 input tokens = 3.11), where the shared
+// APPROX_RENDERED_CHARS_PER_TOKEN = 4 overshot by ~29%.
 const CONTINUITY_EMPIRICAL_CHARS_PER_TOKEN = 3;
+// Clamp guards degenerate samples, not real densities: a ratio measured below 0.5 or
+// above the shared estimate is treated as measurement noise rather than content truth.
+const CONTINUITY_MIN_CHARS_PER_TOKEN = 0.5;
+const CONTINUITY_MAX_CHARS_PER_TOKEN = APPROX_RENDERED_CHARS_PER_TOKEN;
+// Only projection-dominated turns give a usable density sample; short prompts are
+// dominated by developer-instruction and tool overhead in the token count.
+const CONTINUITY_CALIBRATION_MIN_PROMPT_CHARS = 50_000;
+
+/** Observed chars-vs-tokens sample from a completed Codex turn. */
+type CodexContinuityCalibration = {
+  promptChars: number;
+  inputTokens: number;
+};
+
+/** Builds a calibration sample from a completed turn, or undefined if unusable. */
+export function buildCodexContinuityCalibration(params: {
+  promptChars: number;
+  inputTokens: number;
+}): CodexContinuityCalibration | undefined {
+  if (
+    !Number.isFinite(params.promptChars) ||
+    !Number.isFinite(params.inputTokens) ||
+    params.promptChars < CONTINUITY_CALIBRATION_MIN_PROMPT_CHARS ||
+    params.inputTokens <= 0
+  ) {
+    return undefined;
+  }
+  return {
+    promptChars: Math.floor(params.promptChars),
+    inputTokens: Math.floor(params.inputTokens),
+  };
+}
+
+function resolveContinuityCharsPerToken(
+  calibration: CodexContinuityCalibration | undefined,
+): number {
+  if (
+    !calibration ||
+    !Number.isFinite(calibration.promptChars) ||
+    !Number.isFinite(calibration.inputTokens) ||
+    calibration.promptChars < CONTINUITY_CALIBRATION_MIN_PROMPT_CHARS ||
+    calibration.inputTokens <= 0
+  ) {
+    return CONTINUITY_EMPIRICAL_CHARS_PER_TOKEN;
+  }
+  return Math.min(
+    CONTINUITY_MAX_CHARS_PER_TOKEN,
+    Math.max(CONTINUITY_MIN_CHARS_PER_TOKEN, calibration.promptChars / calibration.inputTokens),
+  );
+}
 
 /** Resolves rendered context size for no-engine continuity projections. */
 export function resolveCodexContinuityProjectionMaxChars(params: {
   contextTokenBudget?: number;
+  calibration?: CodexContinuityCalibration;
 }): number {
   const contextTokenBudget =
     typeof params.contextTokenBudget === "number" && Number.isFinite(params.contextTokenBudget)
@@ -154,7 +205,7 @@ export function resolveCodexContinuityProjectionMaxChars(params: {
     ),
   });
   return normalizeRenderedContextMaxChars(
-    continuityBudgetTokens * CONTINUITY_EMPIRICAL_CHARS_PER_TOKEN,
+    continuityBudgetTokens * resolveContinuityCharsPerToken(params.calibration),
   );
 }
 

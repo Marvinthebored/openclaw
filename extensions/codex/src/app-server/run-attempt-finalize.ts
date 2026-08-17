@@ -11,6 +11,7 @@ import {
   resolveCodexAppServerReplayBlockedReason,
 } from "./attempt-results.js";
 import { attemptTerminal, type EmbeddedRunAttemptResult } from "./attempt-terminal.js";
+import { buildCodexContinuityCalibration } from "./context-engine-projection.js";
 import { flattenCodexDynamicToolFunctions } from "./protocol.js";
 import { readCodexRateLimitsRevision, readRecentCodexRateLimits } from "./rate-limit-cache.js";
 import type { CodexAttemptActiveTurn } from "./run-attempt-active-turn.js";
@@ -412,6 +413,16 @@ export async function finalizeCodexAttempt(
         bindingStore,
         identity: bindingIdentity,
         threadId: resourceState.thread.threadId,
+        // Normalized usage splits total input into uncached + cacheRead + cacheWrite;
+        // the density sample needs the full input cost, or the derived ratio loosens
+        // the continuity cap in the unsafe direction.
+        continuityCalibration: buildCodexContinuityCalibration({
+          promptChars: prompt.turnState.codexTurnPromptText.length,
+          inputTokens:
+            (result.attemptUsage?.input ?? 0) +
+            (result.attemptUsage?.cacheRead ?? 0) +
+            (result.attemptUsage?.cacheWrite ?? 0),
+        }),
       });
     } catch (error) {
       if (resourceState.thread.connectionScope === "supervision") {
