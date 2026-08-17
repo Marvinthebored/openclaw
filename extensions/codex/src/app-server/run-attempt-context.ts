@@ -173,6 +173,10 @@ export async function prepareCodexAttemptContext(
     contextEngineProjection: undefined as CodexContextEngineThreadBootstrapProjection | undefined,
     precomputedStaleBindingContinuityProjectionApplied: false,
     staleBindingContinuityForcedFreshStart: false,
+    // Set by the no-engine continuity appliers; gates calibration recording so a
+    // dense direct or active-engine prompt can never persist a density sample
+    // that later shrinks continuity history it did not measure.
+    noEngineContinuityProjectionApplied: false,
     inactiveThreadBootstrapBindingForcedFreshStart:
       initialInactiveThreadBootstrapBindingForcedFreshStart,
   };

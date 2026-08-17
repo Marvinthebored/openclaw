@@ -3370,6 +3370,40 @@ describe("runCodexAppServerAttempt", () => {
       inputTokens: 150_000,
     });
   });
+  it("does not record calibration from a large direct prompt with no continuity projection", async () => {
+    const { sessionFile, workspaceDir } = createRunPaths();
+    const harness = createStartedThreadHarness();
+    const params = createParams(sessionFile, workspaceDir);
+    params.contextTokenBudget = 300_000;
+    // A dense direct paste, large enough to pass the calibration size floor, on a
+    // session with no history to project: the sample must NOT be recorded, or its
+    // density would later shrink continuity history it never measured.
+    params.prompt = `dense direct paste: ${"y".repeat(80_000)}`;
+    const run = runCodexAppServerAttempt(params);
+    await harness.waitForMethod("turn/start");
+    await harness.notify({
+      method: "thread/tokenUsage/updated",
+      params: {
+        threadId: "thread-1",
+        turnId: "turn-1",
+        tokenUsage: {
+          last: {
+            totalTokens: 162_000,
+            inputTokens: 160_000,
+            cachedInputTokens: 0,
+            cacheWriteInputTokens: 0,
+            outputTokens: 2_000,
+            reasoningOutputTokens: 0,
+          },
+        },
+      },
+    });
+    await harness.completeTurn({ threadId: "thread-1", turnId: "turn-1" });
+    await run;
+    const binding = await readCodexAppServerBinding(sessionFile);
+    expect(binding?.threadId).toBe("thread-1");
+    expect(binding?.continuityCalibration).toBeUndefined();
+  });
   it("projects newer canonical SQLite continuity when a resumed binding is stale", async () => {
     const sessionId = "session-sqlite-resume-continuity";
     const sessionFile = `agent:main:${sessionId}`;

@@ -86,6 +86,7 @@ export async function prepareCodexAttemptPrompt(context: CodexAttemptContext) {
     promptState.promptText = projection.promptText;
     promptState.promptContextRange = projection.promptContextRange;
     promptState.prePromptMessageCount = projection.prePromptMessageCount;
+    promptState.noEngineContinuityProjectionApplied = true;
   };
   const applyActiveContextEngineProjection = async (
     decisionStartupBinding: typeof mutable.startupBinding,
@@ -374,6 +375,7 @@ export async function prepareCodexAttemptPrompt(context: CodexAttemptContext) {
     promptState.promptText = projection.promptText;
     promptState.promptContextRange = projection.promptContextRange;
     promptState.prePromptMessageCount = projection.prePromptMessageCount;
+    promptState.noEngineContinuityProjectionApplied = true;
     return true;
   };
   const precomputeNoContextEngineStaleBindingProjection = () => {
