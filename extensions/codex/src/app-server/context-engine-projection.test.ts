@@ -487,13 +487,13 @@ describe("resolveCodexContinuityProjectionMaxChars", () => {
         calibration: { promptChars: 200_000, inputTokens: 200_000 },
       }),
     ).toBe(150_000);
-    // Loose prose (4 chars/token): cap grows to the shared-estimate ceiling.
+    // Loose prose (4 chars/token): monotone clamp - never looser than uncalibrated.
     expect(
       resolveCodexContinuityProjectionMaxChars({
         contextTokenBudget,
         calibration: { promptChars: 800_000, inputTokens: 200_000 },
       }),
-    ).toBe(600_000);
+    ).toBe(450_000);
   });
 
   it("clamps degenerate samples and ignores unusable ones", () => {
@@ -506,13 +506,14 @@ describe("resolveCodexContinuityProjectionMaxChars", () => {
         calibration: { promptChars: 60_000, inputTokens: 600_000 },
       }),
     ).toBe(75_000);
-    // Ratio above the shared estimate clamps down to 4 chars/token.
+    // Any ratio above the empirical default clamps back to it: calibration is
+    // monotone and can only tighten the cap.
     expect(
       resolveCodexContinuityProjectionMaxChars({
         contextTokenBudget,
         calibration: { promptChars: 900_000, inputTokens: 90_000 },
       }),
-    ).toBe(600_000);
+    ).toBe(uncalibrated);
     // A short-prompt sample is overhead-dominated and ignored.
     expect(
       resolveCodexContinuityProjectionMaxChars({
@@ -520,6 +521,29 @@ describe("resolveCodexContinuityProjectionMaxChars", () => {
         calibration: { promptChars: 10_000, inputTokens: 5_000 },
       }),
     ).toBe(uncalibrated);
+  });
+
+  // Monotone-safety invariant: no sample, however poisoned or stale, can produce a
+  // looser cap than the uncalibrated default. Every calibration failure mode therefore
+  // degrades to the reviewed empirical behavior, not past it.
+  it("never loosens the cap beyond the uncalibrated default for any sample", () => {
+    for (const contextTokenBudget of [30_000, 80_000, 258_400, 300_000]) {
+      const uncalibrated = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
+      for (const [promptChars, inputTokens] of [
+        [60_000, 600_000],
+        [200_000, 200_000],
+        [800_000, 200_000],
+        [900_000, 90_000],
+        [51_000, 1],
+      ] as const) {
+        expect(
+          resolveCodexContinuityProjectionMaxChars({
+            contextTokenBudget,
+            calibration: { promptChars, inputTokens },
+          }),
+        ).toBeLessThanOrEqual(uncalibrated);
+      }
+    }
   });
 
   it("builds calibration samples only from projection-dominated turns", () => {

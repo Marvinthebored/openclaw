@@ -134,10 +134,14 @@ const CONTINUITY_PROJECTION_RESERVE_RATIO = 0.5;
 // on a real projection (703,134 chars for 226,146 input tokens = 3.11), where the shared
 // APPROX_RENDERED_CHARS_PER_TOKEN = 4 overshot by ~29%.
 const CONTINUITY_EMPIRICAL_CHARS_PER_TOKEN = 3;
-// Clamp guards degenerate samples, not real densities: a ratio measured below 0.5 or
-// above the shared estimate is treated as measurement noise rather than content truth.
+// Calibration is monotone: an observed sample may only TIGHTEN the cap below the
+// empirical default, never loosen it. A session whose content later shifts denser, a
+// sample poisoned by a non-continuity turn, or a stale sample therefore degrades at
+// worst to the uncalibrated behavior, not past it. The numerator also undercounts the
+// native turn's full input (tools and base instructions are not in the prompt text),
+// which biases the measured ratio low - again the tighter, safe direction.
 const CONTINUITY_MIN_CHARS_PER_TOKEN = 0.5;
-const CONTINUITY_MAX_CHARS_PER_TOKEN = APPROX_RENDERED_CHARS_PER_TOKEN;
+const CONTINUITY_MAX_CHARS_PER_TOKEN = CONTINUITY_EMPIRICAL_CHARS_PER_TOKEN;
 // Only projection-dominated turns give a usable density sample; short prompts are
 // dominated by developer-instruction and tool overhead in the token count.
 const CONTINUITY_CALIBRATION_MIN_PROMPT_CHARS = 50_000;
