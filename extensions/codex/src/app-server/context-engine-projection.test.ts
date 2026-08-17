@@ -448,19 +448,37 @@ describe("resolveCodexContinuityProjectionMaxChars", () => {
   });
 
   it("reserves half the window so a continuity turn leaves the native thread headroom", () => {
-    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 258_400 })).toBe(516_800);
-    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 300_000 })).toBe(600_000);
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 258_400 })).toBe(387_600);
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 300_000 })).toBe(450_000);
   });
 
   it("keeps the fixed reserve and prompt-budget floor for small models", () => {
-    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 30_000 })).toBe(40_000);
-    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 16_000 })).toBe(32_000);
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 30_000 })).toBe(30_000);
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 16_000 })).toBe(24_000);
   });
 
-  it("stays well below the whole-window projection cap on large windows", () => {
-    const contextTokenBudget = 258_400;
-    const continuity = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
-    const wholeWindow = resolveCodexContextEngineProjectionMaxChars({ contextTokenBudget });
-    expect(continuity).toBeLessThan(wholeWindow * 0.6);
+  // The reserved half has to survive conversion back into real tokens: at the densest
+  // ratio measured on a live projection (703,134 chars for 226,146 input tokens), the
+  // cap must still cost at most half the window.
+  it.each([16_000, 30_000, 80_000, 258_400, 300_000, 1_000_000])(
+    "keeps a %i-token window's continuity cap within half that window in real tokens",
+    (contextTokenBudget) => {
+      const maxChars = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
+      const measuredDensestCharsPerToken = 703_134 / 226_146;
+      expect(maxChars / measuredDensestCharsPerToken).toBeLessThanOrEqual(contextTokenBudget * 0.5);
+    },
+  );
+
+  it("stays strictly under the shared whole-window projection cap", () => {
+    for (const contextTokenBudget of [16_000, 80_000, 258_400, 300_000]) {
+      expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget })).toBeLessThan(
+        resolveCodexContextEngineProjectionMaxChars({ contextTokenBudget }),
+      );
+    }
+    // Both resolvers share MAX_RENDERED_CONTEXT_CHARS, so on windows large enough to
+    // exceed it the two caps converge on the clamp rather than staying separated.
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 1_000_000 })).toBe(
+      resolveCodexContextEngineProjectionMaxChars({ contextTokenBudget: 1_000_000 }),
+    );
   });
 });

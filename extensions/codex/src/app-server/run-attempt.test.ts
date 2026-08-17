@@ -2989,9 +2989,10 @@ describe("runCodexAppServerAttempt", () => {
     const inputText =
       (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
       "";
-    // Continuity cap at contextTokenBudget 300k is (300k − 150k) × 4 = 600,000 rendered
-    // chars; the bound below allows for the projection header and current request.
-    expect(inputText.length).toBeLessThanOrEqual(610_000);
+    // Continuity cap at contextTokenBudget 300k is (300k − 150k) reserved tokens
+    // converted at the conservative 3 chars/token = 450,000 rendered chars; the bound
+    // below allows for the projection header and current request.
+    expect(inputText.length).toBeLessThanOrEqual(460_000);
     expect(inputText).toContain("OpenClaw assembled context for this turn:");
     expect(inputText).toContain("recent continuity anchor: resume the database migration");
     expect(inputText).toContain("Current user request:");
@@ -3267,9 +3268,9 @@ describe("runCodexAppServerAttempt", () => {
     const inputText =
       (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
       "";
-    // Same continuity cap as the fresh-thread path: (300k − 150k) × 4 = 600,000
-    // rendered chars plus header and current-request overhead.
-    expect(inputText.length).toBeLessThanOrEqual(610_000);
+    // Same continuity cap as the fresh-thread path: 450,000 rendered chars plus
+    // header and current-request overhead.
+    expect(inputText.length).toBeLessThanOrEqual(460_000);
     expect(inputText).not.toContain("old native-owned context");
     expect(inputText).not.toContain("resume delta block 0:");
     expect(inputText).toContain("recent resume anchor: pick up the migration");

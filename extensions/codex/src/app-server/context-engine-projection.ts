@@ -122,6 +122,14 @@ export function resolveCodexContextEngineProjectionReserveTokens(): number {
 // and re-project the transcript again. Reserving half the window keeps the
 // thread alive for later delta turns instead.
 const CONTINUITY_PROJECTION_RESERVE_RATIO = 0.5;
+// Codex reports input tokens only after a turn (codex-rs/protocol/src/protocol.rs
+// TokenUsage.input_tokens) and bounds turn input by characters, not tokens
+// (codex-rs/protocol/src/user_input.rs MAX_USER_INPUT_TEXT_CHARS), so a projection
+// cannot be sized in verified tokens before it is sent. APPROX_RENDERED_CHARS_PER_TOKEN
+// is optimistic for real transcripts — a 703,134-char projection measured 226,146 input
+// tokens — so converting the continuity budget at a denser ratio keeps the reserved half
+// of the window in real tokens rather than estimated ones.
+const CONTINUITY_CONSERVATIVE_CHARS_PER_TOKEN = 3;
 
 /** Resolves rendered context size for no-engine continuity projections. */
 export function resolveCodexContinuityProjectionMaxChars(params: {
@@ -134,13 +142,16 @@ export function resolveCodexContinuityProjectionMaxChars(params: {
   if (!contextTokenBudget || contextTokenBudget <= 0) {
     return DEFAULT_RENDERED_CONTEXT_CHARS;
   }
-  return resolveCodexContextEngineProjectionMaxChars({
+  const continuityBudgetTokens = resolveProjectionPromptBudgetTokens({
     contextTokenBudget,
     reserveTokens: Math.max(
       DEFAULT_CODEX_PROJECTION_RESERVE_TOKENS,
       Math.floor(contextTokenBudget * CONTINUITY_PROJECTION_RESERVE_RATIO),
     ),
   });
+  return normalizeRenderedContextMaxChars(
+    continuityBudgetTokens * CONTINUITY_CONSERVATIVE_CHARS_PER_TOKEN,
+  );
 }
 
 /** Fits projected context prompts under Codex app-server turn/start text limits. */
