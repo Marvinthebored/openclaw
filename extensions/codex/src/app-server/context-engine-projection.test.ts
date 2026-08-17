@@ -457,17 +457,30 @@ describe("resolveCodexContinuityProjectionMaxChars", () => {
     expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 16_000 })).toBe(24_000);
   });
 
-  // The reserved half has to survive conversion back into real tokens: at the densest
-  // ratio measured on a live projection (703,134 chars for 226,146 input tokens), the
-  // cap must still cost at most half the window.
+  // Scope of the sizing claim: EMPIRICAL, not a worst-case bound. At the density
+  // measured on a live projection (703,134 chars for 226,146 input tokens) the cap costs
+  // at most half the window, and that is all this asserts.
   it.each([16_000, 30_000, 80_000, 258_400, 300_000, 1_000_000])(
-    "keeps a %i-token window's continuity cap within half that window in real tokens",
+    "keeps a %i-token window's continuity cap within half that window at the measured density",
     (contextTokenBudget) => {
       const maxChars = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
-      const measuredDensestCharsPerToken = 703_134 / 226_146;
-      expect(maxChars / measuredDensestCharsPerToken).toBeLessThanOrEqual(contextTokenBudget * 0.5);
+      const measuredCharsPerToken = 703_134 / 226_146;
+      expect(maxChars / measuredCharsPerToken).toBeLessThanOrEqual(contextTokenBudget * 0.5);
     },
   );
+
+  // The companion of the test above, stated so the limitation cannot be read as a
+  // guarantee: input denser than 3 chars/token (CJK, base64, minified code) exceeds the
+  // reserved half. Closing that needs a preflight token contract from Codex or a smaller
+  // slice — a maintainer-owned reliability tradeoff, tracked on the PR.
+  it("exceeds the reserved half once input tokenizes denser than the empirical ratio", () => {
+    const contextTokenBudget = 258_400;
+    const maxChars = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
+    const breakEvenCharsPerToken = maxChars / (contextTokenBudget * 0.5);
+    expect(breakEvenCharsPerToken).toBe(3);
+    const denseCharsPerToken = 2;
+    expect(maxChars / denseCharsPerToken).toBeGreaterThan(contextTokenBudget * 0.5);
+  });
 
   it("stays strictly under the shared whole-window projection cap", () => {
     for (const contextTokenBudget of [16_000, 80_000, 258_400, 300_000]) {

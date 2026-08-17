@@ -124,12 +124,16 @@ export function resolveCodexContextEngineProjectionReserveTokens(): number {
 const CONTINUITY_PROJECTION_RESERVE_RATIO = 0.5;
 // Codex reports input tokens only after a turn (codex-rs/protocol/src/protocol.rs
 // TokenUsage.input_tokens) and bounds turn input by characters, not tokens
-// (codex-rs/protocol/src/user_input.rs MAX_USER_INPUT_TEXT_CHARS), so a projection
-// cannot be sized in verified tokens before it is sent. APPROX_RENDERED_CHARS_PER_TOKEN
-// is optimistic for real transcripts — a 703,134-char projection measured 226,146 input
-// tokens — so converting the continuity budget at a denser ratio keeps the reserved half
-// of the window in real tokens rather than estimated ones.
-const CONTINUITY_CONSERVATIVE_CHARS_PER_TOKEN = 3;
+// (codex-rs/protocol/src/user_input.rs MAX_USER_INPUT_TEXT_CHARS), so a projection cannot
+// be priced in verified tokens before it is sent. This ratio is therefore an EMPIRICAL
+// floor, not a worst-case bound: APPROX_RENDERED_CHARS_PER_TOKEN = 4 overshot a real
+// projection that rendered 703,134 chars for 226,146 input tokens, and 3 keeps the
+// reserved half intact for prose-shaped history of that density or looser. Denser input
+// (CJK, base64, minified code) still tokenizes below it and can exceed the reserved half
+// — that case is bounded only by the cap being strictly smaller than the shared one.
+// Tightening this into a guaranteed bound needs either a preflight token contract from
+// Codex or a deliberately smaller slice; see the sizing note in this module's tests.
+const CONTINUITY_EMPIRICAL_CHARS_PER_TOKEN = 3;
 
 /** Resolves rendered context size for no-engine continuity projections. */
 export function resolveCodexContinuityProjectionMaxChars(params: {
@@ -150,7 +154,7 @@ export function resolveCodexContinuityProjectionMaxChars(params: {
     ),
   });
   return normalizeRenderedContextMaxChars(
-    continuityBudgetTokens * CONTINUITY_CONSERVATIVE_CHARS_PER_TOKEN,
+    continuityBudgetTokens * CONTINUITY_EMPIRICAL_CHARS_PER_TOKEN,
   );
 }
 
