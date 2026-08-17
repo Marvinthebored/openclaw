@@ -116,6 +116,33 @@ export function resolveCodexContextEngineProjectionReserveTokens(): number {
   return DEFAULT_CODEX_PROJECTION_RESERVE_TOKENS;
 }
 
+// Continuity projections run without an active context engine, so nothing ever
+// compacts what they render: a projection sized near the whole window leaves the
+// fresh native thread at the rotation threshold, forcing the next turn to rotate
+// and re-project the transcript again. Reserving half the window keeps the
+// thread alive for later delta turns instead.
+const CONTINUITY_PROJECTION_RESERVE_RATIO = 0.5;
+
+/** Resolves rendered context size for no-engine continuity projections. */
+export function resolveCodexContinuityProjectionMaxChars(params: {
+  contextTokenBudget?: number;
+}): number {
+  const contextTokenBudget =
+    typeof params.contextTokenBudget === "number" && Number.isFinite(params.contextTokenBudget)
+      ? Math.floor(params.contextTokenBudget)
+      : undefined;
+  if (!contextTokenBudget || contextTokenBudget <= 0) {
+    return DEFAULT_RENDERED_CONTEXT_CHARS;
+  }
+  return resolveCodexContextEngineProjectionMaxChars({
+    contextTokenBudget,
+    reserveTokens: Math.max(
+      DEFAULT_CODEX_PROJECTION_RESERVE_TOKENS,
+      Math.floor(contextTokenBudget * CONTINUITY_PROJECTION_RESERVE_RATIO),
+    ),
+  });
+}
+
 /** Fits projected context prompts under Codex app-server turn/start text limits. */
 export function fitCodexProjectedContextForTurnStart(params: {
   promptText: string;

@@ -18,6 +18,7 @@ import {
 import {
   resolveCodexContextEngineProjectionMaxChars,
   resolveCodexContextEngineProjectionReserveTokens,
+  resolveCodexContinuityProjectionMaxChars,
   type CodexProjectedContextRange,
 } from "./context-engine-projection.js";
 import type { CodexAttemptRuntime } from "./run-attempt-runtime.js";
@@ -179,6 +180,9 @@ export async function prepareCodexAttemptContext(
     contextTokenBudget: effectiveContextTokenBudget,
     reserveTokens: resolveCodexContextEngineProjectionReserveTokens(),
   });
+  const codexContinuityProjectionMaxChars = resolveCodexContinuityProjectionMaxChars({
+    contextTokenBudget: effectiveContextTokenBudget,
+  });
   return {
     runtime,
     attemptTools,
@@ -194,6 +198,7 @@ export async function prepareCodexAttemptContext(
     skillsCollaborationInstructions,
     promptState,
     codexContextProjectionMaxChars,
+    codexContinuityProjectionMaxChars,
   };
 }
 

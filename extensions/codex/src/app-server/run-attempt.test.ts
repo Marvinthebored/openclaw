@@ -2963,6 +2963,41 @@ describe("runCodexAppServerAttempt", () => {
     expect(inputText).toContain("current prompt survives");
     expect(inputText).not.toContain("older next-step anchor: keep the handoff checklist");
   });
+  it("bounds fresh-thread continuity to half the context window so the thread keeps headroom", async () => {
+    const { sessionFile, workspaceDir } = createRunPaths();
+    const sessionManager = openRunSession(sessionFile);
+    for (let index = 0; index < 12; index += 1) {
+      sessionManager.appendMessage(
+        assistantMessage(
+          `continuity block ${index}: ${"x".repeat(128_000)}`,
+          Date.now() + 1 + index,
+        ),
+      );
+    }
+    sessionManager.appendMessage(
+      userMessage("recent continuity anchor: resume the database migration", Date.now() + 20),
+    );
+    const harness = createStartedThreadHarness();
+    const params = createParams(sessionFile, workspaceDir);
+    params.contextTokenBudget = 300_000;
+    params.prompt = "continue after the degrade";
+    const run = runCodexAppServerAttempt(params);
+    await harness.waitForMethod("turn/start");
+    await harness.completeTurn({ threadId: "thread-1", turnId: "turn-1" });
+    await run;
+    const turnStart = harness.requests.find((request) => request.method === "turn/start");
+    const inputText =
+      (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
+      "";
+    // Continuity cap at contextTokenBudget 300k is (300k − 150k) × 4 = 600,000 rendered
+    // chars; the bound below allows for the projection header and current request.
+    expect(inputText.length).toBeLessThanOrEqual(610_000);
+    expect(inputText).toContain("OpenClaw assembled context for this turn:");
+    expect(inputText).toContain("recent continuity anchor: resume the database migration");
+    expect(inputText).toContain("Current user request:");
+    expect(inputText).toContain("continue after the degrade");
+    expect(inputText).not.toContain("continuity block 0:");
+  });
 
   it("keeps thread-start developer instructions stable when adding fresh-thread continuity", async () => {
     let hookCalls = 0;
@@ -3194,6 +3229,52 @@ describe("runCodexAppServerAttempt", () => {
     expect(inputText).toContain("copilot mirror context also matters");
     expect(inputText).toContain("Current user request:");
     expect(inputText).toContain("is the previous message trustworthy?");
+  });
+  it("bounds stale-binding resume continuity to half the context window", async () => {
+    const { sessionFile, workspaceDir } = createRunPaths();
+    await writeExistingBinding(sessionFile, workspaceDir, { dynamicToolsFingerprint: "[]" });
+    const binding = await readCodexAppServerBinding(sessionFile);
+    const bindingUpdatedAt = Date.parse(binding?.historyCoveredThrough ?? "");
+    if (!Number.isFinite(bindingUpdatedAt)) {
+      throw new Error("expected valid Codex binding timestamp");
+    }
+    const sessionManager = openRunSession(sessionFile);
+    sessionManager.appendMessage(userMessage("old native-owned context", bindingUpdatedAt - 2_000));
+    for (let index = 0; index < 12; index += 1) {
+      sessionManager.appendMessage(
+        assistantMessage(
+          `resume delta block ${index}: ${"x".repeat(128_000)}`,
+          bindingUpdatedAt + 1_000 + index,
+        ),
+      );
+    }
+    sessionManager.appendMessage(
+      assistantMessage("recent resume anchor: pick up the migration", bindingUpdatedAt + 2_000),
+    );
+    const harness = createResumeHarness();
+    const params = createParams(sessionFile, workspaceDir);
+    params.contextTokenBudget = 300_000;
+    params.prompt = "continue after the resume";
+    const run = runCodexAppServerAttempt(params);
+    await harness.waitForMethod("turn/start");
+    await new Promise<void>((resolve) => {
+      setImmediate(resolve);
+    });
+    await harness.completeTurn({ threadId: "thread-existing", turnId: "turn-1" });
+    await run;
+    expect(harness.requests.map((request) => request.method)).toContain("thread/resume");
+    const turnStart = harness.requests.find((request) => request.method === "turn/start");
+    const inputText =
+      (turnStart?.params as { input?: Array<{ text?: string }> } | undefined)?.input?.[0]?.text ??
+      "";
+    // Same continuity cap as the fresh-thread path: (300k − 150k) × 4 = 600,000
+    // rendered chars plus header and current-request overhead.
+    expect(inputText.length).toBeLessThanOrEqual(610_000);
+    expect(inputText).not.toContain("old native-owned context");
+    expect(inputText).not.toContain("resume delta block 0:");
+    expect(inputText).toContain("recent resume anchor: pick up the migration");
+    expect(inputText).toContain("Current user request:");
+    expect(inputText).toContain("continue after the resume");
   });
   it("projects newer canonical SQLite continuity when a resumed binding is stale", async () => {
     const sessionId = "session-sqlite-resume-continuity";

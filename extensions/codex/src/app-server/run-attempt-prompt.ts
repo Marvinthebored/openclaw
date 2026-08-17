@@ -52,6 +52,7 @@ export async function prepareCodexAttemptPrompt(context: CodexAttemptContext) {
     skillsCollaborationInstructions,
     promptState,
     codexContextProjectionMaxChars,
+    codexContinuityProjectionMaxChars,
   } = context;
   const {
     connection,
@@ -80,7 +81,7 @@ export async function prepareCodexAttemptPrompt(context: CodexAttemptContext) {
       assembledMessages: historyState.messages,
       originalHistoryMessages: historyState.messages,
       prompt: params.prompt,
-      maxRenderedContextChars: codexContextProjectionMaxChars,
+      maxRenderedContextChars: codexContinuityProjectionMaxChars,
     });
     promptState.promptText = projection.promptText;
     promptState.promptContextRange = projection.promptContextRange;
@@ -368,7 +369,7 @@ export async function prepareCodexAttemptPrompt(context: CodexAttemptContext) {
       assembledMessages: newerVisibleMessages,
       originalHistoryMessages: historyState.messages,
       prompt: params.prompt,
-      maxRenderedContextChars: codexContextProjectionMaxChars,
+      maxRenderedContextChars: codexContinuityProjectionMaxChars,
     });
     promptState.promptText = projection.promptText;
     promptState.promptContextRange = projection.promptContextRange;

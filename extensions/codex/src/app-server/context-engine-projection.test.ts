@@ -5,6 +5,7 @@ import {
   fitCodexProjectedContextForTurnStart,
   projectContextEngineAssemblyForCodex,
   resolveCodexContextEngineProjectionMaxChars,
+  resolveCodexContinuityProjectionMaxChars,
 } from "./context-engine-projection.js";
 
 const CODEX_TURN_START_TEXT_INPUT_MAX_CHARS = 1 << 20;
@@ -437,5 +438,29 @@ describe("projectContextEngineAssemblyForCodex", () => {
     expect(resolveCodexContextEngineProjectionMaxChars({ contextTokenBudget: 1_000_000 })).toBe(
       1_000_000,
     );
+  });
+});
+
+describe("resolveCodexContinuityProjectionMaxChars", () => {
+  it("keeps the conservative default when no runtime budget is available", () => {
+    expect(resolveCodexContinuityProjectionMaxChars({})).toBe(24_000);
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 0 })).toBe(24_000);
+  });
+
+  it("reserves half the window so a continuity turn leaves the native thread headroom", () => {
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 258_400 })).toBe(516_800);
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 300_000 })).toBe(600_000);
+  });
+
+  it("keeps the fixed reserve and prompt-budget floor for small models", () => {
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 30_000 })).toBe(40_000);
+    expect(resolveCodexContinuityProjectionMaxChars({ contextTokenBudget: 16_000 })).toBe(32_000);
+  });
+
+  it("stays well below the whole-window projection cap on large windows", () => {
+    const contextTokenBudget = 258_400;
+    const continuity = resolveCodexContinuityProjectionMaxChars({ contextTokenBudget });
+    const wholeWindow = resolveCodexContextEngineProjectionMaxChars({ contextTokenBudget });
+    expect(continuity).toBeLessThan(wholeWindow * 0.6);
   });
 });
