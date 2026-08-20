@@ -419,8 +419,8 @@ Rules:
 - `command` is accepted as an exec-compatible alias for hook policies and
   trusted rewrites (the normal OpenClaw shell exec tool also uses a `command`
   field). Blank caller aliases are treated as absent; a hook or trusted policy
-  that blanks a populated alias clears both so execution fails closed. When both
-  aliases are non-empty, their values must match.
+  that invalidates one populated alias (blank or non-string) invalidates both so
+  execution fails closed. When both aliases are non-empty, their values must match.
 - `language` defaults to `"javascript"`; the schema exposes it as a flat
   string enum (`"javascript" | "typescript"`), not a `oneOf`/`anyOf` union,
   since some providers reject those shapes.

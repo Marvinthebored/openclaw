@@ -8,6 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { expectDefined } from "@openclaw/normalization-core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { OpenClawConfig } from "../config/config.js";
 import type { SessionEntry } from "../config/sessions.js";
 import { replaceSessionEntry } from "../config/sessions/session-accessor.js";
 import {
@@ -1357,35 +1358,44 @@ describe("before_tool_call hook deduplication (#15502)", () => {
   it.each([
     { stage: "trusted policy", alias: "code", replacement: "" },
     { stage: "trusted policy", alias: "command", replacement: "" },
+    { stage: "trusted policy", alias: "code", replacement: null },
+    { stage: "trusted policy", alias: "command", replacement: null },
+    { stage: "hook", alias: "code", replacement: null },
+    { stage: "hook", alias: "command", replacement: null },
     { stage: "hook after a trusted rewrite", alias: "code", replacement: "" },
     { stage: "hook after a trusted rewrite", alias: "command", replacement: "" },
+    { stage: "hook after a trusted rewrite", alias: "code", replacement: null },
+    { stage: "hook after a trusted rewrite", alias: "command", replacement: null },
     { stage: "hook after a trusted rewrite", alias: "code", replacement: "return 3;" },
     { stage: "hook after a trusted rewrite", alias: "command", replacement: "return 3;" },
   ])(
-    "handles a $stage changing the $alias code-mode exec alias to '$replacement'",
+    "handles a $stage changing the $alias code-mode exec alias to $replacement",
     async ({ stage, alias, replacement }) => {
       resetGlobalHookRunner();
       const registry = createEmptyPluginRegistry();
-      registry.trustedToolPolicies = [
-        {
-          pluginId: "trusted-plugin",
-          pluginName: "Trusted Plugin",
-          source: "test",
-          policy: {
-            id: "code-mode-rewrite-policy",
-            description: "rewrite both code-mode exec aliases",
-            evaluate: () => ({ params: { code: "return 2;", command: "return 2;" } }),
-          },
-        },
-      ];
+      registry.trustedToolPolicies =
+        stage === "hook"
+          ? []
+          : [
+              {
+                pluginId: "trusted-plugin",
+                pluginName: "Trusted Plugin",
+                source: "test",
+                policy: {
+                  id: "code-mode-rewrite-policy",
+                  description: "rewrite both code-mode exec aliases",
+                  evaluate: () => ({ params: { code: "return 2;", command: "return 2;" } }),
+                },
+              },
+            ];
       if (stage === "trusted policy") {
         registry.trustedToolPolicies.push({
           pluginId: "trusted-plugin",
           pluginName: "Trusted Plugin",
           source: "test",
           policy: {
-            id: "code-mode-blank-policy",
-            description: "blank one code-mode exec alias",
+            id: "code-mode-invalidate-policy",
+            description: "invalidate one code-mode exec alias",
             evaluate: (eventValue) => ({
               params: { ...eventValue.params, [alias]: replacement },
             }),
@@ -1404,7 +1414,7 @@ describe("before_tool_call hook deduplication (#15502)", () => {
       setActivePluginRegistry(registry);
       initializeGlobalHookRunner(registry);
       try {
-        const codeModeConfig = { tools: { codeMode: true } } as never;
+        const codeModeConfig: OpenClawConfig = { tools: { codeMode: true } };
         const catalogRef = createToolSearchCatalogRef();
         registerHeadlessToolSearchCatalog({ catalogRef, tools: [] });
         const execTool = createCodeModeTools({
@@ -1438,14 +1448,14 @@ describe("before_tool_call hook deduplication (#15502)", () => {
         }
 
         const result = await def.execute(
-          `call-code-mode-${stage}-${alias}-${replacement ? "rewrite" : "blank"}`,
+          `call-code-mode-${stage}-${alias}-${replacement === "return 3;" ? "rewrite" : "invalidate"}`,
           { code: "return 1;", command: "return 1;" },
           undefined,
           undefined,
           {} as Parameters<typeof def.execute>[4],
         );
 
-        if (replacement) {
+        if (replacement === "return 3;") {
           expect(result.details).toMatchObject({ status: "completed", value: 3 });
         } else {
           expect(result.details).toEqual({

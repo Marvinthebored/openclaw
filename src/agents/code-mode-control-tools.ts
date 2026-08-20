@@ -151,9 +151,10 @@ export function reconcileCodeModeExecBeforeHookParams(params: {
 
   const adjustedCode = params.adjustedParams.code;
   const adjustedCommand = params.adjustedParams.command;
-  const adjustedCodeChanged = typeof adjustedCode === "string" && adjustedCode !== hookCode;
+  const adjustedCodeChanged =
+    Object.hasOwn(params.adjustedParams, "code") && adjustedCode !== hookCode;
   const adjustedCommandChanged =
-    typeof adjustedCommand === "string" && adjustedCommand !== hookCode;
+    Object.hasOwn(params.adjustedParams, "command") && adjustedCommand !== hookCode;
   if (adjustedCodeChanged === adjustedCommandChanged) {
     return params.adjustedParams;
   }
