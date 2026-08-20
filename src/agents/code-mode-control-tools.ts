@@ -68,9 +68,6 @@ function normalizeCodeModeExecParams(params: unknown): unknown {
   if (!isPlainObject(params)) {
     return params;
   }
-  // Blank is not provided: a model that materializes every schema property sends
-  // `code: ""` alongside a real `command`, which must still pair rather than read
-  // as two divergent aliases.
   const code = readNonBlankString(params.code);
   const command = readNonBlankString(params.command);
   if (code !== undefined && command === undefined) {

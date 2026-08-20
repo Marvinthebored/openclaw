@@ -283,18 +283,15 @@ export function readCode(args: unknown): {
   restartSafe: boolean;
 } {
   const params = asToolParamsRecord(args);
-  const codeParam = params.code;
-  const commandParam = params.command;
-  // A blank alias is not a provided alias. Some models materialize every schema
-  // property, so a caller sending only `command` still emits `code: ""`; treating
-  // that as "provided" rejected the call before it ran.
-  const codeText = readNonBlankString(codeParam);
-  const commandText = readNonBlankString(commandParam);
-  if (codeText !== undefined && commandText !== undefined && codeText !== commandText) {
+  // Full-schema tool calls can materialize an unused alias as blank.
+  // Only nonblank aliases participate in divergence checks.
+  const codeAlias = readNonBlankString(params.code);
+  const commandAlias = readNonBlankString(params.command);
+  if (codeAlias !== undefined && commandAlias !== undefined && codeAlias !== commandAlias) {
     throw new ToolInputError("code and command must match when both are provided.");
   }
-  const code = commandText ?? codeText;
-  if (typeof code !== "string" || !code.trim()) {
+  const code = commandAlias ?? codeAlias;
+  if (code === undefined) {
     throw new ToolInputError("code or command must be a non-empty string.");
   }
   const language = params.language;
