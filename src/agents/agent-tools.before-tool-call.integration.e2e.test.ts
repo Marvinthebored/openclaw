@@ -1366,12 +1366,25 @@ describe("before_tool_call hook deduplication (#15502)", () => {
     { stage: "hook after a trusted rewrite", alias: "command", replacement: "" },
     { stage: "hook after a trusted rewrite", alias: "code", replacement: null },
     { stage: "hook after a trusted rewrite", alias: "command", replacement: null },
+    { stage: "trusted policy", alias: "code", replacement: null, otherReplacement: "return 4;" },
+    {
+      stage: "trusted policy",
+      alias: "command",
+      replacement: null,
+      otherReplacement: "return 4;",
+    },
+    { stage: "hook", alias: "code", replacement: null, otherReplacement: "return 4;" },
+    { stage: "hook", alias: "command", replacement: null, otherReplacement: "return 4;" },
     { stage: "hook after a trusted rewrite", alias: "code", replacement: "return 3;" },
     { stage: "hook after a trusted rewrite", alias: "command", replacement: "return 3;" },
   ])(
     "handles a $stage changing the $alias code-mode exec alias to $replacement",
-    async ({ stage, alias, replacement }) => {
+    async ({ stage, alias, replacement, otherReplacement }) => {
       resetGlobalHookRunner();
+      const pairedReplacement =
+        otherReplacement === undefined
+          ? {}
+          : { [alias === "code" ? "command" : "code"]: otherReplacement };
       const registry = createEmptyPluginRegistry();
       registry.trustedToolPolicies =
         stage === "hook"
@@ -1397,7 +1410,11 @@ describe("before_tool_call hook deduplication (#15502)", () => {
             id: "code-mode-invalidate-policy",
             description: "invalidate one code-mode exec alias",
             evaluate: (eventValue) => ({
-              params: { ...eventValue.params, [alias]: replacement },
+              params: {
+                ...eventValue.params,
+                [alias]: replacement,
+                ...pairedReplacement,
+              },
             }),
           },
         });
@@ -1407,7 +1424,10 @@ describe("before_tool_call hook deduplication (#15502)", () => {
           pluginId: "normal-plugin",
           hookName: "before_tool_call",
           handler: (async () => ({
-            params: { [alias]: replacement },
+            params: {
+              [alias]: replacement,
+              ...pairedReplacement,
+            },
           })) as PluginHookRegistration["handler"],
         });
       }

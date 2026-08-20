@@ -155,6 +155,14 @@ export function reconcileCodeModeExecBeforeHookParams(params: {
     Object.hasOwn(params.adjustedParams, "code") && adjustedCode !== hookCode;
   const adjustedCommandChanged =
     Object.hasOwn(params.adjustedParams, "command") && adjustedCommand !== hookCode;
+  // Invalidation must dominate a simultaneous valid rewrite; otherwise runtime
+  // ignores the invalid alias and executes the other one.
+  if (adjustedCodeChanged && readNonBlankString(adjustedCode) === undefined) {
+    return { ...params.adjustedParams, command: adjustedCode };
+  }
+  if (adjustedCommandChanged && readNonBlankString(adjustedCommand) === undefined) {
+    return { ...params.adjustedParams, code: adjustedCommand };
+  }
   if (adjustedCodeChanged === adjustedCommandChanged) {
     return params.adjustedParams;
   }
