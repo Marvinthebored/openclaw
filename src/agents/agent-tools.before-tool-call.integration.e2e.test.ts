@@ -1385,6 +1385,9 @@ describe("before_tool_call hook deduplication (#15502)", () => {
                 },
               };
             }
+            if (eventValue.toolCallId === "call-code-mode-trusted-blank") {
+              return { params: { code: "", command: "return 4;" } };
+            }
             return undefined;
           },
         },
@@ -1433,6 +1436,13 @@ describe("before_tool_call hook deduplication (#15502)", () => {
       await def.execute(
         "call-code-mode-trusted-language",
         { code: "return 3;", command: "return 3;", language: "javascript" },
+        undefined,
+        undefined,
+        extensionContext,
+      );
+      await def.execute(
+        "call-code-mode-trusted-blank",
+        { code: "return 4;", command: "return 4;" },
         undefined,
         undefined,
         extensionContext,
@@ -1548,6 +1558,23 @@ describe("before_tool_call hook deduplication (#15502)", () => {
         undefined,
         undefined,
       );
+      expect(normalHook).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({ params: { code: "", command: "" } }),
+        expect.anything(),
+      );
+      expect(trustedObserver).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({ params: { code: "", command: "" } }),
+        expect.anything(),
+      );
+      expect(execute).toHaveBeenNthCalledWith(
+        3,
+        "call-code-mode-trusted-blank",
+        { code: "", command: "" },
+        undefined,
+        undefined,
+      );
       expect(
         consumeAdjustedParamsForToolCall("call-code-mode-trusted-command", "run-main"),
       ).toEqual({ command: "return 2;", code: "return 2;" });
@@ -1557,6 +1584,10 @@ describe("before_tool_call hook deduplication (#15502)", () => {
         code: "const value: number = 3;",
         command: "const value: number = 3;",
         language: "typescript",
+      });
+      expect(consumeAdjustedParamsForToolCall("call-code-mode-trusted-blank", "run-main")).toEqual({
+        code: "",
+        command: "",
       });
     } finally {
       setActivePluginRegistry(createEmptyPluginRegistry());

@@ -122,26 +122,21 @@ export function normalizeCodeModeExecBeforeHookParams(params: {
   return normalizeCodeModeExecParams(params.params);
 }
 
-/** Normalize before-hook params when only the code-mode tool kind is available. */
-export function normalizeCodeModeExecBeforeHookParamsForToolKind(params: {
-  toolKind: unknown;
-  params: unknown;
-}): unknown {
-  if (params.toolKind !== CODE_MODE_EXEC_TOOL_KIND) {
-    return params.params;
-  }
-  return normalizeCodeModeExecParams(params.params);
-}
+type CodeModeExecReconcileOwner = { tool: AnyAgentTool } | { toolKind: unknown };
 
-/** Reconcile hook-adjusted `code` and `command` fields after code-mode normalization. */
+/** Reconcile policy- or hook-adjusted aliases after raw-input normalization. */
 export function reconcileCodeModeExecBeforeHookParams(params: {
-  tool: AnyAgentTool;
+  owner: CodeModeExecReconcileOwner;
   originalParams: unknown;
   hookParams: unknown;
   adjustedParams: unknown;
 }): unknown {
+  const isCodeModeExecOwner =
+    "tool" in params.owner
+      ? isCodeModeExecTool(params.owner.tool)
+      : params.owner.toolKind === CODE_MODE_EXEC_TOOL_KIND;
   if (
-    !isCodeModeExecTool(params.tool) ||
+    !isCodeModeExecOwner ||
     !isPlainObject(params.originalParams) ||
     !isPlainObject(params.hookParams) ||
     !isPlainObject(params.adjustedParams)
