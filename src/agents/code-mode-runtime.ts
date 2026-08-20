@@ -1,4 +1,5 @@
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { readNonBlankString } from "@openclaw/normalization-core/string-coerce";
 import { uniqueValues } from "@openclaw/normalization-core/string-normalization";
 import { parse, tokenizer } from "acorn";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -284,14 +285,15 @@ export function readCode(args: unknown): {
   const params = asToolParamsRecord(args);
   const codeParam = params.code;
   const commandParam = params.command;
-  if (
-    typeof codeParam === "string" &&
-    typeof commandParam === "string" &&
-    codeParam !== commandParam
-  ) {
+  // A blank alias is not a provided alias. Some models materialize every schema
+  // property, so a caller sending only `command` still emits `code: ""`; treating
+  // that as "provided" rejected the call before it ran.
+  const codeText = readNonBlankString(codeParam);
+  const commandText = readNonBlankString(commandParam);
+  if (codeText !== undefined && commandText !== undefined && codeText !== commandText) {
     throw new ToolInputError("code and command must match when both are provided.");
   }
-  const code = typeof commandParam === "string" ? commandParam : codeParam;
+  const code = commandText ?? codeText;
   if (typeof code !== "string" || !code.trim()) {
     throw new ToolInputError("code or command must be a non-empty string.");
   }

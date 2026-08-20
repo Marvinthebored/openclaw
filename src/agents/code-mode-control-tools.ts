@@ -2,6 +2,7 @@
  * Tags Code Mode exec/wait control tools and normalizes hook params for the
  * exec-compatible before-tool-call surface.
  */
+import { readNonBlankString } from "@openclaw/normalization-core/string-coerce";
 import { isPlainObject } from "../utils.js";
 import { normalizeToolPolicyName } from "./tool-policy.js";
 import type { AnyAgentTool } from "./tools/common.js";
@@ -67,15 +68,18 @@ function normalizeCodeModeExecParams(params: unknown): unknown {
   if (!isPlainObject(params)) {
     return params;
   }
-  const code = params.code;
-  const command = params.command;
-  if (typeof code === "string" && typeof command !== "string") {
+  // Blank is not provided: a model that materializes every schema property sends
+  // `code: ""` alongside a real `command`, which must still pair rather than read
+  // as two divergent aliases.
+  const code = readNonBlankString(params.code);
+  const command = readNonBlankString(params.command);
+  if (code !== undefined && command === undefined) {
     // Code-mode accepts both `code` and generic exec `command`; keep them paired
     // so downstream hooks can read either shape.
-    return { ...params, command: params.code };
+    return { ...params, command: code };
   }
-  if (typeof command === "string" && typeof code !== "string") {
-    return { ...params, code: params.command };
+  if (command !== undefined && code === undefined) {
+    return { ...params, code: command };
   }
   return params;
 }
