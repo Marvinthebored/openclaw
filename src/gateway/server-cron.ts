@@ -86,6 +86,10 @@ import {
   type CronStreamFireDisposition,
   resolveStreamStopReason,
 } from "./cron-stream-watchers.js";
+import {
+  fenceScheduledGatewayContextResolver,
+  runWithScheduledGatewayContext,
+} from "./scheduled-run-gateway-context.js";
 import type { GatewayCronServiceContract } from "./server-cron-contract.js";
 import { reconcileHeartbeatMonitorJobs } from "./server-cron-heartbeat-jobs.js";
 import {
@@ -93,6 +97,7 @@ import {
   sendGatewayCronWebhook,
   sendGatewayCronFailureAlert,
 } from "./server-cron-notifications.js";
+import type { GatewayRequestContext } from "./server-methods/types.js";
 import {
   bumpSessionAutomationVersion,
   claimSessionAutomationEpoch,
@@ -354,8 +359,14 @@ export function buildGatewayCronService(params: {
   deps: CliDeps;
   broadcast: (event: string, payload: unknown, opts?: { dropIfSlow?: boolean }) => void;
   env?: NodeJS.ProcessEnv;
+  resolveGatewayContext?: () => GatewayRequestContext | undefined;
 }): GatewayCronState {
   const cronLogger = getChildLogger({ module: "cron" });
+  // Fence the raw context reference behind its Gateway instance lifecycle so a
+  // long-running scheduled turn cannot resolve a retired context after shutdown.
+  const scheduledGatewayContextResolver = fenceScheduledGatewayContextResolver(
+    params.resolveGatewayContext,
+  );
   const env = params.env ?? process.env;
   const storePath = resolveCronJobsStorePathFromConfig(params.cfg, env);
   const cronEnabled = env.OPENCLAW_SKIP_CRON !== "1" && params.cfg.cron?.enabled !== false;
@@ -786,23 +797,31 @@ export function buildGatewayCronService(params: {
         ...opts,
         preserveUntargeted: true,
       });
-      return await runHeartbeatOnce({
-        cfg: runtimeConfig,
-        source: opts?.source ?? "cron",
-        intent: opts?.intent ?? "event",
-        reason: opts?.reason,
-        agentId,
-        sessionKey,
-        // Preserve ownership across this adapter so the wake does not self-block on
-        // the cron run that is awaiting it.
-        owningCronJobMarker: opts?.owningCronJobMarker,
-        owningCronLaneTaskMarker: opts?.owningCronLaneTaskMarker,
-        heartbeat: resolveCronHeartbeatOverride({
-          runtimeConfig,
-          agentId,
-          heartbeat: opts?.heartbeat,
-        }),
-        deps: { ...params.deps, runtime: defaultRuntime },
+      // Main-session cron jobs and scheduled heartbeats reach the agent through
+      // this adapter, and share the isolated path's contextless-run defect.
+      return await runWithScheduledGatewayContext({
+        ...(scheduledGatewayContextResolver
+          ? { resolveGatewayContext: scheduledGatewayContextResolver }
+          : {}),
+        run: async () =>
+          await runHeartbeatOnce({
+            cfg: runtimeConfig,
+            source: opts?.source ?? "cron",
+            intent: opts?.intent ?? "event",
+            reason: opts?.reason,
+            agentId,
+            sessionKey,
+            // Preserve ownership across this adapter so the wake does not self-block on
+            // the cron run that is awaiting it.
+            owningCronJobMarker: opts?.owningCronJobMarker,
+            owningCronLaneTaskMarker: opts?.owningCronLaneTaskMarker,
+            heartbeat: resolveCronHeartbeatOverride({
+              runtimeConfig,
+              agentId,
+              heartbeat: opts?.heartbeat,
+            }),
+            deps: { ...params.deps, runtime: defaultRuntime },
+          }),
       });
     },
     runIsolatedAgentJob: async ({
@@ -815,18 +834,25 @@ export function buildGatewayCronService(params: {
     }) => {
       const { agentId, cfg: runtimeConfig } = resolveCronAgent(job.agentId);
       const sessionKey = resolveCronSessionTargetSessionKey(job.sessionTarget) ?? `cron:${job.id}`;
-      return await runCronIsolatedAgentTurn({
-        cfg: runtimeConfig,
-        deps: params.deps,
-        job,
-        message,
-        abortSignal,
-        onExecutionStarted,
-        onExecutionPhase,
-        onLaneWait,
-        agentId,
-        sessionKey,
-        lane: "cron",
+      const runIsolatedTurn = async () =>
+        await runCronIsolatedAgentTurn({
+          cfg: runtimeConfig,
+          deps: params.deps,
+          job,
+          message,
+          abortSignal,
+          onExecutionStarted,
+          onExecutionPhase,
+          onLaneWait,
+          agentId,
+          sessionKey,
+          lane: "cron",
+        });
+      return await runWithScheduledGatewayContext({
+        ...(scheduledGatewayContextResolver
+          ? { resolveGatewayContext: scheduledGatewayContextResolver }
+          : {}),
+        run: runIsolatedTurn,
       });
     },
     runCommandJob: async ({ job, abortSignal }) => {

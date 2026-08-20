@@ -61,6 +61,8 @@ vi.mock("../../config/io.js", () => ({
   getRuntimeConfig: loadConfigMock,
 }));
 
+import { getPluginRuntimeGatewayRequestScope } from "../../plugins/runtime/gateway-request-scope.js";
+
 let capturedDispatchAgentHook: ((...args: unknown[]) => unknown) | undefined;
 let capturedDispatchWakeHook: ((...args: unknown[]) => unknown) | undefined;
 
@@ -275,6 +277,27 @@ describe("dispatchAgentHook trust handling", () => {
     expect(runCronIsolatedAgentTurnMock.mock.calls[0]?.[0]).toMatchObject({
       job: { delivery },
     });
+    await waitForFast(() => expect(getActiveGatewayRootWorkCount()).toBe(0));
+  });
+
+  it("gives a queued hook run a resolvable gateway context", async () => {
+    const gatewayContext = {
+      terminalSessions: {},
+      resolveGatewayContext: () => gatewayContext,
+    } as never;
+    let observed: unknown = "never-ran";
+    runCronIsolatedAgentTurnMock.mockImplementationOnce(async () => {
+      observed = getPluginRuntimeGatewayRequestScope()?.resolveGatewayContext?.();
+      return { status: "ok", summary: "done", delivered: false };
+    });
+    createGatewayHooksRequestHandler({
+      ...buildMinimalParams(),
+      resolveGatewayContext: () => gatewayContext,
+    });
+
+    await dispatchAgentHook(buildAgentPayload("Gateway context"));
+
+    expect(observed).toBe(gatewayContext);
     await waitForFast(() => expect(getActiveGatewayRootWorkCount()).toBe(0));
   });
 
