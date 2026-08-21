@@ -265,10 +265,49 @@ const completedTurnAdoptionLifecycleCallbacks = new WeakSet<TurnAdoptionLifecycl
 
 type FollowupLifecycleRun = Pick<FollowupRun, "steerPending" | "turnAdoptionLifecycle">;
 
-export function markFollowupRunEnqueued(run: FollowupLifecycleRun): boolean {
+/**
+ * Every place this queue can hold a turn. Overflow summarization moves a run out
+ * of `items` into the summary structures and can re-wrap it in a fresh run object
+ * (see createOverflowSummaryRetrySource), so ownership is matched on the
+ * lifecycle rather than on run identity.
+ */
+type FollowupQueueOwnershipState = {
+  items: readonly FollowupLifecycleRun[];
+  inFlight: ReadonlySet<FollowupLifecycleRun>;
+  summarySources: readonly FollowupLifecycleRun[];
+  summaryElisions: readonly { sources: readonly FollowupLifecycleRun[] }[];
+};
+
+/**
+ * Proof of ownership for a durable source waiting behind this queue. The queue
+ * holds the turn while it is queued, in flight, summarized, or being admitted,
+ * and stops holding it the moment the lifecycle completes. A source whose owner
+ * reports false is genuinely gone and must be recovered, not waited on.
+ */
+function createFollowupQueueOwnershipProbe(
+  queue: FollowupQueueOwnershipState,
+  lifecycle: TurnAdoptionLifecycle,
+): () => boolean {
+  const held = (runs: readonly FollowupLifecycleRun[]) =>
+    runs.some((item) => item.turnAdoptionLifecycle === lifecycle);
+  return () =>
+    !completedTurnAdoptionLifecycles.has(lifecycle) &&
+    (held(queue.items) ||
+      held([...queue.inFlight]) ||
+      held(queue.summarySources) ||
+      queue.summaryElisions.some((elision) => held(elision.sources)) ||
+      admittingTurnAdoptionLifecycles.has(lifecycle) ||
+      admittedTurnAdoptionLifecycles.has(lifecycle));
+}
+
+export function markFollowupRunEnqueued(
+  run: FollowupLifecycleRun,
+  queue?: FollowupQueueOwnershipState,
+): boolean {
   const lifecycle = run.turnAdoptionLifecycle;
   if (lifecycle && !enqueuedTurnAdoptionLifecycles.has(lifecycle)) {
-    if (lifecycle.onDeferred?.() === false) {
+    const isOwnerLive = queue ? createFollowupQueueOwnershipProbe(queue, lifecycle) : undefined;
+    if (lifecycle.onDeferred?.(isOwnerLive) === false) {
       return false;
     }
     enqueuedTurnAdoptionLifecycles.add(lifecycle);

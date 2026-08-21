@@ -312,9 +312,9 @@ export function buildFeishuFlushIngressLifecycle(
         handedOff = true;
         await adoptAll();
       },
-      onDeferred: () => {
+      onDeferred: (isOwnerLive) => {
         handedOff = true;
-        transportLifecycle.onDeferred();
+        transportLifecycle.onDeferred(isOwnerLive);
       },
       onAdoptionFinalizing: () => {
         transportLifecycle.onAdoptionFinalizing();

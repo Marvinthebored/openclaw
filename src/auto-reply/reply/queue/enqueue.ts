@@ -159,7 +159,7 @@ export function enqueueFollowupRun(
     return false;
   }
   if (options.steerCandidate) {
-    if (!markFollowupRunEnqueued(run)) {
+    if (!markFollowupRunEnqueued(run, queue)) {
       return false;
     }
     const { promise: acceptance, resolve: settle } = createDeferredCore<boolean>();
@@ -180,7 +180,7 @@ export function enqueueFollowupRun(
   // deciding between same-turn delivery and fallback. Append it behind the
   // anchor; ordinary overflow policy resumes as soon as the gate resolves.
   if (queue.items.some((item) => item.steerPending)) {
-    if (!markFollowupRunEnqueued(run)) {
+    if (!markFollowupRunEnqueued(run, queue)) {
       return false;
     }
     appendQueueItem({
@@ -207,7 +207,7 @@ export function enqueueFollowupRun(
     completeFollowupRunLifecycle(run);
     return false;
   }
-  if (!markFollowupRunEnqueued(run)) {
+  if (!markFollowupRunEnqueued(run, queue)) {
     return false;
   }
 

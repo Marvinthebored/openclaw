@@ -16,7 +16,7 @@ export function isIngressAdoptionLostError(error: unknown): error is IngressAdop
 
 export type ChannelIngressDrainDispatchResult =
   | { kind: "completed" }
-  | { kind: "deferred" }
+  | { kind: "deferred"; isOwnerLive?: () => boolean }
   | { kind: "failed-retryable"; error: unknown };
 
 export type ActiveHandlerState<TPayload, TMetadata> = {
@@ -34,6 +34,13 @@ export type ActiveHandlerState<TPayload, TMetadata> = {
   guillotined: boolean;
   /** Closed code: pre-adoption supersede has claimed settle ownership. */
   superseded: boolean;
+  /**
+   * Supplied at deferral by an owner that can prove it still holds this event.
+   * The stall watchdog extends its deadline while this reports true, so a claim
+   * queued behind a healthy long-running turn is not dead-lettered. Absent, the
+   * watchdog keeps its bounded pre-adoption behavior.
+   */
+  isOwnerLive?: () => boolean;
   /** Single settle owner for complete / fail / release / supersede / guillotine. */
   settleOnce: (fn: () => Promise<void>) => Promise<void>;
 };

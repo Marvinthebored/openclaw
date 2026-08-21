@@ -216,7 +216,7 @@ export function createLineWebhookSpool(options: LineWebhookSpoolOptions): LineWe
             handedOff = true;
             await boundLifecycle.onAdopted();
           },
-          onDeferred: () => {
+          onDeferred: (isOwnerLive) => {
             handedOff = true;
             if (!acceptsDeferredClaims) {
               void Promise.resolve()
@@ -230,7 +230,7 @@ export function createLineWebhookSpool(options: LineWebhookSpoolOptions): LineWe
                 });
               return;
             }
-            boundLifecycle.onDeferred();
+            boundLifecycle.onDeferred(isOwnerLive);
           },
           onAbandoned: async () => {
             handedOff = true;

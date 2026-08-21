@@ -40,12 +40,12 @@ export function createFeishuBroadcastIngressSettlement(params: {
     finalizing = true;
     params.lifecycle?.onAdoptionFinalizing();
   };
-  const defer = () => {
+  const defer = (isOwnerLive?: () => boolean) => {
     if (deferred) {
       return;
     }
     deferred = true;
-    params.lifecycle?.onDeferred();
+    params.lifecycle?.onDeferred(isOwnerLive);
   };
   const reportReplayCommitError = (error: unknown) => {
     try {
@@ -175,12 +175,12 @@ export function createFeishuBroadcastIngressSettlement(params: {
             lane.status = "completed";
             await maybeSettle();
           },
-          onDeferred: () => {
+          onDeferred: (isOwnerLive) => {
             if (lane.status !== "pending") {
               return;
             }
             lane.status = "deferred";
-            defer();
+            defer(isOwnerLive);
           },
           onAdoptionFinalizing: beginFinalizing,
           onAbandoned: async () => {

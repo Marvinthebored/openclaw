@@ -68,8 +68,12 @@ export type TurnAdoptionLifecycle = {
   /** Transcript branch leaf from which this turn was admitted. */
   originatingLeafEntryId?: string | null;
   onAdopted: () => void | Promise<void>;
-  /** Return false to reject followup enqueue. */
-  onDeferred?: () => boolean | void;
+  /**
+   * Return false to reject followup enqueue. isOwnerLive, when supplied, proves
+   * the queue still holds this turn, so a durable ingress claim behind it is not
+   * dead-lettered while it waits.
+   */
+  onDeferred?: (isOwnerLive?: () => boolean) => boolean | void;
   /** Deferred turn finished without owning the reply lane. */
   onAbandoned?: () => void;
   /** Always fires when the followup ownership cycle ends (admitted or not). Gateway cleanup. */

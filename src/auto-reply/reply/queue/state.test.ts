@@ -1,5 +1,6 @@
 // Tests queue state storage, dedupe, and cleanup primitives.
 import { afterEach, describe, expect, it } from "vitest";
+import type { TurnAdoptionLifecycle } from "../../get-reply-options.types.js";
 import { enqueueFollowupRun } from "./enqueue.js";
 import {
   clearFollowupQueue,
@@ -7,6 +8,7 @@ import {
   hasPendingFollowupQueueWork,
   refreshQueuedFollowupSession,
 } from "./state.js";
+import { markFollowupRunEnqueued } from "./types.js";
 import type { FollowupRun } from "./types.js";
 
 const QUEUE_KEY = "agent:main:dm:test";
@@ -309,5 +311,87 @@ describe("hasPendingFollowupQueueWork", () => {
     queue.evictedSummaryCount = 3;
 
     expect(hasPendingFollowupQueueWork([undefined, "", QUEUE_KEY])).toBe(false);
+  });
+});
+
+describe("durable ingress owner proof", () => {
+  function captureProbe(): { probe: () => boolean; lifecycle: TurnAdoptionLifecycle } {
+    let probe: (() => boolean) | undefined;
+    const lifecycle: TurnAdoptionLifecycle = {
+      onAdopted: () => {},
+      onDeferred: (isOwnerLive) => {
+        probe = isOwnerLive;
+      },
+    };
+    const queue = getFollowupQueue(QUEUE_KEY, { mode: "followup" });
+    const run: FollowupRun = {
+      prompt: "queued message",
+      enqueuedAt: Date.now(),
+      run: makeRun(),
+      turnAdoptionLifecycle: lifecycle,
+    };
+    markFollowupRunEnqueued(run, queue);
+    queue.items.push(run);
+    if (!probe) {
+      throw new Error("expected the queue to hand the drain an owner proof");
+    }
+    return { probe, lifecycle };
+  }
+
+  // Overflow moves a run out of items and can re-wrap it in a fresh object that
+  // keeps the same lifecycle, so every slot below has to answer true. A slot
+  // that answers false dead-letters a message the queue still owns.
+  const slots: Array<{
+    name: string;
+    move: (queue: ReturnType<typeof getFollowupQueue>, run: FollowupRun) => void;
+  }> = [
+    { name: "queued", move: () => {} },
+    {
+      name: "in flight",
+      move: (queue, run) => {
+        queue.items.length = 0;
+        queue.inFlight.add(run);
+      },
+    },
+    {
+      name: "summarized under overflow",
+      move: (queue, run) => {
+        queue.items.length = 0;
+        queue.summarySources.push({ ...run });
+      },
+    },
+    {
+      name: "elided from an overflow summary",
+      move: (queue, run) => {
+        queue.items.length = 0;
+        queue.summaryElisions.push({
+          contextKey: "ctx",
+          count: 1,
+          sources: [{ ...run }],
+          summaryLines: ["line"],
+          sourceRefs: new WeakMap(),
+        });
+      },
+    },
+  ];
+
+  for (const slot of slots) {
+    it(`reports the owner live while the turn is ${slot.name}`, () => {
+      const { probe } = captureProbe();
+      const queue = getFollowupQueue(QUEUE_KEY, { mode: "followup" });
+      const run = queue.items[0];
+      if (!run) {
+        throw new Error("expected the run to be queued");
+      }
+      slot.move(queue, run);
+      expect(probe()).toBe(true);
+    });
+  }
+
+  it("reports the owner gone once the queue drops the turn entirely", () => {
+    const { probe } = captureProbe();
+    const queue = getFollowupQueue(QUEUE_KEY, { mode: "followup" });
+    queue.items.length = 0;
+    expect(probe()).toBe(false);
   });
 });

@@ -9,9 +9,13 @@ export type ChannelIngressDispatchLifecycle = {
   onAdopted: () => void | Promise<void>;
   /**
    * Turn ownership deferred to reply-lane admission (queued followup).
-   * Claim remains held until adopted or abandoned.
+   * Claim remains held until adopted or abandoned. An owner that can prove it
+   * still holds the event passes isOwnerLive; the pre-adoption stall watchdog
+   * extends its deadline while that reports true instead of dead-lettering a
+   * claim that is merely queued. Owners that pass nothing keep the bounded
+   * pre-adoption behavior.
    */
-  onDeferred: () => void;
+  onDeferred: (isOwnerLive?: () => boolean) => void;
   /**
    * Durable adoption finalization is in progress (e.g. settlement hold while
    * committing dedupe). Clears the pre-adoption stall watchdog so a timeout
@@ -35,7 +39,7 @@ export function bindIngressLifecycleToReplyOptions(lifecycle: ChannelIngressDisp
   turnAdoptionLifecycle: {
     admission: "exclusive";
     onAdopted: () => void | Promise<void>;
-    onDeferred: () => void;
+    onDeferred: (isOwnerLive?: () => boolean) => void;
     onAbandoned: () => void | Promise<void>;
     abortSignal: AbortSignal;
   };

@@ -348,9 +348,9 @@ export function createSlackMessageHandler(params: {
                     await turnAdoptionLifecycle?.onAdopted();
                     await admissionLifecycle.onAdopted();
                   },
-                  onDeferred: () => {
-                    turnAdoptionLifecycle?.onDeferred();
-                    const admissionAccepted = admissionLifecycle.onDeferred();
+                  onDeferred: (isOwnerLive) => {
+                    turnAdoptionLifecycle?.onDeferred(isOwnerLive);
+                    const admissionAccepted = admissionLifecycle.onDeferred(isOwnerLive);
                     if (admissionAccepted === false) {
                       return false;
                     }

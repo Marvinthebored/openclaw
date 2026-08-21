@@ -490,9 +490,9 @@ export async function handleIrcInbound(params: {
           ingressState.handoff = "adopted";
           await turnAdoptionLifecycle.onAdopted();
         },
-        onDeferred: () => {
+        onDeferred: (isOwnerLive?: () => boolean) => {
           ingressState.handoff = "deferred";
-          turnAdoptionLifecycle.onDeferred();
+          turnAdoptionLifecycle.onDeferred(isOwnerLive);
         },
         onAbandoned: async () => {
           ingressState.handoff = "abandoned";

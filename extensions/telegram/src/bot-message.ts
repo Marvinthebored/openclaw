@@ -270,7 +270,7 @@ export const createTelegramMessageProcessor = (deps: TelegramMessageProcessorDep
       turnAdoptionLifecycle?: {
         admission?: "exclusive" | "cancel-only";
         onAdopted: () => void | Promise<void>;
-        onDeferred?: () => void;
+        onDeferred?: (isOwnerLive?: () => boolean) => void;
         onAbandoned?: () => void;
         abortSignal?: AbortSignal;
       };
@@ -427,9 +427,9 @@ export const createTelegramMessageProcessor = (deps: TelegramMessageProcessorDep
               }
               await drainLifecycle?.onAdopted();
             },
-            onDeferred: () => {
+            onDeferred: (isOwnerLive) => {
               deferred = true;
-              drainLifecycle?.onDeferred();
+              drainLifecycle?.onDeferred(isOwnerLive);
             },
             onAbandoned: () => {
               if (!adopted) {

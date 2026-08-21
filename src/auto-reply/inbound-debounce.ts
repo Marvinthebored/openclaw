@@ -55,7 +55,7 @@ type InboundDebounceFlush = {
 type InboundDebounceAdmissionLifecycleInput = {
   abortSignal?: AbortSignal;
   onAdopted?: () => void | Promise<void>;
-  onDeferred?: () => boolean | void;
+  onDeferred?: (isOwnerLive?: () => boolean) => boolean | void;
   onAdoptionFinalizing?: () => void;
   onFailed?: (error: unknown) => void | Promise<void>;
   onAbandoned?: () => void | Promise<void>;
@@ -65,7 +65,7 @@ type InboundDebounceAdmissionLifecycleInput = {
 type InboundDebounceAdmissionLifecycle = {
   abortSignal: AbortSignal;
   onAdopted: () => Promise<void>;
-  onDeferred: () => boolean | void;
+  onDeferred: (isOwnerLive?: () => boolean) => boolean | void;
   onAdoptionFinalizing: () => void;
   onFailed?: (error: unknown) => Promise<void>;
   onAbandoned: () => Promise<void>;
@@ -98,8 +98,8 @@ function createInboundDebounceFlush(params: {
       await source?.onAdopted?.();
       markAdmitted();
     },
-    onDeferred: () => {
-      const accepted = source?.onDeferred?.();
+    onDeferred: (isOwnerLive) => {
+      const accepted = source?.onDeferred?.(isOwnerLive);
       if (accepted !== false) {
         markAdmitted();
       }

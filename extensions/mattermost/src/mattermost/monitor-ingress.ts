@@ -22,7 +22,7 @@ const MATTERMOST_INGRESS_POLL_INTERVAL_MS = 1_000;
 export type MattermostIngressLifecycle = {
   abortSignal: AbortSignal;
   onAdopted: () => void | Promise<void>;
-  onDeferred: () => void;
+  onDeferred: (isOwnerLive?: () => boolean) => void;
   onAdoptionFinalizing: () => void;
   onAbandoned: () => void | Promise<void>;
 };

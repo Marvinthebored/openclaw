@@ -832,6 +832,33 @@ describe("channel ingress monitor", () => {
     });
   });
 
+  it("carries owner proof from a deferred delivery result to the stall watchdog", async () => {
+    vi.useFakeTimers();
+    try {
+      await withQueue(async (queue) => {
+        // Deferral reported through the delivery result rather than the
+        // lifecycle. The proof has to survive that translation, or a
+        // reply-queue-owned message lands back under the five-minute guillotine.
+        const monitor = createMonitor(queue, () => ({
+          kind: "deferred" as const,
+          isOwnerLive: () => true,
+        }));
+        monitor.start();
+        await monitor.admit({ id: "event-result-proof", lane: "a", text: "hello" });
+        await vi.waitFor(async () => expect(await queue.listClaims()).toHaveLength(1));
+
+        // Ten stall timeouts later the owner still holds it, so the claim stands.
+        await vi.advanceTimersByTimeAsync(50_000);
+        expect(await queue.listFailed?.({ limit: "all" })).toEqual([]);
+        await expect(queue.listClaims()).resolves.toHaveLength(1);
+
+        await monitor.stop();
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("stops with an outstanding deferred claim without waiting for adoption", async () => {
     await withQueue(async (queue) => {
       let deferredSignal: AbortSignal | undefined;

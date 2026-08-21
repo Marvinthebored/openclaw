@@ -21,6 +21,7 @@ import {
   registerLiveIngressDrainInstance,
 } from "./ingress-claim-owner.js";
 import type { ChannelIngressDispatchLifecycle } from "./ingress-drain-lifecycle.js";
+import { createIngressSettleOwner } from "./ingress-drain-settle.js";
 import {
   activeClaimKey,
   IngressAdoptionLostError,
@@ -358,41 +359,46 @@ export function createChannelIngressDrain<
     await releaseClaim(claim, { lastError: disposition.message });
   };
 
-  const createSettleOwner = (
-    state: ActiveHandlerState<TPayload, TMetadata>,
-  ): ((fn: () => Promise<void>) => Promise<void>) => {
-    let settlePromise: Promise<void> | undefined;
-    let settled = false;
-    return async (fn) => {
-      if (settled) {
-        return;
-      }
-      if (settlePromise) {
-        await settlePromise;
-        return;
-      }
-      settlePromise = (async () => {
-        // Only mark settled after the tombstone/fail/release write commits.
-        // Write failure must keep heartbeat + in-memory ownership (wedged > duplicated).
-        await fn();
-        settled = true;
-        state.phase = "settled";
-        removeActive(state);
-      })();
-      try {
-        await settlePromise;
-      } catch (err) {
-        settlePromise = undefined;
-        throw err;
-      }
-    };
+  /**
+   * The proof is supplied by whoever took ownership, so it is foreign code running
+   * inside a timer, and neither its return value nor its completion can be trusted.
+   * A throw must not escape: that would leave the claim neither held nor
+   * dead-lettered, which is worse than either branch. Only an exact `true` extends
+   * the deadline; anything else fails closed to the pre-existing guillotine.
+   */
+  const isDeferredOwnerLive = (state: ActiveHandlerState<TPayload, TMetadata>): boolean => {
+    if (!state.isOwnerLive) {
+      return false;
+    }
+    try {
+      // Deliberately unknown: a JavaScript caller can return a truthy non-boolean
+      // that the declared type forbids, and treating that as proof would hold the
+      // claim forever.
+      const live: unknown = state.isOwnerLive();
+      return live === true;
+    } catch (err) {
+      log(
+        `ingress drain: owner liveness check threw for event ${state.eventId}; treating the owner as gone: ${formatError(err)}`,
+      );
+      return false;
+    }
   };
 
   const armStallWatchdog = (state: ActiveHandlerState<TPayload, TMetadata>) => {
     clearStallTimer(state);
     state.stallTimer = setTimeout(() => {
-      // Pre-adoption only (dispatching OR deferred). Timer is not cleared by deferral.
+      // Pre-adoption only.
       if (state.phase !== "dispatching" && state.phase !== "deferred") {
+        return;
+      }
+      // Deferral declares ownership, not liveness, so it alone must not disarm the
+      // guillotine. An owner that can prove it still holds this event gets the
+      // deadline extended instead: waiting behind a healthy long-running turn is
+      // queued, not stalled, and dead-lettering it destroys an accepted user
+      // message. An owner that cannot prove it, or supplies no proof at all, keeps
+      // the original bounded behavior.
+      if (state.phase === "deferred" && isDeferredOwnerLive(state)) {
+        armStallWatchdog(state);
         return;
       }
       const ageMs = now() - state.startedAt;
@@ -465,12 +471,22 @@ export function createChannelIngressDrain<
           await completeClaimWithRetry(state.claim);
         });
       },
-      onDeferred: () => {
+      onDeferred: (isOwnerLive) => {
+        if (state.phase === "deferred") {
+          // Ownership can be declared before the owner can prove itself: a
+          // channel defers at dispatch, and only later does the reply queue
+          // learn it holds the turn and offer a probe. Accept the late proof
+          // instead of leaving the claim under the stall watchdog.
+          state.isOwnerLive ??= isOwnerLive;
+          return;
+        }
         if (state.phase !== "dispatching") {
           return;
         }
-        // Deferred holds the claim; watchdog remains armed until adoption or abandon.
+        // Deferred holds the claim. The watchdog keeps its original deadline and
+        // asks this probe at fire time whether the owner still holds the event.
         state.phase = "deferred";
+        state.isOwnerLive = isOwnerLive;
         if (deferredLaneOccupancy === "release") {
           if (laneOwnerByKey.get(state.laneKey) === state) {
             laneOwnerByKey.delete(state.laneKey);
@@ -546,7 +562,7 @@ export function createChannelIngressDrain<
       task: Promise.resolve(),
       settleOnce: async () => {},
     } as ActiveHandlerState<TPayload, TMetadata>;
-    state.settleOnce = createSettleOwner(state);
+    state.settleOnce = createIngressSettleOwner({ state, removeActive });
     const lifecycle = createLifecycle(state);
     armStallWatchdog(state);
     armClaimRefresh(state);
@@ -585,7 +601,7 @@ export function createChannelIngressDrain<
           return;
         }
         if (result?.kind === "deferred") {
-          lifecycle.onDeferred();
+          lifecycle.onDeferred(result.isOwnerLive);
           return;
         }
         if (result?.kind === "failed-retryable") {

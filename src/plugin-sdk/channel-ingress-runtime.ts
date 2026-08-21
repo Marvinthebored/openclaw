@@ -174,10 +174,10 @@ export function fanInChannelIngressLifecycles(
         handedOff = true;
         await adoptAll();
       },
-      onDeferred: () => {
+      onDeferred: (isOwnerLive) => {
         handedOff = true;
         for (const lifecycle of lifecycles) {
-          lifecycle.onDeferred();
+          lifecycle.onDeferred(isOwnerLive);
         }
       },
       onAdoptionFinalizing: () => {

@@ -160,8 +160,8 @@ export async function dispatchSmsInboundEvent(params: {
                 throw error;
               }
             },
-            onDeferred: () => {
-              const deferred = params.turnAdoptionLifecycle?.onDeferred?.();
+            onDeferred: (isOwnerLive?: () => boolean) => {
+              const deferred = params.turnAdoptionLifecycle?.onDeferred?.(isOwnerLive);
               if (deferred !== false) {
                 adoptionState = "deferred";
               }

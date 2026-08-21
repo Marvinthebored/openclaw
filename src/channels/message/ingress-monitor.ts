@@ -63,7 +63,7 @@ export type ChannelIngressMonitorLifecycle = {
   admission: "exclusive";
   abortSignal: AbortSignal;
   onAdopted: () => void | Promise<void>;
-  onDeferred: () => void;
+  onDeferred: (isOwnerLive?: () => boolean) => void;
   onAdoptionFinalizing: () => void;
   onFailed?: (error: unknown) => void | Promise<void>;
   onCancelled?: () => void | Promise<void>;
@@ -73,7 +73,7 @@ export type ChannelIngressMonitorLifecycle = {
 /** Optional explicit outcome from a channel delivery. */
 export type ChannelIngressMonitorDeliveryResult =
   | { kind: "completed" }
-  | { kind: "deferred" }
+  | { kind: "deferred"; isOwnerLive?: () => boolean }
   | { kind: "failed-retryable"; error: unknown };
 
 type ChannelIngressMonitorInspectionContext =
@@ -392,13 +392,13 @@ export function createChannelIngressMonitor<TRaw, TBody, TStoredPayload, TMetada
               settleDeferredClaim();
             }
           },
-          onDeferred: () => {
+          onDeferred: (isOwnerLive) => {
             handedOff = true;
             deferredHandoff = true;
             if (deferredClaim && !deferredClaimSettled) {
               deferredClaims.add(deferredClaim);
             }
-            lifecycle.onDeferred();
+            lifecycle.onDeferred(isOwnerLive);
           },
           onAdoptionFinalizing: () => {
             handedOff = true;
@@ -440,9 +440,11 @@ export function createChannelIngressMonitor<TRaw, TBody, TStoredPayload, TMetada
         }
         if (result?.kind === "deferred") {
           if (!deferredHandoff) {
-            wrappedLifecycle.onDeferred();
+            wrappedLifecycle.onDeferred(result.isOwnerLive);
           }
-          return { kind: "deferred" };
+          // Carry the owner proof to the drain: dropping it here is how a
+          // reply-queue-owned message ends up back under the stall watchdog.
+          return { kind: "deferred", isOwnerLive: result.isOwnerLive };
         }
         if (!handedOff) {
           // A policy gate or deliberate no-dispatch is terminal for transport replay.

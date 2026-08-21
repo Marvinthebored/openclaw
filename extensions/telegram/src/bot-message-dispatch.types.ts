@@ -45,7 +45,7 @@ export type DispatchTelegramMessageParams = {
   turnAdoptionLifecycle?: {
     admission?: "exclusive" | "cancel-only";
     onAdopted: () => void | Promise<void>;
-    onDeferred?: () => void;
+    onDeferred?: (isOwnerLive?: () => boolean) => void;
     onAbandoned?: () => void;
     abortSignal?: AbortSignal;
   };

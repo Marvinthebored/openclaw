@@ -134,9 +134,9 @@ export function createTwitchIngress(options: {
             handedOff = true;
             await lifecycle.onAdopted();
           },
-          onDeferred: () => {
+          onDeferred: (isOwnerLive) => {
             handedOff = true;
-            lifecycle.onDeferred();
+            lifecycle.onDeferred(isOwnerLive);
           },
           onAbandoned: async () => {
             handedOff = true;
