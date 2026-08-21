@@ -157,10 +157,10 @@ export type CronServiceDeps = {
     sessionKey?: string;
     agentId?: string;
   }) => DeliveryContext | undefined;
+  /** Runs timer and startup work inside the owning Gateway's detached scope. */
+  runSchedulerOwned?: <T>(run: () => Promise<T>) => Promise<T>;
   requestHeartbeat: (opts: HeartbeatWakeRequest) => void;
   runHeartbeatOnce?: (opts?: {
-    /** Timer/startup work must not inherit the request scope that armed it. */
-    schedulerOwned?: boolean;
     source?: HeartbeatWakeRequest["source"];
     intent?: HeartbeatWakeRequest["intent"];
     reason?: string;
@@ -182,8 +182,6 @@ export type CronServiceDeps = {
   /** WakeMode=now: delay between runHeartbeatOnce retries while busy. */
   wakeNowHeartbeatBusyRetryDelayMs?: number;
   runIsolatedAgentJob: (params: {
-    /** Timer/startup work must not inherit the request scope that armed it. */
-    schedulerOwned?: boolean;
     job: CronJob;
     message: string;
     abortSignal?: AbortSignal;

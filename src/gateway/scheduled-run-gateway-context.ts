@@ -8,7 +8,6 @@
  */
 import { withPluginRuntimeGatewayContextResolver } from "../plugins/runtime/gateway-request-scope.js";
 import type { GatewayRequestContext } from "./server-methods/types.js";
-import { getInProcessGatewayRequestContext } from "./server-plugin-in-process-dispatch.js";
 
 type ScheduledGatewayContextResolver = () => GatewayRequestContext | undefined;
 
@@ -35,23 +34,18 @@ export function fenceScheduledGatewayContextResolver(
 /**
  * Runs scheduler-owned work with a Gateway context.
  *
- * Timer/startup work replaces any request scope inherited while its timer was
- * armed. Caller-owned work preserves a resolvable context; registry-only and
- * plugin-identity scopes still receive the scheduler resolver.
+ * Detached work replaces any request scope inherited when it was queued or
+ * armed. Caller-owned work must stay outside this boundary.
  */
 export async function runWithScheduledGatewayContext<T>(params: {
   resolveGatewayContext?: ScheduledGatewayContextResolver;
-  replaceExistingContext?: boolean;
   run: () => Promise<T>;
 }): Promise<T> {
   const resolveGatewayContext = params.resolveGatewayContext;
-  if (
-    !resolveGatewayContext ||
-    (!params.replaceExistingContext && getInProcessGatewayRequestContext())
-  ) {
+  if (!resolveGatewayContext) {
     return await params.run();
   }
   return await withPluginRuntimeGatewayContextResolver(resolveGatewayContext, params.run, {
-    inheritRequestScope: !params.replaceExistingContext,
+    inheritRequestScope: false,
   });
 }

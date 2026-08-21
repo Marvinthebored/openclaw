@@ -120,7 +120,6 @@ export type StartupCatchupExecution =
   | { ok: false; outcomes: TimedCronRunOutcome[]; error: unknown };
 
 export type ExecuteJobCoreOptions = {
-  schedulerOwned?: boolean;
   activeJobMarker?: CronActiveJobMarker;
   owningCronLaneTaskMarker?: CommandLaneTaskMarker;
   onExecutionStarted?: (info?: CronAgentExecutionStarted) => void;

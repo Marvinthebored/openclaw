@@ -98,7 +98,10 @@ vi.mock("./channel-health-monitor.js", () => ({
   startChannelHealthMonitor: hoisted.startChannelHealthMonitor,
 }));
 
-import { getPluginRuntimeGatewayRequestScope } from "../plugins/runtime/gateway-request-scope.js";
+import {
+  getPluginRuntimeGatewayRequestScope,
+  withPluginRuntimeGatewayRequestScope,
+} from "../plugins/runtime/gateway-request-scope.js";
 
 const {
   activateGatewayScheduledServices,
@@ -402,8 +405,11 @@ describe("server-runtime-services", () => {
       resolveGatewayContext: () => gatewayContext,
     } as never;
     let observed: unknown = "never-ran";
+    let observedClient: unknown = "never-ran";
     hoisted.runHeartbeatOnce.mockImplementationOnce(async () => {
-      observed = getPluginRuntimeGatewayRequestScope()?.resolveGatewayContext?.();
+      const scope = getPluginRuntimeGatewayRequestScope();
+      observed = scope?.resolveGatewayContext?.();
+      observedClient = scope?.client;
       return { status: "ran", durationMs: 1 };
     });
     const { services } = activateScheduledServicesForTest({
@@ -413,9 +419,12 @@ describe("server-runtime-services", () => {
       | { runOnce?: (opts: never) => Promise<unknown> }
       | undefined;
 
-    await runnerParams?.runOnce?.({} as never);
+    await withPluginRuntimeGatewayRequestScope({ client: { id: "retired-request" } } as never, () =>
+      runnerParams?.runOnce?.({} as never),
+    );
 
     expect(observed).toBe(gatewayContext);
+    expect(observedClient).toBeUndefined();
     services.heartbeatRunner.stop();
   });
 
