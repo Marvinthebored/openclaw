@@ -45,6 +45,7 @@ type CronCoreRunOutcome = Awaited<ReturnType<typeof executeJobCore>> & {
 };
 type CronCoreRunOptions = {
   runId?: string;
+  schedulerOwned?: boolean;
   activeJobMarker?: CronActiveJobMarker;
   owningCronLaneTaskMarker?: CommandLaneTaskMarker;
   streamBatch?: string;
@@ -260,6 +261,7 @@ async function executeJobCoreWithTimeoutUnfinalized(
       };
       const progress: CronRunProgress = {};
       const coreOptions = {
+        schedulerOwned: opts?.schedulerOwned,
         activeJobMarker: opts?.activeJobMarker,
         owningCronLaneTaskMarker: opts?.owningCronLaneTaskMarker,
         streamBatch: opts?.streamBatch,
@@ -346,6 +348,7 @@ async function executeJobCoreWithTimeoutUnfinalized(
     };
     const progress: CronRunProgress = {};
     const coreOptions = {
+      schedulerOwned: opts?.schedulerOwned,
       activeJobMarker: opts?.activeJobMarker,
       owningCronLaneTaskMarker: opts?.owningCronLaneTaskMarker,
       streamBatch: opts?.streamBatch,

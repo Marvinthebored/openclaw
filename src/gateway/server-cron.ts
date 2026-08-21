@@ -803,6 +803,7 @@ export function buildGatewayCronService(params: {
         ...(scheduledGatewayContextResolver
           ? { resolveGatewayContext: scheduledGatewayContextResolver }
           : {}),
+        replaceExistingContext: opts?.schedulerOwned,
         run: async () =>
           await runHeartbeatOnce({
             cfg: runtimeConfig,
@@ -825,6 +826,7 @@ export function buildGatewayCronService(params: {
       });
     },
     runIsolatedAgentJob: async ({
+      schedulerOwned,
       job,
       message,
       abortSignal,
@@ -852,6 +854,7 @@ export function buildGatewayCronService(params: {
         ...(scheduledGatewayContextResolver
           ? { resolveGatewayContext: scheduledGatewayContextResolver }
           : {}),
+        replaceExistingContext: schedulerOwned,
         run: runIsolatedTurn,
       });
     },

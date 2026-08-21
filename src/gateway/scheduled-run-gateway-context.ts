@@ -33,20 +33,25 @@ export function fenceScheduledGatewayContextResolver(
 }
 
 /**
- * Runs scheduler-owned work with a Gateway context when it has none.
+ * Runs scheduler-owned work with a Gateway context.
  *
- * Tests for a resolvable context rather than for scope existence: registry-only
- * and plugin-identity scopes carry neither `context` nor a resolver, so a
- * scope-existence check would skip the wrapper in exactly the contextless case
- * it exists to repair.
+ * Timer/startup work replaces any request scope inherited while its timer was
+ * armed. Caller-owned work preserves a resolvable context; registry-only and
+ * plugin-identity scopes still receive the scheduler resolver.
  */
 export async function runWithScheduledGatewayContext<T>(params: {
   resolveGatewayContext?: ScheduledGatewayContextResolver;
+  replaceExistingContext?: boolean;
   run: () => Promise<T>;
 }): Promise<T> {
   const resolveGatewayContext = params.resolveGatewayContext;
-  if (!resolveGatewayContext || getInProcessGatewayRequestContext()) {
+  if (
+    !resolveGatewayContext ||
+    (!params.replaceExistingContext && getInProcessGatewayRequestContext())
+  ) {
     return await params.run();
   }
-  return await withPluginRuntimeGatewayContextResolver(resolveGatewayContext, params.run);
+  return await withPluginRuntimeGatewayContextResolver(resolveGatewayContext, params.run, {
+    inheritRequestScope: !params.replaceExistingContext,
+  });
 }

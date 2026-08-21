@@ -218,8 +218,11 @@ import {
   trackActiveCronTaskRunSettlement,
 } from "../cron/service/active-run-cancellation.js";
 import { resetActiveCronTaskRunsForTests } from "../cron/service/active-run-cancellation.test-support.js";
+import type { CronServiceState } from "../cron/service/state.js";
+import { armTimer } from "../cron/service/timer.js";
 import type { CronJob } from "../cron/types.js";
 import {
+  getPluginRuntimeGatewayRequestScope,
   withPluginRuntimeGatewayRequestScope,
   withPluginRuntimeRegistryScope,
 } from "../plugins/runtime/gateway-request-scope.js";
@@ -3623,20 +3626,29 @@ describe("buildGatewayCronService", () => {
     }
   });
 
-  it("gives a scheduler-triggered isolated run a resolvable gateway context", async () => {
-    // A timer tick has no Gateway request of its own. Without a resolver the
-    // isolated run sees no context and trusted built-in tools (terminal,
-    // dashboard) throw "terminal unavailable" mid-run.
+  it("replaces the request scope inherited by a scheduler timer", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-21T01:00:00.000Z"));
     const cfg = createCronConfig("server-cron-scheduled-gateway-context");
     loadConfigMock.mockReturnValue(cfg);
     const gatewayContext = {
       terminalSessions: {},
-      // Real contexts fence themselves behind their Gateway instance lifecycle.
       resolveGatewayContext: () => gatewayContext,
     } as never;
+    let requestContextActive = true;
+    const retiredRequestContext = {
+      terminalSessions: { retired: true },
+      resolveGatewayContext: () => (requestContextActive ? retiredRequestContext : undefined),
+    } as never;
+    const retiredRequestClient = { id: "retired-request" } as never;
     let observed: unknown = "never-ran";
+    let observedClient: unknown = "never-ran";
+    let observedSchedulerOwned: unknown = "never-ran";
+    const ran = createDeferred();
     runCronIsolatedAgentTurnMock.mockImplementationOnce(async () => {
       observed = getInProcessGatewayToolContext();
+      observedClient = getPluginRuntimeGatewayRequestScope()?.client;
+      ran.resolve();
       return { status: "ok", text: "done" } as never;
     });
 
@@ -3647,21 +3659,41 @@ describe("buildGatewayCronService", () => {
       resolveGatewayContext: () => gatewayContext,
     });
     try {
-      const job = await state.cron.add({
+      await state.cron.start();
+      await state.cron.add({
         name: "scheduled-isolated",
         enabled: true,
         deleteAfterRun: false,
-        schedule: { kind: "at", at: new Date(1).toISOString() },
+        schedule: { kind: "at", at: new Date(Date.now() + 60_000).toISOString() },
         sessionTarget: "isolated",
         wakeMode: "next-heartbeat",
         payload: { kind: "agentTurn", message: "run it" },
       });
+      const cronState = (state.cron as unknown as { state: CronServiceState }).state;
+      const runIsolatedAgentJob = cronState.deps.runIsolatedAgentJob;
+      cronState.deps.runIsolatedAgentJob = async (params) => {
+        observedSchedulerOwned = params.schedulerOwned;
+        return await runIsolatedAgentJob(params);
+      };
+      withPluginRuntimeGatewayRequestScope(
+        {
+          context: retiredRequestContext,
+          client: retiredRequestClient,
+          isWebchatConnect: () => false,
+        } as never,
+        () => armTimer(cronState),
+      );
+      requestContextActive = false;
 
-      await state.cron.run(job.id, "force");
+      await vi.advanceTimersByTimeAsync(60_000);
+      await ran.promise;
 
       expect(observed).toBe(gatewayContext);
+      expect(observedClient).toBeUndefined();
+      expect(observedSchedulerOwned).toBe(true);
     } finally {
       state.cron.stop();
+      vi.useRealTimers();
     }
   });
 

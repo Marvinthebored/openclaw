@@ -211,6 +211,7 @@ export async function executeJobCore(
       waitWithAbort,
       options?.activeJobMarker,
       options?.owningCronLaneTaskMarker,
+      options?.schedulerOwned,
     );
     return triggerEval ? { ...result, triggerEval } : result;
   }
@@ -232,6 +233,7 @@ async function executeMainSessionCronJob(
   waitWithAbort: (ms: number) => Promise<void>,
   activeJobMarker?: CronActiveJobMarker,
   owningCronLaneTaskMarker?: CommandLaneTaskMarker,
+  schedulerOwned?: boolean,
 ): Promise<
   CronRunOutcome &
     CronRunTelemetry & {
@@ -278,6 +280,7 @@ async function executeMainSessionCronJob(
       }
       try {
         heartbeatResult = await state.deps.runHeartbeatOnce({
+          schedulerOwned,
           source: "cron",
           intent: "immediate",
           reason,
@@ -453,6 +456,7 @@ async function executeDetachedCronJob(
   }
 
   const res = await state.deps.runIsolatedAgentJob({
+    schedulerOwned: options?.schedulerOwned,
     job,
     message: job.payload.message,
     abortSignal,

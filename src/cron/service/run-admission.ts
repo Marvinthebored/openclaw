@@ -649,6 +649,7 @@ export async function executeQueuedCronRun(params: {
     try {
       const result = await executeJobCoreWithTimeout(state, executionJob, {
         runId: taskRunId,
+        schedulerOwned: true,
         activeJobMarker,
         runReceipt: started.runReceipt,
       });
