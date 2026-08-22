@@ -48,8 +48,9 @@ troubleshooting, see the main [FAQ](/help/faq).
   <Accordion title="How do I switch models without wiping my config?">
     Change only the model fields — avoid full config replaces.
 
-    - `/model <model> -s` in chat (current session only; see [Slash commands](/tools/slash-commands))
-    - direct owner/admin `/model <model>` (current session plus a best-effort configured-default update request)
+    - `/model <model>` or `/model <model> -s` in chat (current session only)
+    - owner/admin `/model <model> -a` (current session and agent default)
+    - owner/admin `/model <model> -g` (current session and global default)
     - `openclaw models set ...` (updates just model config)
     - `openclaw configure --section model` (interactive)
     - edit `agents.defaults.model` in `~/.openclaw/openclaw.json` directly
@@ -87,9 +88,8 @@ troubleshooting, see the main [FAQ](/help/faq).
   </Accordion>
 
   <Accordion title="How do I switch models on the fly (without restarting)?">
-    Send `/model <name> -s` as a standalone message for a temporary switch.
-    A direct owner/admin `/model <name>` without `-s` also requests a
-    best-effort configured-default update. See
+    Send `/model <name>` as a standalone message for a session switch. Add
+    `-s` to make the session scope explicit. See
     [Slash commands](/tools/slash-commands) for the
     full command list, including the numbered picker (`/model`, `/model
     list`, `/model 3`), `/model default` to clear a session model override, and
@@ -279,9 +279,8 @@ troubleshooting, see the main [FAQ](/help/faq).
     }
     ```
 
-    Then `/model sonnet -s` resolves to that model id for the current session.
-    Omit `-s` only when an owner/admin also wants to request a configured-default
-    update.
+    Then `/model sonnet` resolves to that model ID for the current session.
+    Use `-a` to update the agent default. Use `-g` to update the global default.
 
   </Accordion>
 

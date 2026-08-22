@@ -237,7 +237,7 @@ describe("mixed inline directives", () => {
     expect(persistenceMocks.persist).toHaveBeenCalledOnce();
     expect(triggerSessionPatchHook).toHaveBeenCalledOnce();
     expect(refreshQueuedFollowupSession).toHaveBeenCalledOnce();
-    expect(persistStickyModelSelectionBestEffort).toHaveBeenCalledOnce();
+    expect(persistStickyModelSelectionBestEffort).not.toHaveBeenCalled();
     expect(enqueueSystemEvent).toHaveBeenCalledOnce();
     expect(enqueueSystemEvent).toHaveBeenCalledWith("Model switched to openai/gpt-5.6-luna.", {
       sessionKey: "agent:main:dm:1",
@@ -478,9 +478,9 @@ describe("mixed inline directives", () => {
   );
 
   it.each([
-    { name: "directive-only", body: "/model openai/gpt-5.6-luna" },
-    { name: "mixed-content", body: "please reply /model openai/gpt-5.6-luna" },
-  ])("reports immutable config for an owner $name selection", async ({ body }) => {
+    { name: "directive-only", body: "/model openai/gpt-5.6-luna -a" },
+    { name: "mixed-content", body: "please reply /model openai/gpt-5.6-luna -a" },
+  ])("reports immutable config for an owner $name agent-default selection", async ({ body }) => {
     vi.mocked(persistStickyModelSelectionBestEffort).mockReturnValueOnce("skipped-immutable");
 
     const { result } = await applyMixedDirectives({
@@ -490,7 +490,7 @@ describe("mixed inline directives", () => {
     });
 
     const expectedText =
-      "Model set to openai/gpt-5.6-luna for this session. Configured default unchanged because configuration is immutable.";
+      "Model set to openai/gpt-5.6-luna for this session. Agent default unchanged because configuration is immutable.";
     expect(result).toMatchObject(
       body.startsWith("/model")
         ? { kind: "reply", reply: { text: expectedText } }
@@ -498,7 +498,7 @@ describe("mixed inline directives", () => {
     );
   });
 
-  it("does not let a partial session option suppress the configured-default write", async () => {
+  it("keeps a partial scope option as text without enabling persistence", async () => {
     const { result } = await applyMixedDirectives({
       body: "please reply /model openai/gpt-5.6-luna -slow",
       senderIsOwner: true,
@@ -510,10 +510,10 @@ describe("mixed inline directives", () => {
       provider: "openai",
       model: "gpt-5.6-luna",
       directiveAck: {
-        text: "Model set to openai/gpt-5.6-luna for this session. Configured default update requested.",
+        text: "Model set to openai/gpt-5.6-luna for this session only; configured default unchanged.",
       },
     });
-    expect(persistStickyModelSelectionBestEffort).toHaveBeenCalledOnce();
+    expect(persistStickyModelSelectionBestEffort).not.toHaveBeenCalled();
   });
 
   it("clears an incompatible auth pin with a cross-provider /model default -s", async () => {

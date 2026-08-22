@@ -15,6 +15,7 @@ export type StickyModelSelectionDispatchOutcome = "requested" | "skipped-immutab
 async function persistStickyModelSelection(params: {
   agentId: string;
   model: string;
+  target?: AgentModelPrimaryWriteTarget;
 }): Promise<AgentModelPrimaryWriteTarget> {
   const model = normalizeOptionalString(params.model);
   if (!model) {
@@ -23,7 +24,13 @@ async function persistStickyModelSelection(params: {
   const agentId = normalizeAgentId(params.agentId);
   const committed = await mutateConfigFileWithRetry<AgentModelPrimaryWriteTarget>({
     afterWrite: { mode: "auto" },
-    mutate: (draft) => setAgentEffectiveModelPrimary(draft, agentId, model),
+    mutate: (draft) =>
+      setAgentEffectiveModelPrimary(
+        draft,
+        agentId,
+        model,
+        params.target ? { target: params.target } : {},
+      ),
   });
   if (!committed.result) {
     throw new Error("Sticky model config mutation did not return its write target.");
@@ -38,6 +45,7 @@ async function persistStickyModelSelection(params: {
 export function persistStickyModelSelectionBestEffort(params: {
   agentId: string;
   model: string;
+  target?: AgentModelPrimaryWriteTarget;
 }): StickyModelSelectionDispatchOutcome {
   if (resolveIsNixMode()) {
     // A Nix-managed gateway can switch models but can never persist this preference.

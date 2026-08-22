@@ -513,14 +513,11 @@ export async function handleDirectiveOnly(
         return rejectModelTransaction(errorText);
       }
     }
-    if (
-      modelSelection &&
-      !modelSelection.isDefault &&
-      params.canPersistStickyModelSelection === true
-    ) {
+    if (modelSelection && params.stickyModelSelectionTarget) {
       configuredDefaultUpdate = persistStickyModelSelectionBestEffort({
         agentId: activeAgentId,
         model: `${modelSelection.provider}/${modelSelection.model}`,
+        target: params.stickyModelSelectionTarget,
       });
     }
     if (modelSelection && modelSelectionUpdated && sessionKey) {
@@ -650,6 +647,9 @@ export async function handleDirectiveOnly(
         isDefault: modelSelection.isDefault,
         label: labelWithAlias,
         configuredDefaultUpdate,
+        ...(params.stickyModelSelectionTarget
+          ? { stickyModelSelectionTarget: params.stickyModelSelectionTarget }
+          : {}),
       }),
     );
     if (profileOverride) {

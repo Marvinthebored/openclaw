@@ -184,11 +184,17 @@ export async function applyInlineDirectiveOverrides(params: {
   let { directives } = params;
   let { provider, model } = params;
   let { contextTokens } = params;
+  const stickyModelSelectionTarget =
+    directives.modelScope === "agent"
+      ? ("agent" as const)
+      : directives.modelScope === "global"
+        ? ("defaults" as const)
+        : undefined;
+  const canWriteModelDefaults = Array.isArray(ctx.GatewayClientScopes)
+    ? ctx.GatewayClientScopes.includes("operator.admin")
+    : command.senderIsOwner;
   const canPersistStickyModelSelection =
-    !directives.modelSessionOnly &&
-    (Array.isArray(ctx.GatewayClientScopes)
-      ? ctx.GatewayClientScopes.includes("operator.admin")
-      : command.senderIsOwner);
+    stickyModelSelectionTarget !== undefined && canWriteModelDefaults;
   const directiveModelState = {
     allowedModelKeys: modelState.allowedModelKeys,
     allowedModelCatalog: modelState.allowedModelCatalog,
@@ -214,7 +220,7 @@ export async function applyInlineDirectiveOverrides(params: {
     model,
     initialModelLabel,
     formatModelSwitchEvent,
-    canPersistStickyModelSelection,
+    ...(stickyModelSelectionTarget ? { stickyModelSelectionTarget } : {}),
   });
 
   let directiveAck: ReplyPayload | undefined;
@@ -239,6 +245,25 @@ export async function applyInlineDirectiveOverrides(params: {
 
   if (!command.isAuthorizedSender) {
     directives = clearInlineDirectives(directives.cleaned);
+  }
+
+  if (directives.modelScopeConflict) {
+    typing.cleanup();
+    return {
+      kind: "reply",
+      reply: { text: "Use only one model scope option.", isError: true },
+    };
+  }
+
+  if (stickyModelSelectionTarget && !canWriteModelDefaults) {
+    typing.cleanup();
+    return {
+      kind: "reply",
+      reply: {
+        text: "Agent and global model defaults require owner authority or operator.admin scope.",
+        isError: true,
+      },
+    };
   }
 
   if (
@@ -405,6 +430,7 @@ export async function applyInlineDirectiveOverrides(params: {
           modelCatalog: modelState.allowedModelCatalog,
           thinkingCatalog: modelState.allowedModelCatalog,
           canPersistStickyModelSelection,
+          ...(stickyModelSelectionTarget ? { stickyModelSelectionTarget } : {}),
           request: {
             ...modelSelection,
             profileOverride: modelResolution.profileOverride,
@@ -430,6 +456,7 @@ export async function applyInlineDirectiveOverrides(params: {
             isDefault: modelSelection.isDefault,
             label: labelWithAlias,
             configuredDefaultUpdate: applied.configuredDefaultUpdate,
+            ...(stickyModelSelectionTarget ? { stickyModelSelectionTarget } : {}),
           }),
           applied.thinkingRemap
             ? `Thinking level set to ${applied.thinkingRemap.to} (${applied.thinkingRemap.from} not supported for ${applied.thinkingRemap.provider}/${applied.thinkingRemap.model}).`
