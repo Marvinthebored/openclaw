@@ -88,17 +88,27 @@ describe("dispatchInteraction", () => {
       expect.objectContaining({
         body: expect.objectContaining({
           content: expect.stringContaining("failed"),
+          allowed_mentions: { parse: [] },
+        }),
+      }),
+    );
+    // The exception text must not reach the channel; it carries the agent dir.
+    expect(patch).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        body: expect.objectContaining({
+          content: expect.stringContaining("prepared model catalog"),
         }),
       }),
     );
   });
 
-  it("suppresses mention parsing in the failure notice", async () => {
-    // The detail is an arbitrary exception message. Sent as a bare string it
-    // would be mention-parsed by Discord, so a handler throwing text containing
-    // @everyone would ping the channel.
+  it("keeps handler exception text out of the channel", async () => {
+    // An interaction response is visible to the whole channel, and the notice
+    // used to interpolate the exception message. That both disclosed internal
+    // detail and let Discord mention-parse whatever the handler threw.
     const run = vi.fn(async () => {
-      throw new Error("@everyone broke the catalog");
+      throw new Error("@everyone broke the catalog at /Users/someone/.openclaw");
     });
     class MentionThrowingCommand extends Command {
       override name = "boom";
@@ -121,13 +131,18 @@ describe("dispatchInteraction", () => {
       ),
     ).rejects.toThrow("@everyone broke the catalog");
 
+    for (const leak of ["@everyone", "/Users/someone/.openclaw"]) {
+      expect(patch).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          body: expect.objectContaining({ content: expect.stringContaining(leak) }),
+        }),
+      );
+    }
     expect(patch).toHaveBeenCalledWith(
       "/webhooks/app1/token1/messages/%40original",
       expect.objectContaining({
-        body: expect.objectContaining({
-          content: expect.stringContaining("@everyone"),
-          allowed_mentions: { parse: [] },
-        }),
+        body: expect.objectContaining({ allowed_mentions: { parse: [] } }),
       }),
     );
   });

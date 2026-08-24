@@ -71,7 +71,7 @@ export async function dispatchInteraction(
   } catch (error) {
     // A handler that throws after deferring leaves Discord showing a spinner
     // forever, so surface the failure before rethrowing for the caller's log.
-    await reportInteractionFailure(interaction, error);
+    await reportInteractionFailure(interaction);
     throw error;
   }
 }
@@ -127,7 +127,13 @@ async function dispatchAcknowledgeableInteraction(
   }
 }
 
-const INTERACTION_FAILURE_DETAIL_LIMIT = 300;
+/**
+ * Fixed text. The thrown error is deliberately not echoed here: an interaction
+ * response is visible to the whole channel, and handler exceptions routinely
+ * carry absolute paths, config keys, and provider responses. The rethrow keeps
+ * the detail in the Gateway log where operators already look for it.
+ */
+const INTERACTION_FAILURE_NOTICE = "Command failed. Check the Gateway logs for details.";
 
 type FailureReportableInteraction = {
   responseState: InteractionResponseState;
@@ -156,10 +162,7 @@ type FailureReportableInteraction = {
  * - `replied`         the user has seen a message, and nextReplyAction() would
  *                     turn this into a contradictory follow-up beside it.
  */
-async function reportInteractionFailure(
-  interaction: FailureReportableInteraction,
-  error: unknown,
-): Promise<void> {
+async function reportInteractionFailure(interaction: FailureReportableInteraction): Promise<void> {
   if (interaction.responseState !== "deferred") {
     return;
   }
@@ -171,16 +174,11 @@ async function reportInteractionFailure(
     return;
   }
   try {
-    const detail = error instanceof Error ? error.message : String(error);
-    const trimmed =
-      detail.length > INTERACTION_FAILURE_DETAIL_LIMIT
-        ? `${detail.slice(0, INTERACTION_FAILURE_DETAIL_LIMIT)}…`
-        : detail;
-    // The detail is an arbitrary exception message. Sending it as a bare string
-    // would let Discord parse mentions inside it, so a handler that throws text
-    // containing @everyone or a role mention would ping the channel.
+    // allowed_mentions stays pinned even though the notice is a constant, so a
+    // later change to this text cannot silently gain the ability to ping a
+    // channel through Discord's default mention parsing.
     await interaction.reply({
-      content: `Command failed: ${trimmed || "unknown error"}`,
+      content: INTERACTION_FAILURE_NOTICE,
       allowed_mentions: { parse: [] },
     });
   } catch {
