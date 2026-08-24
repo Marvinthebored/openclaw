@@ -295,6 +295,53 @@ describe("dispatchInteraction", () => {
     expect(patch).not.toHaveBeenCalled();
   });
 
+  it("does not overwrite a follow-up that was still in flight when the handler threw", async () => {
+    // The handler starts a follow-up without awaiting it, then throws. Read
+    // outside the response queue, hasSentFollowUp is still false at that moment,
+    // because it is only set once the follow-up REST call resolves. The edit
+    // re-reads it inside the queue, after the follow-up has settled.
+    let releaseFollowUp: (() => void) | undefined;
+    // The first post is the deferred callback and must resolve, or the handler
+    // never runs. Only the follow-up that follows it is held open.
+    let posts = 0;
+    const post = vi.fn(async () => {
+      posts += 1;
+      if (posts === 1) {
+        return undefined;
+      }
+      return await new Promise<undefined>((resolve) => {
+        releaseFollowUp = () => resolve(undefined);
+      });
+    });
+    const patch = vi.fn(async () => undefined);
+    const run = vi.fn((interaction: CommandInteraction) => {
+      void interaction.followUp("progress").catch(() => undefined);
+      return Promise.reject(new Error("failed with a follow-up in flight"));
+    });
+    class RacingFollowUpCommand extends Command {
+      override name = "boom";
+      override description = "Throws with a follow-up in flight";
+      override defer = true;
+      run = run as unknown as Command["run"];
+    }
+    const client = createInternalTestClient([new RacingFollowUpCommand()]);
+    attachRestMock(client, { post, patch });
+
+    const handled = client.handleInteraction(
+      createInternalInteractionPayload({
+        id: "interaction1",
+        token: "token1",
+        data: { id: "command1", name: "boom", type: 1 },
+      }),
+    );
+    await vi.waitFor(() => expect(releaseFollowUp).toBeDefined());
+    releaseFollowUp?.();
+
+    await expect(handled).rejects.toThrow("failed with a follow-up in flight");
+    expect(post).toHaveBeenCalledTimes(2);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
   it("dispatches the focused option autocomplete handler", async () => {
     const optionAutocomplete = vi.fn(async (interaction: AutocompleteInteraction) => {
       await interaction.respond([{ name: "alpha", value: "alpha" }]);

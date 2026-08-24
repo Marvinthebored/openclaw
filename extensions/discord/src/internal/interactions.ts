@@ -218,6 +218,27 @@ class BaseInteraction {
     return await this.enqueueResponse(() => this.performReplyEdit(payload));
   }
 
+  /**
+   * Edits the deferred placeholder only if this interaction is still an
+   * unanswered spinner when the queue reaches this operation.
+   *
+   * Both conditions are re-read inside the queue. A follow-up that was still in
+   * flight when the caller decided to report will have settled — and recorded
+   * itself in `sentFollowUp` — by the time this runs, so the decision cannot be
+   * made against state that is about to change.
+   *
+   * Resolves true when the edit was sent.
+   */
+  async editDeferredPlaceholderIfUnanswered(payload: MessagePayload): Promise<boolean> {
+    return await this.enqueueResponse(async () => {
+      if (this.responseState !== "deferred" || this.sentFollowUp) {
+        return false;
+      }
+      await this.performReplyEdit(payload);
+      return true;
+    });
+  }
+
   private async performReplyEdit(payload: MessagePayload): Promise<unknown> {
     const body = serializePayload(payload);
     const query = needsComponentsV2Query(body) ? { with_components: true } : undefined;

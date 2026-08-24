@@ -138,7 +138,10 @@ const INTERACTION_FAILURE_NOTICE = "Command failed. Check the Gateway logs for d
 type FailureReportableInteraction = {
   responseState: InteractionResponseState;
   hasSentFollowUp: boolean;
-  reply(payload: { content: string; allowed_mentions: { parse: [] } }): Promise<unknown>;
+  editDeferredPlaceholderIfUnanswered(payload: {
+    content: string;
+    allowed_mentions: { parse: [] };
+  }): Promise<boolean>;
 };
 
 /**
@@ -174,10 +177,14 @@ async function reportInteractionFailure(interaction: FailureReportableInteractio
     return;
   }
   try {
+    // The checks above are a fast path read outside the response queue. The edit
+    // re-reads both inside it, so a follow-up still in flight when the handler
+    // threw settles first and this cannot overwrite output it delivered.
+    //
     // allowed_mentions stays pinned even though the notice is a constant, so a
     // later change to this text cannot silently gain the ability to ping a
     // channel through Discord's default mention parsing.
-    await interaction.reply({
+    await interaction.editDeferredPlaceholderIfUnanswered({
       content: INTERACTION_FAILURE_NOTICE,
       allowed_mentions: { parse: [] },
     });
