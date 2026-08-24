@@ -5,6 +5,7 @@ import {
   deferCommandInteractionIfNeeded,
   resolveFocusedCommandOptionAutocompleteHandler,
 } from "./commands.js";
+import type { InteractionResponseState } from "./interaction-response.js";
 import {
   AutocompleteInteraction,
   BaseComponentInteraction,
@@ -65,6 +66,21 @@ export async function dispatchInteraction(
     }
     return;
   }
+  try {
+    await dispatchAcknowledgeableInteraction(client, rawData, interaction);
+  } catch (error) {
+    // A handler that throws after deferring leaves Discord showing a spinner
+    // forever, so surface the failure before rethrowing for the caller's log.
+    await reportInteractionFailure(interaction, error);
+    throw error;
+  }
+}
+
+async function dispatchAcknowledgeableInteraction(
+  client: DispatchClient,
+  rawData: APIInteraction,
+  interaction: ReturnType<typeof createInteraction>,
+): Promise<void> {
   if (rawData.type === InteractionType.ApplicationCommand) {
     const command = client.commands.find((entry) => entry.name === readInteractionName(rawData));
     if (command) {
@@ -108,6 +124,67 @@ export async function dispatchInteraction(
     if (modal) {
       await modal.run(interaction as ModalInteraction, modal.customIdParser(customId).data);
     }
+  }
+}
+
+const INTERACTION_FAILURE_DETAIL_LIMIT = 300;
+
+type FailureReportableInteraction = {
+  responseState: InteractionResponseState;
+  hasSentFollowUp: boolean;
+  reply(payload: { content: string; allowed_mentions: { parse: [] } }): Promise<unknown>;
+};
+
+/**
+ * Best-effort user-visible notice for a failed interaction. Never throws: a
+ * reporting failure must not mask the original error.
+ *
+ * Deliberately narrow. It reports only for `deferred`, where a spinner is known
+ * to exist and the original response is a placeholder this dispatch created:
+ *
+ * - `deferred`        the deferring callback succeeded (state advances only
+ *                     after a REST success), so editing the original response
+ *                     resolves a spinner that would otherwise hang forever.
+ * - `deferred-update` a component acknowledgement. Discord leaves no spinner,
+ *                     and the original response is the message the component is
+ *                     attached to, so editing it would overwrite content the
+ *                     user is still reading.
+ * - `unacknowledged`  nothing is known to have reached Discord. A second
+ *                     initial callback risks "already acknowledged" if the
+ *                     first one landed after all, and Discord already shows its
+ *                     own "did not respond" notice.
+ * - `replied`         the user has seen a message, and nextReplyAction() would
+ *                     turn this into a contradictory follow-up beside it.
+ */
+async function reportInteractionFailure(
+  interaction: FailureReportableInteraction,
+  error: unknown,
+): Promise<void> {
+  if (interaction.responseState !== "deferred") {
+    return;
+  }
+  // A follow-up has already put output in front of the user. Discord may have
+  // consumed the deferred placeholder to deliver it, so editing the original
+  // response here risks overwriting that output. Leaving the placeholder alone
+  // is the safer failure: the user has something to see either way.
+  if (interaction.hasSentFollowUp) {
+    return;
+  }
+  try {
+    const detail = error instanceof Error ? error.message : String(error);
+    const trimmed =
+      detail.length > INTERACTION_FAILURE_DETAIL_LIMIT
+        ? `${detail.slice(0, INTERACTION_FAILURE_DETAIL_LIMIT)}…`
+        : detail;
+    // The detail is an arbitrary exception message. Sending it as a bare string
+    // would let Discord parse mentions inside it, so a handler that throws text
+    // containing @everyone or a role mention would ping the channel.
+    await interaction.reply({
+      content: `Command failed: ${trimmed || "unknown error"}`,
+      allowed_mentions: { parse: [] },
+    });
+  } catch {
+    // Ignored: the caller rethrows and logs the original failure.
   }
 }
 

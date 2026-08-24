@@ -121,6 +121,7 @@ class BaseInteraction {
   message: Message | null = null;
   private readonly response = new InteractionResponseController();
   private pendingResponse: Promise<void> = Promise.resolve();
+  private sentFollowUp = false;
 
   constructor(
     public client: InteractionClient,
@@ -147,6 +148,15 @@ class BaseInteraction {
 
   set responseState(nextState: InteractionResponseState) {
     this.response.state = nextState;
+  }
+
+  /**
+   * True once a follow-up message has been delivered. Follow-ups are visible to
+   * the user but never advance `responseState`, so this is the only record that
+   * the interaction has already produced output.
+   */
+  get hasSentFollowUp(): boolean {
+    return this.sentFollowUp;
   }
 
   private enqueueResponse<T>(operation: () => Promise<T>): Promise<T> {
@@ -266,13 +276,15 @@ class BaseInteraction {
 
   private async performFollowUp(payload: MessagePayload): Promise<unknown> {
     const body = serializePayload(payload);
-    return await createWebhookMessage(
+    const result = await createWebhookMessage(
       this.client.rest,
       this.client.options.clientId,
       this.token,
       { body },
       needsComponentsV2Query(body) ? { with_components: true } : undefined,
     );
+    this.sentFollowUp = true;
+    return result;
   }
 }
 
