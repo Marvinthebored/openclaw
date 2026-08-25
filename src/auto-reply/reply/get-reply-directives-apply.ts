@@ -184,17 +184,6 @@ export async function applyInlineDirectiveOverrides(params: {
   let { directives } = params;
   let { provider, model } = params;
   let { contextTokens } = params;
-  const stickyModelSelectionTarget =
-    directives.modelScope === "agent"
-      ? ("agent" as const)
-      : directives.modelScope === "global"
-        ? ("defaults" as const)
-        : undefined;
-  const canWriteModelDefaults = Array.isArray(ctx.GatewayClientScopes)
-    ? ctx.GatewayClientScopes.includes("operator.admin")
-    : command.senderIsOwner;
-  const canPersistStickyModelSelection =
-    stickyModelSelectionTarget !== undefined && canWriteModelDefaults;
   const directiveModelState = {
     allowedModelKeys: modelState.allowedModelKeys,
     allowedModelCatalog: modelState.allowedModelCatalog,
@@ -246,6 +235,22 @@ export async function applyInlineDirectiveOverrides(params: {
   if (!command.isAuthorizedSender) {
     directives = clearInlineDirectives(directives.cleaned);
   }
+
+  // Derive the persistent write target from the directives that survived the
+  // unauthorized-sender clearing above. Reading the pre-clearing value would let
+  // an unauthorized "/model … -a|-g" reach the authority error below instead of
+  // the plain-text path every other directive takes.
+  const stickyModelSelectionTarget =
+    directives.modelScope === "agent"
+      ? ("agent" as const)
+      : directives.modelScope === "global"
+        ? ("defaults" as const)
+        : undefined;
+  const canWriteModelDefaults = Array.isArray(ctx.GatewayClientScopes)
+    ? ctx.GatewayClientScopes.includes("operator.admin")
+    : command.senderIsOwner;
+  const canPersistStickyModelSelection =
+    stickyModelSelectionTarget !== undefined && canWriteModelDefaults;
 
   if (directives.modelScopeConflict) {
     typing.cleanup();

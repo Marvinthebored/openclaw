@@ -587,6 +587,7 @@ async function persistModelDirectiveForTest(params: {
   model?: string;
   initialModelLabel?: string;
   canPersistStickyModelSelection?: boolean;
+  isAuthorizedSender?: boolean;
 }) {
   if (params.profiles) {
     setAuthProfiles(params.profiles);
@@ -627,7 +628,7 @@ async function persistModelDirectiveForTest(params: {
       channel: "telegram",
       ownerList: [],
       senderIsOwner: params.canPersistStickyModelSelection ?? true,
-      isAuthorizedSender: true,
+      isAuthorizedSender: params.isAuthorizedSender ?? true,
       rawBodyNormalized: commandBody,
       commandBodyNormalized: commandBody,
     },
@@ -2255,6 +2256,29 @@ describe("handleDirectiveOnly model persist behavior (fixes #1435)", () => {
     expect(sessionEntry.providerOverride).toBeUndefined();
     expect(stickyModelMock.persistBestEffort).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ["-a", "agent"],
+    ["-g", "global"],
+  ])(
+    "leaves a %s-scoped model directive as plain text for an unauthorized sender",
+    async (flag) => {
+      const { persisted, sessionEntry } = await persistModelDirectiveForTest({
+        command: `/model openai/gpt-4o ${flag} continue with the request`,
+        allowedModelKeys: ["anthropic/claude-opus-4-6", "openai/gpt-4o"],
+        // An unauthorized sender is never the owner; setting only one of these
+        // describes a state the gateway cannot produce.
+        isAuthorizedSender: false,
+        canPersistStickyModelSelection: false,
+      });
+
+      // An unauthorized sender's directives are cleared to plain text, so the
+      // persistent-scope authority error must not surface the command at all.
+      expect(persisted.errorText).toBeUndefined();
+      expect(sessionEntry.providerOverride).toBeUndefined();
+      expect(stickyModelMock.persistBestEffort).not.toHaveBeenCalled();
+    },
+  );
 
   it("rejects conflicting model scopes before changing session or config", async () => {
     const { persisted, sessionEntry } = await persistModelDirectiveForTest({
