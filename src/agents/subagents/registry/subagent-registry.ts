@@ -1,6 +1,7 @@
 /** Coordinates subagent registration, lifecycle, delivery, steering, recovery, and persistence. */
 import type { AgentWaitParams } from "../../../../packages/gateway-protocol/src/index.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
+import { fenceScheduledGatewayContextResolver } from "../../../gateway/scheduled-run-gateway-context.js";
 import { callGateway } from "../../../gateway/call.js";
 import type { GatewayContextResolver } from "../../../gateway/server-methods/types.js";
 import { createSubsystemLogger } from "../../../logging/subsystem.js";
@@ -128,6 +129,11 @@ const contextCleanup = createSubagentRegistryContextCleanup({
 const subagentLifecycleController = new SubagentLifecycleController({
   runs: subagentRuns,
   resumedRuns,
+  // Fence the instance resolver: the process-wide holder is not cleared on
+  // shutdown, so a late completion could otherwise dispatch against a retired
+  // Gateway instance. Preferring no context makes that fail visibly.
+  getInstanceGatewayContextResolver: () =>
+    fenceScheduledGatewayContextResolver(activeGatewayContextResolver),
   subagentAnnounceTimeoutMs: SUBAGENT_ANNOUNCE_TIMEOUT_MS,
   getRuntimeConfig: () => subagentRegistryDeps.getRuntimeConfig(),
   persist: persistSubagentRuns,

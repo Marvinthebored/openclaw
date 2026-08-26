@@ -1,5 +1,6 @@
 // This type-only leaf exists solely to keep lifecycle sibling modules from importing the controller.
 // Keeping the controller out of their dependency graph satisfies the architecture cycle gate.
+import type { GatewayContextResolver } from "../../../gateway/server-methods/types.js";
 import type { cleanupBrowserSessionsForLifecycleEnd } from "../../../browser-lifecycle-cleanup.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import type { callGateway as defaultCallGateway } from "../../../gateway/call.js";
@@ -54,6 +55,12 @@ export type SubagentLifecycleOptions = {
   cleanupBrowserSessionsForLifecycleEnd?: BrowserCleanup;
   loadCleanupBrowserSessionsForLifecycleEnd?: () => Promise<BrowserCleanup>;
   runSubagentAnnounceFlow: RunSubagentAnnounceFlow;
+  /**
+   * Gateway-instance context resolver captured at registry activation. A
+   * completion that lands while the requester is idle has no ambient request
+   * scope, so without this the direct handoff cannot dispatch at all.
+   */
+  getInstanceGatewayContextResolver?: () => GatewayContextResolver | undefined;
   maybeWakeRequesterAfterAllChildrenSettled: MaybeWakeRequesterAfterAllChildrenSettled;
   warn(message: string, meta?: Record<string, unknown>): void;
 };

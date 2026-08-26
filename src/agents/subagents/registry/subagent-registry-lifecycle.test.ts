@@ -1,5 +1,7 @@
 // Subagent registry lifecycle tests cover completion, cleanup, announce retry,
 // detached task status, and resource retirement around child-run endings.
+import { fenceScheduledGatewayContextResolver } from "../../../gateway/scheduled-run-gateway-context.js";
+import type { GatewayRequestContext } from "../../../gateway/server-methods/types.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveSessionStorePathForScope } from "../../../config/sessions/session-store-path.js";
 import {
@@ -555,6 +557,42 @@ describe("subagent registry lifecycle hardening", () => {
       expect(runSubagentAnnounceFlow).toHaveBeenCalledWith(
         expect.objectContaining({ terminalReply }),
       );
+    },
+  );
+
+  it.each([
+    { label: "live instance", retired: false },
+    { label: "retired instance", retired: true },
+  ])(
+    "resolves the announce gateway context from a $label when the entry carries none",
+    async ({ retired }) => {
+      // A completion that lands while the requester is idle has no ambient
+      // gateway request scope, so the instance resolver is the only context the
+      // direct handoff can use. It must be fenced: the process-wide holder is
+      // not cleared on shutdown, and dispatching against a retired instance is
+      // worse than failing visibly.
+      const entry = createRunEntry({ expectsCompletionMessage: true });
+      const liveContext = { marker: "live-context" };
+      const instanceContext = {
+        resolveGatewayContext: () => (retired ? undefined : liveContext),
+      };
+      const runSubagentAnnounceFlow = vi.fn(
+        async (_announceParams: { resolveGatewayContext?: () => unknown }) =>
+          "delivered" as AnnounceFlowOutcome,
+      );
+      const controller = createLifecycleController({
+        entry,
+        runSubagentAnnounceFlow,
+        getInstanceGatewayContextResolver: () =>
+          fenceScheduledGatewayContextResolver(
+            () => instanceContext as unknown as GatewayRequestContext,
+          ),
+      });
+
+      await completeRun(controller, entry, { triggerCleanup: true });
+
+      const announceParams = runSubagentAnnounceFlow.mock.calls[0]?.[0];
+      expect(announceParams?.resolveGatewayContext?.()).toBe(retired ? undefined : liveContext);
     },
   );
 
