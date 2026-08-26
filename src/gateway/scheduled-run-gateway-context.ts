@@ -20,6 +20,10 @@ type ScheduledGatewayContextResolver = () => GatewayRequestContext | undefined;
  * retired one, because a missing context fails visibly.
  */
 export function fenceScheduledGatewayContextResolver(
+  resolveGatewayContext: ScheduledGatewayContextResolver,
+): ScheduledGatewayContextResolver;
+export function fenceScheduledGatewayContextResolver(resolveGatewayContext: undefined): undefined;
+export function fenceScheduledGatewayContextResolver(
   resolveGatewayContext: ScheduledGatewayContextResolver | undefined,
 ): ScheduledGatewayContextResolver | undefined {
   if (!resolveGatewayContext) {
