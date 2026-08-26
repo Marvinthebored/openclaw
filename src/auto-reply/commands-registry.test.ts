@@ -571,9 +571,7 @@ describe("commands registry", () => {
 
   it("documents explicit model persistence scopes", () => {
     const model = requireChatCommand("model");
-    expect(model.description).toBe(
-      "Show or set the session model; use -a or -g to update defaults.",
-    );
+    expect(model.description).toBe("Show or set the model; use -s, -a, or -g to choose scope.");
   });
 
   it("detects known text commands", () => {

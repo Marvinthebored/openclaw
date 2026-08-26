@@ -513,11 +513,15 @@ export async function handleDirectiveOnly(
         return rejectModelTransaction(errorText);
       }
     }
-    if (modelSelection && params.stickyModelSelectionTarget) {
+    if (
+      modelSelection &&
+      (!modelSelection.isDefault || params.stickyModelSelectionTarget) &&
+      params.canPersistStickyModelSelection === true
+    ) {
       configuredDefaultUpdate = persistStickyModelSelectionBestEffort({
         agentId: activeAgentId,
         model: `${modelSelection.provider}/${modelSelection.model}`,
-        target: params.stickyModelSelectionTarget,
+        ...(params.stickyModelSelectionTarget ? { target: params.stickyModelSelectionTarget } : {}),
       });
     }
     if (modelSelection && modelSelectionUpdated && sessionKey) {

@@ -638,7 +638,7 @@ export function buildBuiltinChatCommands(
     }),
     defineBuiltinCommand(
       "model",
-      "Show or set the session model; use -a or -g to update defaults.",
+      "Show or set the model; use -s, -a, or -g to choose scope.",
       "options",
       "essential",
       {

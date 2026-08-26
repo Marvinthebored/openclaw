@@ -199,7 +199,7 @@ plugins.
     | `/elevated [on\|off\|ask\|full]` | Toggle elevated mode. Alias: `/elev` |
     | `/exec host=<auto\|sandbox\|gateway\|node> security=<deny\|allowlist\|full> ask=<off\|on-miss\|always> node=<id>` | Show or set exec defaults |
     | `/login [codex\|openai\|openai-codex]` | Pair Codex/OpenAI login from a private chat or Web UI session. Owner/admin only |
-    | `/model [name\|#\|status] [-s\|--session\|-a\|--agent\|-g\|--global]` | Show or select a model. The default and `-s` use session scope. Owner/admin `-a` and `-g` update configured defaults |
+    | `/model [name\|#\|status] [-s\|--session\|-a\|--agent\|-g\|--global]` | Show or select a model. `-s` changes only this session; owner/admin `-a` and `-g` also update configured defaults |
     | `/models [provider] [page] [limit=<n>\|all]` | List configured/auth-available providers or models |
     | `/queue <mode>` | Manage active-run queue behavior. See [Queue](/concepts/queue) and [Queue steering](/concepts/queue-steering) |
     | `/steer <message>` | Inject guidance into the active run. Alias: `/tell`. See [Steer](/tools/steer) |
@@ -216,18 +216,18 @@ plugins.
       <Accordion title="Model switching details">
         - Prefer choosing the model when creating a session. Changing it in an established session is an advanced operation because model context limits, prompt/tool behavior, and prompt-cache behavior can differ. See [Choose a model for a session](/concepts/models#choose-a-model-for-a-session).
 
-        **Scope in one line:** `/model <model>` changes only the current session. Use `-a` for the agent default or `-g` for the global default.
+        **Scope in one line:** `-s` changes only this session, `-a` also updates the agent default, and `-g` also updates the shared global default. Without a flag, `agents.defaults.modelSelectionScope` applies when set; omission preserves existing behavior.
 
         Configured `/<alias>` shorthands accept the same trailing scope and `--runtime` options as `/model <alias>`.
 
         | Goal | Command | Effect |
         | --- | --- | --- |
-        | Change only this session | `/model <model>` or `/model <model> -s` | Changes this session. Configured defaults remain unchanged |
+        | Change only this session | `/model <model> -s` (or `--session`) | Changes this session. Configured defaults remain unchanged |
         | Update the agent default | `/model <model> -a` (or `--agent`) | Changes this session and requests an update for the selected agent |
         | Update the global default | `/model <model> -g` (or `--global`) | Changes this session and requests an update for `agents.defaults.model` |
-        | Use the configured default again | `/model default` (with or without `-s`) | Clears this session's model selection so it inherits the current configured default; compatible auth pins remain and incompatible pins clear |
+        | Use the configured default again | `/model default -s` | Clears this session's model selection without writing defaults; compatible auth pins remain and incompatible pins clear |
 
-        The `-a` and `-g` scopes require owner or admin authority. Immutable configuration stays unchanged. Asynchronous write errors do not revert the session selection.
+        With `modelSelectionScope` unset, a direct owner/admin `/model <model>` also requests an update to the agent's existing explicit primary, or to the shared global fallback if there is none. Without owner/admin authority, bare commands remain session-only and explicit `-a` and `-g` requests are rejected. Selecting the effective configured default clears the session model pin, but agent/global scope still requests the configured-default write. Immutable configuration stays unchanged. Asynchronous write errors do not revert the session selection.
 
         - If the agent is idle, the next run uses it right away.
         - If a run is active, the switch is marked pending and applied at the next clean retry point.
@@ -372,27 +372,48 @@ use the Control UI Tools panel or config surfaces.
 
 ## `/model`: model selection
 
-`/model <model>` changes only the current session. Add `-s` to make session scope explicit. Use `-a` for the agent default or `-g` for the global default. The long forms are `--session`, `--agent`, and `--global`.
+Use `-s` to change only the current session, `-a` to also update the agent default, or `-g` to also update the shared global default. The long forms are `--session`, `--agent`, and `--global`; an explicit scope overrides `agents.defaults.modelSelectionScope`.
+
+Without a flag or that optional setting, direct owner/admin `/model <model>` commands keep their existing behavior: change the session and request a best-effort update of the agent's explicit primary, or the shared global fallback when the agent has none. To make unqualified selections session-only, opt in with:
+
+```json5
+{
+  agents: { defaults: { modelSelectionScope: "session" } },
+}
+```
+
+The setting also accepts `"agent"` and `"global"`; it does not grant permission to write configured defaults. See [Model selection scope](/gateway/config-agents#agentsdefaultsmodelselectionscope).
 
 ```text
 /model             # show model picker
 /model list        # same
 /model 3           # select by number from picker
-/model openai/gpt-5.4    # this session only
+/model openai/gpt-5.4    # configured scope, or existing behavior when unset
 /model openai/gpt-5.4 -s # explicit session scope
 /model openai/gpt-5.4 -a # session + agent default update request
 /model openai/gpt-5.4 -g # session + global default update request
 /model default -s        # clear this session's model selection; use configured default
 /model opus@anthropic:default -s # pin this profile for the current session
-/model default     # same reset; does not restore an older configured default
+/model default     # use configured default, following the selected scope
 /model status      # detailed view with endpoint and API mode
 ```
 
 On Discord, `/model` and `/models` open an interactive picker with provider and
-model dropdowns. Discord and Telegram picker selections are session-only. The
-picker respects `agents.defaults.modelPolicy.allow`,
+model dropdowns. Discord follows the direct command behavior, including
+`modelSelectionScope`. Telegram callback selections always remain session-only.
+The picker respects `agents.defaults.modelPolicy.allow`,
 including `provider/*` entries. Without an explicit allowlist, model entries and
 aliases do not restrict selection.
+
+`-a` updates only the current agent's configured primary, even when it previously
+inherited the global default. `-g` updates the shared fallback, not every agent's
+explicit primary. Other session pins remain unchanged, but unpinned sessions
+and cron jobs that inherit the changed default can use it on their next run.
+Selecting the effective configured default clears the session model pin, but
+agent/global scope still requests the configured-default write. Use
+`/model default -s` to inherit the configured default without writing it.
+Without owner/admin authority, bare commands remain session-only and explicit
+`-a` or `-g` requests are rejected.
 
 ## `/config`: on-disk config writes
 

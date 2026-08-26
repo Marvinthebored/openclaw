@@ -1,7 +1,10 @@
 // `/model` directive parser for auto-reply messages.
 import { normalizeStringEntries } from "@openclaw/normalization-core/string-normalization";
 import { splitTrailingAuthProfile } from "../agents/model-ref-profile.js";
+import type { ModelSelectionScope } from "../config/types.agent-defaults.js";
 import { escapeRegExp } from "../utils.js";
+
+export type { ModelSelectionScope } from "../config/types.agent-defaults.js";
 
 const MODEL_REF_PATTERN = String.raw`[A-Za-z0-9_.:@-]+(?:\/[A-Za-z0-9_.:@-]+)*`;
 const MODEL_RUNTIME_VALUE_PATTERN = String.raw`[A-Za-z0-9_.:-]+`;
@@ -18,8 +21,6 @@ const MODEL_DIRECTIVE_PATTERN = new RegExp(
   String.raw`(?:^|\s)\/model(?=$|\s|:)\s*:?\s*((?!${MODEL_OPTION_PATTERN})${MODEL_REF_PATTERN})?${MODEL_TRAILING_OPTIONS_PATTERN}`,
   "i",
 );
-
-export type ModelSelectionScope = "session" | "agent" | "global";
 
 function parseModelScope(raw: string | undefined): ModelSelectionScope | undefined {
   switch (raw?.trim().toLowerCase()) {

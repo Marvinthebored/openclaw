@@ -107,7 +107,8 @@ vi.mock("./commands-models.js", () => ({
   },
 }));
 
-vi.mock("../../agents/sticky-model-selection.js", () => ({
+vi.mock("../../agents/sticky-model-selection.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../agents/sticky-model-selection.js")>()),
   persistStickyModelSelectionBestEffort: (params: {
     agentId: string;
     model: string;
@@ -866,7 +867,7 @@ describe("/model chat UX", () => {
     expect(reply?.text).toContain("Current:");
     expect(reply?.text).toContain("Think: medium (change with /think <level>)");
     expect(reply?.text).toContain("Browse: /models");
-    expect(reply?.text).toContain("Session: /model <provider/model> (or add -s)");
+    expect(reply?.text).toContain("Session: /model <provider/model> -s");
     expect(reply?.text).toContain("Agent default: /model <provider/model> -a");
     expect(reply?.text).toContain("Global default: /model <provider/model> -g");
     expect(reply?.text).toContain("Runtime: /model <provider/model> --runtime <runtime> -s");
@@ -923,8 +924,8 @@ describe("/model chat UX", () => {
 
     expect(reply?.channelData).toBeDefined();
     expect(reply?.text).toContain("Think: medium (change with /think <level>)");
-    expect(reply?.text).toContain("Tap below to switch this session only");
-    expect(reply?.text).toContain("/model <provider/model> for this session only");
+    expect(reply?.text).toContain("Tap below to select a model");
+    expect(reply?.text).toContain("/model <provider/model> -s for this session only");
     expect(reply?.text).toContain("/model <provider/model> -a to update this agent's default");
     expect(reply?.text).toContain("/model <provider/model> -g to update the global default");
     expect(reply?.text).toContain(
@@ -1966,16 +1967,22 @@ describe("handleDirectiveOnly model persist behavior (fixes #1435)", () => {
     });
   });
 
-  it("keeps an unscoped selection in the current session", async () => {
+  it("preserves an authorized unscoped effective-default selection", async () => {
     const sessionEntry = createSessionEntry();
-    const result = await runHandleCommand("/model openai/gpt-4o", { sessionEntry });
+    const result = await runHandleCommand("/model openai/gpt-4o", {
+      sessionEntry,
+      canPersistStickyModelSelection: true,
+    });
 
     expect(result?.text).toContain("Model set to");
     expect(result?.text).toContain("openai/gpt-4o");
-    expect(result?.text).toContain("for this session only; configured default unchanged.");
+    expect(result?.text).toContain("Configured default update requested.");
     expect(result?.text).not.toContain("failed");
     expect(sessionEntry.liveModelSwitchPending).toBe(true);
-    expect(stickyModelMock.persistBestEffort).not.toHaveBeenCalled();
+    expect(stickyModelMock.persistBestEffort).toHaveBeenCalledWith({
+      agentId: "main",
+      model: "openai/gpt-4o",
+    });
   });
 
   it("preserves a compatible auth profile for a mixed model directive", async () => {
@@ -2009,6 +2016,7 @@ describe("handleDirectiveOnly model persist behavior (fixes #1435)", () => {
     await runHandleCommand("/model openai/gpt-4o -a", {
       sessionEntry,
       stickyModelSelectionTarget: "agent",
+      canPersistStickyModelSelection: true,
     });
 
     expect(stickyModelMock.persistBestEffort).toHaveBeenCalledWith({
@@ -2042,6 +2050,7 @@ describe("handleDirectiveOnly model persist behavior (fixes #1435)", () => {
     const result = await runHandleCommand("/model openai/gpt-4o -a", {
       sessionEntry,
       stickyModelSelectionTarget: "agent",
+      canPersistStickyModelSelection: true,
     });
 
     expect(result?.text).toContain(

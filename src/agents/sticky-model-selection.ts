@@ -1,6 +1,8 @@
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { mutateConfigFileWithRetry } from "../config/config.js";
 import { resolveIsNixMode } from "../config/paths.js";
+import type { ModelSelectionScope } from "../config/types.agent-defaults.js";
+import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { formatErrorMessage } from "../infra/errors.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { normalizeAgentId } from "../routing/session-key.js";
@@ -10,6 +12,15 @@ const log = createSubsystemLogger("agents/sticky-model-selection");
 let warnedImmutableConfig = false;
 
 export type StickyModelSelectionDispatchOutcome = "requested" | "skipped-immutable";
+
+/** Resolve preference only; callers must separately authorize config writes. */
+export function resolveStickyModelSelectionScope(params: {
+  cfg: OpenClawConfig;
+  scope?: ModelSelectionScope;
+}): ModelSelectionScope | "effective" {
+  // Omission preserves the existing effective-config write target, not a new default.
+  return params.scope ?? params.cfg.agents?.defaults?.modelSelectionScope ?? "effective";
+}
 
 /** Persists a validated session model selection at the agent's effective config layer. */
 async function persistStickyModelSelection(params: {

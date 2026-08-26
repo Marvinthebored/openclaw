@@ -3,6 +3,7 @@ import { resolveSessionAgentId } from "../../agents/agent-scope.js";
 import { resolveAgentHarnessPolicy } from "../../agents/harness/policy.js";
 import { modelKey } from "../../agents/model-selection.js";
 import { resolveContextConfigProviderForRuntime } from "../../agents/openai-routing.js";
+import { resolveStickyModelSelectionScope } from "../../agents/sticky-model-selection.js";
 import type { SessionEntry, SessionScope } from "../../config/sessions/types.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { enqueueSystemEvent } from "../../infra/system-events.js";
@@ -209,6 +210,7 @@ export async function applyInlineDirectiveOverrides(params: {
     model,
     initialModelLabel,
     formatModelSwitchEvent,
+    canPersistStickyModelSelection,
     ...(stickyModelSelectionTarget ? { stickyModelSelectionTarget } : {}),
   });
 
@@ -240,17 +242,20 @@ export async function applyInlineDirectiveOverrides(params: {
   // unauthorized-sender clearing above. Reading the pre-clearing value would let
   // an unauthorized "/model … -a|-g" reach the authority error below instead of
   // the plain-text path every other directive takes.
-  const stickyModelSelectionTarget =
-    directives.modelScope === "agent"
-      ? ("agent" as const)
-      : directives.modelScope === "global"
-        ? ("defaults" as const)
-        : undefined;
+  const modelSelectionScope = resolveStickyModelSelectionScope({
+    cfg,
+    scope: directives.modelScope,
+  });
   const canWriteModelDefaults = Array.isArray(ctx.GatewayClientScopes)
     ? ctx.GatewayClientScopes.includes("operator.admin")
     : command.senderIsOwner;
-  const canPersistStickyModelSelection =
-    stickyModelSelectionTarget !== undefined && canWriteModelDefaults;
+  const stickyModelSelectionTarget =
+    canWriteModelDefaults && modelSelectionScope === "agent"
+      ? ("agent" as const)
+      : canWriteModelDefaults && modelSelectionScope === "global"
+        ? ("defaults" as const)
+        : undefined;
+  const canPersistStickyModelSelection = modelSelectionScope !== "session" && canWriteModelDefaults;
 
   if (directives.modelScopeConflict) {
     typing.cleanup();
@@ -260,7 +265,10 @@ export async function applyInlineDirectiveOverrides(params: {
     };
   }
 
-  if (stickyModelSelectionTarget && !canWriteModelDefaults) {
+  if (
+    (directives.modelScope === "agent" || directives.modelScope === "global") &&
+    !canWriteModelDefaults
+  ) {
     typing.cleanup();
     return {
       kind: "reply",

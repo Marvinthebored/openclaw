@@ -35,6 +35,7 @@ type HandleDirectiveOnlyCoreParams = {
   model: string;
   initialModelLabel: string;
   formatModelSwitchEvent: (label: string, alias?: string) => string;
+  canPersistStickyModelSelection?: boolean;
   stickyModelSelectionTarget?: AgentModelPrimaryWriteTarget;
 };
 
