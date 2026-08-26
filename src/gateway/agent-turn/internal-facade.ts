@@ -150,12 +150,10 @@ export function createInternalAgentTurnFacade(options: InternalAgentTurnFacadeOp
           principal,
           registerToolEventRecipient: context.registerToolEventRecipient,
         });
-        await createAgentTurnService({ context, isWebchatConnect }).startTurn({
-          preflight,
-          principal,
-          io,
-          onRunObserved,
-        });
+        await createAgentTurnService(
+          { context, isWebchatConnect },
+          options.assertContextCurrent,
+        ).startTurn({ preflight, principal, io, onRunObserved });
       },
       {
         context,
