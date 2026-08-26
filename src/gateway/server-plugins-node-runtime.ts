@@ -1,6 +1,5 @@
 import { NODE_DUPLEX_INVOKE_IDLE_TIMEOUT_MS } from "../infra/node-commands.js";
 import { createNodeDuplexEndpoint } from "../infra/node-duplex-framing.js";
-import { getPluginRuntimeGatewayRequestScope } from "../plugins/runtime/gateway-request-scope.js";
 import type { PluginRuntime } from "../plugins/runtime/types.js";
 import { createDeferredCore } from "../shared/deferred.js";
 import { isNodeCommandAllowed, resolveNodeCommandAllowlist } from "./node-command-policy.js";
@@ -11,8 +10,7 @@ import { getInProcessGatewayRequestContext } from "./server-plugin-in-process-di
 export function hasInProcessGatewayContext(
   resolveGatewayContext?: GatewayContextResolver,
 ): boolean {
-  const scope = getPluginRuntimeGatewayRequestScope();
-  return Boolean(resolveGatewayContext?.() ?? scope?.resolveGatewayContext?.() ?? scope?.context);
+  return Boolean(getInProcessGatewayRequestContext(resolveGatewayContext));
 }
 
 /** Opens one lifecycle-fenced binary channel through the canonical node invocation owner. */

@@ -130,10 +130,12 @@ function resolveInProcessGatewayDispatch(
             ? undefined
             : (explicitSystemActor ?? { kind: "system" })))
     : (scopedRoleActor ?? explicitSystemActor);
-  const context =
-    options?.resolveGatewayContext?.() ?? scope?.resolveGatewayContext?.() ?? scope?.context;
+  const context = getInProcessGatewayRequestContext(options?.resolveGatewayContext);
   const isWebchatConnect = scope?.isWebchatConnect ?? (() => false);
   if (!context) {
+    if (options?.resolveGatewayContext) {
+      throw new Error(`Gateway instance lifecycle dispatch unavailable for ${method}`);
+    }
     throw new Error(
       `In-process gateway dispatch requires a gateway request scope or instance binding (method: ${method}).`,
     );
@@ -299,8 +301,11 @@ export async function dispatchGatewayMethodInProcessRaw(
 export function getInProcessGatewayRequestContext(
   resolveGatewayContext?: GatewayContextResolver,
 ): GatewayRequestContext | undefined {
+  if (resolveGatewayContext) {
+    return resolveGatewayContext();
+  }
   const scope = getPluginRuntimeGatewayRequestScope();
-  return resolveGatewayContext?.() ?? scope?.resolveGatewayContext?.() ?? scope?.context;
+  return scope?.resolveGatewayContext?.() ?? scope?.context;
 }
 
 export async function dispatchGatewayMethodInProcess<T>(
