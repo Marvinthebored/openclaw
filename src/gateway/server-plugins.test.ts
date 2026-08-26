@@ -1949,7 +1949,6 @@ describe("loadGatewayPlugins", () => {
   });
 
   test("forwards provider and model overrides when the request scope is authorized", async () => {
-    const serverPlugins = serverPluginsModule;
     const runtime = await createRequestScopedSubagentRuntime();
     const scope = {
       context: createTestContext("request-scope-forward-overrides"),
@@ -2527,7 +2526,6 @@ describe("loadGatewayPlugins", () => {
   });
 
   test("allows session deletion when the request scope already has admin", async () => {
-    const serverPlugins = serverPluginsModule;
     const runtime = await createRequestScopedSubagentRuntime();
     const scope = {
       context: createTestContext("request-scope-delete-session"),
@@ -2552,7 +2550,6 @@ describe("loadGatewayPlugins", () => {
   });
 
   test("keeps plugin owner metadata on admin-scoped plugin session cleanup", async () => {
-    const serverPlugins = serverPluginsModule;
     const runtime = await createRequestScopedSubagentRuntime();
     const scope = {
       context: createTestContext("request-scope-plugin-delete-session"),
