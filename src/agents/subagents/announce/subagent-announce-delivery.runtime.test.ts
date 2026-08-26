@@ -5,6 +5,7 @@ import type {
   GatewayRequestContext,
   GatewayRequestHandlers,
 } from "../../../gateway/server-methods/types.js";
+import { dispatchGatewayMethodInProcess } from "../../../gateway/server-plugin-in-process-dispatch.js";
 import { withPluginRuntimeGatewayContextResolver } from "../../../plugins/runtime/gateway-request-scope.js";
 import { dispatchSubagentAnnounceAgent } from "./subagent-announce-delivery.runtime.js";
 
@@ -92,5 +93,29 @@ describe("subagent announce Gateway instance dispatch", () => {
       status: "ok",
       summary: "delivered",
     });
+  });
+  it("rejects a retired nested-wake owner before a live replacement Gateway dispatch", async () => {
+    const replacementAgent = vi.fn(({ respond }) => respond(true, { raw: true }));
+    const replacementContext = createContext({ agent: replacementAgent });
+
+    await withPluginRuntimeGatewayContextResolver(
+      () => replacementContext,
+      async () => {
+        await expect(
+          dispatchGatewayMethodInProcess(
+            "agent",
+            {
+              message: "Continue after nested descendants settle.",
+              idempotencyKey: "retired-nested-wake",
+            },
+            {
+              forceSyntheticClient: true,
+              resolveGatewayContext: () => undefined,
+            },
+          ),
+        ).rejects.toThrow("Gateway instance lifecycle dispatch unavailable for agent");
+      },
+    );
+    expect(replacementAgent).not.toHaveBeenCalled();
   });
 });
