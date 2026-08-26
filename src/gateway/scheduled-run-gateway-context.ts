@@ -25,6 +25,9 @@ export function fenceScheduledGatewayContextResolver(
 export function fenceScheduledGatewayContextResolver(resolveGatewayContext: undefined): undefined;
 export function fenceScheduledGatewayContextResolver(
   resolveGatewayContext: ScheduledGatewayContextResolver | undefined,
+): ScheduledGatewayContextResolver | undefined;
+export function fenceScheduledGatewayContextResolver(
+  resolveGatewayContext: ScheduledGatewayContextResolver | undefined,
 ): ScheduledGatewayContextResolver | undefined {
   if (!resolveGatewayContext) {
     return undefined;
