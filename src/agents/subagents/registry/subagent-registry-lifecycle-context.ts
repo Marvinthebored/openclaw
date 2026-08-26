@@ -1,9 +1,9 @@
-// This type-only leaf exists solely to keep lifecycle sibling modules from importing the controller.
-// Keeping the controller out of their dependency graph satisfies the architecture cycle gate.
-import type { GatewayContextResolver } from "../../../gateway/server-methods/types.js";
 import type { cleanupBrowserSessionsForLifecycleEnd } from "../../../browser-lifecycle-cleanup.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import type { callGateway as defaultCallGateway } from "../../../gateway/call.js";
+// This type-only leaf exists solely to keep lifecycle sibling modules from importing the controller.
+// Keeping the controller out of their dependency graph satisfies the architecture cycle gate.
+import type { GatewayContextResolver } from "../../../gateway/server-methods/types.js";
 import type { DetachedTaskFindResult } from "../../../tasks/detached-task-runtime-contract.js";
 import type { SubagentLifecycleEndedReason } from "./subagent-lifecycle-events.js";
 import type { SubagentRunRecord } from "./subagent-registry.types.js";

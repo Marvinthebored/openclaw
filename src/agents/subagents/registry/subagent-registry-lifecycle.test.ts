@@ -1,7 +1,3 @@
-// Subagent registry lifecycle tests cover completion, cleanup, announce retry,
-// detached task status, and resource retirement around child-run endings.
-import { fenceScheduledGatewayContextResolver } from "../../../gateway/scheduled-run-gateway-context.js";
-import type { GatewayRequestContext } from "../../../gateway/server-methods/types.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { resolveSessionStorePathForScope } from "../../../config/sessions/session-store-path.js";
 import {
@@ -9,6 +5,10 @@ import {
   withOwnedSessionTranscriptWrites,
 } from "../../../config/sessions/transcript-write-context.js";
 import type { CallGatewayOptions } from "../../../gateway/call.js";
+// Subagent registry lifecycle tests cover completion, cleanup, announce retry,
+// detached task status, and resource retirement around child-run endings.
+import { fenceScheduledGatewayContextResolver } from "../../../gateway/scheduled-run-gateway-context.js";
+import type { GatewayRequestContext } from "../../../gateway/server-methods/types.js";
 import { getAgentEventLifecycleGeneration } from "../../../infra/agent-events.js";
 import {
   getActiveGatewayRootWorkCount,
