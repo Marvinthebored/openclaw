@@ -2105,12 +2105,12 @@ describe("subagent registry seam flow", () => {
     await waitForFast(() => expect(freshTranscriptWrite).toHaveBeenCalledOnce());
     expect(freshCompletionWrite).toHaveBeenCalledOnce();
     expect(mocks.runSubagentAnnounceFlow).toHaveBeenCalledOnce();
-    const [announceParams] = (
+    const announceParams = (
       mocks.runSubagentAnnounceFlow.mock.calls as unknown as Array<
         [{ resolveGatewayContext?: () => unknown }]
       >
-    )[0];
-    expect(announceParams.resolveGatewayContext?.()).toBe(activeGatewayContext);
+    )[0]?.[0];
+    expect(announceParams?.resolveGatewayContext?.()).toBe(activeGatewayContext);
     expect(requesterTranscriptWrite).not.toHaveBeenCalled();
   });
 
