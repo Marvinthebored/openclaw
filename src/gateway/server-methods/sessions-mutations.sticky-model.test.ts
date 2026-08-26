@@ -210,11 +210,13 @@ describe("sessions.patch sticky model persistence", () => {
       expect(persistedConfig?.agents?.defaults?.model).toBe(
         target === "defaults" ? model : defaultConfig.agents.defaults.model,
       );
-      expect(persistedConfig?.agents?.list).toEqual(
-        defaultConfig.agents.list.map((agent) =>
-          target === "agent" && agent.id === agentId ? { ...agent, model } : agent,
-        ),
-      );
+      const expectedAgents = structuredClone(defaultConfig.agents.list);
+      for (const agent of expectedAgents) {
+        if (target === "agent" && agent.id === agentId) {
+          agent.model = model;
+        }
+      }
+      expect(persistedConfig?.agents?.list).toEqual(expectedAgents);
     },
   );
 
@@ -237,11 +239,13 @@ describe("sessions.patch sticky model persistence", () => {
       expect(persistedConfig?.agents?.defaults?.model).toBe(
         scope === "global" ? model : defaultConfig.agents.defaults.model,
       );
-      expect(persistedConfig?.agents?.list).toEqual(
-        defaultConfig.agents.list.map((agent) =>
-          scope === "agent" && agent.id === agentId ? { ...agent, model } : agent,
-        ),
-      );
+      const expectedAgents = structuredClone(defaultConfig.agents.list);
+      for (const agent of expectedAgents) {
+        if (scope === "agent" && agent.id === agentId) {
+          agent.model = model;
+        }
+      }
+      expect(persistedConfig?.agents?.list).toEqual(expectedAgents);
     },
   );
 
