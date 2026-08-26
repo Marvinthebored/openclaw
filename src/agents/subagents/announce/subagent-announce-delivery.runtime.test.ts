@@ -119,7 +119,7 @@ describe("subagent announce Gateway instance dispatch", () => {
               resolveGatewayContext,
             },
           ),
-        ).rejects.toThrow("Gateway instance lifecycle dispatch unavailable for agent");
+        ).rejects.toThrow("current gateway instance binding");
       },
     );
     expect(resolveGatewayContext).toHaveBeenCalledTimes(2);

@@ -133,9 +133,6 @@ function resolveInProcessGatewayDispatch(
   const context = getInProcessGatewayRequestContext(options?.resolveGatewayContext);
   const isWebchatConnect = scope?.isWebchatConnect ?? (() => false);
   if (!context) {
-    if (options?.resolveGatewayContext) {
-      throw new Error(`Gateway instance lifecycle dispatch unavailable for ${method}`);
-    }
     throw new Error(
       `In-process gateway dispatch requires a gateway request scope or instance binding (method: ${method}).`,
     );
@@ -320,7 +317,9 @@ export async function dispatchGatewayMethodInProcess<T>(
         if (
           getInProcessGatewayRequestContext(options?.resolveGatewayContext) !== resolved.context
         ) {
-          throw new Error(`Gateway instance lifecycle dispatch unavailable for ${method}`);
+          throw new Error(
+            `In-process gateway dispatch requires a current gateway instance binding (method: ${method}).`,
+          );
         }
       };
       const facade = createInternalAgentTurnFacade({
