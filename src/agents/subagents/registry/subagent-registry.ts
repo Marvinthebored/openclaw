@@ -327,7 +327,8 @@ const subagentRestorer = createSubagentRegistryRestorer({
   runs: subagentRuns,
   resumedRuns,
   deps: () => subagentRegistryDeps,
-  getGatewayContextResolver: () => activeGatewayContextResolver,
+  getGatewayContextResolver: () =>
+    fenceScheduledGatewayContextResolver(activeGatewayContextResolver),
   persist: persistSubagentRuns,
   persistOrThrow: persistSubagentRunsOrThrow,
   settleRequesterTurn: settleRequesterTurnAfterSessionSpawns,
@@ -474,8 +475,14 @@ export const clearSubagentRunSteerRestart = subagentRunManager.clearSubagentRunS
 export const replaceSubagentRunAfterSteerCore = subagentRunManager.replaceSubagentRunAfterSteer;
 export const claimSubagentRunKill = subagentRunManager.claimSubagentRunKill;
 export const releaseSubagentRunKillClaim = subagentRunManager.releaseSubagentRunKillClaim;
-export const registerSubagentRun: (params: RegisterSubagentRunParams) => void =
-  subagentRunManager.registerSubagentRun;
+export function registerSubagentRun(params: RegisterSubagentRunParams): void {
+  subagentRunManager.registerSubagentRun({
+    ...params,
+    gatewayContextResolver:
+      params.gatewayContextResolver ??
+      fenceScheduledGatewayContextResolver(activeGatewayContextResolver),
+  });
+}
 export const startQueuedSubagentRun = subagentRunManager.startQueuedSubagentRun;
 export const settleFailedQueuedSubagentLaunch = subagentRunManager.settleFailedQueuedSubagentLaunch;
 
@@ -606,15 +613,14 @@ export function initSubagentRegistry() {
   state.restorer.restoreOnce();
 }
 export function activateSubagentRegistry(resolveGatewayContext: GatewayContextResolver) {
+  const lifecycleGatewayContextResolver =
+    fenceScheduledGatewayContextResolver(resolveGatewayContext);
   activeGatewayContextResolver = resolveGatewayContext;
   for (const entry of subagentRuns.values()) {
     // Deserialized rows have no in-memory owner. The activating Gateway may
     // claim those rows once, but must not replace a live run's exact owner.
     if (!getGatewayContextResolver(entry)) {
-      bindGatewayContextResolver(
-        entry,
-        fenceScheduledGatewayContextResolver(resolveGatewayContext),
-      );
+      bindGatewayContextResolver(entry, lifecycleGatewayContextResolver);
     }
   }
   subagentRestorer.activate();
