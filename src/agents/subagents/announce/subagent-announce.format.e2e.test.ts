@@ -14,6 +14,7 @@ import * as configSessions from "../../../config/sessions.js";
 import { patchSessionEntryCore } from "../../../config/sessions/session-accessor.js";
 import type { SessionEntry } from "../../../config/sessions/types.js";
 import * as gatewayCall from "../../../gateway/call.js";
+import type { dispatchGatewayMethodInProcess as dispatchGatewayMethodInProcessRuntime } from "../../../gateway/server-plugin-in-process-dispatch.js";
 import { getAgentEventLifecycleGeneration } from "../../../infra/agent-events.js";
 import {
   testing as sessionBindingServiceTesting,
@@ -34,6 +35,7 @@ import {
 import * as embeddedRuns from "../../embedded-agent-runner/runs.js";
 import { FailoverError } from "../../failover-error.js";
 import { testing as subagentAnnounceDeliveryTesting } from "./subagent-announce-delivery.test-support.js";
+import type { runDescendantWake as runDescendantWakeRuntime } from "./subagent-announce-descendant-wake.js";
 import { runSubagentAnnounceDispatch } from "./subagent-announce-dispatch.js";
 import { testing as subagentAnnounceOutputTesting } from "./subagent-announce-output.test-support.js";
 
@@ -347,6 +349,7 @@ describe("subagent announce formatting", () => {
   let previousFastTestEnv: string | undefined;
   let runSubagentAnnounceFlow: (typeof import("./subagent-announce.js"))["runSubagentAnnounceFlow"];
   let subagentAnnounceTesting: (typeof import("./subagent-announce.js"))["testing"];
+  let runDescendantWake: typeof runDescendantWakeRuntime;
 
   beforeAll(async () => {
     // Set FAST_TEST_MODE before importing the module to ensure the module-level
@@ -357,6 +360,7 @@ describe("subagent announce formatting", () => {
     process.env.OPENCLAW_TEST_FAST = "1";
     ({ runSubagentAnnounceFlow, testing: subagentAnnounceTesting } =
       await import("./subagent-announce.js"));
+    ({ runDescendantWake } = await import("./subagent-announce-descendant-wake.js"));
   });
 
   afterAll(() => {
@@ -2880,6 +2884,55 @@ describe("subagent announce formatting", () => {
     expect(msg).not.toContain("stale old parent result");
     expect(msg).toContain("old parent fallback reply");
   });
+
+  it.each([
+    { label: "active", ownerAvailable: true, expectedWake: true },
+    { label: "retired", ownerAvailable: false, expectedWake: false },
+  ])(
+    "uses the detached nested parent's $label Gateway owner",
+    async ({ ownerAvailable, expectedWake }) => {
+      sessionStore = {
+        "agent:main:subagent:parent": {
+          sessionId: "session-parent",
+        },
+      };
+      const ownerContext = { owner: "gateway-a" } as never;
+      const resolveGatewayContext = vi.fn(() => (ownerAvailable ? ownerContext : undefined));
+      const acceptedWake = vi.fn(async () => visibleAgentResponse("run-parent-phase-2"));
+      const dispatchGatewayMethodInProcess = vi.fn<typeof dispatchGatewayMethodInProcessRuntime>(
+        async <T>(_method, _params, options) => {
+          expect(options?.resolveGatewayContext).toBe(resolveGatewayContext);
+          if (!options?.resolveGatewayContext?.()) {
+            throw new Error("Gateway instance lifecycle dispatch unavailable for agent");
+          }
+          return (await acceptedWake()) as T;
+        },
+      );
+      const replaceSubagentRunAfterSteer = vi.fn(async () => true);
+
+      const woke = await runDescendantWake({
+        runId: "run-parent-phase-1",
+        childSessionKey: "agent:main:subagent:parent",
+        taskLabel: "parent task",
+        findings: "child result",
+        announceId: "announce-parent",
+        isChildSessionEffectsAllowed: () => true,
+        hasUsableSessionEntry: (entry): entry is Record<string, unknown> =>
+          typeof entry === "object" && entry !== null,
+        resolveGatewayContext,
+        deps: {
+          callGateway: callGatewaySpy,
+          dispatchGatewayMethodInProcess,
+          getRuntimeConfig: () => configOverride,
+          replaceSubagentRunAfterSteer,
+        },
+      });
+
+      expect(woke).toBe(expectedWake);
+      expect(acceptedWake).toHaveBeenCalledTimes(ownerAvailable ? 1 : 0);
+      expect(replaceSubagentRunAfterSteer).toHaveBeenCalledTimes(ownerAvailable ? 1 : 0);
+    },
+  );
 
   it("wakes an ended orchestrator run with settled child results before any upward announce", async () => {
     sessionStore = {
