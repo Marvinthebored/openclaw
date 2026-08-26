@@ -316,9 +316,20 @@ export async function dispatchGatewayMethodInProcess<T>(
   if (method === "agent" || method === "agent.wait") {
     return await withInProcessGatewayDispatch(method, options, async (resolved) => {
       const { createInternalAgentTurnFacade } = await loadInternalAgentTurnFacade();
+      const assertContextCurrent = () => {
+        if (
+          getInProcessGatewayRequestContext(options?.resolveGatewayContext) !== resolved.context
+        ) {
+          throw new Error(`Gateway instance lifecycle dispatch unavailable for ${method}`);
+        }
+      };
       const facade = createInternalAgentTurnFacade({
+        assertContextCurrent,
         client: resolved.client,
-        getContext: () => resolved.context,
+        getContext: () => {
+          assertContextCurrent();
+          return resolved.context;
+        },
         ...(resolved.context.getGatewayMethodRegistry
           ? { getMethodRegistry: resolved.context.getGatewayMethodRegistry }
           : {}),

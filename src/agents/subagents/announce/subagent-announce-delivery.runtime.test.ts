@@ -94,9 +94,15 @@ describe("subagent announce Gateway instance dispatch", () => {
       summary: "delivered",
     });
   });
-  it("rejects a retired nested-wake owner before a live replacement Gateway dispatch", async () => {
+  it("rejects a nested-wake owner retired after selection before either Gateway dispatches", async () => {
+    const retiredAgent = vi.fn(({ respond }) => respond(true, { raw: true }));
+    const retiredContext = createContext({ agent: retiredAgent });
     const replacementAgent = vi.fn(({ respond }) => respond(true, { raw: true }));
     const replacementContext = createContext({ agent: replacementAgent });
+    const resolveGatewayContext = vi
+      .fn<() => GatewayRequestContext | undefined>()
+      .mockReturnValueOnce(retiredContext)
+      .mockReturnValue(undefined);
 
     await withPluginRuntimeGatewayContextResolver(
       () => replacementContext,
@@ -110,12 +116,14 @@ describe("subagent announce Gateway instance dispatch", () => {
             },
             {
               forceSyntheticClient: true,
-              resolveGatewayContext: () => undefined,
+              resolveGatewayContext,
             },
           ),
         ).rejects.toThrow("Gateway instance lifecycle dispatch unavailable for agent");
       },
     );
+    expect(resolveGatewayContext).toHaveBeenCalledTimes(2);
+    expect(retiredAgent).not.toHaveBeenCalled();
     expect(replacementAgent).not.toHaveBeenCalled();
   });
 });
