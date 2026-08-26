@@ -35,6 +35,11 @@ export async function reactivateCompletedSubagentSession(params: {
     return false;
   }
   const { replaceSubagentRunAfterSteer } = await loadSessionSubagentReactivationRuntime();
+  // The lazy import can outlive its Gateway. Check the exact owner immediately
+  // before the synchronous replacement write.
+  if (params.gatewayContextResolver && !params.gatewayContextResolver()) {
+    return false;
+  }
   const task = params.task;
   const hasTask = typeof task === "string" && task.trim().length > 0;
   return replaceSubagentRunAfterSteer({

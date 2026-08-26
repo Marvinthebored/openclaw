@@ -69,6 +69,26 @@ describe("reactivateCompletedSubagentSession", () => {
     });
   });
 
+  it("does not replace an ended row after its Gateway owner retires", async () => {
+    getLatestSubagentRunByChildSessionKeyMock.mockReturnValue({
+      runId: "run-ended",
+      runTimeoutSeconds: 0,
+      execution: { endedAt: 1 },
+    });
+    const resolveGatewayContext = vi.fn(() => undefined);
+
+    await expect(
+      reactivateCompletedSubagentSession({
+        sessionKey: "agent:main:subagent:retired-owner",
+        runId: "run-next",
+        gatewayContextResolver: resolveGatewayContext,
+      }),
+    ).resolves.toBe(false);
+
+    expect(resolveGatewayContext).toHaveBeenCalledOnce();
+    expect(replaceSubagentRunAfterSteerMock).not.toHaveBeenCalled();
+  });
+
   it("threads the exact follow-up task into the replacement so restart redispatch rewraps the new prompt instead of the stale original", async () => {
     // Regression for the ClawSweeper P2 finding on #77539: the helper-level
     // task override reaches active steer, descendant wake, and orphan
