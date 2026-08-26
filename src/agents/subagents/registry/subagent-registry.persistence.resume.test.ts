@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { getGatewayContextResolver } from "../../../plugins/runtime/gateway-request-scope.js";
 import "./subagent-registry.mocks.shared.js";
 import { closeOpenClawStateDatabaseForTest as closeSeedStateDatabase } from "../../../state/openclaw-state-db.js";
 import { withEnvAsync } from "../../../test-utils/env.js";
@@ -325,6 +326,9 @@ describe("subagent registry persistence resume", () => {
       );
       mod.activateSubagentRegistry(resolveGatewayContext);
       mod.activateSubagentRegistry(resolveGatewayContext);
+      const restoredRun = mod.getSubagentRunByRunId(runningRun.runId);
+      expect(restoredRun).toBeDefined();
+      expect(getGatewayContextResolver(restoredRun!)).toBe(resolveGatewayContext);
 
       await vi.waitFor(() => {
         expect(wakeRequester).toHaveBeenCalledOnce();
@@ -345,6 +349,7 @@ describe("subagent registry persistence resume", () => {
       const resolveReplacementContext = () => ({ recoveryRuntime: replacementRuntime }) as never;
       mod.activateSubagentRegistry(resolveReplacementContext);
       mod.activateSubagentRegistry(resolveReplacementContext);
+      expect(getGatewayContextResolver(restoredRun!)).toBe(resolveGatewayContext);
       expect(wakeRequester).toHaveBeenCalledOnce();
       expect(recoveryRuntime.waitForAgent).toHaveBeenCalledOnce();
       expect(replacementRuntime.waitForAgent).not.toHaveBeenCalled();

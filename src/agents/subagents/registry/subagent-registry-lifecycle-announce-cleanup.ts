@@ -609,13 +609,9 @@ export const startSubagentAnnounceCleanupFlow = (
         params.persist(runId);
       }
     },
-    // A completion that lands while the requester is idle runs outside any
-    // gateway request scope, so the per-entry binding is the only context the
-    // direct handoff can use. Fall back to the instance resolver captured at
-    // registry activation when the entry carries none, otherwise the dispatch
-    // throws and delivery silently degrades to the steering queue.
-    resolveGatewayContext:
-      getGatewayContextResolver(entry) ?? params.getInstanceGatewayContextResolver?.(),
+    // Idle completion has no ambient request scope. Missing entry ownership
+    // fails closed instead of widening authority to another live Gateway.
+    resolveGatewayContext: getGatewayContextResolver(entry),
   };
   runDetachedCleanupAttempt(context, {
     runId,

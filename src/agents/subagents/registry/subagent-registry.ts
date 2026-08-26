@@ -2,10 +2,12 @@
 import type { AgentWaitParams } from "../../../../packages/gateway-protocol/src/index.js";
 import type { OpenClawConfig } from "../../../config/types.openclaw.js";
 import { callGateway } from "../../../gateway/call.js";
-import { fenceScheduledGatewayContextResolver } from "../../../gateway/scheduled-run-gateway-context.js";
 import type { GatewayContextResolver } from "../../../gateway/server-methods/types.js";
 import { createSubsystemLogger } from "../../../logging/subsystem.js";
-import { bindGatewayContextResolver } from "../../../plugins/runtime/gateway-request-scope.js";
+import {
+  bindGatewayContextResolver,
+  getGatewayContextResolver,
+} from "../../../plugins/runtime/gateway-request-scope.js";
 import {
   isGatewayRestartDraining,
   runWithGatewayIndependentRootWorkAdmission,
@@ -129,11 +131,6 @@ const contextCleanup = createSubagentRegistryContextCleanup({
 const subagentLifecycleController = new SubagentLifecycleController({
   runs: subagentRuns,
   resumedRuns,
-  // Fence the instance resolver: the process-wide holder is not cleared on
-  // shutdown, so a late completion could otherwise dispatch against a retired
-  // Gateway instance. Preferring no context makes that fail visibly.
-  getInstanceGatewayContextResolver: () =>
-    fenceScheduledGatewayContextResolver(activeGatewayContextResolver),
   subagentAnnounceTimeoutMs: SUBAGENT_ANNOUNCE_TIMEOUT_MS,
   getRuntimeConfig: () => subagentRegistryDeps.getRuntimeConfig(),
   persist: persistSubagentRuns,
@@ -610,7 +607,11 @@ export function initSubagentRegistry() {
 export function activateSubagentRegistry(resolveGatewayContext: GatewayContextResolver) {
   activeGatewayContextResolver = resolveGatewayContext;
   for (const entry of subagentRuns.values()) {
-    bindGatewayContextResolver(entry, resolveGatewayContext);
+    // Deserialized rows have no in-memory owner. The activating Gateway may
+    // claim those rows once, but must not replace a live run's exact owner.
+    if (!getGatewayContextResolver(entry)) {
+      bindGatewayContextResolver(entry, resolveGatewayContext);
+    }
   }
   subagentRestorer.activate();
   // Post-ready only: collector cleanup retains the canonical sessions.delete RPC owner.

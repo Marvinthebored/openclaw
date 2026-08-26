@@ -164,6 +164,7 @@ export function startAgentRunExecution(params: {
           sessionKey: params.resolvedSessionKey,
           runId: params.runId,
           task: message,
+          gatewayContextResolver: params.context.resolveGatewayContext,
         });
       }
       if (

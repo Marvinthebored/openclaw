@@ -31,6 +31,7 @@ describe("reactivateCompletedSubagentSession", () => {
 
   it("reactivates the newest ended row even when stale active rows still exist for the same child session", async () => {
     const childSessionKey = "agent:main:subagent:followup-race";
+    const resolveGatewayContext = vi.fn(() => ({ owner: "gateway-b" }) as never);
     const latestEndedRun = {
       runId: "run-current-ended",
       childSessionKey,
@@ -54,6 +55,7 @@ describe("reactivateCompletedSubagentSession", () => {
       reactivateCompletedSubagentSession({
         sessionKey: childSessionKey,
         runId: "run-next",
+        gatewayContextResolver: resolveGatewayContext,
       }),
     ).resolves.toBe(true);
 
@@ -63,6 +65,7 @@ describe("reactivateCompletedSubagentSession", () => {
       nextRunId: "run-next",
       fallback: latestEndedRun,
       runTimeoutSeconds: 0,
+      gatewayContextResolver: resolveGatewayContext,
     });
   });
 
