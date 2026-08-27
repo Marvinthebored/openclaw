@@ -36,8 +36,7 @@ async function listClaudeCliModel(
       (params.pluginDisabled
         ? { ...config, plugins: { entries: { anthropic: { enabled: false } } } }
         : config),
-    preparedAuthModes:
-      params.authenticated && !params.pluginDisabled ? { "claude-cli": "api_key" } : {},
+    preparedAuthModes: params.authenticated ? { "claude-cli": "api_key" } : {},
     view: "configured",
   });
 }
@@ -81,6 +80,7 @@ describe("models.list CLI runtime availability", () => {
   it("does not use synthetic auth when plugins are globally disabled", async () => {
     await expect(
       listClaudeCliModel({
+        authenticated: true,
         cfg: {
           ...config,
           plugins: { enabled: false },
