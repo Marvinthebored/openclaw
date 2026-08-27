@@ -76,9 +76,11 @@ function testModelDefinition(id: string): Model {
   };
 }
 
-vi.mock("../plugins/setup-registry.js", async () => {
+vi.mock("../plugins/setup-registry.js", async (importOriginal) => {
   const { readFileSync } = await import("node:fs");
+  const actual = await importOriginal<typeof import("../plugins/setup-registry.js")>();
   return {
+    ...actual,
     resolvePluginSetupProviderCore: ({
       provider,
     }: {
