@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { OAuthRefreshFailureError } from "../../agents/auth-profiles/oauth-refresh-failure.js";
+import { createCliOutputFailoverError } from "../../agents/cli-runner/output-error.js";
 import { FailoverError } from "../../agents/failover-error.js";
 import { MissingProviderAuthError, ProviderAuthError } from "../../agents/model-auth.js";
 import type { TemplateContext } from "../templating.js";
@@ -381,6 +382,40 @@ describe("executeAgentTurn: authentication failures", () => {
 
     const executeAgentTurn = await getExecuteAgentTurnForTest();
     const result = await executeAgentTurn(createMinimalRunAgentTurnParams());
+
+    expect(result.kind).toBe("final");
+    if (result.kind === "final") {
+      expect(result.payload.text).toBe(
+        "⚠️ Model login expired on the gateway for claude-cli. Re-auth with `claude auth login && openclaw models auth login --provider anthropic --method cli` in a terminal, then try again.",
+      );
+    }
+  });
+
+  it("surfaces claude-cli OAuth session expiry in Discord channels", async () => {
+    const error = createCliOutputFailoverError({
+      output: {
+        text: "",
+        errorText: "Failed to authenticate: OAuth session expired and could not be refreshed",
+      },
+      provider: "claude-cli",
+      model: "claude-opus-5",
+    });
+    if (!error) {
+      throw new Error("expected CLI output failure");
+    }
+    state.runEmbeddedAgentMock.mockRejectedValueOnce(error);
+
+    const executeAgentTurn = await getExecuteAgentTurnForTest();
+    const result = await executeAgentTurn(
+      createMinimalRunAgentTurnParams({
+        sessionCtx: {
+          Provider: "discord",
+          Surface: "discord",
+          ChatType: "channel",
+          MessageSid: "msg",
+        } as unknown as TemplateContext,
+      }),
+    );
 
     expect(result.kind).toBe("final");
     if (result.kind === "final") {

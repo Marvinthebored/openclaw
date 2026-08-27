@@ -130,7 +130,8 @@ function classifyFailoverClassificationFromMessage(
   if (isUnsupportedImageInputErrorMessage(raw)) {
     return toReasonClassification("format");
   }
-  if (isCliSessionExpiredErrorMessage(raw)) {
+  // OAuth sessions are credentials, not resumable CLI conversations.
+  if (isCliSessionExpiredErrorMessage(raw) && !/\boauth session\b/i.test(raw)) {
     return toReasonClassification("session_expired");
   }
   if (isModelNotFoundErrorMessage(raw)) {
