@@ -132,6 +132,27 @@ export async function modelsListCommand(
   let availableKeys: Set<string> | undefined;
   let availabilityErrorMessage: string | undefined;
   const configuredByKey = new Map(entries.map((entry) => [entry.key, entry]));
+  const cliRuntimeProviderIds = [
+    ...new Set(
+      (opts.local ? [] : entries)
+        .filter(
+          (entry) =>
+            !providerFilter ||
+            providerAliasCanonicalizer.provider(entry.ref.provider) === providerFilter,
+        )
+        .map((entry) =>
+          resolveCliRuntimeExecutionProvider({
+            provider: entry.ref.provider,
+            modelId: entry.ref.model,
+            cfg,
+            agentId,
+            metadataSnapshot,
+          }),
+        )
+        .map((provider) => normalizeProviderId(provider ?? ""))
+        .filter((provider) => provider && provider !== "openai"),
+    ),
+  ];
   try {
     if (includePreparedCatalog) {
       const { loadModelRegistry } = await registryModuleLoader.load();
@@ -147,7 +168,12 @@ export async function modelsListCommand(
       discoveredKeys = loaded.discoveredKeys;
       availableKeys = loaded.availableKeys;
       availabilityErrorMessage = loaded.availabilityErrorMessage;
-      preparedRuntimeAuthModes = loaded.authModes;
+      preparedRuntimeAuthModes = Object.fromEntries(
+        cliRuntimeProviderIds.flatMap((provider) => {
+          const mode = loaded.authModes[provider];
+          return mode ? [[provider, mode] as const] : [];
+        }),
+      );
     } else if (!opts.all && opts.local) {
       const { loadConfiguredListModelRegistry } = await registryModuleLoader.load();
       const loaded = await loadConfiguredListModelRegistry(cfg, entries, {
@@ -169,34 +195,16 @@ export async function modelsListCommand(
       machineOutput: message,
     });
   }
-  const cliRuntimeProviderIds = [
-    ...new Set(
-      (opts.local ? [] : entries)
-        .filter(
-          (entry) =>
-            !providerFilter ||
-            providerAliasCanonicalizer.provider(entry.ref.provider) === providerFilter,
-        )
-        .map((entry) =>
-          resolveCliRuntimeExecutionProvider({
-            provider: entry.ref.provider,
-            modelId: entry.ref.model,
-            cfg,
-            agentId,
-            metadataSnapshot,
-          }),
-        )
-        .map((provider) => normalizeProviderId(provider ?? ""))
-        .filter(Boolean),
-    ),
-  ].filter((provider) => !preparedRuntimeAuthModes?.[provider]);
-  if (cliRuntimeProviderIds.length) {
+  const unpreparedCliRuntimeProviderIds = cliRuntimeProviderIds.filter(
+    (provider) => !preparedRuntimeAuthModes?.[provider],
+  );
+  if (unpreparedCliRuntimeProviderIds.length) {
     try {
       const scopedAuthModes = await (
         await import("../../agents/prepared-model-runtime.scoped-catalog.js")
       ).prepareScopedReadOnlyModelAuthModes(
         { config: cfg, env: process.env, workspaceDir },
-        cliRuntimeProviderIds,
+        unpreparedCliRuntimeProviderIds,
         metadataSnapshot,
       );
       preparedRuntimeAuthModes = { ...preparedRuntimeAuthModes, ...scopedAuthModes };

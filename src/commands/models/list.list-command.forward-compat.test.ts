@@ -1205,6 +1205,32 @@ describe("modelsListCommand forward-compat", () => {
       expect(mocks.prepareScopedReadOnlyModelAuthModes).not.toHaveBeenCalled();
     });
 
+    it("does not let prepared OpenAI auth change standalone OpenAI availability", async () => {
+      const config = {
+        agents: { defaults: { model: { primary: "openai/gpt-5.4" } } },
+        models: { providers: { openai: { models: [] } } },
+      };
+      mocks.loadModelsConfigWithSource.mockResolvedValueOnce({
+        sourceConfig: config,
+        resolvedConfig: config,
+        diagnostics: [],
+      });
+      primeModelRegistry([OPENAI_CODEX_MODEL], new Set(), [OPENAI_CODEX_MODEL], {
+        openai: "api_key",
+      });
+
+      await modelsListCommand(
+        { all: true, provider: "openai", json: true },
+        createRuntime() as never,
+      );
+
+      expectRowFields(
+        lastPrintedRows<{ key: string; available: boolean | null }>(),
+        "openai/gpt-5.4",
+        { available: false },
+      );
+    });
+
     it("does not prepare an unrelated CLI runtime for a filtered list", async () => {
       configureClaudeRuntime({
         ...claudeConfig,
