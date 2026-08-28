@@ -130,8 +130,12 @@ function classifyFailoverClassificationFromMessage(
   if (isUnsupportedImageInputErrorMessage(raw)) {
     return toReasonClassification("format");
   }
-  // OAuth sessions are credentials, not resumable CLI conversations.
-  if (isCliSessionExpiredErrorMessage(raw) && !/\boauth session\b/i.test(raw)) {
+  // Claude CLI OAuth sessions are credentials, not resumable CLI conversations.
+  if (
+    isCliSessionExpiredErrorMessage(raw) &&
+    (normalizeOptionalLowercaseString(provider)?.trim() !== "claude-cli" ||
+      !/\boauth session\b/i.test(raw))
+  ) {
     return toReasonClassification("session_expired");
   }
   if (isModelNotFoundErrorMessage(raw)) {
