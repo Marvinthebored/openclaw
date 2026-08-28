@@ -4,6 +4,7 @@ import { installProcessWarningFilter, shouldIgnoreWarning } from "./warning-filt
 
 const warningFilterKey = Symbol.for("openclaw.warning-filter");
 const baseEmitWarning = process.emitWarning.bind(process);
+const baseWarningListeners = process.listeners("warning");
 
 function resetWarningFilterInstallState(): void {
   const globalState = globalThis as typeof globalThis & {
@@ -11,6 +12,13 @@ function resetWarningFilterInstallState(): void {
   };
   delete globalState[warningFilterKey];
   process.emitWarning = baseEmitWarning;
+  // Restore the pristine listener set so each test starts from a stock process.
+  for (const listener of process.listeners("warning")) {
+    process.off("warning", listener);
+  }
+  for (const listener of baseWarningListeners) {
+    process.on("warning", listener as (warning: Error) => void);
+  }
 }
 
 async function flushWarnings(): Promise<void> {
