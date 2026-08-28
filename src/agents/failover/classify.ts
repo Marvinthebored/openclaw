@@ -22,7 +22,7 @@ import {
   classifyFailoverReasonFromCode,
   failoverReasonFromClassification,
   inferSignalStatus,
-  isClaudeCliLoggedOutError,
+  isClaudeCliAuthError,
   isExactUnknownNoDetailsError,
   isGenericUnknownStreamErrorMessage,
   isTransientHttpError,
@@ -130,12 +130,10 @@ function classifyFailoverClassificationFromMessage(
   if (isUnsupportedImageInputErrorMessage(raw)) {
     return toReasonClassification("format");
   }
-  // Claude CLI OAuth sessions are credentials, not resumable CLI conversations.
-  if (
-    isCliSessionExpiredErrorMessage(raw) &&
-    (normalizeOptionalLowercaseString(provider)?.trim() !== "claude-cli" ||
-      !/\boauth session\b/i.test(raw))
-  ) {
+  if (isClaudeCliAuthError(raw, provider)) {
+    return toReasonClassification("auth");
+  }
+  if (isCliSessionExpiredErrorMessage(raw)) {
     return toReasonClassification("session_expired");
   }
   if (isModelNotFoundErrorMessage(raw)) {
@@ -204,9 +202,6 @@ function classifyFailoverClassificationFromMessage(
   // Auth classifiers run before the broad isJsonApiInternalServerError check so that
   // provider errors like {"type":"api_error","message":"invalid api key"} are
   // correctly classified as "auth" rather than "timeout".
-  if (isClaudeCliLoggedOutError(raw, provider)) {
-    return toReasonClassification("auth");
-  }
   const oauthRefreshFailure = classifyOAuthRefreshFailure(raw);
   if (oauthRefreshFailure?.reason) {
     return toReasonClassification("auth_permanent");
