@@ -2,12 +2,6 @@
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 
 const warningFilterKey = Symbol.for("openclaw.warning-filter");
-/**
- * Node's built-in `warning` printer, captured by identity at module load. This
- * module is imported during startup, before application code registers warning
- * listeners, and stock Node installs exactly one.
- */
-const nodeDefaultWarningListeners = process.listeners("warning");
 
 /** Normalized process warning fields used by the shared warning suppressor. */
 export type ProcessWarning = {
@@ -107,46 +101,5 @@ export function installProcessWarningFilter(): void {
   }) as typeof process.emitWarning;
 
   process.emitWarning = wrappedEmitWarning;
-
-  // Node's printer writes through console.error, and the console capture maps
-  // console.error to ERROR, so every process warning was recorded as a failure.
-  // Rather than reimplement the printer, keep calling Node's own and redirect
-  // only where its output lands. Node therefore keeps ownership of formatting,
-  // `--disable-warning` filtering, `--trace-warnings` and `--trace-deprecation`
-  // stacks, the remediation hint, and file routing under `--redirect-warnings`,
-  // `NODE_REDIRECT_WARNINGS`, and `--diagnostic-dir` — routed warnings never
-  // reach console.error, so the redirect below simply never fires for them.
-  //
-  // Replace only the stock single listener Node installs, matched by identity:
-  // under `--no-warnings` there is none, and a host that registered its own
-  // warning handling is left alone.
-  const [nodeWarningPrinter] = nodeDefaultWarningListeners;
-  if (nodeDefaultWarningListeners.length === 1 && nodeWarningPrinter) {
-    const currentListeners = new Set(process.listeners("warning"));
-    if (currentListeners.has(nodeWarningPrinter)) {
-      process.off("warning", nodeWarningPrinter);
-      // A logger that warns while reporting a warning would recurse back in.
-      let reporting = false;
-      process.on("warning", (warning: Error) => {
-        if (reporting) {
-          return;
-        }
-        reporting = true;
-        const consoleError = console.error;
-        const forwardToWarn = (...args: unknown[]) => {
-          console.warn(...args);
-        };
-        // SAFETY: forwards the printer's own arguments to console.warn unchanged.
-        console.error = forwardToWarn as typeof console.error;
-        try {
-          nodeWarningPrinter.call(process, warning);
-        } finally {
-          console.error = consoleError;
-          reporting = false;
-        }
-      });
-    }
-  }
-
   state.installed = true;
 }

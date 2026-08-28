@@ -1,10 +1,13 @@
+import { spawnSync } from "node:child_process";
 // Covers process warning filtering and install idempotence.
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { installProcessWarningFilter, shouldIgnoreWarning } from "./warning-filter.js";
 
 const warningFilterKey = Symbol.for("openclaw.warning-filter");
 const baseEmitWarning = process.emitWarning.bind(process);
-const baseWarningListeners = process.listeners("warning");
 
 function resetWarningFilterInstallState(): void {
   const globalState = globalThis as typeof globalThis & {
@@ -12,13 +15,6 @@ function resetWarningFilterInstallState(): void {
   };
   delete globalState[warningFilterKey];
   process.emitWarning = baseEmitWarning;
-  // Restore the pristine listener set so each test starts from a stock process.
-  for (const listener of process.listeners("warning")) {
-    process.off("warning", listener);
-  }
-  for (const listener of baseWarningListeners) {
-    process.on("warning", listener as (warning: Error) => void);
-  }
 }
 
 async function flushWarnings(): Promise<void> {
@@ -81,6 +77,56 @@ describe("warning filter", () => {
 
     for (const warning of visibleWarnings) {
       expect(shouldIgnoreWarning(warning)).toBe(false);
+    }
+  });
+
+  it("routes only Node's warning printer at WARN across repeated capture setup", () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-warning-filter-"));
+    const logFile = path.join(tempDir, "warning.log");
+    const marker = "OPENCLAW_WARNING_LEVEL_PROBE";
+    const applicationMarker = "OPENCLAW_FORGED_WARNING_PREFIX_ERROR";
+    const source = `
+      process.on("warning", () => console.error("(" + process.release.name + ":" + process.pid + ") ${applicationMarker}"));
+      const { installProcessWarningFilter } = await import("./src/infra/warning-filter.ts");
+      const { enableConsoleCapture } = await import("./src/logging/console.ts");
+      const { flushLogger, setLoggerOverride } = await import("./src/logging/logger.ts");
+      setLoggerOverride({ level: "trace", file: process.env.OPENCLAW_WARNING_LOG, consoleLevel: "silent" });
+      installProcessWarningFilter();
+      enableConsoleCapture();
+      enableConsoleCapture();
+      process.emitWarning("${marker}", { code: "${marker}" });
+      await new Promise((resolve) => setImmediate(resolve));
+      await flushLogger();
+    `;
+
+    try {
+      const childEnv: NodeJS.ProcessEnv = { ...process.env, OPENCLAW_WARNING_LOG: logFile };
+      delete childEnv.NODE_OPTIONS;
+      delete childEnv.NODE_REDIRECT_WARNINGS;
+      delete childEnv.NODE_NO_WARNINGS;
+      const result = spawnSync(
+        process.execPath,
+        ["--import", "./scripts/tsx.mjs", "--input-type=module", "--eval", source],
+        {
+          cwd: process.cwd(),
+          encoding: "utf8",
+          env: childEnv,
+        },
+      );
+      expect(result.status, result.stderr).toBe(0);
+      const records = fs
+        .readFileSync(logFile, "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => JSON.parse(line) as { message?: string; _meta?: { logLevelName?: string } });
+      expect(records.find((record) => record.message?.includes(marker))?._meta?.logLevelName).toBe(
+        "WARN",
+      );
+      expect(
+        records.find((record) => record.message?.endsWith(applicationMarker))?._meta?.logLevelName,
+      ).toBe("ERROR");
+    } finally {
+      fs.rmSync(tempDir, { force: true, recursive: true });
     }
   });
 
