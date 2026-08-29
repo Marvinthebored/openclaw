@@ -49,7 +49,7 @@ import {
 } from "./attempt-tool-construction-plan.js";
 import { buildEmbeddedAttemptToolRunContext } from "./attempt-tool-run-context.js";
 import { TOOL_SEARCH_CONTROL_ALLOWLIST_NAMES } from "./attempt-tool-search-run-plan.js";
-import { isCodeModeReconciliationTool } from "./code-mode-reconciliation.js";
+import { CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME } from "./code-mode-reconciliation.js";
 import type { EmbeddedRunAttemptParams } from "./types.js";
 
 type OpenClawCodingToolsOptions = NonNullable<Parameters<typeof createOpenClawCodingTools>[0]>;
@@ -85,8 +85,14 @@ export function prepareEmbeddedAttemptToolBase(params: {
     trace: params.runTrace,
   });
   const toolsAllowWithForcedRuntimeTools =
-    attempt.forceCodeModeReconciliationTools === true
-      ? ["read"]
+    attempt.forceCodeModeReconciliationTools === true && toolRunContext.runtimeToolAllowlist
+      ? [
+          ...new Set([
+            ...toolRunContext.runtimeToolAllowlist,
+            "read",
+            CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME,
+          ]),
+        ]
       : toolRunContext.runtimeToolAllowlist;
   const toolsEnabled = supportsModelTools(attempt.model);
   const isRawModelRun = attempt.modelRun === true || attempt.promptMode === "none";
@@ -115,7 +121,7 @@ export function prepareEmbeddedAttemptToolBase(params: {
     isRawModelRun,
     toolsAllow: attempt.toolsAllow,
     forceCodeModeControls: attempt.forceCodeModeTools,
-    forceDirectTools: attempt.forceCodeModeReconciliationTools,
+    forceDirectTools: attempt.codeModeReconciliationPlan !== undefined,
   });
   if (isCodeModeDiagnosticEnabled()) {
     logCodeModeDiagnostic(log, "activation", {
@@ -382,12 +388,9 @@ export function prepareEmbeddedAttemptToolBase(params: {
         params.markCoreToolStage("attempt:tools-allow");
         return filteredTools;
       })();
-  const toolsRaw =
-    attempt.forceCodeModeReconciliationTools === true
-      ? constructedToolsRaw.filter(isCodeModeReconciliationTool)
-      : attempt.forceRestartSafeTools
-        ? constructedToolsRaw.filter((tool) => isAgentToolRestartSafe(tool, restartSafetyOptions))
-        : constructedToolsRaw;
+  const toolsRaw = attempt.forceRestartSafeTools
+    ? constructedToolsRaw.filter((tool) => isAgentToolRestartSafe(tool, restartSafetyOptions))
+    : constructedToolsRaw;
   if (attempt.forceRestartSafeTools) {
     log.info(
       `restart-safe recovery tool policy retained ${toolsRaw.length}/${constructedToolsRaw.length} concrete tools`,

@@ -502,6 +502,7 @@ export async function dispatchEmbeddedRunAttempt(input: {
     swarmOutputSchema: params.swarmOutputSchema,
     forceRestartSafeTools: params.forceRestartSafeTools,
     forceCodeModeReconciliationTools: params.forceCodeModeReconciliationTools,
+    codeModeReconciliationPlan: params.codeModeReconciliationPlan,
     forceCodeModeTools: params.forceCodeModeTools,
     codeModeOverride: params.codeModeOverride,
     forceMessageTool: params.forceMessageTool,

@@ -9,6 +9,7 @@ import {
   useOpenAIPlatformAuthFixture,
 } from "./run.overflow-compaction.harness.js";
 import { loadSharedRunIntegrationHarness } from "./run.shared-integration-harness.test-support.js";
+import type { EmbeddedRunAttemptParams } from "./run/types.js";
 
 let runEmbeddedAgent: Awaited<ReturnType<typeof loadSharedRunIntegrationHarness>>;
 
@@ -23,7 +24,7 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
     useOpenAIPlatformAuthFixture();
   });
 
-  it("continues a settled partial mutation with one read-only attempt", async () => {
+  it("continues work after one settled read-only reconciliation", async () => {
     const mutationAssistant = buildEmbeddedRunnerAssistant({
       stopReason: "toolUse",
       content: [
@@ -34,6 +35,10 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
           arguments: { action: "exec" },
         },
       ],
+    });
+    const reasoningOnlyAssistant = buildEmbeddedRunnerAssistant({
+      stopReason: "stop",
+      content: [{ type: "thinking", thinking: "I should continue." }],
     });
     mockedRunEmbeddedAttempt
       .mockResolvedValueOnce(
@@ -46,7 +51,40 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
           itemLifecycle: { startedCount: 1, completedCount: 1, activeCount: 0 },
         }),
       )
-      .mockResolvedValueOnce(makeAttemptResult({ assistantTexts: ["The first hunk applied."] }));
+      .mockImplementationOnce(async (params) => {
+        (params as EmbeddedRunAttemptParams).codeModeReconciliationPlan?.entries.push({
+          toolName: "write",
+          argumentsKey: '{"path":"done.txt"}',
+          consumed: false,
+        });
+        return makeAttemptResult({
+          assistantTexts: ["The first hunk applied."],
+          toolMetas: [
+            { toolName: "read", isError: false },
+            { toolName: "write", isError: false },
+          ],
+          itemLifecycle: { startedCount: 1, completedCount: 1, activeCount: 0 },
+          currentAttemptCompletedAssistant: buildEmbeddedRunnerAssistant({
+            stopReason: "stop",
+            content: [{ type: "text", text: "The first hunk applied." }],
+          }),
+        });
+      })
+      .mockImplementationOnce(async (params) => {
+        const pending = (
+          params as EmbeddedRunAttemptParams
+        ).codeModeReconciliationPlan?.entries.find((entry) => !entry.consumed);
+        if (pending) {
+          pending.consumed = true;
+        }
+        return makeAttemptResult({
+          assistantTexts: [],
+          lastAssistant: reasoningOnlyAssistant,
+          currentAttemptAssistant: reasoningOnlyAssistant,
+          currentAttemptCompletedAssistant: reasoningOnlyAssistant,
+        });
+      })
+      .mockResolvedValueOnce(makeAttemptResult({ assistantTexts: ["Task complete."] }));
 
     await runEmbeddedAgent({
       ...overflowBaseRunParams,
@@ -62,7 +100,7 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
       runId: "run-code-mode-reconciliation",
     });
 
-    expect(mockedRunEmbeddedAttempt).toHaveBeenCalledTimes(2);
+    expect(mockedRunEmbeddedAttempt).toHaveBeenCalledTimes(4);
     expect(
       mockedRunEmbeddedAttempt.mock.calls[0]?.[0].forceCodeModeReconciliationTools,
     ).toBeFalsy();
@@ -70,5 +108,22 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
       forceCodeModeReconciliationTools: true,
       prompt: expect.stringContaining("may have partially applied"),
     });
+    expect(mockedRunEmbeddedAttempt.mock.calls[2]?.[0]).toMatchObject({
+      codeModeOverride: false,
+      forceCodeModeTools: false,
+      prompt: expect.stringContaining("Execute the reconciled recovery plan"),
+      codeModeReconciliationPlan: expect.objectContaining({
+        entries: [expect.objectContaining({ toolName: "write" })],
+      }),
+    });
+    expect(mockedRunEmbeddedAttempt.mock.calls[2]?.[0].prompt).toContain("rejects unplanned calls");
+    expect(mockedRunEmbeddedAttempt.mock.calls[3]?.[0]).toMatchObject({
+      codeModeOverride: false,
+      forceCodeModeTools: false,
+      prompt: expect.stringContaining("rejects unplanned calls"),
+    });
+    expect(
+      mockedRunEmbeddedAttempt.mock.calls[2]?.[0].forceCodeModeReconciliationTools,
+    ).toBeFalsy();
   });
 });

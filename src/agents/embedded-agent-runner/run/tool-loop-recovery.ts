@@ -8,16 +8,51 @@ import {
 } from "../../runtime/internal-hooks.js";
 import { admitToolCallBatch } from "../../tool-loop-admission.js";
 import { hashToolCall } from "../../tool-loop-detection.js";
+import { normalizeToolPolicyName } from "../../tool-policy.js";
+import { ToolInputError } from "../../tools/common.js";
 import { log } from "../logger.js";
+import {
+  CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME,
+  commitCodeModeReconciliationCalls,
+  isCodeModeReconciliationTool,
+  type CodeModeReconciliationPlan,
+  validateCodeModeReconciliationCalls,
+} from "./code-mode-reconciliation.js";
 
 /** Build the embedded-runner's private bridge into agent-core loop recovery. */
 export function createToolLoopBatchAdmission(
   ctx: HookContext,
+  reconciliationPlan?: CodeModeReconciliationPlan,
+  captureReconciliation = false,
 ): InternalBeforeToolBatchHook | undefined {
-  if (ctx.loopDetection?.enabled !== true) {
+  const loopDetectionEnabled = ctx.loopDetection?.enabled === true;
+  if (!loopDetectionEnabled && !reconciliationPlan) {
     return undefined;
   }
   return async ({ calls }) => {
+    if (
+      reconciliationPlan &&
+      captureReconciliation &&
+      !reconciliationPlan.readObserved &&
+      calls.some(
+        (call) =>
+          normalizeToolPolicyName(call.toolCall.name) ===
+          CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME,
+      )
+    ) {
+      throw new ToolInputError("Inspect with read and wait for its result before proposing work.");
+    }
+    const reconciliationCalls =
+      reconciliationPlan && !captureReconciliation
+        ? validateCodeModeReconciliationCalls(reconciliationPlan, calls)
+        : undefined;
+    const reconciliationReadCallIds = new Set(
+      captureReconciliation
+        ? calls
+            .filter((call) => isCodeModeReconciliationTool(call.toolCall))
+            .map((call) => call.toolCall.id)
+        : [],
+    );
     const canonicalCalls = calls.map((call) => ({
       ...call,
       args: call.tool
@@ -25,12 +60,29 @@ export function createToolLoopBatchAdmission(
         : call.args,
     }));
     try {
-      const admission = await admitToolCallBatch(canonicalCalls, ctx);
+      const admission = loopDetectionEnabled ? await admitToolCallBatch(canonicalCalls, ctx) : {};
       const { commitReadyCalls, releaseSkippedCalls, ...result } = admission;
-      return commitReadyCalls && releaseSkippedCalls
+      return reconciliationCalls ||
+        reconciliationReadCallIds.size > 0 ||
+        (commitReadyCalls && releaseSkippedCalls)
         ? attachInternalToolBatchLifecycle(result, {
-            commitReadyCalls,
-            releaseSkippedCalls,
+            commitReadyCalls: (readyCalls) => {
+              if (
+                reconciliationPlan &&
+                readyCalls.some((call) => reconciliationReadCallIds.has(call.toolCallId))
+              ) {
+                reconciliationPlan.readObserved = true;
+              }
+              if (reconciliationPlan && reconciliationCalls) {
+                commitCodeModeReconciliationCalls(
+                  reconciliationPlan,
+                  reconciliationCalls,
+                  readyCalls,
+                );
+              }
+              commitReadyCalls?.(readyCalls);
+            },
+            releaseSkippedCalls: (toolCallIds) => releaseSkippedCalls?.(toolCallIds),
           })
         : result;
     } catch (error) {

@@ -144,6 +144,19 @@ export function prepareEmbeddedAttemptClientTools(params: {
         },
       )
     : [];
+  if (params.attempt.codeModeReconciliationPlan) {
+    const plannedNames = new Set(
+      params.attempt.codeModeReconciliationPlan.entries
+        .filter((entry) => !entry.consumed)
+        .map((entry) => entry.toolName),
+    );
+    clientToolDefs = params.attempt.forceCodeModeReconciliationTools
+      ? []
+      : clientToolDefs.filter((tool) => plannedNames.has(normalizeToolPolicyName(tool.name)));
+    for (const tool of clientToolDefs) {
+      tool.executionMode = "sequential";
+    }
+  }
   // Terminal observations are name-only, so ownership is valid only when one
   // concrete OpenClaw or client tool owns the normalized name.
   const sideEffectToolOwners = collectSideEffectToolOwners(

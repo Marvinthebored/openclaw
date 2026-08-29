@@ -185,8 +185,10 @@ export type RunEmbeddedAgentParams = {
   swarmOutputSchema?: Record<string, unknown>;
   /** Restrict this reconstructed run to restart-safe tools. */
   forceRestartSafeTools?: boolean;
-  /** Restrict one internal post-mutation recovery attempt to audited core reads. */
+  /** Restrict one internal post-mutation recovery attempt to reads and proposal-only core tools. */
   forceCodeModeReconciliationTools?: boolean;
+  /** Exact run-owned calls proposed by the Code Mode reconciliation attempt. */
+  codeModeReconciliationPlan?: import("./code-mode-reconciliation.js").CodeModeReconciliationPlan;
   /** Preserve Code Mode controls for a replay-safe restart recovery turn. */
   forceCodeModeTools?: boolean;
   /** Invocation-owned Code Mode activation; limits still come from config. */

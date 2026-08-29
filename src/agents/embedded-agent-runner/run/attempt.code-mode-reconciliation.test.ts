@@ -12,6 +12,7 @@ import {
   resetCodeModeTestState,
 } from "../../code-mode.test-support.js";
 import { Agent, type AgentTool } from "../../runtime/index.js";
+import { setInternalBeforeToolBatch } from "../../runtime/internal-hooks.js";
 import { SessionManager } from "../../sessions/session-manager.js";
 import { jsonResult } from "../../tools/common.js";
 import {
@@ -25,6 +26,7 @@ import {
 } from "./attempt-spawn-workspace.test-support.js";
 import { activateCodeModeReconciliation } from "./code-mode-reconciliation.js";
 import { createEmbeddedRunTerminalRetryState } from "./terminal-retry-state.js";
+import { createToolLoopBatchAdmission } from "./tool-loop-recovery.js";
 
 const hoisted = getHoisted();
 const tempPaths: string[] = [];
@@ -41,8 +43,8 @@ const model: Model = {
   maxTokens: 8_192,
 };
 
-function streamAssistant(content: AssistantMessage["content"]) {
-  const message: AssistantMessage = {
+function buildAssistant(content: AssistantMessage["content"]): AssistantMessage {
+  return {
     role: "assistant",
     content,
     api: model.api,
@@ -59,6 +61,10 @@ function streamAssistant(content: AssistantMessage["content"]) {
     stopReason: content.some((entry) => entry.type === "toolCall") ? "toolUse" : "stop",
     timestamp: Date.now(),
   };
+}
+
+function streamAssistant(content: AssistantMessage["content"]) {
+  const message = buildAssistant(content);
   const stream = createAssistantMessageEventStream();
   queueMicrotask(() => {
     stream.push({
@@ -85,7 +91,7 @@ describe("runEmbeddedAttempt Code Mode reconciliation boundary", () => {
     await cleanupTempPaths(tempPaths);
   });
 
-  it("settles a real partial bridge mutation before exposing only core read", async () => {
+  it("resumes with direct tools after settling a partial mutation", async () => {
     const sessionManager = SessionManager.inMemory();
     const appliedChanges: string[] = [];
     const read = fakeTool("read", "Inspect current file contents");
@@ -105,33 +111,79 @@ describe("runEmbeddedAttempt Code Mode reconciliation boundary", () => {
     ]);
 
     const providerContexts: Context[] = [];
-    let reconciliationAttempt = false;
+    const retryState = createEmbeddedRunTerminalRetryState();
+    let attemptPhase: "mutation" | "reconciliation" | "continuation" = "mutation";
+    const baseSubscribe = hoisted.subscribeEmbeddedAgentSessionMock.getMockImplementation();
+    if (!baseSubscribe) {
+      throw new Error("missing embedded subscription test implementation");
+    }
+    hoisted.subscribeEmbeddedAgentSessionMock.mockImplementation((params) => {
+      const subscription = baseSubscribe(params);
+      if (attemptPhase === "reconciliation") {
+        subscription.toolMetas.push({ toolName: "read", isError: false });
+        subscription.getCurrentAttemptAssistant = () =>
+          buildAssistant([{ type: "text", text: "first hunk applied" }]);
+      }
+      return subscription;
+    });
     const createSession = () => {
       const session = createDefaultEmbeddedSession();
       const options = hoisted.createAgentSessionMock.mock.calls.at(-1)?.[0] as {
         customTools: AgentTool[];
       };
       const allTools = options.customTools;
+      const proposedWrite = allTools.find((tool) => tool.name === "recovery_propose");
       let assistantTurn = 0;
       const agent = new Agent({
         initialState: { model, tools: allTools },
         streamFn: (_activeModel, context) => {
           providerContexts.push(context);
-          if (assistantTurn++ > 0) {
+          const turn = assistantTurn++;
+          if (attemptPhase === "reconciliation") {
+            if (turn === 0) {
+              return streamAssistant([
+                { type: "toolCall", id: "observe", name: "read", arguments: { value: "file" } },
+              ]);
+            }
+            if (turn === 1) {
+              return streamAssistant([
+                {
+                  type: "toolCall",
+                  id: "propose",
+                  name: proposedWrite?.name ?? "missing_recovery_proposal",
+                  arguments: { calls: [{ tool: "write", arguments: {} }] },
+                },
+              ]);
+            }
+            throw new Error("reconciliation continued after terminal recovery proposal");
+          }
+          if (turn > 0) {
             return streamAssistant([{ type: "text", text: "first hunk applied" }]);
           }
-          return streamAssistant([
-            reconciliationAttempt
-              ? { type: "toolCall", id: "observe", name: "read", arguments: { value: "file" } }
-              : {
-                  type: "toolCall",
-                  id: "mutate",
-                  name: "exec",
-                  arguments: { code: "return await apply_patch({});" },
-                },
-          ]);
+          return streamAssistant(
+            attemptPhase === "continuation"
+              ? [{ type: "toolCall", id: "continue", name: "write", arguments: {} }]
+              : [
+                  {
+                    type: "toolCall",
+                    id: "mutate",
+                    name: "exec",
+                    arguments: { code: "return await apply_patch({});" },
+                  },
+                ],
+          );
         },
       });
+      if (retryState.codeModeReconciliationPlan) {
+        setInternalBeforeToolBatch(
+          agent,
+          createToolLoopBatchAdmission(
+            { runId: "run", loopDetection: { enabled: false } },
+            retryState.codeModeReconciliationPlan,
+            attemptPhase === "reconciliation",
+          ),
+        );
+      }
       session.agent = agent as typeof session.agent;
       Object.defineProperty(session, "messages", {
         get: () => agent.state.messages,
@@ -156,7 +208,7 @@ describe("runEmbeddedAttempt Code Mode reconciliation boundary", () => {
       sessionKey: "agent:main:main",
       tempPaths,
       attemptOverrides: {
-        config: { tools: { codeMode: true } },
+        config: { tools: { codeMode: true, toolSearch: { enabled: true } } },
         sessionManager,
         disableMessageTool: false,
         disableTools: false,
@@ -183,7 +235,6 @@ describe("runEmbeddedAttempt Code Mode reconciliation boundary", () => {
       },
     ]);
 
-    const retryState = createEmbeddedRunTerminalRetryState();
     let recoveryPrompt: string | undefined;
     expect(
       activateCodeModeReconciliation({
@@ -197,30 +248,80 @@ describe("runEmbeddedAttempt Code Mode reconciliation boundary", () => {
     ).toBe(true);
     expect(recoveryPrompt).toContain("may have partially applied");
 
-    reconciliationAttempt = true;
-    await createContextEngineAttemptRunner({
+    attemptPhase = "reconciliation";
+    const reconciliationAttempt = await createContextEngineAttemptRunner({
       contextEngine: createContextEngineBootstrapAndAssemble(),
       createSession,
       sessionKey: "agent:main:main",
       tempPaths,
       attemptOverrides: {
-        config: { tools: { codeMode: true } },
+        config: { tools: { codeMode: true, toolSearch: { enabled: true } } },
         sessionManager,
         disableMessageTool: false,
         disableTools: false,
         forceCodeModeReconciliationTools: retryState.forceCodeModeReconciliationTools,
+        codeModeReconciliationPlan: retryState.codeModeReconciliationPlan,
+        toolsAllow: ["write"],
         model,
         prompt: recoveryPrompt,
       },
     });
 
     expect(providerContexts).toHaveLength(3);
-    expect(providerContexts[1]?.tools?.map((tool) => tool.name)).toEqual(["read"]);
+    const recoveryTools = providerContexts[1]?.tools?.map((tool) => tool.name) ?? [];
+    expect(recoveryTools).toContain("read");
+    expect(recoveryTools).toContain("recovery_propose");
+    expect(recoveryTools).not.toContain("exec");
     expect(read.execute).toHaveBeenCalledOnce();
     expect(applyPatch.execute).toHaveBeenCalledOnce();
     expect(write.execute).not.toHaveBeenCalled();
     expect(message.execute).not.toHaveBeenCalled();
     expect(shell.execute).not.toHaveBeenCalled();
     expect(appliedChanges).toEqual(["first hunk applied"]);
+    expect(retryState.codeModeReconciliationPlan?.entries).toEqual([
+      { toolName: "write", argumentsKey: "{}", consumed: false },
+    ]);
+
+    let continuationPrompt: string | undefined;
+    expect(
+      activateCodeModeReconciliation({
+        attempt: reconciliationAttempt,
+        hostOwnsToolSurface: true,
+        retryState,
+        activateInternalPrompt: (prompt) => {
+          continuationPrompt = prompt;
+        },
+      }),
+    ).toBe(true);
+    expect(retryState).toMatchObject({
+      forceCodeModeReconciliationTools: false,
+      disableCodeModeForReconciledContinuation: true,
+    });
+
+    attemptPhase = "continuation";
+    await createContextEngineAttemptRunner({
+      contextEngine: createContextEngineBootstrapAndAssemble(),
+      createSession,
+      sessionKey: "agent:main:main",
+      tempPaths,
+      attemptOverrides: {
+        config: { tools: { codeMode: true, toolSearch: { enabled: true } } },
+        sessionManager,
+        disableMessageTool: false,
+        disableTools: false,
+        codeModeOverride: false,
+        codeModeReconciliationPlan: retryState.codeModeReconciliationPlan,
+        model,
+        prompt: continuationPrompt,
+      },
+    });
+
+    expect(providerContexts).toHaveLength(5);
+    const resumedTools = providerContexts[3]?.tools?.map((tool) => tool.name) ?? [];
+    expect(resumedTools).toContain("write");
+    expect(resumedTools).not.toContain("exec");
+    expect(write.execute).toHaveBeenCalledOnce();
+    expect(applyPatch.execute).toHaveBeenCalledOnce();
+    expect(retryState.codeModeReconciliationPlan?.entries[0]?.consumed).toBe(true);
   });
 });

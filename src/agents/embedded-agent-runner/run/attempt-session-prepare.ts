@@ -204,7 +204,11 @@ export async function prepareEmbeddedAttemptAgentSession(input: {
     // Without a resolved model budget, the outer loop cannot own bounded recovery.
     contextOverflowRecoveryOwner: attempt.contextTokenBudget === undefined ? "session" : "caller",
     beforeToolBatch: input.clientToolPreparation.catalogToolHookContext
-      ? createToolLoopBatchAdmission(input.clientToolPreparation.catalogToolHookContext)
+      ? createToolLoopBatchAdmission(
+          input.clientToolPreparation.catalogToolHookContext,
+          attempt.codeModeReconciliationPlan,
+          attempt.forceCodeModeReconciliationTools === true,
+        )
       : undefined,
   });
   const activeSession = createdSession.session;

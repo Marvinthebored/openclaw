@@ -32,6 +32,7 @@ import type { prepareEmbeddedAttemptBundleTools } from "./attempt-bundle-tools.j
 import { collectAttemptExplicitToolAllowlistSources } from "./attempt-tool-allowlist.js";
 import type { prepareEmbeddedAttemptToolBase } from "./attempt-tool-prepare.js";
 import { buildToolSearchRunPlan } from "./attempt-tool-search-run-plan.js";
+import { applyCodeModeReconciliationPlan } from "./code-mode-reconciliation.js";
 import { wrapEmbeddedAttemptToolWithActivity } from "./tool-activity-heartbeat.js";
 import type { EmbeddedRunAttemptParams } from "./types.js";
 
@@ -141,6 +142,18 @@ export function prepareEmbeddedAttemptToolCatalog(input: {
   effectiveTools = toolSearchSchemaProjection.tools.map((tool) =>
     wrapEmbeddedAttemptToolWithActivity(tool, attempt.runId),
   );
+  if (attempt.codeModeReconciliationPlan) {
+    effectiveTools = applyCodeModeReconciliationPlan({
+      tools: effectiveTools,
+      clientTools: clientTools?.map((tool) => ({
+        name: tool.function.name,
+        description: tool.function.description,
+        parameters: tool.function.parameters,
+      })),
+      plan: attempt.codeModeReconciliationPlan,
+      capture: attempt.forceCodeModeReconciliationTools === true,
+    });
+  }
   if (codeModeControlsEnabledForRun && isCodeModeDiagnosticEnabled()) {
     logCodeModeDiagnostic(log, "final-surface", {
       runId: attempt.runId,
