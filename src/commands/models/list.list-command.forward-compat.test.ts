@@ -1,7 +1,7 @@
 // Model list forward-compat tests cover list command behavior with future catalog shapes.
 import { normalizeProviderId } from "@openclaw/model-catalog-core/provider-id";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDeferred } from "../../../test/helpers/promise.js";
+import { createDeferred, withTestTimeout } from "../../../test/helpers/promise.js";
 
 const OPENAI_CODEX_MODEL = {
   provider: "openai",
@@ -19,6 +19,18 @@ const OPENAI_CODEX_53_MODEL = {
   ...OPENAI_CODEX_MODEL,
   id: "gpt-5.4",
   name: "GPT-5.3 Codex",
+};
+
+const ANTHROPIC_CLI_MODEL = {
+  provider: "anthropic",
+  id: "claude-opus-5",
+  name: "Claude Opus 5",
+  api: "anthropic-messages",
+  baseUrl: "https://api.anthropic.com",
+  input: ["text"],
+  contextWindow: 200_000,
+  maxTokens: 4096,
+  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
 };
 
 const mocks = vi.hoisted(() => {
@@ -163,7 +175,7 @@ function resetMocks() {
     snapshot: { plugins: [] },
     diagnostics: [],
   });
-  mocks.prepareScopedReadOnlyModelAuthModes.mockResolvedValue({});
+  mocks.prepareScopedReadOnlyModelAuthModes.mockReset().mockResolvedValue({});
 }
 
 function createRuntime() {
@@ -1142,6 +1154,20 @@ describe("modelsListCommand forward-compat", () => {
       return config;
     }
 
+    it("prints the default list without waiting for native CLI auth", async () => {
+      configureClaudeRuntime();
+      mocks.prepareScopedReadOnlyModelAuthModes.mockReturnValueOnce(new Promise(() => {}));
+
+      await withTestTimeout(
+        modelsListCommand({ json: true }, createRuntime() as never),
+        5_000,
+        "default model list waited for native CLI auth",
+      );
+
+      expect(mocks.prepareScopedReadOnlyModelAuthModes).not.toHaveBeenCalled();
+      expect(mocks.printModelTable).toHaveBeenCalledOnce();
+    });
+
     it.each([
       { authModes: { "claude-cli": "api_key" as const }, available: true },
       { authModes: {}, available: null },
@@ -1149,9 +1175,10 @@ describe("modelsListCommand forward-compat", () => {
       "uses the prepared CLI runtime auth result ($available)",
       async ({ authModes, available }) => {
         const config = configureClaudeRuntime();
+        primeModelRegistry([ANTHROPIC_CLI_MODEL]);
         mocks.prepareScopedReadOnlyModelAuthModes.mockResolvedValueOnce(authModes);
 
-        await modelsListCommand({ json: true }, createRuntime() as never);
+        await modelsListCommand({ provider: "anthropic", json: true }, createRuntime() as never);
 
         expect(mocks.prepareScopedReadOnlyModelAuthModes).toHaveBeenCalledWith(
           expect.objectContaining({ config, workspaceDir: "/tmp/openclaw-workspace" }),
@@ -1181,8 +1208,9 @@ describe("modelsListCommand forward-compat", () => {
       mocks.prepareScopedReadOnlyModelAuthModes.mockResolvedValueOnce({
         "claude-cli": "api_key",
       });
+      primeModelRegistry([ANTHROPIC_CLI_MODEL]);
 
-      await modelsListCommand({ json: true }, createRuntime() as never);
+      await modelsListCommand({ provider: "anthropic", json: true }, createRuntime() as never);
 
       expect(mocks.prepareScopedReadOnlyModelAuthModes).toHaveBeenCalledWith(
         expect.anything(),
@@ -1257,10 +1285,13 @@ describe("modelsListCommand forward-compat", () => {
 
     it("keeps listing when CLI auth preparation fails", async () => {
       configureClaudeRuntime();
+      primeModelRegistry([ANTHROPIC_CLI_MODEL]);
       mocks.prepareScopedReadOnlyModelAuthModes.mockRejectedValueOnce(new Error("probe failed"));
       const runtime = createRuntime();
 
-      await expect(modelsListCommand({ json: true }, runtime as never)).resolves.toBeUndefined();
+      await expect(
+        modelsListCommand({ provider: "anthropic", json: true }, runtime as never),
+      ).resolves.toBeUndefined();
 
       expect(runtime.error).toHaveBeenCalledWith(expect.stringContaining("probe failed"));
       expectRowFields(

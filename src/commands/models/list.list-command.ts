@@ -195,9 +195,9 @@ export async function modelsListCommand(
       machineOutput: message,
     });
   }
-  const unpreparedCliRuntimeProviderIds = cliRuntimeProviderIds.filter(
-    (provider) => !preparedRuntimeAuthModes?.[provider],
-  );
+  const unpreparedCliRuntimeProviderIds = includePreparedCatalog
+    ? cliRuntimeProviderIds.filter((provider) => !preparedRuntimeAuthModes?.[provider])
+    : [];
   if (unpreparedCliRuntimeProviderIds.length) {
     try {
       const scopedAuthModes = await (
