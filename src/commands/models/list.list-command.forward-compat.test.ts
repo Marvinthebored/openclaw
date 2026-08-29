@@ -1220,7 +1220,7 @@ describe("modelsListCommand forward-compat", () => {
       expectRowFields(
         lastPrintedRows<{ key: string; available: boolean | null }>(),
         "anthropic/claude-opus-5",
-        { available: null },
+        { available: false },
       );
     });
 

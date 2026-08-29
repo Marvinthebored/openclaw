@@ -90,4 +90,12 @@ describe("models.list CLI runtime availability", () => {
       models: [expect.objectContaining({ id: "claude-opus-5", available: false })],
     });
   });
+
+  it("does not use provider auth when the native runtime plugin is disabled", async () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "test-key");
+
+    const result = await listClaudeCliModel({ authenticated: true, pluginDisabled: true });
+
+    expect(result.models[0]).toMatchObject({ available: false, unavailableReason: "missing-auth" });
+  });
 });

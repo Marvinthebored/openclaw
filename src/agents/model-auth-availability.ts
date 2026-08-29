@@ -140,8 +140,7 @@ export function applyCliRuntimeModelAuthAvailability(params: {
 }): ModelAuthAvailabilityEvaluation {
   if (
     params.evaluation.routeResolution !== null ||
-    normalizeProviderId(params.provider) === "openai" ||
-    params.evaluation.availability === true
+    normalizeProviderId(params.provider) === "openai"
   ) {
     return params.evaluation;
   }
@@ -171,8 +170,16 @@ export function applyCliRuntimeModelAuthAvailability(params: {
         }),
       )
     ) {
-      return params.evaluation;
+      return {
+        ...params.evaluation,
+        availability: false,
+        unavailableReason: "missing-auth",
+        unavailableUntil: undefined,
+      };
     }
+  }
+  if (params.evaluation.availability === true) {
+    return params.evaluation;
   }
   // The native runtime owns the remaining auth decision, including whether
   // credentials are absent or simply have not been read yet.
