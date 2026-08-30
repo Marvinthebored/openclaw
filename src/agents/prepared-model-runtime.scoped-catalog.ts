@@ -74,6 +74,7 @@ export async function prepareScopedReadOnlyModelAuthModes(
   const credentials = resolveAmbientAgentCredentialsForDiscovery({
     config: input.config,
     env: input.env,
+    authoritativeSyntheticAuthProviderRefs: pluginMetadataSnapshot.owners.cliBackends.keys(),
     syntheticAuthProviderRefs: listPreparedSyntheticAuthProviderRefs(providers),
     resolveSyntheticAuth: (provider) =>
       resolvePreparedSyntheticAuth({ config: input.config, provider, providers }),
