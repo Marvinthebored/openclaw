@@ -3604,11 +3604,43 @@ describe("runPreparedReply media-only handling", () => {
   });
 
   it.each([
-    { storedActivation: "always", defaultActivation: "mention" },
-    { storedActivation: "mention", defaultActivation: "always" },
+    {
+      name: "matching always-on room",
+      storedActivation: "always",
+      defaultActivation: "mention",
+      liveChannel: "discord",
+      liveTo: "channel-1",
+      expectedGroupChannel: "#ops",
+      usesBaseSession: true,
+    },
+    {
+      name: "matching mention-only room",
+      storedActivation: "mention",
+      defaultActivation: "always",
+      liveChannel: "discord",
+      liveTo: "channel-1",
+      expectedGroupChannel: "#ops",
+      usesBaseSession: true,
+    },
+    {
+      name: "different explicit target",
+      storedActivation: "always",
+      defaultActivation: "mention",
+      liveChannel: "slack",
+      liveTo: "C999",
+      expectedGroupChannel: undefined,
+      usesBaseSession: false,
+    },
   ] as const)(
-    "uses persisted Discord identity and $storedActivation activation for isolated system-event prompts",
-    async ({ storedActivation, defaultActivation }) => {
+    "uses the live route and matching persisted identity for isolated system-event prompts: $name",
+    async ({
+      storedActivation,
+      defaultActivation,
+      liveChannel,
+      liveTo,
+      expectedGroupChannel,
+      usesBaseSession,
+    }) => {
       vi.mocked(buildGroupChatContext).mockImplementation(({ sessionCtx }) =>
         [`group`, sessionCtx.Provider, sessionCtx.ChatType, sessionCtx.GroupChannel].join(":"),
       );
@@ -3631,6 +3663,12 @@ describe("runPreparedReply media-only handling", () => {
           },
         }),
       };
+      const isolatedSessionEntry: SessionEntry = {
+        sessionId: "isolated-session",
+        updatedAt: 1,
+        systemSent: true,
+        heartbeatIsolatedBaseSessionKey: baseSessionKey,
+      };
 
       await runPrepared({
         opts: { isHeartbeat: true },
@@ -3640,8 +3678,8 @@ describe("runPreparedReply media-only handling", () => {
         sessionStore: { [baseSessionKey]: baseSessionEntry },
         ctx: {
           ...createInboundBody("scheduled wake"),
-          OriginatingChannel: "discord",
-          OriginatingTo: "channel-1",
+          OriginatingChannel: liveChannel,
+          OriginatingTo: liveTo,
           AccountId: "work",
           ChatType: "channel",
           InternalTurnSource: "cron",
@@ -3649,18 +3687,13 @@ describe("runPreparedReply media-only handling", () => {
         },
         sessionCtx: {
           ...createSessionBody("scheduled wake"),
-          OriginatingChannel: "discord",
-          OriginatingTo: "channel-1",
+          OriginatingChannel: liveChannel,
+          OriginatingTo: liveTo,
           AccountId: "work",
           ChatType: "channel",
           InternalTurnSource: "cron",
         },
-        sessionEntry: {
-          sessionId: "isolated-session",
-          updatedAt: 1,
-          systemSent: true,
-          heartbeatIsolatedBaseSessionKey: baseSessionKey,
-        },
+        sessionEntry: isolatedSessionEntry,
       });
 
       const call = requireLastRunReplyAgentCall();
@@ -3676,26 +3709,28 @@ describe("runPreparedReply media-only handling", () => {
           GroupChannel?: string;
         };
       };
-      expect(groupContextParams?.sessionCtx?.Provider).toBe("discord");
-      expect(groupContextParams?.sessionCtx?.Surface).toBe("discord");
+      expect(groupContextParams?.sessionCtx?.Provider).toBe(liveChannel);
+      expect(groupContextParams?.sessionCtx?.Surface).toBe(liveChannel);
       expect(groupContextParams?.sessionCtx?.ChatType).toBe("channel");
-      expect(groupContextParams?.sessionCtx?.GroupChannel).toBe("#ops");
+      expect(groupContextParams?.sessionCtx?.GroupChannel).toBe(expectedGroupChannel);
       expect(buildGroupIntro).toHaveBeenCalledWith({
-        sessionEntry: baseSessionEntry,
+        sessionEntry: usesBaseSession ? baseSessionEntry : isolatedSessionEntry,
         defaultActivation,
       });
       expect(
         requireMockCallArg(vi.mocked(buildInboundMetaSystemPrompt), "inbound metadata"),
       ).toMatchObject({
-        Provider: "discord",
-        Surface: "discord",
+        Provider: liveChannel,
+        Surface: liveChannel,
         ChatType: "channel",
         AccountId: "work",
       });
       expect(call?.followupRun.run.chatType).toBe("channel");
-      expect(call?.followupRun.run.extraSystemPromptStatic).toBe("group:discord:channel:#ops");
-      expect(call?.followupRun.originatingChannel).toBe("discord");
-      expect(call?.followupRun.originatingTo).toBe("channel-1");
+      expect(call?.followupRun.run.extraSystemPromptStatic).toBe(
+        ["group", liveChannel, "channel", expectedGroupChannel].join(":"),
+      );
+      expect(call?.followupRun.originatingChannel).toBe(liveChannel);
+      expect(call?.followupRun.originatingTo).toBe(liveTo);
     },
   );
 

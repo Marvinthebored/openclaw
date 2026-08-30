@@ -26,6 +26,10 @@ import { normalizeThinkLevel } from "../thinking.js";
 import { SILENT_REPLY_TOKEN } from "../tokens.js";
 import { applySessionHints } from "./body.js";
 import { resolveTurnModelOverride } from "./dispatch-from-config.harness-defaults.js";
+import {
+  effectiveReplyRouteMatchesSessionDelivery,
+  resolveEffectiveReplyRoute,
+} from "./effective-reply-route.js";
 import { shouldUseReplyFastTestRuntime } from "./get-reply-fast-path.js";
 import {
   buildExecOverridePromptHint,
@@ -105,11 +109,21 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
       config: cfg,
       attributes: traceAttributes,
     });
-  // Isolated heartbeat rows own execution state; their base row owns conversation prompt state.
-  // Using the fresh row here drops stored activation and changes cache-stable channel identity.
-  const conversationSessionEntry = sessionEntry?.heartbeatIsolatedBaseSessionKey
-    ? (sessionStore?.[sessionEntry.heartbeatIsolatedBaseSessionKey] ?? sessionEntry)
-    : sessionEntry;
+  const isolatedBaseSessionEntry = sessionEntry?.heartbeatIsolatedBaseSessionKey
+    ? sessionStore?.[sessionEntry.heartbeatIsolatedBaseSessionKey]
+    : undefined;
+  // The isolated row owns execution; only a route-matched base row owns conversation prompt state.
+  const hasCurrentRoute = Boolean(ctx.OriginatingChannel || ctx.OriginatingTo);
+  const conversationSessionEntry =
+    isolatedBaseSessionEntry &&
+    (!hasCurrentRoute ||
+      effectiveReplyRouteMatchesSessionDelivery({
+        route: resolveEffectiveReplyRoute({ ctx, entry: isolatedBaseSessionEntry }),
+        entry: isolatedBaseSessionEntry,
+        fallbackTo: isolatedBaseSessionEntry.groupId,
+      }))
+      ? isolatedBaseSessionEntry
+      : sessionEntry;
   const promptSessionCtx = resolvePromptSessionContextForSystemEvent({
     sessionCtx,
     sessionEntry: conversationSessionEntry,

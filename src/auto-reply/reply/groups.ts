@@ -8,19 +8,17 @@ import { findChatChannelMeta, normalizeChatChannelId } from "../../channels/regi
 import { resolveChannelGroupRequireMention } from "../../config/group-policy.js";
 import type { GroupKeyResolution, SessionEntry } from "../../config/sessions.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
-import {
-  stripOutboundTargetKindPrefix,
-  stripTargetProviderPrefix,
-} from "../../infra/outbound/channel-target-prefix.js";
-import { normalizeOptionalAccountId } from "../../routing/account-id.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
 import type { SilentReplyPolicy } from "../../shared/silent-reply-policy.js";
-import { deliveryContextFromSession } from "../../utils/delivery-context.shared.js";
 import { isInternalMessageChannel } from "../../utils/message-channel.js";
 import type { SourceReplyDeliveryMode } from "../get-reply-options.types.js";
 import { normalizeGroupActivation } from "../group-activation.js";
 import type { TemplateContext } from "../templating.js";
-import { resolveEffectiveReplyRoute } from "./effective-reply-route.js";
+import {
+  effectiveReplyRouteMatchesSessionDelivery,
+  normalizeEffectiveReplyTarget,
+  resolveEffectiveReplyRoute,
+} from "./effective-reply-route.js";
 import { extractExplicitGroupId } from "./group-id.js";
 
 const groupsRuntimeLoader = createLazyImportLoader(() => import("./groups.runtime.js"));
@@ -49,15 +47,6 @@ async function resolveRuntimeChannelId(raw?: string | null): Promise<string | nu
   }
 }
 
-function extractRouteGroupId(raw: string | undefined, channel: string | null): string | undefined {
-  const target = normalizeOptionalString(raw);
-  return target
-    ? normalizeOptionalString(
-        stripOutboundTargetKindPrefix(stripTargetProviderPrefix(target, channel ?? "")),
-      )
-    : undefined;
-}
-
 /** Resolves whether a group/channel turn requires an explicit mention. */
 export async function resolveGroupRequireMention(params: {
   cfg: OpenClawConfig;
@@ -79,21 +68,16 @@ export async function resolveGroupRequireMention(params: {
     return true;
   }
   const rawGroupId = (ctx.From ?? "").trim();
-  const routeGroupId = extractRouteGroupId(route?.to, channel);
-  const selectedGroupId = groupResolution?.id ?? routeGroupId;
-  const persistedDelivery = deliveryContextFromSession(systemSessionEntry);
-  const persistedGroupId =
-    extractRouteGroupId(persistedDelivery?.to, channel) ??
-    normalizeOptionalString(persistedDelivery?.to ?? systemSessionEntry?.groupId);
+  const selectedGroupId = groupResolution?.id ?? normalizeEffectiveReplyTarget(route?.to, channel);
   const hasCurrentRoute = Boolean(groupResolution || ctx.OriginatingChannel || ctx.OriginatingTo);
   const persistedRoomMetadata =
     systemSessionEntry &&
     (!hasCurrentRoute ||
-      (normalizeOptionalLowercaseString(rawChannel) ===
-        normalizeOptionalLowercaseString(persistedDelivery?.channel) &&
-        selectedGroupId === persistedGroupId &&
-        normalizeOptionalAccountId(route?.accountId) ===
-          normalizeOptionalAccountId(persistedDelivery?.accountId)))
+      effectiveReplyRouteMatchesSessionDelivery({
+        route: { ...route, channel: rawChannel, to: selectedGroupId },
+        entry: systemSessionEntry,
+        fallbackTo: systemSessionEntry.groupId,
+      }))
       ? systemSessionEntry
       : undefined;
   const groupId = systemSessionEntry

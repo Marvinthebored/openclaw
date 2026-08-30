@@ -201,10 +201,11 @@ export function resolvePromptSessionContextForSystemEvent(params: {
   const effectiveChatType = liveChatType ?? persistedChatType;
   const persistedProvider = resolvePersistedPromptProvider(sessionEntry);
   const persistedSurface = resolvePersistedPromptSurface(sessionEntry);
+  const liveChannel = normalizeOptionalString(sessionCtx.OriginatingChannel);
   const liveProvider = normalizeOptionalString(sessionCtx.Provider);
   const liveSurface = normalizeOptionalString(sessionCtx.Surface);
-  const nextProvider = liveProvider ?? persistedProvider;
-  const nextSurface = liveSurface ?? persistedSurface;
+  const nextProvider = liveProvider ?? liveChannel ?? persistedProvider;
+  const nextSurface = liveSurface ?? liveChannel ?? persistedSurface;
 
   const next: TemplateContext = { ...sessionCtx };
   let changed = false;
