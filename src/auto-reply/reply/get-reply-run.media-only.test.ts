@@ -24,6 +24,7 @@ import { runPreparedReply } from "./get-reply-run.js";
 import { buildDirectChatContext, buildGroupChatContext, buildGroupIntro } from "./groups.js";
 import { finalizeInboundContext, finalizeInboundContextForSdk } from "./inbound-context.js";
 import {
+  buildInboundMetaSystemPrompt,
   buildInboundUserContextPrefix,
   resolveInboundUserContextPromptJoiner,
 } from "./inbound-meta.js";
@@ -3602,65 +3603,101 @@ describe("runPreparedReply media-only handling", () => {
     expect(buildInboundUserContextPrefix).not.toHaveBeenCalled();
   });
 
-  it("uses persisted Discord chat metadata for system-event CLI static prompt identity", async () => {
-    vi.mocked(buildGroupChatContext).mockImplementation(({ sessionCtx }) =>
-      [`group`, sessionCtx.Provider, sessionCtx.ChatType, sessionCtx.GroupChannel].join(":"),
-    );
-
-    await runPrepared({
-      opts: { isHeartbeat: true },
-      isNewSession: false,
-      systemSent: true,
-      ctx: {
-        ...createInboundBody("scheduled wake"),
-        InternalTurnSource: "cron",
-        SessionKey: "agent:main:discord:guild-1:channel-1",
-      },
-      sessionCtx: {
-        ...createSessionBody("scheduled wake"),
-        InternalTurnSource: "cron",
-      },
-      sessionEntry: {
-        sessionId: "session-1",
+  it.each([
+    { storedActivation: "always", defaultActivation: "mention" },
+    { storedActivation: "mention", defaultActivation: "always" },
+  ] as const)(
+    "uses persisted Discord identity and $storedActivation activation for isolated system-event prompts",
+    async ({ storedActivation, defaultActivation }) => {
+      vi.mocked(buildGroupChatContext).mockImplementation(({ sessionCtx }) =>
+        [`group`, sessionCtx.Provider, sessionCtx.ChatType, sessionCtx.GroupChannel].join(":"),
+      );
+      const baseSessionKey = "agent:main:discord:guild-1:channel-1";
+      const baseSessionEntry: SessionEntry = {
+        sessionId: "base-session",
         updatedAt: 1,
-        systemSent: true,
+        groupActivation: storedActivation,
         chatType: "channel",
         groupId: "guild-1",
         groupChannel: "#ops",
         delivery: normalizeSessionDeliveryState({
-          context: { channel: "discord", to: "channel-1" },
+          context: { channel: "discord", to: "channel-1", accountId: "work" },
           origin: {
             provider: "discord",
             surface: "discord",
             chatType: "channel",
             to: "channel-1",
+            accountId: "work",
           },
         }),
-      },
-    });
-
-    const call = requireLastRunReplyAgentCall();
-    expect(buildGroupChatContext).toHaveBeenCalledTimes(2);
-    const groupContextParams = requireMockCallArg(
-      vi.mocked(buildGroupChatContext),
-      "group chat context",
-    ) as {
-      sessionCtx?: {
-        Provider?: string;
-        Surface?: string;
-        ChatType?: string;
-        GroupChannel?: string;
       };
-    };
-    expect(groupContextParams?.sessionCtx?.Provider).toBe("discord");
-    expect(groupContextParams?.sessionCtx?.Surface).toBe("discord");
-    expect(groupContextParams?.sessionCtx?.ChatType).toBe("channel");
-    expect(groupContextParams?.sessionCtx?.GroupChannel).toBe("#ops");
-    expect(call?.followupRun.run.chatType).toBe("channel");
-    expect(call?.followupRun.run.extraSystemPromptStatic).toBe("group:discord:channel:#ops");
-    expect(call?.followupRun.originatingChannel).toBe("discord");
-    expect(call?.followupRun.originatingTo).toBe("channel-1");
-  });
+
+      await runPrepared({
+        opts: { isHeartbeat: true },
+        defaultActivation,
+        isNewSession: false,
+        systemSent: true,
+        sessionStore: { [baseSessionKey]: baseSessionEntry },
+        ctx: {
+          ...createInboundBody("scheduled wake"),
+          OriginatingChannel: "discord",
+          OriginatingTo: "channel-1",
+          AccountId: "work",
+          ChatType: "channel",
+          InternalTurnSource: "cron",
+          SessionKey: `${baseSessionKey}:heartbeat`,
+        },
+        sessionCtx: {
+          ...createSessionBody("scheduled wake"),
+          OriginatingChannel: "discord",
+          OriginatingTo: "channel-1",
+          AccountId: "work",
+          ChatType: "channel",
+          InternalTurnSource: "cron",
+        },
+        sessionEntry: {
+          sessionId: "isolated-session",
+          updatedAt: 1,
+          systemSent: true,
+          heartbeatIsolatedBaseSessionKey: baseSessionKey,
+        },
+      });
+
+      const call = requireLastRunReplyAgentCall();
+      expect(buildGroupChatContext).toHaveBeenCalledTimes(2);
+      const groupContextParams = requireMockCallArg(
+        vi.mocked(buildGroupChatContext),
+        "group chat context",
+      ) as {
+        sessionCtx?: {
+          Provider?: string;
+          Surface?: string;
+          ChatType?: string;
+          GroupChannel?: string;
+        };
+      };
+      expect(groupContextParams?.sessionCtx?.Provider).toBe("discord");
+      expect(groupContextParams?.sessionCtx?.Surface).toBe("discord");
+      expect(groupContextParams?.sessionCtx?.ChatType).toBe("channel");
+      expect(groupContextParams?.sessionCtx?.GroupChannel).toBe("#ops");
+      expect(buildGroupIntro).toHaveBeenCalledWith({
+        sessionEntry: baseSessionEntry,
+        defaultActivation,
+      });
+      expect(
+        requireMockCallArg(vi.mocked(buildInboundMetaSystemPrompt), "inbound metadata"),
+      ).toMatchObject({
+        Provider: "discord",
+        Surface: "discord",
+        ChatType: "channel",
+        AccountId: "work",
+      });
+      expect(call?.followupRun.run.chatType).toBe("channel");
+      expect(call?.followupRun.run.extraSystemPromptStatic).toBe("group:discord:channel:#ops");
+      expect(call?.followupRun.originatingChannel).toBe("discord");
+      expect(call?.followupRun.originatingTo).toBe("channel-1");
+    },
+  );
 
   it.each([
     {

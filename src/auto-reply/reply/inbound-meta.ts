@@ -585,9 +585,7 @@ export function buildInboundMetaSystemPrompt(
     provider: normalizePromptMetadataString(ctx.Provider),
     surface: normalizePromptMetadataString(ctx.Surface),
     chat_type: chatType ?? (isDirect ? "direct" : undefined),
-    // Authoring context follows the reply delivery channel, not the inbound event:
-    // system-event turns (heartbeat/cron) carry the persisted channel/account in
-    // formattingHintsCtx while ctx still identifies the system provider.
+    // System-event metadata follows the restored delivery conversation, not the wake source.
     response_format:
       options?.includeFormattingHints === false
         ? undefined

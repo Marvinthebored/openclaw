@@ -105,9 +105,14 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
       config: cfg,
       attributes: traceAttributes,
     });
+  // Isolated heartbeat rows own execution state; their base row owns conversation prompt state.
+  // Using the fresh row here drops stored activation and changes cache-stable channel identity.
+  const conversationSessionEntry = sessionEntry?.heartbeatIsolatedBaseSessionKey
+    ? (sessionStore?.[sessionEntry.heartbeatIsolatedBaseSessionKey] ?? sessionEntry)
+    : sessionEntry;
   const promptSessionCtx = resolvePromptSessionContextForSystemEvent({
     sessionCtx,
-    sessionEntry,
+    sessionEntry: conversationSessionEntry,
     ctx,
     isHeartbeat,
   });
@@ -221,7 +226,9 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
   const sessionStableConversationContext =
     sourceConversationContextByMode[sessionPromptSourceReplyDeliveryMode ?? "automatic"];
   // Claude CLI fixes the system prompt at session creation; group intro must stay session-stable.
-  const groupIntro = isGroupChat ? buildGroupIntro({ sessionEntry, defaultActivation }) : "";
+  const groupIntro = isGroupChat
+    ? buildGroupIntro({ sessionEntry: conversationSessionEntry, defaultActivation })
+    : "";
   const isDirectedTurn = isDirectedSourceReplyTurn(ctx, cfg, isDirectChat, inboundEventKind);
   const isAmbientRoomEvent = inboundEventKind === "room_event" && !isDirectedTurn;
   const allowEmptyAssistantReplyAsSilent =
@@ -236,7 +243,7 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
       : "required";
   const groupSystemPrompt = normalizeOptionalString(promptSessionCtx.GroupSystemPrompt) ?? "";
   const inboundMetaPrompt = buildInboundMetaSystemPrompt(
-    isNewSession ? sessionCtx : { ...sessionCtx, ThreadStarterBody: undefined },
+    isNewSession ? promptSessionCtx : { ...promptSessionCtx, ThreadStarterBody: undefined },
     cfg,
     // promptSessionCtx restores the persisted conversation for system-event
     // turns, so chat type and reply formatting match the delivery session.
