@@ -215,6 +215,9 @@ export async function resolveReplyDirectives(params: {
     (entry) => normalizeAgentId(entry.id) === normalizeAgentId(agentId),
   );
   const targetSessionEntry = sessionStore[sessionKey] ?? sessionEntry;
+  const groupSessionEntry = targetSessionEntry.heartbeatIsolatedBaseSessionKey
+    ? (sessionStore[targetSessionEntry.heartbeatIsolatedBaseSessionKey] ?? targetSessionEntry)
+    : targetSessionEntry;
   let provider = initialProvider;
   let model = initialModel;
 
@@ -382,7 +385,7 @@ export async function resolveReplyDirectives(params: {
     cfg,
     ctx: sessionCtx,
     groupResolution,
-    sessionEntry: targetSessionEntry,
+    sessionEntry: groupSessionEntry,
   });
   const defaultActivation = defaultGroupActivation(requireMention);
   const sessionThinkLevel = directives.clearThinkLevel

@@ -346,11 +346,77 @@ describe("group runtime loading", () => {
     vi.doUnmock("./groups.runtime.js");
   });
 
-  it("does not mix persisted room metadata into a different resolved room", async () => {
+  it("preserves Telegram topics when resolving automation mention policy", async () => {
+    vi.resetModules();
+    setActivePluginRegistry(
+      createTestRegistry([
+        {
+          pluginId: "telegram",
+          source: "test",
+          plugin: {
+            ...createChannelTestPluginBase({
+              id: "telegram",
+              capabilities: { chatTypes: ["group"] },
+            }),
+            messaging: {
+              numericTopicShorthand: true,
+              normalizeTarget: (target: string) => target,
+              inferTargetChatType: () => "group" as const,
+            },
+          },
+        },
+      ]),
+    );
+    const resolveRequireMention = vi.fn(
+      ({ groupId }: { groupId?: string }) => groupId === "-1001:topic:77",
+    );
+    vi.doMock("./groups.runtime.js", () => ({
+      getChannelPlugin: () => ({ groups: { resolveRequireMention } }),
+      normalizeChannelId: (channelId?: string) => channelId?.trim().toLowerCase(),
+    }));
+    const { extractExplicitGroupId } = await import("./group-id.js");
+    const isolatedGroups = await import("./groups.js");
+
+    expect(extractExplicitGroupId("telegram:-1001:topic:77")).toBe("-1001");
+
+    await expect(
+      isolatedGroups.resolveGroupRequireMention({
+        cfg: {} as OpenClawConfig,
+        ctx: {
+          Provider: "telegram",
+          From: "heartbeat",
+          InternalTurnSource: "heartbeat",
+          OriginatingChannel: "telegram",
+          OriginatingTo: "telegram:-1001:topic:77",
+        },
+        sessionEntry: {
+          sessionId: "session-1",
+          updatedAt: 1,
+          groupId: "-1001:topic:77",
+          delivery: normalizeSessionDeliveryState({
+            context: { channel: "telegram", to: "telegram:-1001:topic:77" },
+          }),
+        },
+      }),
+    ).resolves.toBe(true);
+    expect(resolveRequireMention).toHaveBeenCalledWith(
+      expect.objectContaining({ groupId: "-1001:topic:77" }),
+    );
+    vi.doUnmock("./groups.runtime.js");
+  });
+
+  it("does not mix persisted room metadata across accounts", async () => {
     vi.resetModules();
     const resolveRequireMention = vi.fn(
-      ({ groupId, groupChannel }: { groupId?: string; groupChannel?: string }) =>
-        groupId !== "C456" || groupChannel !== undefined,
+      ({
+        accountId,
+        groupId,
+        groupChannel,
+      }: {
+        accountId?: string;
+        groupId?: string;
+        groupChannel?: string;
+      }) => accountId === "account-b" && groupId === "shared" && groupChannel === undefined,
     );
     vi.doMock("./groups.runtime.js", () => ({
       getChannelPlugin: () => ({ groups: { resolveRequireMention } }),
@@ -361,26 +427,31 @@ describe("group runtime loading", () => {
     await expect(
       isolatedGroups.resolveGroupRequireMention({
         cfg: {} as OpenClawConfig,
-        ctx: { InternalTurnSource: "heartbeat" },
-        groupResolution: {
-          key: "slack:channel:C456",
-          channel: "slack",
-          id: "C456",
-          chatType: "channel",
+        ctx: {
+          Provider: "zalouser",
+          From: "heartbeat",
+          AccountId: "account-b",
+          InternalTurnSource: "heartbeat",
+          OriginatingChannel: "zalouser",
+          OriginatingTo: "shared",
         },
         sessionEntry: {
           sessionId: "session-1",
           updatedAt: 1,
-          groupId: "C123",
-          groupChannel: "#persisted-room",
+          groupId: "shared",
+          groupChannel: "persisted-account-a-room",
           delivery: normalizeSessionDeliveryState({
-            context: { channel: "slack", to: "C123" },
+            context: { channel: "zalouser", to: "shared", accountId: "account-a" },
           }),
         },
       }),
-    ).resolves.toBe(false);
+    ).resolves.toBe(true);
     expect(resolveRequireMention).toHaveBeenCalledWith(
-      expect.objectContaining({ groupId: "C456", groupChannel: undefined }),
+      expect.objectContaining({
+        accountId: "account-b",
+        groupId: "shared",
+        groupChannel: undefined,
+      }),
     );
     vi.doUnmock("./groups.runtime.js");
   });

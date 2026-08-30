@@ -8,6 +8,11 @@ import { findChatChannelMeta, normalizeChatChannelId } from "../../channels/regi
 import { resolveChannelGroupRequireMention } from "../../config/group-policy.js";
 import type { GroupKeyResolution, SessionEntry } from "../../config/sessions.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
+import {
+  stripOutboundTargetKindPrefix,
+  stripTargetProviderPrefix,
+} from "../../infra/outbound/channel-target-prefix.js";
+import { normalizeOptionalAccountId } from "../../routing/account-id.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
 import type { SilentReplyPolicy } from "../../shared/silent-reply-policy.js";
 import { deliveryContextFromSession } from "../../utils/delivery-context.shared.js";
@@ -44,6 +49,15 @@ async function resolveRuntimeChannelId(raw?: string | null): Promise<string | nu
   }
 }
 
+function extractRouteGroupId(raw: string | undefined, channel: string | null): string | undefined {
+  const target = normalizeOptionalString(raw);
+  return target
+    ? normalizeOptionalString(
+        stripOutboundTargetKindPrefix(stripTargetProviderPrefix(target, channel ?? "")),
+      )
+    : undefined;
+}
+
 /** Resolves whether a group/channel turn requires an explicit mention. */
 export async function resolveGroupRequireMention(params: {
   cfg: OpenClawConfig;
@@ -65,12 +79,11 @@ export async function resolveGroupRequireMention(params: {
     return true;
   }
   const rawGroupId = (ctx.From ?? "").trim();
-  const routeGroupId =
-    extractExplicitGroupId(route?.to ?? "") ?? normalizeOptionalString(route?.to);
+  const routeGroupId = extractRouteGroupId(route?.to, channel);
   const selectedGroupId = groupResolution?.id ?? routeGroupId;
   const persistedDelivery = deliveryContextFromSession(systemSessionEntry);
   const persistedGroupId =
-    extractExplicitGroupId(persistedDelivery?.to ?? "") ??
+    extractRouteGroupId(persistedDelivery?.to, channel) ??
     normalizeOptionalString(persistedDelivery?.to ?? systemSessionEntry?.groupId);
   const hasCurrentRoute = Boolean(groupResolution || ctx.OriginatingChannel || ctx.OriginatingTo);
   const persistedRoomMetadata =
@@ -78,7 +91,9 @@ export async function resolveGroupRequireMention(params: {
     (!hasCurrentRoute ||
       (normalizeOptionalLowercaseString(rawChannel) ===
         normalizeOptionalLowercaseString(persistedDelivery?.channel) &&
-        selectedGroupId === persistedGroupId))
+        selectedGroupId === persistedGroupId &&
+        normalizeOptionalAccountId(route?.accountId) ===
+          normalizeOptionalAccountId(persistedDelivery?.accountId)))
       ? systemSessionEntry
       : undefined;
   const groupId = systemSessionEntry

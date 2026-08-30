@@ -336,6 +336,33 @@ describe("resolveReplyDirectives", () => {
     expect(mockCallInput(mocks.resolveGroupRequireMention).sessionEntry).toBe(targetSessionEntry);
   });
 
+  it("uses the base room identity for isolated heartbeat group activation", async () => {
+    const baseSessionKey = "agent:main:slack:channel:C123";
+    const baseSessionEntry = makeSessionEntry({
+      sessionId: "base-session",
+      chatType: "channel",
+      groupId: "C123",
+      groupChannel: "#general",
+    });
+    const isolatedSessionEntry = makeSessionEntry({
+      sessionId: "isolated-session",
+      heartbeatIsolatedBaseSessionKey: baseSessionKey,
+    });
+
+    await resolveHelloWithModelDefaults({
+      defaultThinking: "off",
+      defaultReasoning: "on",
+      sessionStore: {
+        "agent:main:whatsapp:+2000": isolatedSessionEntry,
+        [baseSessionKey]: baseSessionEntry,
+      },
+      ctx: { InternalTurnSource: "heartbeat" },
+      sessionCtx: { InternalTurnSource: "heartbeat", Provider: undefined },
+    });
+
+    expect(mockCallInput(mocks.resolveGroupRequireMention).sessionEntry).toBe(baseSessionEntry);
+  });
+
   it("returns a terminal retry when model preparation sees a rotated session", async () => {
     const error = new SessionWorkStartInvalidatedError(
       'Session "agent:main:whatsapp:+2000" changed while starting work. Retry.',
