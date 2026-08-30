@@ -203,31 +203,6 @@ describe("createModelListAuthIndex", () => {
     expect(index.evaluateModelAuth("disabled-provider").availability).toBeUndefined();
   });
 
-  it("uses prepared auth from a configured CLI runtime", () => {
-    const index = createTestModelListAuthIndex({
-      cfg: {
-        models: {
-          providers: {
-            anthropic: {
-              agentRuntime: { id: "claude-cli" },
-              baseUrl: "https://api.anthropic.com",
-              models: [],
-            },
-          },
-        },
-      },
-      authStore: emptyStore,
-      env: {},
-      agentId: "main",
-      preparedRuntimeAuthModes: { "claude-cli": "api_key" },
-      routeResolverFactory: dualRouteResolverFactory,
-    });
-
-    expect(index.evaluateModelAuth("anthropic", { modelId: "claude-opus-5" }).availability).toBe(
-      true,
-    );
-  });
-
   it("uses enabled synthetic refs from prepared metadata without reloading the registry", () => {
     const metadataSnapshot = {
       registrySource: "persisted",

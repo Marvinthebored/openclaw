@@ -1,6 +1,6 @@
 // Model list forward-compat tests cover list command behavior with future catalog shapes.
 import { normalizeProviderId } from "@openclaw/model-catalog-core/provider-id";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDeferred, withTestTimeout } from "../../../test/helpers/promise.js";
 
 const OPENAI_CODEX_MODEL = {
@@ -433,6 +433,10 @@ async function buildAllOpenAiCodexRows(opts: { supplementCatalog?: boolean } = {
 beforeEach(() => {
   vi.clearAllMocks();
   resetMocks();
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("modelsListCommand forward-compat", () => {
@@ -1169,11 +1173,17 @@ describe("modelsListCommand forward-compat", () => {
     });
 
     it.each([
-      { authModes: { "claude-cli": "api_key" as const }, available: true },
-      { authModes: {}, available: null },
+      {
+        authModes: { "claude-cli": "api_key" as const },
+        providerApiKey: false,
+        available: true,
+      },
+      { authModes: {}, providerApiKey: false, available: null },
+      { authModes: {}, providerApiKey: true, available: null },
     ])(
-      "uses the prepared CLI runtime auth result ($available)",
-      async ({ authModes, available }) => {
+      "uses the prepared CLI runtime auth result ($available) with provider key=$providerApiKey",
+      async ({ authModes, providerApiKey, available }) => {
+        vi.stubEnv("ANTHROPIC_API_KEY", providerApiKey ? "test-key" : "");
         const config = configureClaudeRuntime();
         primeModelRegistry([ANTHROPIC_CLI_MODEL]);
         mocks.prepareScopedReadOnlyModelAuthModes.mockResolvedValueOnce(authModes);

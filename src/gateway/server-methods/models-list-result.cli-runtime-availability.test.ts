@@ -24,6 +24,7 @@ const config = {
 async function listClaudeCliModel(
   params: {
     authenticated?: boolean;
+    providerApiKey?: boolean;
     pluginDisabled?: boolean;
     cfg?: OpenClawConfig;
   } = {},
@@ -63,12 +64,38 @@ describe("models.list CLI runtime availability", () => {
   });
 
   it.each([
-    { authenticated: true, pluginDisabled: false, available: true, reason: undefined },
-    { authenticated: false, pluginDisabled: false, available: false, reason: undefined },
-    { authenticated: true, pluginDisabled: true, available: false, reason: "missing-auth" },
+    {
+      authenticated: true,
+      providerApiKey: false,
+      pluginDisabled: false,
+      available: true,
+      reason: undefined,
+    },
+    {
+      authenticated: false,
+      providerApiKey: false,
+      pluginDisabled: false,
+      available: false,
+      reason: undefined,
+    },
+    {
+      authenticated: false,
+      providerApiKey: true,
+      pluginDisabled: false,
+      available: false,
+      reason: undefined,
+    },
+    {
+      authenticated: true,
+      providerApiKey: false,
+      pluginDisabled: true,
+      available: false,
+      reason: "missing-auth",
+    },
   ])(
-    "reports native login=$authenticated and plugin disabled=$pluginDisabled",
+    "reports native login=$authenticated, provider key=$providerApiKey, and plugin disabled=$pluginDisabled",
     async (scenario) => {
+      vi.stubEnv("ANTHROPIC_API_KEY", scenario.providerApiKey ? "test-key" : "");
       const result = await listClaudeCliModel(scenario);
       expect(result).toEqual({
         models: [expect.objectContaining({ id: "claude-opus-5", available: scenario.available })],

@@ -76,11 +76,17 @@ function testModelDefinition(id: string): Model {
   };
 }
 
-vi.mock("../plugins/setup-registry.js", async (importOriginal) => {
+vi.mock("../plugins/setup-registry.js", async () => {
   const { readFileSync } = await import("node:fs");
-  const actual = await importOriginal<typeof import("../plugins/setup-registry.js")>();
   return {
-    ...actual,
+    resolvePluginSetupCliBackend: () => undefined,
+    resolvePluginSetupRegistry: () => ({
+      providers: [],
+      cliBackends: [],
+      configMigrations: [],
+      autoEnableProbes: [],
+      diagnostics: [],
+    }),
     resolvePluginSetupProviderCore: ({
       provider,
     }: {
