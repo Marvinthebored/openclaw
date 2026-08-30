@@ -24,6 +24,7 @@ type EffectiveReplyRouteContext = Pick<
   | "Surface"
   | "OriginatingChannel"
   | "OriginatingTo"
+  | "MessageThreadId"
   | "AccountId"
   | "InputProvenance"
   | "InternalTurnSource"
@@ -56,7 +57,7 @@ export function normalizeEffectiveReplyTarget(
     : undefined;
 }
 
-/** Matches the full channel, target, and account tuple before persisted prompt state is reused. */
+/** Matches the full channel, target, account, and thread tuple before persisted prompt state is reused. */
 export function effectiveReplyRouteMatchesSessionDelivery(params: {
   route: EffectiveReplyRoute;
   entry: EffectiveReplyRouteEntry;
@@ -71,7 +72,8 @@ export function effectiveReplyRouteMatchesSessionDelivery(params: {
     normalizeEffectiveReplyTarget(params.route.to, channel) ===
       normalizeEffectiveReplyTarget(persisted?.to ?? params.fallbackTo, channel) &&
     normalizeOptionalAccountId(params.route.accountId) ===
-      normalizeOptionalAccountId(persisted?.accountId)
+      normalizeOptionalAccountId(persisted?.accountId) &&
+    stringifyRouteThreadId(params.route.threadId) === stringifyRouteThreadId(persisted?.threadId)
   );
 }
 
@@ -142,6 +144,7 @@ export function resolveEffectiveReplyRoute(params: {
       channel: params.ctx.OriginatingChannel,
       to: params.ctx.OriginatingTo,
       accountId: params.ctx.AccountId,
+      ...(params.ctx.MessageThreadId !== undefined ? { threadId: params.ctx.MessageThreadId } : {}),
       ...(liveChatType ? { chatType: liveChatType } : {}),
     };
   }
@@ -159,6 +162,7 @@ export function resolveEffectiveReplyRoute(params: {
     accountId:
       params.ctx.AccountId ??
       (canInheritPersistedTuple ? persistedDeliveryContext?.accountId : undefined),
+    ...(params.ctx.MessageThreadId !== undefined ? { threadId: params.ctx.MessageThreadId } : {}),
     ...(chatType ? { chatType } : {}),
   };
 }

@@ -81,7 +81,7 @@ export async function resolveGroupRequireMention(params: {
       ? systemSessionEntry
       : undefined;
   const groupId = systemSessionEntry
-    ? (selectedGroupId ?? persistedRoomMetadata?.groupId)
+    ? (persistedRoomMetadata?.groupId ?? selectedGroupId)
     : (groupResolution?.id ?? extractExplicitGroupId(rawGroupId) ?? (rawGroupId || undefined));
   const groupChannel =
     normalizeOptionalString(ctx.GroupChannel) ??

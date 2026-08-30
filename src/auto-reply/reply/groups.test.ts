@@ -379,7 +379,15 @@ describe("group runtime loading", () => {
 
     expect(extractExplicitGroupId("telegram:-1001:topic:77")).toBe("-1001");
 
-    await expect(
+    const sessionEntry = {
+      sessionId: "session-1",
+      updatedAt: 1,
+      groupId: "-1001:topic:77",
+      delivery: normalizeSessionDeliveryState({
+        context: { channel: "telegram", to: "-1001", threadId: 77 },
+      }),
+    };
+    const resolveForThread = (messageThreadId: number) =>
       isolatedGroups.resolveGroupRequireMention({
         cfg: {} as OpenClawConfig,
         ctx: {
@@ -387,20 +395,21 @@ describe("group runtime loading", () => {
           From: "heartbeat",
           InternalTurnSource: "heartbeat",
           OriginatingChannel: "telegram",
-          OriginatingTo: "telegram:-1001:topic:77",
+          OriginatingTo: "-1001",
+          MessageThreadId: messageThreadId,
         },
-        sessionEntry: {
-          sessionId: "session-1",
-          updatedAt: 1,
-          groupId: "-1001:topic:77",
-          delivery: normalizeSessionDeliveryState({
-            context: { channel: "telegram", to: "telegram:-1001:topic:77" },
-          }),
-        },
-      }),
-    ).resolves.toBe(true);
-    expect(resolveRequireMention).toHaveBeenCalledWith(
+        sessionEntry,
+      });
+
+    await expect(resolveForThread(77)).resolves.toBe(true);
+    await expect(resolveForThread(88)).resolves.toBe(false);
+    expect(resolveRequireMention).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({ groupId: "-1001:topic:77" }),
+    );
+    expect(resolveRequireMention).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ groupId: "-1001" }),
     );
     vi.doUnmock("./groups.runtime.js");
   });
