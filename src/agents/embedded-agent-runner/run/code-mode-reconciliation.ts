@@ -1,149 +1,182 @@
-import { validateToolArguments } from "@openclaw/ai/validation";
-import { stableStringify } from "@openclaw/normalization-core";
 import { Type } from "typebox";
+import { getPluginToolSideEffectOwnerKey } from "../../../plugins/tools.js";
+import type { NestedToolActivity } from "../../../sessions/nested-tool-activity.js";
+import {
+  attachInternalToolExecutionPreparer,
+  getInternalToolExecutionPreparer,
+  type InternalToolExecutionPreparer,
+} from "../../runtime/internal-hooks.js";
+import { toolEffectStateProvesNoEffect } from "../../tool-effect-receipt.js";
+import { hashToolCall } from "../../tool-loop-detection.js";
+import { buildToolMutationState } from "../../tool-mutation.js";
 import { normalizeToolPolicyName } from "../../tool-policy.js";
+import { isToolResultError } from "../../tool-result-error.js";
+import { TOOL_SEARCH_CONTROL_TOOL_NAMES } from "../../tool-search-types.js";
 import type { AnyAgentTool } from "../../tools/common.js";
-import { asToolParamsRecord, ToolInputError, textResult } from "../../tools/common.js";
+import { textResult, ToolInputError } from "../../tools/common.js";
+import { readCodeModeRecoveryJournalEntry } from "./code-mode-recovery-journal.js";
 import type {
-  CodeModeReconciliationPlan,
-  CodeModeReconciliationPlanEntry,
+  CodeModeRecoveryCandidate,
+  CodeModeRecoveryState,
   EmbeddedRunTerminalRetryState,
 } from "./terminal-retry-state.js";
 import type { EmbeddedRunAttemptResult } from "./types.js";
 
-export type {
-  CodeModeReconciliationPlan,
-  CodeModeReconciliationPlanEntry,
-} from "./terminal-retry-state.js";
+const CODE_MODE_RECOVERY_RESUME_TOOL_NAME = "recovery_resume";
+type ToolExecutionPreparation = Awaited<ReturnType<InternalToolExecutionPreparer>>;
 
-const CODE_MODE_RECONCILIATION_PROMPT =
-  "OpenClaw activated this recovery attempt because the previous Code Mode mutation may have partially applied. This is the only recovery attempt. First use read by itself to determine the authoritative current state and wait for its result. In a later turn, call recovery_propose exactly once with every remaining tool call in required execution order; it records exact pending work without executing it and ends reconciliation. Include only work that inspection proves did not happen. If no work remains, report the authoritative state without calling recovery_propose.";
-export const CODE_MODE_POST_RECONCILIATION_INSTRUCTION =
-  "The previous uncertain Code Mode mutation has now been reconciled. Execute only the exact pending calls recorded during reconciliation. OpenClaw rejects unplanned calls and consumes each plan entry before execution, so failed calls cannot be replayed.";
-
-const RECONCILIATION_TOOL_NAMES = new Set(["read"]);
-const TURN_ENDING_TOOL_NAMES = new Set([
-  "ask_user",
-  "message",
-  "sessions_yield",
-  "structured_output",
-]);
-export const CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME = "recovery_propose";
-const MAX_RECONCILIATION_PLAN_CALLS = 32;
-const MAX_RECONCILIATION_PLAN_ARGUMENT_BYTES = 64 * 1024;
-const MAX_RECONCILIATION_ATTEMPTS = 2;
-
-export function isCodeModeReconciliationTool(tool: { name?: string }): boolean {
-  return RECONCILIATION_TOOL_NAMES.has(normalizeToolPolicyName(tool.name ?? ""));
+export function isCodeModeRecoveryResumeTool(tool: { name?: string }): boolean {
+  return normalizeToolPolicyName(tool.name ?? "") === CODE_MODE_RECOVERY_RESUME_TOOL_NAME;
 }
 
-function assertPlanEntryMatches(
-  entry: CodeModeReconciliationPlanEntry | undefined,
-  params: { toolName: string; args: unknown },
-): void {
-  if (
-    !entry ||
-    entry.toolName !== normalizeToolPolicyName(params.toolName) ||
-    entry.argumentsKey !== stableStringify(params.args)
-  ) {
-    throw new ToolInputError(
-      "This call is not the next pending operation recorded during Code Mode reconciliation.",
-    );
-  }
+const CODE_MODE_POST_RECONCILIATION_INSTRUCTION =
+  "The previous uncertain Code Mode mutation was inspected. Code Mode is disabled for this bounded recovery. Use the available normal tools and their real schemas. OpenClaw permits at most one mutation attempt, blocks exact repeats whose earlier effect was committed or uncertain, and keeps reads and schema discovery available so you can verify and report the result.";
+
+function reconciliationPrompt(canResume: boolean): string {
+  const resume =
+    " If work remains, call recovery_resume by itself after the read result. It performs no mutation and starts one bounded recovery with the normal tool surface.";
+  return (
+    "OpenClaw activated this temporary read-only recovery because the previous Code Mode mutation may have partially applied. First use read by itself to determine the authoritative current state." +
+    (canResume ? resume : "") +
+    " If no work remains, report the authoritative state. Do not repeat or finish a mutation during inspection."
+  );
 }
 
-function proposalTool(
-  allowedTools: ReadonlyMap<
-    string,
-    Pick<AnyAgentTool, "description" | "name" | "parameters" | "prepareArguments"> & {
-      terminal: boolean;
+function recoveryBlocked(message: string): ToolExecutionPreparation {
+  return {
+    kind: "immediate",
+    outcome: {
+      kind: "result",
+      result: textResult(message, {
+        status: "blocked",
+        deniedReason: "code-mode-recovery",
+      }),
+      isError: true,
+    },
+    dispose() {},
+  };
+}
+
+function createReadyToolExecution(
+  tool: AnyAgentTool,
+  params: Parameters<NonNullable<ReturnType<typeof getInternalToolExecutionPreparer>>>[0],
+): ToolExecutionPreparation {
+  return {
+    kind: "ready",
+    args: params.args,
+    execute: async (onImplementationStart) => {
+      onImplementationStart?.();
+      return await tool.execute(
+        params.toolCallId,
+        params.args as never, // SAFETY: AnyAgentTool erases concrete input after schema validation.
+        params.signal,
+        params.onUpdate,
+      );
+    },
+    dispose() {},
+  };
+}
+
+function gatePreparedRecoveryTool<T extends { name: string }>(
+  tool: T,
+  state: Extract<CodeModeRecoveryState, { kind: "resume" }>,
+  originalPreparer: InternalToolExecutionPreparer,
+  ownerKey?: string,
+): T {
+  attachInternalToolExecutionPreparer(tool, async (params) => {
+    const prepared = await originalPreparer(params);
+    if (prepared.kind === "immediate") {
+      return prepared;
     }
-  >,
-  plan: CodeModeReconciliationPlan,
+    const mutation = buildToolMutationState(
+      tool.name,
+      prepared.args,
+      ownerKey ? { ownerKey } : undefined,
+    );
+    if (mutation.replaySafe) {
+      return prepared;
+    }
+    const actionKey = hashToolCall(normalizeToolPolicyName(tool.name), prepared.args);
+    if (state.blockedActionKeys.has(actionKey)) {
+      prepared.dispose();
+      return recoveryBlocked(
+        "Blocked an exact repeat of a Code Mode call whose earlier effect was committed or uncertain. Inspect the current state and choose a different operation.",
+      );
+    }
+    if (state.mutationAttempt !== "available") {
+      prepared.dispose();
+      return recoveryBlocked(
+        "This recovery already attempted one mutation. Use read-only tools to inspect the result and report any remaining work.",
+      );
+    }
+    state.mutationAttempt = "reserved";
+    let started = false;
+    return {
+      ...prepared,
+      execute: async (onImplementationStart) => {
+        return await prepared.execute(() => {
+          state.mutationAttempt = "consumed";
+          started = true;
+          onImplementationStart?.();
+        });
+      },
+      dispose: () => {
+        prepared.dispose();
+        if (!started && state.mutationAttempt === "reserved") {
+          state.mutationAttempt = "available";
+        }
+      },
+    };
+  });
+  return tool;
+}
+
+function gateRecoveryTool<T extends AnyAgentTool>(
+  tool: T,
+  state: Extract<CodeModeRecoveryState, { kind: "resume" }>,
+): T {
+  if (TOOL_SEARCH_CONTROL_TOOL_NAMES.has(normalizeToolPolicyName(tool.name))) {
+    return tool;
+  }
+  const originalPreparer = getInternalToolExecutionPreparer(tool);
+  return gatePreparedRecoveryTool(
+    tool,
+    state,
+    originalPreparer ?? (async (params) => createReadyToolExecution(tool, params)),
+    getPluginToolSideEffectOwnerKey(tool),
+  );
+}
+
+export function applyCodeModeRecoveryPreparedToolSurface<T extends { name: string }>(params: {
+  tools: T[];
+  state: Extract<CodeModeRecoveryState, { kind: "resume" }>;
+}): T[] {
+  return params.tools.map((tool) => {
+    const preparer = getInternalToolExecutionPreparer(tool);
+    if (!preparer) {
+      throw new Error(`Code Mode recovery tool ${tool.name} has no execution preparer`);
+    }
+    return gatePreparedRecoveryTool(tool, params.state, preparer);
+  });
+}
+
+function createRecoveryResumeTool(
+  state: Extract<CodeModeRecoveryState, { kind: "inspect" }>,
 ): AnyAgentTool {
   return {
-    name: CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME,
-    label: "Recovery proposal",
+    name: CODE_MODE_RECOVERY_RESUME_TOOL_NAME,
+    label: "Resume recovery",
     description:
-      "Record the complete ordered recovery plan without executing it, then end reconciliation.",
-    parameters: Type.Object(
-      {
-        calls: Type.Array(
-          Type.Object(
-            {
-              tool: Type.String(),
-              arguments: Type.Record(Type.String(), Type.Unknown()),
-            },
-            { additionalProperties: false },
-          ),
-          { minItems: 1, maxItems: MAX_RECONCILIATION_PLAN_CALLS },
-        ),
-      },
-      { additionalProperties: false },
-    ),
+      "After a completed read, end inspection and start one bounded recovery with the normal tool surface.",
+    parameters: Type.Object({}, { additionalProperties: false }),
     executionMode: "sequential",
-    execute: async (_toolCallId, input) => {
-      if (!plan.readObserved) {
-        throw new ToolInputError(
-          "Inspect with read and wait for its result before proposing work.",
-        );
+    execute: async () => {
+      if (state.phase !== "ready") {
+        throw new ToolInputError("Use read by itself and wait for its result before resuming.");
       }
-      const params = asToolParamsRecord(input);
-      if (!Array.isArray(params.calls) || params.calls.length === 0) {
-        throw new ToolInputError("Recovery proposal requires at least one call.");
-      }
-      const calls = params.calls;
-      if (calls.length > MAX_RECONCILIATION_PLAN_CALLS) {
-        throw new ToolInputError("Recovery proposal has too many calls.");
-      }
-      if (plan.entries.length > 0) {
-        throw new ToolInputError("A recovery plan has already been recorded.");
-      }
-      const entries = calls.map((inputCall, index): CodeModeReconciliationPlanEntry => {
-        const call = asToolParamsRecord(inputCall);
-        if (typeof call.tool !== "string") {
-          throw new ToolInputError("Recovery proposal requires a tool name.");
-        }
-        const toolName = normalizeToolPolicyName(call.tool);
-        const tool = allowedTools.get(toolName);
-        if (!tool || isCodeModeReconciliationTool({ name: toolName })) {
-          throw new ToolInputError("Recovery proposal names an unavailable tool.");
-        }
-        const proposedArguments = asToolParamsRecord(call.arguments);
-        const preparedArguments = asToolParamsRecord(
-          tool.prepareArguments ? tool.prepareArguments(proposedArguments) : proposedArguments,
-        );
-        const args = validateToolArguments(tool, {
-          type: "toolCall",
-          id: "recovery-proposal",
-          name: tool.name,
-          arguments: preparedArguments,
-        });
-        const argumentsKey = stableStringify(args);
-        if (
-          new TextEncoder().encode(`${toolName}\n${argumentsKey}`).byteLength >
-          MAX_RECONCILIATION_PLAN_ARGUMENT_BYTES
-        ) {
-          throw new ToolInputError("Recovery proposal arguments are too large.");
-        }
-        const terminal = tool.terminal;
-        if (terminal && index !== calls.length - 1) {
-          throw new ToolInputError("A turn-ending recovery call must be the final planned call.");
-        }
-        const entry: CodeModeReconciliationPlanEntry = {
-          toolName,
-          argumentsKey,
-          consumed: false,
-        };
-        if (terminal) {
-          entry.terminal = true;
-        }
-        return entry;
-      });
-      plan.entries.push(...entries);
       return {
-        ...textResult("Recovery plan recorded; no action was executed.", {
-          recoveryProposal: true,
+        ...textResult("Read-only inspection completed; bounded recovery requested.", {
+          status: "ok",
         }),
         terminate: true,
       };
@@ -151,102 +184,74 @@ function proposalTool(
   };
 }
 
-export function validateCodeModeReconciliationCalls(
-  plan: CodeModeReconciliationPlan,
-  calls: readonly { toolCall: { id: string; name: string }; args: unknown }[],
-): Map<string, CodeModeReconciliationPlanEntry> {
-  const pending = plan.entries.filter((entry) => !entry.consumed);
-  if (calls.length > pending.length) {
-    throw new ToolInputError("Recovery attempted more calls than were recorded.");
-  }
-  const admitted = new Map<string, CodeModeReconciliationPlanEntry>();
-  calls.forEach((call, index) => {
-    const entry = pending[index];
-    assertPlanEntryMatches(entry, { toolName: call.toolCall.name, args: call.args });
-    if (entry) {
-      admitted.set(call.toolCall.id, entry);
+function gateInspectionRead<T extends AnyAgentTool>(
+  tool: T,
+  state: Extract<CodeModeRecoveryState, { kind: "inspect" }>,
+): T {
+  const originalPreparer = getInternalToolExecutionPreparer(tool);
+  attachInternalToolExecutionPreparer(tool, async (params) => {
+    const prepared = originalPreparer
+      ? await originalPreparer(params)
+      : createReadyToolExecution(tool, params);
+    if (prepared.kind === "immediate") {
+      return prepared;
     }
+    return {
+      ...prepared,
+      execute: async (onImplementationStart) => {
+        const result = await prepared.execute(onImplementationStart);
+        if (!isToolResultError(result)) {
+          state.phase = "ready";
+        }
+        return result;
+      },
+    };
   });
-  return admitted;
+  tool.executionMode = "sequential";
+  return tool;
 }
 
-export function commitCodeModeReconciliationCalls(
-  plan: CodeModeReconciliationPlan,
-  admitted: ReadonlyMap<string, CodeModeReconciliationPlanEntry>,
-  calls: readonly { toolCallId: string; args: unknown }[],
-): void {
-  for (const call of calls) {
-    const entry = admitted.get(call.toolCallId);
-    const next = plan.entries.find((candidate) => !candidate.consumed);
-    if (!entry || entry !== next) {
-      throw new ToolInputError("Recovery operation order changed before execution.");
-    }
-    // The batch gate already matched model-authored arguments. This boundary sees
-    // the trusted tool preparer and policy-hook result, which is authoritative.
-    entry.argumentsKey = stableStringify(call.args);
-    entry.consumed = true;
+export function applyCodeModeRecoveryToolSurface<T extends AnyAgentTool>(params: {
+  tools: T[];
+  state: Exclude<CodeModeRecoveryState, { kind: "idle" }>;
+}): T[] {
+  const state = params.state;
+  if (state.kind === "inspect") {
+    const read = params.tools.find((tool) => normalizeToolPolicyName(tool.name) === "read");
+    return [
+      ...(read ? [gateInspectionRead(read, state)] : []),
+      ...(state.blockedActionKeys
+        ? [
+            createRecoveryResumeTool(state) as T, // SAFETY: T is the erased AgentTool surface.
+          ]
+        : []),
+    ];
   }
+  return params.tools.map((tool) => gateRecoveryTool(tool, state));
 }
 
-/** Build the bounded capture surface or the exact planned execution surface. */
-export function applyCodeModeReconciliationPlan(params: {
-  tools: AnyAgentTool[];
-  clientTools?: readonly {
-    name: string;
-    description?: string;
-    parameters?: Record<string, unknown>;
-  }[];
-  plan: CodeModeReconciliationPlan;
-  capture: boolean;
-}): AnyAgentTool[] {
-  if (params.capture) {
-    const allowedTools = new Map(
-      params.tools.map(
-        (tool) =>
-          [
-            normalizeToolPolicyName(tool.name),
-            {
-              name: tool.name,
-              description: tool.description,
-              parameters: tool.parameters,
-              prepareArguments: tool.prepareArguments,
-              terminal: TURN_ENDING_TOOL_NAMES.has(normalizeToolPolicyName(tool.name)),
-            },
-          ] as const,
+export function buildCodeModeRecoveryCandidate(params: {
+  parentToolCallId: string;
+  nestedToolActivities: readonly NestedToolActivity[];
+}): CodeModeRecoveryCandidate {
+  const calls = params.nestedToolActivities.filter(
+    (activity) => activity.details.parentToolCallId === params.parentToolCallId,
+  );
+  const journal = calls.map(readCodeModeRecoveryJournalEntry);
+  if (calls.length === 0 || journal.some((entry) => entry === undefined)) {
+    return {};
+  }
+  const blockedActionKeys = [
+    ...new Set(
+      journal.flatMap((entry) =>
+        entry && !toolEffectStateProvesNoEffect(entry.effectState) ? [entry.actionKey] : [],
       ),
-    );
-    for (const clientTool of params.clientTools ?? []) {
-      const normalized = normalizeToolPolicyName(clientTool.name);
-      if (!allowedTools.has(normalized)) {
-        const clientParameters =
-          clientTool.parameters ?? Type.Object({}, { additionalProperties: true });
-        // SAFETY: provider client parameters are JSON Schema objects accepted by this boundary.
-        const parameters = clientParameters as AnyAgentTool["parameters"];
-        allowedTools.set(normalized, {
-          name: clientTool.name,
-          description: clientTool.description ?? "",
-          parameters,
-          prepareArguments: undefined,
-          terminal: true,
-        });
-      }
-    }
-    const read = params.tools.find((tool) => isCodeModeReconciliationTool(tool));
-    return [...(read ? [read] : []), proposalTool(allowedTools, params.plan)];
-  }
-  const plannedNames = new Set(
-    params.plan.entries.filter((entry) => !entry.consumed).map((entry) => entry.toolName),
-  );
-  const plannedTools = params.tools.filter((tool) =>
-    plannedNames.has(normalizeToolPolicyName(tool.name)),
-  );
-  for (const tool of plannedTools) {
-    tool.executionMode = "sequential";
-  }
-  return plannedTools;
+    ),
+  ];
+  return { blockedActionKeys };
 }
 
-function isQuiescentCodeModeRecoveryAttempt(params: {
+function isQuiescentRecoveryAttempt(params: {
   attempt: EmbeddedRunAttemptResult;
   hostOwnsToolSurface: boolean;
 }): boolean {
@@ -267,16 +272,7 @@ function isQuiescentCodeModeRecoveryAttempt(params: {
   );
 }
 
-function shouldRetryCodeModeReconciliation(
-  params: Parameters<typeof isQuiescentCodeModeRecoveryAttempt>[0],
-): boolean {
-  return (
-    params.attempt.codeModeReconciliationCandidate === true &&
-    isQuiescentCodeModeRecoveryAttempt(params)
-  );
-}
-
-function hasSuccessfulCodeModeReconciliationRead(attempt: EmbeddedRunAttemptResult): boolean {
+function hasSuccessfulInspectionRead(attempt: EmbeddedRunAttemptResult): boolean {
   return attempt.toolMetas.some(
     (entry) =>
       normalizeToolPolicyName(entry.toolName) === "read" &&
@@ -286,97 +282,54 @@ function hasSuccessfulCodeModeReconciliationRead(attempt: EmbeddedRunAttemptResu
   );
 }
 
-function hasCompletedCodeModeReconciliationReport(attempt: EmbeddedRunAttemptResult): boolean {
-  const assistant = attempt.currentAttemptCompletedAssistant;
-  return (
-    assistant?.stopReason === "stop" &&
-    !assistant.content.some((entry) => entry.type === "toolCall") &&
-    assistant.content.some((entry) => entry.type === "text" && entry.text.trim().length > 0)
-  );
-}
-
-function hasCompletedCodeModeReconciliationProposal(attempt: EmbeddedRunAttemptResult): boolean {
+function hasSuccessfulResumeRequest(attempt: EmbeddedRunAttemptResult): boolean {
   return attempt.toolMetas.some(
     (entry) =>
-      normalizeToolPolicyName(entry.toolName) === CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME &&
+      normalizeToolPolicyName(entry.toolName) === CODE_MODE_RECOVERY_RESUME_TOOL_NAME &&
       entry.isError !== true &&
       entry.terminate === true,
   );
 }
 
-export function activateCodeModeReconciliation(params: {
+export function advanceCodeModeRecovery(params: {
   attempt: EmbeddedRunAttemptResult;
   hostOwnsToolSurface: boolean;
   retryState: EmbeddedRunTerminalRetryState;
   activateInternalPrompt: (prompt: string) => void;
 }): boolean {
-  const pendingPlan = params.retryState.codeModeReconciliationPlan?.entries.some(
-    (entry) => !entry.consumed,
-  );
-  if (params.retryState.disableCodeModeForReconciledContinuation && pendingPlan) {
-    if (params.attempt.clientToolCalls) {
+  const state = params.retryState.codeModeRecovery;
+  if (state.kind === "idle") {
+    const candidate = params.attempt.codeModeRecoveryCandidate;
+    if (!candidate || !isQuiescentRecoveryAttempt(params)) {
       return false;
     }
-    if (
-      !isQuiescentCodeModeRecoveryAttempt({
-        attempt: params.attempt,
-        hostOwnsToolSurface: params.hostOwnsToolSurface,
-      }) ||
-      params.attempt.lastToolError !== undefined ||
-      params.attempt.toolMetas.some((entry) => entry.isError === true || entry.terminate === true)
-    ) {
-      return false;
-    }
-    if (params.retryState.codeModeReconciliationAttempts >= MAX_RECONCILIATION_ATTEMPTS) {
-      throw new Error("Code Mode recovery ended with pending planned calls.");
-    }
-    params.retryState.codeModeReconciliationAttempts += 1;
-    params.activateInternalPrompt(
-      "Recovery still has recorded calls pending. Execute every available planned call before answering.",
-    );
+    params.retryState.codeModeRecovery = {
+      kind: "inspect",
+      phase: "read-required",
+      ...(candidate.blockedActionKeys ? { blockedActionKeys: candidate.blockedActionKeys } : {}),
+    };
+    params.activateInternalPrompt(reconciliationPrompt(Boolean(candidate.blockedActionKeys)));
     return true;
   }
-  if (params.retryState.forceCodeModeReconciliationTools) {
-    const completedProposal = hasCompletedCodeModeReconciliationProposal(params.attempt);
-    const isSupersededProposalError = (entry: { toolName: string }) =>
-      completedProposal &&
-      normalizeToolPolicyName(entry.toolName) === CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME;
-    if (
-      !isQuiescentCodeModeRecoveryAttempt({
-        attempt: params.attempt,
-        hostOwnsToolSurface: params.hostOwnsToolSurface,
-      }) ||
-      (params.attempt.lastToolError !== undefined &&
-        !isSupersededProposalError(params.attempt.lastToolError)) ||
-      params.attempt.toolMetas.some(
-        (entry) =>
-          (entry.isError === true && !isSupersededProposalError(entry)) ||
-          (entry.terminate === true &&
-            normalizeToolPolicyName(entry.toolName) !==
-              CODE_MODE_RECONCILIATION_PROPOSAL_TOOL_NAME),
-      ) ||
-      !hasSuccessfulCodeModeReconciliationRead(params.attempt) ||
-      (!completedProposal && !hasCompletedCodeModeReconciliationReport(params.attempt))
-    ) {
+  if (state.kind === "inspect") {
+    const resume =
+      state.blockedActionKeys &&
+      isQuiescentRecoveryAttempt(params) &&
+      hasSuccessfulInspectionRead(params.attempt) &&
+      hasSuccessfulResumeRequest(params.attempt);
+    params.retryState.codeModeRecovery = resume
+      ? {
+          kind: "resume",
+          blockedActionKeys: new Set(state.blockedActionKeys),
+          mutationAttempt: "available",
+        }
+      : { kind: "idle" };
+    if (!resume) {
       return false;
     }
-    params.retryState.forceCodeModeReconciliationTools = false;
-    params.retryState.disableCodeModeForReconciledContinuation = true;
-    params.activateInternalPrompt("Execute the reconciled recovery plan with the available tools.");
+    params.activateInternalPrompt(CODE_MODE_POST_RECONCILIATION_INSTRUCTION);
     return true;
   }
-  if (
-    params.retryState.codeModeReconciliationAttempts >= 1 ||
-    !shouldRetryCodeModeReconciliation({
-      attempt: params.attempt,
-      hostOwnsToolSurface: params.hostOwnsToolSurface,
-    })
-  ) {
-    return false;
-  }
-  params.retryState.codeModeReconciliationAttempts += 1;
-  params.retryState.forceCodeModeReconciliationTools = true;
-  params.retryState.codeModeReconciliationPlan = { entries: [], readObserved: false };
-  params.activateInternalPrompt(CODE_MODE_RECONCILIATION_PROMPT);
-  return true;
+  params.retryState.codeModeRecovery = { kind: "idle" };
+  return false;
 }

@@ -1387,11 +1387,15 @@ describe("runAgentHarnessAttempt", () => {
     );
 
     const params = createAttemptParams();
-    params.codeModeReconciliationPlan = { entries: [], readObserved: false };
+    params.codeModeRecovery = {
+      kind: "resume",
+      blockedActionKeys: new Set(),
+      mutationAttempt: "available",
+    };
     const result = await runAgentHarnessAttempt(params);
 
     const classifyCall = classify.mock.calls.at(0);
-    expect(runAttempt.mock.calls[0]?.[0]).not.toHaveProperty("codeModeReconciliationPlan");
+    expect(runAttempt.mock.calls[0]?.[0]).not.toHaveProperty("codeModeRecovery");
     expect(classifyCall?.[0].sessionIdUsed).toBe("codex");
     expect(classifyCall?.[1]).toEqual(
       expect.objectContaining({
@@ -1402,7 +1406,7 @@ describe("runAgentHarnessAttempt", () => {
       }),
     );
     expect(classifyCall?.[1]).not.toHaveProperty("admittedRunContext");
-    expect(classifyCall?.[1]).not.toHaveProperty("codeModeReconciliationPlan");
+    expect(classifyCall?.[1]).not.toHaveProperty("codeModeRecovery");
     expect(classifyCall?.[1]).not.toHaveProperty("operationalRunInstance");
     expect(result.agentHarnessId).toBe("codex");
     expect(result.agentHarnessResultClassification).toBe("empty");

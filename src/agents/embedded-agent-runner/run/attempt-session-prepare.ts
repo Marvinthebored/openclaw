@@ -10,6 +10,7 @@ import {
 } from "../../../media/media-facts.js";
 import { getGlobalHookRunner } from "../../../plugins/hook-runner-global.js";
 import type { PluginMetadataSnapshot } from "../../../plugins/plugin-metadata-snapshot.types.js";
+import type { NestedToolActivity } from "../../../sessions/nested-tool-activity.js";
 import { createPreparedEmbeddedAgentSettingsManager } from "../../agent-project-settings.js";
 import {
   applyAgentAutoCompactionGuard,
@@ -50,6 +51,7 @@ import { resolveExistingAttemptTranscriptState } from "./attempt-transcript-help
 import type { EmbeddedAttemptTranscriptLifecycle } from "./attempt-transcript-lifecycle.js";
 import { createUserTranscriptContextRegistry } from "./attempt-user-transcript-context-registry.js";
 import { installCodeModeOutcomeHook } from "./code-mode-outcome.js";
+import { buildCodeModeRecoveryCandidate } from "./code-mode-reconciliation.js";
 import { installMessageToolOnlyTerminalHook } from "./message-tool-terminal.js";
 import { reconcilePrePersistedCurrentUserTurn } from "./pre-persisted-user-turn.js";
 import { resolveSessionBoundaryPromptCacheKey } from "./session-boundary-prompt-cache-key.js";
@@ -88,6 +90,7 @@ export async function prepareEmbeddedAttemptAgentSession(input: {
   sessionAgentId: string;
   transcriptLifecycle: EmbeddedAttemptTranscriptLifecycle;
   sessionManager: AttemptSessionManager;
+  nestedToolActivities: readonly NestedToolActivity[];
 }) {
   const { attempt } = input;
   const settingsManager = createPreparedEmbeddedAgentSettingsManager({
@@ -206,8 +209,7 @@ export async function prepareEmbeddedAttemptAgentSession(input: {
     beforeToolBatch: input.clientToolPreparation.catalogToolHookContext
       ? createToolLoopBatchAdmission(
           input.clientToolPreparation.catalogToolHookContext,
-          attempt.codeModeReconciliationPlan,
-          attempt.forceCodeModeReconciliationTools === true,
+          attempt.codeModeRecovery,
         )
       : undefined,
   });
@@ -226,7 +228,7 @@ export async function prepareEmbeddedAttemptAgentSession(input: {
   };
   setActiveSessionSystemPrompt(input.initialSystemPrompt);
   let didDeliverSourceReplyViaMessageTool = false;
-  let codeModeReconciliationCandidate = false;
+  let codeModeRecoveryCandidate: ReturnType<typeof buildCodeModeRecoveryCandidate> | undefined;
   let codeModeReconciliationReadAuthorized = false;
   const markSourceReplyDelivered = () => {
     didDeliverSourceReplyViaMessageTool = true;
@@ -249,9 +251,12 @@ export async function prepareEmbeddedAttemptAgentSession(input: {
   if (input.clientToolPreparation.codeModeControlsEnabledForRun) {
     installCodeModeOutcomeHook({
       agent: activeSession.agent,
-      onReconciliationCandidate: () => {
+      onReconciliationCandidate: (parentToolCallId) => {
         if (codeModeReconciliationReadAuthorized) {
-          codeModeReconciliationCandidate = true;
+          codeModeRecoveryCandidate = buildCodeModeRecoveryCandidate({
+            parentToolCallId,
+            nestedToolActivities: input.nestedToolActivities,
+          });
         }
       },
     });
@@ -262,7 +267,7 @@ export async function prepareEmbeddedAttemptAgentSession(input: {
     activeSession,
     allCustomTools,
     ...clientToolRuntime,
-    getCodeModeReconciliationCandidate: () => codeModeReconciliationCandidate,
+    getCodeModeRecoveryCandidate: () => codeModeRecoveryCandidate,
     hasDeliveredSourceReply: () => didDeliverSourceReplyViaMessageTool,
     hookRunner,
     markSourceReplyDelivered,

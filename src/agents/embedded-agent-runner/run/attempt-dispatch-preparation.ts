@@ -11,7 +11,6 @@ import { createEmbeddedRunReplayState } from "../replay-state.js";
 import { mapThinkingLevelForProvider } from "../utils.js";
 import { EMBEDDED_RUN_ATTEMPT_DISPATCH_STAGE } from "./attempt-stage-timing.js";
 import { resolveAttemptDispatchApiKey } from "./auth-store.js";
-import { CODE_MODE_POST_RECONCILIATION_INSTRUCTION } from "./code-mode-reconciliation.js";
 import type { PreparedEmbeddedRunInput } from "./execution-context.js";
 import { resolveEmbeddedAttemptBasePrompt } from "./helpers.js";
 import { dispatchEmbeddedRunAttempt } from "./run-attempt-dispatch.js";
@@ -56,18 +55,13 @@ export async function prepareAndDispatchEmbeddedRunAttempt(input: {
     provider,
     modelId,
   } = input;
-  const params = input.terminalRetryState.forceCodeModeReconciliationTools
-    ? {
-        ...runInput.runParams,
-        forceCodeModeReconciliationTools: true,
-        codeModeReconciliationPlan: input.terminalRetryState.codeModeReconciliationPlan,
-      }
-    : input.terminalRetryState.disableCodeModeForReconciledContinuation
+  const codeModeRecovery = terminalRetryState.codeModeRecovery;
+  const params =
+    codeModeRecovery.kind === "resume"
       ? {
           ...runInput.runParams,
           codeModeOverride: false,
           forceCodeModeTools: false,
-          codeModeReconciliationPlan: input.terminalRetryState.codeModeReconciliationPlan,
         }
       : runInput.runParams;
   const {
@@ -118,12 +112,9 @@ export async function prepareAndDispatchEmbeddedRunAttempt(input: {
   const basePrompt =
     sessionPromptState.activePrompt.override ??
     resolveEmbeddedAttemptBasePrompt({ provider, prompt: params.prompt });
-  const promptWithCompaction = terminalRetryState.compactionContinuationInstruction
+  const prompt = terminalRetryState.compactionContinuationInstruction
     ? `${basePrompt}\n\n${terminalRetryState.compactionContinuationInstruction}`
     : basePrompt;
-  const prompt = terminalRetryState.disableCodeModeForReconciledContinuation
-    ? `${promptWithCompaction}\n\n${CODE_MODE_POST_RECONCILIATION_INSTRUCTION}`
-    : promptWithCompaction;
   const resolvedAttemptApiKey = resolveAttemptDispatchApiKey({
     apiKeyInfo: runtime.apiKeyInfo,
     runtimeAuthState: runtime.runtimeAuthState,
@@ -241,6 +232,7 @@ export async function prepareAndDispatchEmbeddedRunAttempt(input: {
   });
   const dispatchedAttempt = await dispatchEmbeddedRunAttempt({
     params,
+    codeModeRecovery: codeModeRecovery.kind === "idle" ? undefined : codeModeRecovery,
     runStartedAtMs: runInput.startedAtMs,
     transcriptOwnership: params.sessionManager
       ? { kind: "caller-owned", sessionManager: params.sessionManager }

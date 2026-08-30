@@ -9,7 +9,6 @@ import {
   useOpenAIPlatformAuthFixture,
 } from "./run.overflow-compaction.harness.js";
 import { loadSharedRunIntegrationHarness } from "./run.shared-integration-harness.test-support.js";
-import type { EmbeddedRunAttemptParams } from "./run/types.js";
 
 let runEmbeddedAgent: Awaited<ReturnType<typeof loadSharedRunIntegrationHarness>>;
 
@@ -24,7 +23,7 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
     useOpenAIPlatformAuthFixture();
   });
 
-  it("continues work after one settled read-only reconciliation", async () => {
+  it("continues a settled partial mutation through inspection and bounded recovery", async () => {
     const mutationAssistant = buildEmbeddedRunnerAssistant({
       stopReason: "toolUse",
       content: [
@@ -36,9 +35,9 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
         },
       ],
     });
-    const reasoningOnlyAssistant = buildEmbeddedRunnerAssistant({
-      stopReason: "stop",
-      content: [{ type: "thinking", thinking: "I should continue." }],
+    const retryAssistant = buildEmbeddedRunnerAssistant({
+      stopReason: "error",
+      content: [],
     });
     mockedRunEmbeddedAttempt
       .mockResolvedValueOnce(
@@ -47,44 +46,29 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
           lastAssistant: mutationAssistant,
           currentAttemptAssistant: mutationAssistant,
           currentAttemptCompletedAssistant: mutationAssistant,
-          codeModeReconciliationCandidate: true,
+          codeModeRecoveryCandidate: { blockedActionKeys: ["apply_patch:prior"] },
           itemLifecycle: { startedCount: 1, completedCount: 1, activeCount: 0 },
         }),
       )
-      .mockImplementationOnce(async (params) => {
-        (params as EmbeddedRunAttemptParams).codeModeReconciliationPlan?.entries.push({
-          toolName: "write",
-          argumentsKey: '{"path":"done.txt"}',
-          consumed: false,
-        });
-        return makeAttemptResult({
-          assistantTexts: ["The first hunk applied."],
+      .mockResolvedValueOnce(
+        makeAttemptResult({
+          assistantTexts: [],
+          itemLifecycle: { startedCount: 2, completedCount: 2, activeCount: 0 },
           toolMetas: [
             { toolName: "read", isError: false },
-            { toolName: "write", isError: false },
+            { toolName: "recovery_resume", isError: false, terminate: true },
           ],
-          itemLifecycle: { startedCount: 1, completedCount: 1, activeCount: 0 },
-          currentAttemptCompletedAssistant: buildEmbeddedRunnerAssistant({
-            stopReason: "stop",
-            content: [{ type: "text", text: "The first hunk applied." }],
-          }),
-        });
-      })
-      .mockImplementationOnce(async (params) => {
-        const pending = (
-          params as EmbeddedRunAttemptParams
-        ).codeModeReconciliationPlan?.entries.find((entry) => !entry.consumed);
-        if (pending) {
-          pending.consumed = true;
-        }
-        return makeAttemptResult({
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeAttemptResult({
           assistantTexts: [],
-          lastAssistant: reasoningOnlyAssistant,
-          currentAttemptAssistant: reasoningOnlyAssistant,
-          currentAttemptCompletedAssistant: reasoningOnlyAssistant,
-        });
-      })
-      .mockResolvedValueOnce(makeAttemptResult({ assistantTexts: ["Task complete."] }));
+          lastAssistant: retryAssistant,
+          currentAttemptAssistant: retryAssistant,
+          currentAttemptCompletedAssistant: retryAssistant,
+        }),
+      )
+      .mockResolvedValueOnce(makeAttemptResult({ assistantTexts: ["Recovery completed."] }));
 
     await runEmbeddedAgent({
       ...overflowBaseRunParams,
@@ -101,29 +85,69 @@ describe("runEmbeddedAgent Code Mode reconciliation", () => {
     });
 
     expect(mockedRunEmbeddedAttempt).toHaveBeenCalledTimes(4);
-    expect(
-      mockedRunEmbeddedAttempt.mock.calls[0]?.[0].forceCodeModeReconciliationTools,
-    ).toBeFalsy();
     expect(mockedRunEmbeddedAttempt.mock.calls[1]?.[0]).toMatchObject({
-      forceCodeModeReconciliationTools: true,
+      codeModeRecovery: { kind: "inspect" },
       prompt: expect.stringContaining("may have partially applied"),
     });
     expect(mockedRunEmbeddedAttempt.mock.calls[2]?.[0]).toMatchObject({
       codeModeOverride: false,
-      forceCodeModeTools: false,
-      prompt: expect.stringContaining("Execute the reconciled recovery plan"),
-      codeModeReconciliationPlan: expect.objectContaining({
-        entries: [expect.objectContaining({ toolName: "write" })],
-      }),
+      codeModeRecovery: { kind: "resume" },
     });
-    expect(mockedRunEmbeddedAttempt.mock.calls[2]?.[0].prompt).toContain("rejects unplanned calls");
     expect(mockedRunEmbeddedAttempt.mock.calls[3]?.[0]).toMatchObject({
       codeModeOverride: false,
-      forceCodeModeTools: false,
-      prompt: expect.stringContaining("rejects unplanned calls"),
+      codeModeRecovery: { kind: "resume" },
+      prompt: expect.stringContaining("at most one mutation attempt"),
     });
-    expect(
-      mockedRunEmbeddedAttempt.mock.calls[2]?.[0].forceCodeModeReconciliationTools,
-    ).toBeFalsy();
+  });
+
+  it("ends after inspection when no recovery is requested", async () => {
+    const mutationAssistant = buildEmbeddedRunnerAssistant({
+      stopReason: "toolUse",
+      content: [
+        {
+          type: "toolCall",
+          id: "code-mode-mutation",
+          name: "code_mode",
+          arguments: { action: "exec" },
+        },
+      ],
+    });
+    mockedRunEmbeddedAttempt
+      .mockResolvedValueOnce(
+        makeAttemptResult({
+          assistantTexts: [],
+          lastAssistant: mutationAssistant,
+          currentAttemptAssistant: mutationAssistant,
+          currentAttemptCompletedAssistant: mutationAssistant,
+          codeModeRecoveryCandidate: { blockedActionKeys: ["apply_patch:prior"] },
+          itemLifecycle: { startedCount: 1, completedCount: 1, activeCount: 0 },
+        }),
+      )
+      .mockResolvedValueOnce(
+        makeAttemptResult({
+          assistantTexts: ["The requested change already applied."],
+          itemLifecycle: { startedCount: 1, completedCount: 1, activeCount: 0 },
+          toolMetas: [{ toolName: "read", isError: false }],
+        }),
+      );
+
+    await runEmbeddedAgent({
+      ...overflowBaseRunParams,
+      config: {
+        agents: {
+          defaults: {
+            models: { "openai/gpt-5.5": { agentRuntime: { id: "openclaw" } } },
+          },
+        },
+      },
+      provider: "openai",
+      model: "gpt-5.5",
+      runId: "run-code-mode-reconciliation-complete",
+    });
+
+    expect(mockedRunEmbeddedAttempt).toHaveBeenCalledTimes(2);
+    expect(mockedRunEmbeddedAttempt.mock.calls[1]?.[0]).toMatchObject({
+      codeModeRecovery: { kind: "inspect" },
+    });
   });
 });

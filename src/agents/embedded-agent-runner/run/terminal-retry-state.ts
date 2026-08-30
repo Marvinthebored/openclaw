@@ -1,16 +1,21 @@
 export const MAX_BEFORE_AGENT_FINALIZE_REVISIONS = 3;
 
-export type CodeModeReconciliationPlanEntry = {
-  toolName: string;
-  argumentsKey: string;
-  consumed: boolean;
-  terminal?: boolean;
+export type CodeModeRecoveryCandidate = {
+  blockedActionKeys?: readonly string[];
 };
 
-export type CodeModeReconciliationPlan = {
-  entries: CodeModeReconciliationPlanEntry[];
-  readObserved: boolean;
-};
+export type CodeModeRecoveryState =
+  | { kind: "idle" }
+  | {
+      kind: "inspect";
+      phase: "read-required" | "ready";
+      blockedActionKeys?: readonly string[];
+    }
+  | {
+      kind: "resume";
+      blockedActionKeys: ReadonlySet<string>;
+      mutationAttempt: "available" | "reserved" | "consumed";
+    };
 
 export type EmbeddedRunTerminalRetryState = {
   reasoningOnlyAttempts: number;
@@ -19,10 +24,7 @@ export type EmbeddedRunTerminalRetryState = {
   compactionContinuationAttempts: number;
   compactionContinuationInstruction: string | null;
   beforeFinalizeRevisionAttempts: number;
-  codeModeReconciliationAttempts: number;
-  forceCodeModeReconciliationTools: boolean;
-  disableCodeModeForReconciledContinuation: boolean;
-  codeModeReconciliationPlan?: CodeModeReconciliationPlan;
+  codeModeRecovery: CodeModeRecoveryState;
 };
 
 export function createEmbeddedRunTerminalRetryState(): EmbeddedRunTerminalRetryState {
@@ -33,8 +35,6 @@ export function createEmbeddedRunTerminalRetryState(): EmbeddedRunTerminalRetryS
     compactionContinuationAttempts: 0,
     compactionContinuationInstruction: null,
     beforeFinalizeRevisionAttempts: 0,
-    codeModeReconciliationAttempts: 0,
-    forceCodeModeReconciliationTools: false,
-    disableCodeModeForReconciledContinuation: false,
+    codeModeRecovery: { kind: "idle" },
   };
 }

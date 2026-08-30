@@ -78,26 +78,12 @@ function prepare(input: {
   effectiveTools?: ReturnType<typeof createStubTool>[];
   uncompactedEffectiveTools?: ReturnType<typeof createStubTool>[];
   clientTools?: ReturnType<typeof clientTool>[];
-  reconciliation?: { capture: boolean; plannedNames: string[] };
 }) {
   return prepareEmbeddedAttemptClientTools({
     attempt: {
       config: input.attemptConfig,
       sessionId: "session",
       runId: "run",
-      ...(input.reconciliation
-        ? {
-            forceCodeModeReconciliationTools: input.reconciliation.capture,
-            codeModeReconciliationPlan: {
-              entries: input.reconciliation.plannedNames.map((toolName) => ({
-                toolName,
-                argumentsKey: "{}",
-                consumed: false,
-              })),
-              readObserved: true,
-            },
-          }
-        : {}),
     },
     catalogToolHookContext: undefined,
     codeModeControlsEnabledForRun: input.codeModeControlsEnabledForRun,
@@ -115,23 +101,6 @@ function prepare(input: {
 }
 
 describe("prepareEmbeddedAttemptClientTools", () => {
-  it.each([
-    { capture: true, expected: [] },
-    { capture: false, expected: ["client_planned"] },
-  ])("limits client tools to the recovery plan (capture=$capture)", ({ capture, expected }) => {
-    const prepared = prepare({
-      codeModeControlsEnabledForRun: false,
-      attemptConfig: CATALOGS_DISABLED_CONFIG,
-      toolSearchRuntimeConfig: CATALOGS_DISABLED_CONFIG,
-      catalogRef: createToolSearchCatalogRef(),
-      clientTools: [clientTool("client_planned"), clientTool("client_other")],
-      reconciliation: { capture, plannedNames: ["client_planned"] },
-    });
-
-    expect(prepared.clientToolDefs.map((tool) => tool.name)).toEqual(expected);
-    expect(prepared.clientToolDefs.every((tool) => tool.executionMode === "sequential")).toBe(true);
-  });
-
   it("records core read entitlement without plugin or channel shadows", () => {
     const coreRead = createStubTool("read");
     const pluginRead = createStubTool("read");

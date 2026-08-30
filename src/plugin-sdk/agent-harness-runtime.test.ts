@@ -196,10 +196,10 @@ describe("agent harness runtime SDK facade", () => {
         : false
     >().toEqualTypeOf<false>();
     expectTypeOf<
-      "codeModeReconciliationPlan" extends keyof AgentHarnessAttemptParamsV2 ? true : false
+      "codeModeRecovery" extends keyof AgentHarnessAttemptParamsV2 ? true : false
     >().toEqualTypeOf<false>();
     expectTypeOf<
-      "codeModeReconciliationPlan" extends keyof EmbeddedRunAttemptParamsV2 ? true : false
+      "codeModeRecovery" extends keyof EmbeddedRunAttemptParamsV2 ? true : false
     >().toEqualTypeOf<false>();
     expectTypeOf<
       Omit<

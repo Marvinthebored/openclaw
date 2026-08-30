@@ -155,7 +155,7 @@ describe("prepareEmbeddedAttemptBundleTools", () => {
     expect(mocks.getOrCreateSessionMcpRuntime).toHaveBeenCalledOnce();
   });
 
-  it.each(["disableTools", "raw", "restart", "model"])(
+  it.each(["disableTools", "raw", "restart", "reconciliation", "model"])(
     "does not discover matching MCP when tools are disabled by %s",
     async (mode) => {
       const input = createInput([], []);
@@ -164,43 +164,14 @@ describe("prepareEmbeddedAttemptBundleTools", () => {
       input.attempt.disableTools = mode === "disableTools";
       input.isRawModelRun = mode === "raw";
       input.attempt.forceRestartSafeTools = mode === "restart";
+      if (mode === "reconciliation") {
+        input.attempt.codeModeRecovery = { kind: "inspect", phase: "read-required" };
+      }
       input.preparedToolBase.toolsEnabled = mode !== "model";
 
       await prepareEmbeddedAttemptBundleTools(input);
 
       expect(mocks.getOrCreateSessionMcpRuntime).not.toHaveBeenCalled();
-    },
-  );
-
-  it.each([true, false])(
-    "keeps external runtimes dormant during reconciliation (capture=%s)",
-    async (capture) => {
-      const input = createInput([], []);
-      input.attempt.config = { mcp: { servers: { chrome: { command: "unused" } } } };
-      input.attempt.toolsAllow = ["chrome*", "lsp_*", "client_probe"];
-      input.preparedToolBase.effectiveToolsAllow = input.attempt.toolsAllow;
-      input.attempt.forceCodeModeReconciliationTools = capture;
-      input.attempt.codeModeReconciliationPlan = {
-        entries: [{ toolName: "client_probe", argumentsKey: "{}", consumed: false }],
-        readObserved: true,
-      };
-      input.attempt.clientTools = [
-        {
-          type: "function",
-          function: { name: "client_probe", parameters: { type: "object" } },
-        },
-      ];
-      mocks.getOrCreateSessionMcpRuntime.mockResolvedValue({});
-      mocks.materializeBundleMcpToolsForRun.mockResolvedValue({
-        tools: [{ name: "chrome__click" }],
-      });
-
-      const result = await prepareEmbeddedAttemptBundleTools(input);
-
-      expect(mocks.getOrCreateSessionMcpRuntime).not.toHaveBeenCalled();
-      expect(mocks.materializeBundleMcpToolsForRun).not.toHaveBeenCalled();
-      expect(mocks.createBundleLspToolRuntime).not.toHaveBeenCalled();
-      expect(result.clientTools?.map((tool) => tool.function.name)).toEqual(["client_probe"]);
     },
   );
 
