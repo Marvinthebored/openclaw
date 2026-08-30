@@ -47,13 +47,14 @@ export function createEmbeddedToolLifecycleRunner(
     try {
       completedResult = await toolParams.execute(onImplementationStart);
     } catch (error) {
+      const trustedNoStart = consumeTrustedToolNoStartError(error);
       const result = buildToolLifecycleErrorResult(error);
       const terminal = await finishToolLifecycle(ctx, toolParams, {
         executionStarted,
         isError: true,
         result,
       });
-      const effectReceipt = consumeTrustedToolNoStartError(error)
+      const effectReceipt = trustedNoStart
         ? ({ state: "not_started" } as const)
         : terminal.effectReceipt;
       await notifyTerminal(toolParams.onTerminal, { ...terminal, effectReceipt });
