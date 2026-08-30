@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
   listAgentEntries: vi.fn(),
   resolveFastModeState: vi.fn(),
   resolveReplyExecOverrides: vi.fn(),
+  resolveGroupRequireMention: vi.fn(async (_params: unknown) => false),
   shouldHandleTextCommands: vi.fn(() => false),
 }));
 
@@ -73,6 +74,7 @@ async function resolveHelloWithModelDefaults(params: {
   cfg?: Parameters<typeof resolveReplyDirectives>[0]["cfg"];
   body?: string;
   sessionEntry?: SessionEntry;
+  sessionStore?: Record<string, SessionEntry>;
   agentCfg?: { reasoningDefault?: "off" | "on" | "stream" };
   agentEntries?: Array<{ id?: string; thinkingDefault?: "off" | "low" }>;
   hasConfiguredThinkingDefault?: boolean;
@@ -133,7 +135,7 @@ async function resolveHelloWithModelDefaults(params: {
       ...params.sessionCtx,
     } as TemplateContext,
     sessionEntry: params.sessionEntry ?? makeSessionEntry(),
-    sessionStore: {},
+    sessionStore: params.sessionStore ?? {},
     sessionKey: "agent:main:whatsapp:+2000",
     storePath: "/tmp/sessions.json",
     sessionScope: "per-sender",
@@ -244,7 +246,7 @@ vi.mock("./get-reply-fast-path.js", () => ({
 
 vi.mock("./groups.js", () => ({
   defaultGroupActivation: vi.fn(() => "always"),
-  resolveGroupRequireMention: vi.fn(async () => false),
+  resolveGroupRequireMention: (params: unknown) => mocks.resolveGroupRequireMention(params),
 }));
 
 vi.mock("./model-selection.js", () => ({
@@ -269,6 +271,7 @@ describe("resolveReplyDirectives", () => {
     mocks.listAgentEntries.mockReset();
     mocks.resolveFastModeState.mockReset();
     mocks.resolveReplyExecOverrides.mockReset();
+    mocks.resolveGroupRequireMention.mockReset().mockResolvedValue(false);
     mocks.shouldHandleTextCommands.mockReset().mockReturnValue(false);
 
     mocks.listAgentEntries.mockReturnValue([]);
@@ -311,6 +314,26 @@ describe("resolveReplyDirectives", () => {
     expect(modelSelectionInput.provider).toBe("openai");
     expect(modelSelectionInput.model).toBe("gpt-4o-mini");
     expect(modelSelectionInput.hasOneTurnModelOverride).toBe(true);
+  });
+
+  it("passes persisted session identity into system-event group activation resolution", async () => {
+    const wrapperSessionEntry = makeSessionEntry({ sessionId: "wrapper-session" });
+    const targetSessionEntry = makeSessionEntry({
+      sessionId: "target-session",
+      chatType: "channel",
+      groupId: "C123",
+    });
+
+    await resolveHelloWithModelDefaults({
+      defaultThinking: "off",
+      defaultReasoning: "on",
+      sessionEntry: wrapperSessionEntry,
+      sessionStore: { "agent:main:whatsapp:+2000": targetSessionEntry },
+      ctx: { InternalTurnSource: "heartbeat" },
+      sessionCtx: { InternalTurnSource: "heartbeat", Provider: undefined },
+    });
+
+    expect(mockCallInput(mocks.resolveGroupRequireMention).sessionEntry).toBe(targetSessionEntry);
   });
 
   it("returns a terminal retry when model preparation sees a rotated session", async () => {

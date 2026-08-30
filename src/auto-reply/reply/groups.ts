@@ -10,10 +10,12 @@ import type { GroupKeyResolution, SessionEntry } from "../../config/sessions.js"
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { createLazyImportLoader } from "../../shared/lazy-promise.js";
 import type { SilentReplyPolicy } from "../../shared/silent-reply-policy.js";
+import { deliveryContextFromSession } from "../../utils/delivery-context.shared.js";
 import { isInternalMessageChannel } from "../../utils/message-channel.js";
 import type { SourceReplyDeliveryMode } from "../get-reply-options.types.js";
 import { normalizeGroupActivation } from "../group-activation.js";
 import type { TemplateContext } from "../templating.js";
+import { resolveEffectiveReplyRoute } from "./effective-reply-route.js";
 import { extractExplicitGroupId } from "./group-id.js";
 
 const groupsRuntimeLoader = createLazyImportLoader(() => import("./groups.runtime.js"));
@@ -47,19 +49,49 @@ export async function resolveGroupRequireMention(params: {
   cfg: OpenClawConfig;
   ctx: TemplateContext;
   groupResolution?: GroupKeyResolution;
+  sessionEntry?: SessionEntry;
 }): Promise<boolean> {
-  const { cfg, ctx, groupResolution } = params;
-  const rawChannel = groupResolution?.channel ?? normalizeOptionalString(ctx.Provider);
+  const { cfg, ctx, groupResolution, sessionEntry } = params;
+  const systemSessionEntry = ctx.InternalTurnSource ? sessionEntry : undefined;
+  const route = systemSessionEntry
+    ? resolveEffectiveReplyRoute({ ctx, entry: systemSessionEntry })
+    : undefined;
+  const rawChannel =
+    groupResolution?.channel ??
+    normalizeOptionalString(route?.channel) ??
+    normalizeOptionalString(ctx.Provider);
   const channel = await resolveRuntimeChannelId(rawChannel);
   if (!channel) {
     return true;
   }
   const rawGroupId = (ctx.From ?? "").trim();
-  const groupId =
-    groupResolution?.id ?? extractExplicitGroupId(rawGroupId) ?? (rawGroupId || undefined);
+  const routeGroupId =
+    extractExplicitGroupId(route?.to ?? "") ?? normalizeOptionalString(route?.to);
+  const selectedGroupId = groupResolution?.id ?? routeGroupId;
+  const persistedDelivery = deliveryContextFromSession(systemSessionEntry);
+  const persistedGroupId =
+    extractExplicitGroupId(persistedDelivery?.to ?? "") ??
+    normalizeOptionalString(persistedDelivery?.to ?? systemSessionEntry?.groupId);
+  const hasCurrentRoute = Boolean(groupResolution || ctx.OriginatingChannel || ctx.OriginatingTo);
+  const persistedRoomMetadata =
+    systemSessionEntry &&
+    (!hasCurrentRoute ||
+      (normalizeOptionalLowercaseString(rawChannel) ===
+        normalizeOptionalLowercaseString(persistedDelivery?.channel) &&
+        selectedGroupId === persistedGroupId))
+      ? systemSessionEntry
+      : undefined;
+  const groupId = systemSessionEntry
+    ? (selectedGroupId ?? persistedRoomMetadata?.groupId)
+    : (groupResolution?.id ?? extractExplicitGroupId(rawGroupId) ?? (rawGroupId || undefined));
   const groupChannel =
-    normalizeOptionalString(ctx.GroupChannel) ?? normalizeOptionalString(ctx.GroupSubject);
-  const groupSpace = normalizeOptionalString(ctx.GroupSpace);
+    normalizeOptionalString(ctx.GroupChannel) ??
+    normalizeOptionalString(ctx.GroupSubject) ??
+    normalizeOptionalString(persistedRoomMetadata?.groupChannel) ??
+    normalizeOptionalString(persistedRoomMetadata?.subject);
+  const groupSpace =
+    normalizeOptionalString(ctx.GroupSpace) ??
+    normalizeOptionalString(persistedRoomMetadata?.space);
   let requireMention: boolean | undefined;
   const runtime = await loadGroupsRuntime();
   try {
@@ -68,7 +100,7 @@ export async function resolveGroupRequireMention(params: {
       groupId,
       groupChannel,
       groupSpace,
-      accountId: ctx.AccountId,
+      accountId: route?.accountId ?? ctx.AccountId,
     });
   } catch {
     requireMention = undefined;
@@ -80,7 +112,7 @@ export async function resolveGroupRequireMention(params: {
     cfg,
     channel,
     groupId,
-    accountId: ctx.AccountId,
+    accountId: route?.accountId ?? ctx.AccountId,
   });
 }
 

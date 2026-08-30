@@ -564,7 +564,7 @@ export function buildInboundMetaSystemPrompt(
   cfg: OpenClawConfig,
   options?: { includeFormattingHints?: boolean; formattingHintsCtx?: TemplateContext },
 ): string {
-  const chatType = normalizeChatType(ctx.ChatType);
+  const chatType = normalizeChatType(options?.formattingHintsCtx?.ChatType ?? ctx.ChatType);
   const isDirect = !chatType || chatType === "direct";
 
   // Keep system metadata strictly free of attacker-controlled strings (sender names, group subjects, etc.).
@@ -585,7 +585,7 @@ export function buildInboundMetaSystemPrompt(
     provider: normalizePromptMetadataString(ctx.Provider),
     surface: normalizePromptMetadataString(ctx.Surface),
     chat_type: chatType ?? (isDirect ? "direct" : undefined),
-    // Authoring hints follow the reply delivery channel, not the inbound event:
+    // Authoring context follows the reply delivery channel, not the inbound event:
     // system-event turns (heartbeat/cron) carry the persisted channel/account in
     // formattingHintsCtx while ctx still identifies the system provider.
     response_format:

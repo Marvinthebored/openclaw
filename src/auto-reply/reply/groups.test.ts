@@ -6,6 +6,7 @@ import {
   createChannelTestPluginBase,
   createTestRegistry,
 } from "../../test-utils/channel-plugins.js";
+import { normalizeSessionDeliveryState } from "../../utils/delivery-context.shared.js";
 import * as groups from "./groups.js";
 
 describe("group runtime loading", () => {
@@ -21,7 +22,6 @@ describe("group runtime loading", () => {
       return await vi.importActual<typeof import("./groups.runtime.js")>("./groups.runtime.js");
     });
     const isolatedGroups = await import("./groups.js");
-
     expect(groupsRuntimeLoads).not.toHaveBeenCalled();
     const groupChatContext = isolatedGroups.buildGroupChatContext({
       sessionCtx: {
@@ -234,6 +234,22 @@ describe("group runtime loading", () => {
       };
     });
     const isolatedGroups = await import("./groups.js");
+    const persistedSessionEntry = {
+      sessionId: "session-1",
+      updatedAt: 1,
+      chatType: "channel" as const,
+      groupId: "C123",
+      groupChannel: "#general",
+      delivery: normalizeSessionDeliveryState({
+        context: { channel: "slack", to: "C123", accountId: "work" },
+        origin: {
+          provider: "slack",
+          chatType: "channel",
+          to: "C123",
+          accountId: "work",
+        },
+      }),
+    };
 
     await expect(
       isolatedGroups.resolveGroupRequireMention({
@@ -259,7 +275,113 @@ describe("group runtime loading", () => {
         },
       }),
     ).resolves.toBe(false);
+    await expect(
+      isolatedGroups.resolveGroupRequireMention({
+        cfg: {
+          channels: {
+            slack: {
+              groups: {
+                C123: { requireMention: false },
+              },
+            },
+          },
+        } as unknown as OpenClawConfig,
+        ctx: { InternalTurnSource: "heartbeat" },
+        sessionEntry: persistedSessionEntry,
+      }),
+    ).resolves.toBe(false);
+    await expect(
+      isolatedGroups.resolveGroupRequireMention({
+        cfg: {
+          channels: {
+            slack: {
+              groups: {
+                C123: { requireMention: true },
+                C456: { requireMention: false },
+              },
+            },
+          },
+        } as unknown as OpenClawConfig,
+        ctx: {
+          InternalTurnSource: "heartbeat",
+          OriginatingChannel: "slack",
+          OriginatingTo: "C456",
+        },
+        sessionEntry: persistedSessionEntry,
+      }),
+    ).resolves.toBe(false);
+    await expect(
+      isolatedGroups.resolveGroupRequireMention({
+        cfg: {
+          channels: {
+            slack: {
+              groups: { C123: { requireMention: true } },
+              accounts: {
+                work: { groups: { C123: { requireMention: false } } },
+              },
+            },
+          },
+        } as unknown as OpenClawConfig,
+        ctx: { InternalTurnSource: "heartbeat" },
+        sessionEntry: persistedSessionEntry,
+      }),
+    ).resolves.toBe(false);
+    await expect(
+      isolatedGroups.resolveGroupRequireMention({
+        cfg: {
+          channels: {
+            slack: {
+              groups: {
+                C123: { requireMention: true },
+                C456: { requireMention: false },
+              },
+            },
+          },
+        } as unknown as OpenClawConfig,
+        ctx: { Provider: "slack", From: "slack:channel:C456" },
+        sessionEntry: persistedSessionEntry,
+      }),
+    ).resolves.toBe(false);
     expect(groupsRuntimeLoads).toHaveBeenCalledTimes(1);
+    vi.doUnmock("./groups.runtime.js");
+  });
+
+  it("does not mix persisted room metadata into a different resolved room", async () => {
+    vi.resetModules();
+    const resolveRequireMention = vi.fn(
+      ({ groupId, groupChannel }: { groupId?: string; groupChannel?: string }) =>
+        groupId !== "C456" || groupChannel !== undefined,
+    );
+    vi.doMock("./groups.runtime.js", () => ({
+      getChannelPlugin: () => ({ groups: { resolveRequireMention } }),
+      normalizeChannelId: (channelId?: string) => channelId?.trim().toLowerCase(),
+    }));
+    const isolatedGroups = await import("./groups.js");
+
+    await expect(
+      isolatedGroups.resolveGroupRequireMention({
+        cfg: {} as OpenClawConfig,
+        ctx: { InternalTurnSource: "heartbeat" },
+        groupResolution: {
+          key: "slack:channel:C456",
+          channel: "slack",
+          id: "C456",
+          chatType: "channel",
+        },
+        sessionEntry: {
+          sessionId: "session-1",
+          updatedAt: 1,
+          groupId: "C123",
+          groupChannel: "#persisted-room",
+          delivery: normalizeSessionDeliveryState({
+            context: { channel: "slack", to: "C123" },
+          }),
+        },
+      }),
+    ).resolves.toBe(false);
+    expect(resolveRequireMention).toHaveBeenCalledWith(
+      expect.objectContaining({ groupId: "C456", groupChannel: undefined }),
+    );
     vi.doUnmock("./groups.runtime.js");
   });
 });

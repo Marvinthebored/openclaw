@@ -238,8 +238,8 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
   const inboundMetaPrompt = buildInboundMetaSystemPrompt(
     isNewSession ? sessionCtx : { ...sessionCtx, ThreadStarterBody: undefined },
     cfg,
-    // promptSessionCtx restores the persisted channel/account for system-event
-    // turns, so reply formatting hints resolve against the delivery channel.
+    // promptSessionCtx restores the persisted conversation for system-event
+    // turns, so chat type and reply formatting match the delivery session.
     { includeFormattingHints: !useFastReplyRuntime, formattingHintsCtx: promptSessionCtx },
   );
   const execOverridePromptHint = buildExecOverridePromptHint({

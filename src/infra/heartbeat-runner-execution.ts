@@ -667,6 +667,7 @@ export async function invokeHeartbeatAgentRun(
         !suppressOriginatingContext && delivery.channel !== "none" ? delivery.channel : undefined,
       OriginatingTo: !suppressOriginatingContext ? delivery.to : undefined,
       AccountId: delivery.accountId,
+      ChatType: delivery.chatType,
       MessageThreadId: delivery.threadId,
       InternalTurnSource: hasExecCompletion ? "exec" : hasCronEvents ? "cron" : "heartbeat",
       SessionKey: runSessionKey,

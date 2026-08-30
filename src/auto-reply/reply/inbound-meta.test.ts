@@ -385,9 +385,10 @@ describe("buildInboundMetaSystemPrompt", () => {
     const payload = parseInboundMetaPayload(prompt);
     const responseFormat = payload["response_format"] as { text_markup?: string } | undefined;
     expect(responseFormat?.text_markup).toBe("slack_mrkdwn");
-    // Trusted metadata still identifies the system event; only authoring hints
+    // Trusted metadata still identifies the system event; only authoring context
     // follow the delivery channel.
     expect(payload["channel"]).toBe("heartbeat");
+    expect(payload["chat_type"]).toBe("channel");
   });
 
   it("omits response format hints when the channel plugin has no formatting hook", () => {

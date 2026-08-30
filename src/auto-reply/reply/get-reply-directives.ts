@@ -382,6 +382,7 @@ export async function resolveReplyDirectives(params: {
     cfg,
     ctx: sessionCtx,
     groupResolution,
+    sessionEntry: targetSessionEntry,
   });
   const defaultActivation = defaultGroupActivation(requireMention);
   const sessionThinkLevel = directives.clearThinkLevel
