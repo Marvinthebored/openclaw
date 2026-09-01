@@ -58,7 +58,10 @@ describe("terminal refusal resolution", () => {
           result: {
             meta: { error: { kind: "incomplete_turn", fallbackSafe: false } },
             payloads: [
-              { isError: true, text: "The provider refused this request (category: cyber)." },
+              {
+                isError: true,
+                text: "The provider refused this request (category: cyber). Revise the request and try again.",
+              },
             ],
           },
         });

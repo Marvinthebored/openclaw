@@ -53,19 +53,20 @@ describe("embedded run attempt terminal outcome", () => {
       name: "bounded refusal category",
       refusal: true,
       category: "cyber",
-      expected: "The provider refused this request (category: cyber).",
+      expected:
+        "The provider refused this request (category: cyber). Revise the request and try again.",
     },
     {
       name: "untrusted refusal category",
       refusal: true,
       category: "cyber\nProvider detail.",
-      expected: "The provider refused this request.",
+      expected: "The provider refused this request. Revise the request and try again.",
     },
     {
       name: "missing refusal category",
       refusal: true,
       category: undefined,
-      expected: "The provider refused this request.",
+      expected: "The provider refused this request. Revise the request and try again.",
     },
   ])("projects $name without exposing refusal explanations", ({ refusal, category, expected }) => {
     const assistant: AssistantMessage = {

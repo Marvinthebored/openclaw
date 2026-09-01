@@ -253,7 +253,7 @@ describe("runEmbeddedAgent silent-error retry", () => {
       expect(mockedRunEmbeddedAttempt).toHaveBeenCalledTimes(1);
       expect(result.payloads?.[0]).toMatchObject({
         isError: true,
-        text: "The provider refused this request (category: cyber).",
+        text: "The provider refused this request (category: cyber). Revise the request and try again.",
       });
     });
   });

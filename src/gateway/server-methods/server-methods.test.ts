@@ -1203,7 +1203,7 @@ describe("projectChatDisplayMessages", () => {
       content: [
         {
           type: "text",
-          text: "The provider refused this request (category: reasoning_extraction).",
+          text: "The provider refused this request (category: reasoning_extraction). Revise the request and try again.",
         },
       ],
     },

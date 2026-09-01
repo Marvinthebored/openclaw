@@ -7,7 +7,8 @@ import { stopQaGatewayFixture } from "../../../helpers/qa-gateway-cleanup.js";
 
 const PRIMARY_MODEL = "anthropic/claude-opus-4-8";
 const FALLBACK_MODEL = "anthropic/claude-sonnet-4-6";
-const REFUSAL_TEXT = "The provider refused this request (category: reasoning_extraction).";
+const REFUSAL_TEXT =
+  "The provider refused this request (category: reasoning_extraction). Revise the request and try again.";
 
 type GatewayRun = {
   runId?: unknown;

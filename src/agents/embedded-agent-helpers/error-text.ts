@@ -74,7 +74,7 @@ export function formatProviderRefusalText(message: { diagnostics?: unknown }): s
   const category = asOptionalRecord(asOptionalRecord(refusal)?.details)?.category;
   const safeCategory =
     typeof category === "string" && /^[a-z0-9_-]{1,64}$/i.test(category) ? category : undefined;
-  return `The provider refused this request${safeCategory ? ` (category: ${safeCategory})` : ""}.`;
+  return `The provider refused this request${safeCategory ? ` (category: ${safeCategory})` : ""}. Revise the request and try again.`;
 }
 function classifyAssistantErrorFacts(
   msg: AssistantMessage,
