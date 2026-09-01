@@ -316,6 +316,57 @@ describe("terminal resolution", () => {
     expect(armPostCompactionGuard).toHaveBeenCalledTimes(1);
   });
 
+  it("does not retry or mark fallback-safe a refusal after Anthropic compaction", async () => {
+    const assistant = emptyAssistant({
+      stopReason: "error",
+      diagnostics: [
+        {
+          type: "provider_refusal",
+          timestamp: 0,
+          details: { provider: "anthropic", category: "cyber" },
+        },
+      ],
+      providerReplay: {
+        v: 1,
+        type: "anthropic-compaction",
+        data: "summary",
+        provider: "anthropic",
+        api: "anthropic-messages",
+        model: "claude-sonnet-4-6",
+        baseUrlHash: "route-a",
+      },
+    } as never);
+    const attempt = makeEmbeddedRunnerAttempt({
+      assistantTexts: [],
+      lastAssistant: assistant,
+      currentAttemptAssistant: assistant,
+      currentAttemptReplayMetadata: { hadPotentialSideEffects: false, replaySafe: true },
+    });
+    const armPostCompactionGuard = vi.fn();
+    const input = makeTerminalInput({
+      attempt,
+      attemptAssistant: assistant,
+      maxEmptyResponseRetryAttempts: 0,
+      armPostCompactionGuard,
+    });
+
+    const resolved = await resolveEmbeddedRunTerminal(input);
+
+    expect(resolved.action).toBe("complete");
+    expect(input.retryState.compactionContinuationAttempts).toBe(0);
+    expect(armPostCompactionGuard).not.toHaveBeenCalled();
+    if (resolved.action === "complete") {
+      expect(resolved.result.meta.error).toMatchObject({
+        kind: "incomplete_turn",
+        fallbackSafe: false,
+      });
+      expect(resolved.result.payloads?.[0]).toMatchObject({
+        isError: true,
+        text: "The provider refused this request (category: cyber).",
+      });
+    }
+  });
+
   it("completes an explicit silent reply without retrying", async () => {
     const assistant = buildEmbeddedRunnerAssistant({
       content: [{ type: "text", text: SILENT_REPLY_TOKEN }],

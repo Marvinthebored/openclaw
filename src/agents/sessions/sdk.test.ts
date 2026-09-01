@@ -1072,6 +1072,30 @@ describe("AgentSession retry behavior", () => {
     expect(transientEvents).toContain("auto_retry_end");
   });
 
+  it("does not retry a structured provider refusal with transient-looking text", async () => {
+    streamMocks.streamSimple.mockReset();
+    streamMocks.streamSimple.mockImplementation(() =>
+      createAssistantResultStream({
+        ...createAssistantError("HTTP 503 temporary provider response"),
+        diagnostics: [
+          {
+            type: "provider_refusal",
+            timestamp: 0,
+            details: { provider: "anthropic", category: "cyber" },
+          },
+        ],
+      }),
+    );
+    const { session } = await createRetrySession();
+    const events: string[] = [];
+    session.subscribe((event) => events.push(event.type));
+
+    await session.prompt("test provider refusal");
+
+    expect(streamMocks.streamSimple).toHaveBeenCalledOnce();
+    expect(events).not.toContain("auto_retry_start");
+  });
+
   it("uses a short server Retry-After as the auto-retry delay floor", async () => {
     vi.useFakeTimers();
     try {

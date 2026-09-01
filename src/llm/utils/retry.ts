@@ -22,12 +22,22 @@ export function isReplayUnsafeAssistantError(
   return Boolean(message?.errorCode && REPLAY_UNSAFE_ASSISTANT_ERROR_CODES.has(message.errorCode));
 }
 
+/** True when the provider explicitly refused the request payload. */
+export function isProviderRefusalAssistantError(
+  message: Pick<AssistantMessage, "diagnostics"> | null | undefined,
+): boolean {
+  return Boolean(
+    message?.diagnostics?.some((diagnostic) => diagnostic.type === "provider_refusal"),
+  );
+}
+
 /** Classify transient provider/transport failures for outer retry policy. */
 export function isRetryableAssistantError(message: AssistantMessage): boolean {
   if (
     message.stopReason !== "error" ||
     !message.errorMessage ||
-    isReplayUnsafeAssistantError(message)
+    isReplayUnsafeAssistantError(message) ||
+    isProviderRefusalAssistantError(message)
   ) {
     return false;
   }

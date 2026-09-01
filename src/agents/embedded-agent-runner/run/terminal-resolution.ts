@@ -4,6 +4,7 @@ import { SILENT_REPLY_TOKEN } from "../../../auto-reply/tokens.js";
 import { freezeDiagnosticTraceContext } from "../../../infra/diagnostic-trace-context.js";
 import { formatErrorMessage } from "../../../infra/errors.js";
 import type { AssistantMessage } from "../../../llm/types.js";
+import { isProviderRefusalAssistantError } from "../../../llm/utils/retry.js";
 import type { ProviderRouteOverridePresence } from "../../../plugin-sdk/provider-model-types.js";
 import {
   classifyAgentRunTerminalOutcome,
@@ -349,6 +350,11 @@ export async function resolveEmbeddedRunTerminal(input: {
     return { action: "retry" };
   }
   const completedEmptyFinalization = input.settledTurnFinalizationOutcome === "completed-empty";
+  const providerRefusal = [
+    input.attemptAssistant,
+    attempt.currentAttemptAssistant,
+    attempt.lastAssistant,
+  ].some(isProviderRefusalAssistantError);
   const incompleteTurnText =
     emptyAssistantReplyIsSilent ||
     (completedEmptyFinalization && !requiresVisibleTerminalReply(runParams))
@@ -369,6 +375,7 @@ export async function resolveEmbeddedRunTerminal(input: {
     !promptError &&
     !attempt.lastToolError &&
     !hasAttemptTerminalState(attempt) &&
+    !providerRefusal &&
     !input.replayState.hadPotentialSideEffects,
   );
   const terminalToolPresentation = incompleteTurnFallbackSafe
@@ -386,6 +393,7 @@ export async function resolveEmbeddedRunTerminal(input: {
     !attempt.yieldDetected &&
     !attempt.didSendDeterministicApprovalPrompt &&
     !attempt.lastToolError &&
+    !providerRefusal &&
     !input.replayState.hadPotentialSideEffects &&
     retryState.compactionContinuationAttempts < 1
   ) {

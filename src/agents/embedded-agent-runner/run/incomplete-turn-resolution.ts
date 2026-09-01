@@ -1,6 +1,7 @@
 /** Resolves incomplete-turn payloads, continuation evidence, and run liveness. */
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
 import { isSilentReplyText, SILENT_REPLY_TOKEN } from "../../../auto-reply/tokens.js";
+import { isProviderRefusalAssistantError } from "../../../llm/utils/retry.js";
 import {
   hasAcceptedSessionSpawn,
   hasCompletionMessageSessionSpawn,
@@ -8,6 +9,7 @@ import {
 import { projectAgentRunAttemptTerminal } from "../../agent-run-terminal-outcome.js";
 import type { AuthProfileFailureReason } from "../../auth-profiles.js";
 import { collectTextContentBlocks } from "../../content-blocks.js";
+import { formatUserFacingAssistantErrorText } from "../../embedded-agent-helpers.js";
 import type { MessagingToolSend } from "../../embedded-agent-messaging.types.js";
 import { renderAuthProfileFailoverCopy } from "../../failover/user-copy.js";
 import { buildProviderAuthRecoveryHint } from "../../provider-auth-recovery-hint.js";
@@ -132,6 +134,9 @@ export function resolveIncompleteTurnPayloadText(params: {
 
   if (params.hadPotentialSideEffects || params.attempt.replayMetadata.hadPotentialSideEffects) {
     return "⚠️ Agent couldn't generate a response. Note: some tool actions may have already been executed — please verify before retrying.";
+  }
+  if (assistant && isProviderRefusalAssistantError(assistant)) {
+    return formatUserFacingAssistantErrorText(assistant);
   }
   const authFailure = params.terminalAuthFailure;
   const reason = authFailure?.assistantProfileFailureReason;

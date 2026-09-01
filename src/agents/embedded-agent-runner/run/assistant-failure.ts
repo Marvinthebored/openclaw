@@ -1,6 +1,9 @@
 import type { ThinkLevel } from "../../../auto-reply/thinking.js";
 import type { AssistantMessage } from "../../../llm/types.js";
-import { isReplayUnsafeAssistantError } from "../../../llm/utils/retry.js";
+import {
+  isProviderRefusalAssistantError,
+  isReplayUnsafeAssistantError,
+} from "../../../llm/utils/retry.js";
 import { projectAgentRunAttemptTerminal } from "../../agent-run-terminal-outcome.js";
 import type { AuthProfileFailureReason, AuthProfileStore } from "../../auth-profiles.js";
 import {
@@ -123,12 +126,12 @@ export async function handleEmbeddedAssistantFailure(input: {
     },
   );
   const replayUnsafeAssistantError = isReplayUnsafeAssistantError(input.attemptAssistant);
-  if (replayUnsafeAssistantError || !isCurrentAttemptReplaySafe(input.attempt)) {
+  const providerRefusal = isProviderRefusalAssistantError(input.attemptAssistant);
+  if (replayUnsafeAssistantError || providerRefusal || !isCurrentAttemptReplaySafe(input.attempt)) {
     return buildOutcome(input, {
       action: "proceed",
-      assistantProfileFailureReason: replayUnsafeAssistantError
-        ? null
-        : assistantProfileFailureReason,
+      assistantProfileFailureReason:
+        replayUnsafeAssistantError || providerRefusal ? null : assistantProfileFailureReason,
     });
   }
   if (fallbackThinking && !terminalInterrupted) {
