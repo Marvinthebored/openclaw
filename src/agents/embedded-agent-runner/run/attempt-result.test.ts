@@ -155,7 +155,7 @@ describe("attempt result projection", () => {
       });
 
       expect(result.currentAttemptAssistant).toBeUndefined();
-      expect(result.currentAttemptCompletedAssistant).toBe(assistant);
+      expect(result.currentAttemptCompletedAssistant).toEqual(assistant);
       expect(recordEvent).toHaveBeenCalledWith(
         "session.ended",
         expect.objectContaining({ status: expectedStatus, terminalError }),

@@ -1,5 +1,5 @@
 /** Owns side-effect-sensitive retry and silent-reply recovery policy. */
-import { isReplayUnsafeAssistantError } from "../../../llm/utils/retry.js";
+import { isTerminalAssistantError } from "../../../llm/utils/retry.js";
 import { hasAcceptedSessionSpawn } from "../../accepted-session-spawn.js";
 import { hasOnlyAssistantReasoningContent } from "../../replay-turn-classification.js";
 import { TOOL_FAILURE_INSTRUCTION } from "../../tool-outcome-instructions.js";
@@ -71,7 +71,7 @@ export function shouldRetrySilentErrorAssistantTurn(params: {
   }
 
   const assistant = params.assistant;
-  if (!assistant || assistant.stopReason !== "error" || isReplayUnsafeAssistantError(assistant)) {
+  if (!assistant || assistant.stopReason !== "error" || isTerminalAssistantError(assistant)) {
     return false;
   }
 

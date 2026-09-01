@@ -17,10 +17,20 @@ const REPLAY_UNSAFE_ASSISTANT_ERROR_CODES = new Set([
 ]);
 
 /** True when replaying the failed assistant request could duplicate unknown provider output. */
-export function isReplayUnsafeAssistantError(
+function isReplayUnsafeAssistantError(
   message: Pick<AssistantMessage, "errorCode"> | null | undefined,
 ): boolean {
   return Boolean(message?.errorCode && REPLAY_UNSAFE_ASSISTANT_ERROR_CODES.has(message.errorCode));
+}
+
+/**
+ * Preserve structured terminal outcomes before text classification.
+ * Retrying or falling back would override the provider's recorded decision.
+ */
+export function isTerminalAssistantError(
+  message: Pick<AssistantMessage, "diagnostics" | "errorCode"> | null | undefined,
+): boolean {
+  return isReplayUnsafeAssistantError(message) || isProviderRefusalAssistantError(message);
 }
 
 /** Classify transient provider/transport failures for outer retry policy. */
@@ -28,8 +38,7 @@ export function isRetryableAssistantError(message: AssistantMessage): boolean {
   if (
     message.stopReason !== "error" ||
     !message.errorMessage ||
-    isReplayUnsafeAssistantError(message) ||
-    isProviderRefusalAssistantError(message)
+    isTerminalAssistantError(message)
   ) {
     return false;
   }

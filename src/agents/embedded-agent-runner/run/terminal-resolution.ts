@@ -1,10 +1,10 @@
 import { randomBytes } from "node:crypto";
 import { isCompactionReplayCheckpoint } from "@openclaw/ai/transports";
-import { isProviderRefusalAssistantError } from "@openclaw/llm-core/diagnostics";
 import { SILENT_REPLY_TOKEN } from "../../../auto-reply/tokens.js";
 import { freezeDiagnosticTraceContext } from "../../../infra/diagnostic-trace-context.js";
 import { formatErrorMessage } from "../../../infra/errors.js";
 import type { AssistantMessage } from "../../../llm/types.js";
+import { isTerminalAssistantError } from "../../../llm/utils/retry.js";
 import type { ProviderRouteOverridePresence } from "../../../plugin-sdk/provider-model-types.js";
 import {
   classifyAgentRunTerminalOutcome,
@@ -351,7 +351,7 @@ export async function resolveEmbeddedRunTerminal(input: {
     return { action: "retry" };
   }
   const completedEmptyFinalization = input.settledTurnFinalizationOutcome === "completed-empty";
-  const providerRefusal = isProviderRefusalAssistantError(input.attemptAssistant);
+  const terminalAssistantError = isTerminalAssistantError(input.attemptAssistant);
   const incompleteTurnText =
     emptyAssistantReplyIsSilent ||
     (completedEmptyFinalization && !requiresVisibleTerminalReply(runParams))
@@ -372,7 +372,7 @@ export async function resolveEmbeddedRunTerminal(input: {
     !promptError &&
     !attempt.lastToolError &&
     !hasAttemptTerminalState(attempt) &&
-    !providerRefusal &&
+    !terminalAssistantError &&
     !input.replayState.hadPotentialSideEffects,
   );
   const terminalToolPresentation = incompleteTurnFallbackSafe
@@ -390,7 +390,7 @@ export async function resolveEmbeddedRunTerminal(input: {
     !attempt.yieldDetected &&
     !attempt.didSendDeterministicApprovalPrompt &&
     !attempt.lastToolError &&
-    !providerRefusal &&
+    !terminalAssistantError &&
     !input.replayState.hadPotentialSideEffects &&
     retryState.compactionContinuationAttempts < 1
   ) {

@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SILENT_REPLY_TOKEN } from "../../../auto-reply/tokens.js";
 import { classifyAgentExecResult } from "../../../commands/agent-exec-result.js";
 import {
+  PROVIDER_FAILURE_WITH_OUTPUT_ERROR_CODE,
+  PROVIDER_POST_DISPATCH_AMBIGUITY_ERROR_CODE,
+} from "../../../llm/types.js";
+import {
   buildEmbeddedRunnerAssistant,
   makeEmbeddedRunnerAttempt,
 } from "../../test-helpers/embedded-agent-runner-e2e-fixtures.js";
@@ -346,6 +350,43 @@ describe("terminal resolution", () => {
         expect(input.retryState.compactionContinuationAttempts).toBe(1);
         expect(input.armPostCompactionGuard).toHaveBeenCalledOnce();
       }
+    },
+  );
+
+  it.each([PROVIDER_FAILURE_WITH_OUTPUT_ERROR_CODE, PROVIDER_POST_DISPATCH_AMBIGUITY_ERROR_CODE])(
+    "does not retry terminal provider outcome %s after compaction",
+    async (errorCode) => {
+      const assistant = emptyAssistant({
+        stopReason: "error",
+        errorCode,
+        providerReplay: {
+          v: 1,
+          type: "anthropic-compaction",
+          data: "summary",
+          provider: "anthropic",
+          api: "anthropic-messages",
+          model: "claude-sonnet-4-6",
+          baseUrlHash: "route-a",
+        },
+      });
+      const attempt = makeEmbeddedRunnerAttempt({
+        assistantTexts: [],
+        currentAttemptAssistant: assistant,
+        currentAttemptReplayMetadata: { hadPotentialSideEffects: false, replaySafe: true },
+      });
+      const input = makeTerminalInput({
+        attempt,
+        attemptAssistant: assistant,
+        maxEmptyResponseRetryAttempts: 0,
+      });
+
+      const resolved = await resolveEmbeddedRunTerminal(input);
+
+      expect(resolved).toMatchObject({
+        action: "complete",
+        result: { meta: { error: { kind: "incomplete_turn", fallbackSafe: false } } },
+      });
+      expect(input.armPostCompactionGuard).not.toHaveBeenCalled();
     },
   );
 
