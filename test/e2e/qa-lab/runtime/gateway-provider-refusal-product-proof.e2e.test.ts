@@ -71,7 +71,7 @@ async function startRefusingAnthropicProvider() {
               stop_details: {
                 type: "refusal",
                 category: "reasoning_extraction",
-                explanation: "This request is refused; prompt is too long.",
+                explanation: "Service unavailable. Try again.",
               },
             },
             usage: { input_tokens: 3, output_tokens: 0 },
