@@ -66,12 +66,14 @@ describe("incomplete-turn terminal metadata", () => {
     ).toBeNull();
   });
 
-  it("keeps stale session tool-use evidence incomplete without a current assistant", () => {
+  it("keeps completed tool-use evidence incomplete when the current transcript slice is absent", () => {
+    const assistant = buildEmbeddedRunnerAssistant({ stopReason: "toolUse" });
     const attempt = makeEmbeddedRunnerAttempt({
       assistantTexts: ["Let me update the file..."],
       toolMetas: [{ toolName: "write" }],
-      lastAssistant: buildEmbeddedRunnerAssistant({ stopReason: "toolUse" }),
+      lastAssistant: assistant,
       currentAttemptAssistant: undefined,
+      currentAttemptCompletedAssistant: assistant,
     });
 
     expect(

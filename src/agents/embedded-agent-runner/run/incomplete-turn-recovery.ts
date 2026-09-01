@@ -12,6 +12,7 @@ import {
   hasAsyncActivity,
   hasAttemptTerminalState,
   isCurrentAttemptReplaySafe,
+  resolveCurrentAttemptAssistant,
 } from "./attempt-terminal-evidence.js";
 import {
   hasOnlySilentAssistantReply,
@@ -129,7 +130,7 @@ export function shouldTreatEmptyAssistantReplyAsSilent(params: {
   if (hasCommittedMessagingToolDeliveryEvidence(params.attempt)) {
     return false;
   }
-  const assistant = params.attempt.currentAttemptAssistant ?? params.attempt.lastAssistant;
+  const assistant = resolveCurrentAttemptAssistant(params.attempt);
   if (
     params.payloadCount === 0 &&
     assistant?.stopReason !== "error" &&
@@ -177,7 +178,7 @@ export function resolveReasoningOnlyRetryInstruction(params: {
     return null;
   }
 
-  const assistant = params.attempt.currentAttemptAssistant ?? params.attempt.lastAssistant;
+  const assistant = resolveCurrentAttemptAssistant(params.attempt);
   if (joinAssistantTexts(params.attempt.assistantTexts).length > 0) {
     return null;
   }
@@ -405,7 +406,7 @@ export function resolveEmptyResponseRetryInstruction(params: {
     return null;
   }
 
-  const assistant = params.attempt.currentAttemptAssistant ?? params.attempt.lastAssistant ?? null;
+  const assistant = resolveCurrentAttemptAssistant(params.attempt) ?? null;
   if (
     assistant?.stopReason === "stop" &&
     isOllamaIncompleteTurnProvider(params.provider) &&

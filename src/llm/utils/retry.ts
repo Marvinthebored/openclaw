@@ -1,3 +1,4 @@
+import { isProviderRefusalAssistantError } from "@openclaw/llm-core/diagnostics";
 import { classifyFailoverSignal } from "../../agents/failover/classify.js";
 import {
   extractFailoverHttpStatus,
@@ -20,15 +21,6 @@ export function isReplayUnsafeAssistantError(
   message: Pick<AssistantMessage, "errorCode"> | null | undefined,
 ): boolean {
   return Boolean(message?.errorCode && REPLAY_UNSAFE_ASSISTANT_ERROR_CODES.has(message.errorCode));
-}
-
-/** True when the provider explicitly refused the request payload. */
-export function isProviderRefusalAssistantError(
-  message: Pick<AssistantMessage, "diagnostics"> | null | undefined,
-): boolean {
-  return Boolean(
-    message?.diagnostics?.some((diagnostic) => diagnostic.type === "provider_refusal"),
-  );
 }
 
 /** Classify transient provider/transport failures for outer retry policy. */
