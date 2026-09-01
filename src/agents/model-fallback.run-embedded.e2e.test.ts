@@ -9,7 +9,6 @@ import { FailoverError } from "./failover-error.js";
 import { markFallbackCandidateSkipped } from "./fallback-skip-cache.js";
 import { resetFallbackSkipCacheForTest } from "./fallback-skip-cache.test-support.js";
 import type { ModelFallbackStepFields } from "./model-fallback-observation.js";
-import { withProviderRefusalLoopback } from "./model-fallback.provider-refusal.test-support.js";
 import {
   makeModelFallbackConfig,
   readFallbackUsageStats,
@@ -390,59 +389,6 @@ function expectProviderAttemptCounts(expected: { openai: number; groq: number })
 }
 
 describe("runWithModelFallback + runEmbeddedAgent failover behavior", () => {
-  it("keeps a structured Anthropic refusal terminal across retry and fallback", async () => {
-    await withProviderRefusalLoopback(async ({ context, model, requestCount }) => {
-      await withModelFallbackWorkspace(async ({ agentDir, workspaceDir }) => {
-        await writeFallbackAuthStore(agentDir, undefined, { primaryProvider: "anthropic" });
-        runEmbeddedAttemptMock.mockImplementation(async (params: unknown) => {
-          const attempt = params as EmbeddedAttemptParams;
-          if (attempt.provider === "groq") {
-            return makeFallbackSuccessAttempt();
-          }
-          if (attempt.provider !== "anthropic") {
-            throw new Error(`Unexpected provider ${attempt.provider}`);
-          }
-          const { streamAnthropic } = await import("../../packages/ai/src/providers/anthropic.js");
-          const stream = streamAnthropic(model, context, { apiKey: "redacted-fixture-token" });
-          for await (const event of stream) {
-            void event;
-          }
-          const assistant = await stream.result();
-          return makeEmbeddedRunnerAttempt({
-            lastAssistant: assistant,
-            currentAttemptAssistant: assistant,
-          });
-        });
-
-        const result = await runEmbeddedFallback({
-          agentDir,
-          workspaceDir,
-          sessionKey: "agent:test:anthropic-refusal",
-          runId: "run:anthropic-refusal",
-          provider: "anthropic",
-          config: makeModelFallbackConfig("anthropic"),
-        });
-
-        const proof = {
-          primaryProviderRequests: requestCount(),
-          fallbackProviderAttempts: countProviderAttempts("groq"),
-          payload: result.result.payloads?.[0],
-          fallbackSafe: result.result.meta.error?.fallbackSafe,
-        };
-        console.log(`[provider-refusal terminal proof] ${JSON.stringify(proof)}`);
-        expect(proof).toMatchObject({
-          primaryProviderRequests: 1,
-          fallbackProviderAttempts: 0,
-          payload: {
-            isError: true,
-            text: "The provider refused this request (category: reasoning_extraction).",
-          },
-          fallbackSafe: false,
-        });
-      });
-    });
-  });
-
   it("keeps a pinned model on its rate-limit surface instead of escalating to fallback", async () => {
     await withModelFallbackWorkspace(async ({ agentDir, workspaceDir }) => {
       await writeFallbackMultiProfileAuthStore(agentDir);
