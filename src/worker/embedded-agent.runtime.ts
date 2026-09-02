@@ -251,6 +251,7 @@ async function runWorkerEmbeddedTurnWithResources(
         modelId: params.modelRef.model,
       }),
     applyPatchWorkspaceOnly: permissionToolPolicy?.applyPatchWorkspaceOnly ?? true,
+    applyPatchContainmentSource: permissionToolPolicy ? "session" : "worker",
     execDefaults: {
       bypassHostApprovalFloors:
         permissionToolPolicy?.bypassHostApprovalFloors && execSecurity === "full",
