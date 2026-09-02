@@ -43,7 +43,7 @@ The tool accepts a single `input` string that wraps one or more file operations:
   to disable it, or restrict it to specific models with
   `tools.exec.applyPatch.allowModels` (accepts raw ids like `gpt-5.4` or full
   ids like `openai/gpt-5.4`).
-- Config lives under `tools.exec.applyPatch.*`.
+- The tool's own enablement and model settings live under `tools.exec.applyPatch.*`. Containment is not exclusive to that section: `tools.fs.workspaceOnly` and the session permission mode also apply, as described above.
 
 ## Example
 
