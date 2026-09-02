@@ -592,6 +592,7 @@ function createOpenClawCodingToolsInternal(options?: OpenClawCodingToolsOptions)
   const applyPatchWorkspaceOnly =
     sessionCoreToolPolicy?.applyPatchWorkspaceOnly ??
     (workspaceOnly || applyPatchConfig?.workspaceOnly !== false);
+  const applyPatchContainmentSource = sessionCoreToolPolicy ? "session" : "config";
   const applyPatchEnabled =
     !readOnly &&
     applyPatchConfig?.enabled !== false &&
@@ -631,6 +632,7 @@ function createOpenClawCodingToolsInternal(options?: OpenClawCodingToolsOptions)
     memoryWriteProvenance,
     applyPatchEnabled,
     applyPatchWorkspaceOnly,
+    applyPatchContainmentSource,
     execDefaults: {
       ...execDefaults,
       bypassHostApprovalFloors:
