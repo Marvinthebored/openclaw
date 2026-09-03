@@ -3730,9 +3730,8 @@ describe("prepareCliRunContext", () => {
     });
 
     expect(projectNativeToolAuthority).not.toHaveBeenCalled();
-    for (const [grantParams] of mintMcpLoopbackClientGrant.mock.calls) {
-      expect(grantParams.context).not.toHaveProperty("nativeCronCreatorToolAllowlist");
-    }
+    // Node placement disables bundled MCP, so no loopback grant exists to carry authority.
+    expect(mintMcpLoopbackClientGrant).not.toHaveBeenCalled();
   });
 
   it("fails closed with upgrade guidance when a backend cannot enforce a runtime toolsAllow", async () => {
