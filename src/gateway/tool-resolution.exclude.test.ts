@@ -992,7 +992,7 @@ describe("resolveGatewayScopedTools excludeToolNames", () => {
       { name: "write" },
       { name: "edit" },
       { name: "apply_patch" },
-      { name: "exec" },
+      { name: "exec", execTarget: { host: "gateway" } },
       { name: "process" },
     ]);
   });

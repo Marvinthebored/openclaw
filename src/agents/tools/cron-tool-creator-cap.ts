@@ -37,7 +37,7 @@ type CronJobUpdatePatchPlan =
  * Anything else is a backend contract bug and fails closed at capture time so a
  * raw harness tool name can never become a persisted cron capability.
  */
-export const NATIVE_CRON_CREATOR_CAPABILITIES: ReadonlySet<string> = new Set([
+const NATIVE_CRON_CREATOR_CAPABILITIES: ReadonlySet<string> = new Set([
   "read",
   "write",
   "edit",
