@@ -158,6 +158,29 @@ describe("discord buildDiscordMessageProcessContext sender bot status", () => {
     );
   });
 
+  it("sends forwarded snapshot text to the agent without treating it as a command", async () => {
+    const forwardedText = "[Forwarded message]\n/status forwarded task content";
+    const ctx = await createBaseDiscordMessageContext({
+      baseText: "",
+      messageText: forwardedText,
+    });
+
+    const result = await buildDiscordMessageProcessContext({
+      ctx,
+      text: forwardedText,
+      mediaList: [],
+    });
+
+    expect(result?.ctxPayload.BodyForAgent).toContain("forwarded task content");
+    expect(result?.ctxPayload.RawBody).toBe("");
+    expect(result?.ctxPayload.CommandBody).toBe("");
+    expect(result?.ctxPayload.CommandTurn).toMatchObject({
+      kind: "normal",
+      source: "message",
+      body: "",
+    });
+  });
+
   it("filters pending and inbound history by sender provenance in allowlist mode", async () => {
     const guildHistories = new Map<string, DiscordHistoryEntry[]>([
       [

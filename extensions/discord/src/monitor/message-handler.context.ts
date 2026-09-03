@@ -185,7 +185,7 @@ export async function buildDiscordMessageProcessContext(params: {
   const agentFacingBody =
     preflightAudioTranscript !== undefined
       ? formatAudioTranscriptForAgent(preflightAudioTranscript)
-      : (baseText ?? text);
+      : baseText || text;
   let combinedBody = formatInboundEnvelope({
     channel: "Discord",
     from: fromLabel,
