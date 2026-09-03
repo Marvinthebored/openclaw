@@ -1211,8 +1211,10 @@ export async function prepareCliRunContext(
   const restrictedLoopbackToolsAllow =
     params.cliToolAvailability?.openClaw ??
     (promptBuildRestrictsTools ? projectedTools.map((tool) => tool.name) : undefined);
+  // A node-placed CLI runs its native tools on the paired node, so that
+  // authority must not be recorded as Gateway-host capability for scheduled runs.
   const nativeCronCreatorToolAllowlist =
-    !skipsTurnPreparation && params.disableTools !== true
+    !skipsTurnPreparation && params.disableTools !== true && !nodeClaudePlacement
       ? backendResolved.projectNativeToolAuthority?.(params.cliToolAvailability?.native)
       : undefined;
   const mcpGrantContext = mcpContextBase

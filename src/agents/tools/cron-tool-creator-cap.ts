@@ -95,18 +95,14 @@ export function replaceWithEffectiveCronCreatorToolAllowlist<T extends { name: s
   }
   // Native harness tools do not have OpenClaw tool objects, so their trusted
   // runtime owner contributes canonical capability names at this same final seam.
-  // A native unpinned exec grant removes any narrower alias-only target pin.
+  // The native shell is a different surface from a Gateway exec alias, so an
+  // existing alias entry (and any target pin it carries) stays authoritative.
   for (const rawName of options.canonicalToolNames ?? []) {
     const name = normalizeToolPolicyName(rawName);
     if (!name) {
       continue;
     }
-    const existingIndex = indexByName.get(name);
-    const existing = existingIndex === undefined ? undefined : target[existingIndex];
-    if (existing !== undefined) {
-      if (typeof existing !== "string" && existing.execTarget) {
-        delete existing.execTarget;
-      }
+    if (indexByName.has(name)) {
       continue;
     }
     indexByName.set(name, target.length);

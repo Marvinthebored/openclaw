@@ -3652,6 +3652,89 @@ describe("prepareCliRunContext", () => {
     ).toEqual(["read", "write", "edit", "apply_patch", "exec", "process"]);
   });
 
+  it("omits native authority from the loopback grant when the backend projects none", async () => {
+    const mintMcpLoopbackClientGrant = vi.fn(createTestMcpLoopbackClientGrant);
+    const projectNativeToolAuthority = vi.fn(() => []);
+    setCliRunnerPrepareTestDeps({
+      getActiveMcpLoopbackRuntime: vi.fn(() => ({
+        port: 31783,
+        ownerToken: "loopback-owner-token",
+        nonOwnerToken: "loopback-non-owner-token",
+      })),
+      createMcpLoopbackServerConfig: vi.fn(createTestMcpLoopbackServerConfig),
+      mintMcpLoopbackClientGrant,
+    });
+    setRawCliBackendForPrepareTest({
+      id: "native-cli",
+      pluginId: "native-plugin",
+      bundleMcp: true,
+      bundleMcpMode: "claude-config-file",
+      nativeToolMode: "selectable",
+      toolAvailabilityEnforcement: "execution-args",
+      resolveExecutionArgs: ({ baseArgs }) => baseArgs,
+      projectNativeToolAuthority,
+      config: {
+        command: "native-cli",
+        args: ["--print"],
+        output: "jsonl",
+        input: "stdin",
+        sessionMode: "existing",
+      },
+    });
+
+    await fixture.prepare({
+      provider: "native-cli",
+      cliToolAvailability: { native: [], openClaw: ["message"] },
+    });
+
+    expect(projectNativeToolAuthority).toHaveBeenCalledExactlyOnceWith([]);
+    expect(mintMcpLoopbackClientGrant.mock.calls.at(-1)?.[0]?.context).not.toHaveProperty(
+      "nativeCronCreatorToolAllowlist",
+    );
+  });
+
+  it("does not project native authority for a node-placed Claude CLI run", async () => {
+    const mintMcpLoopbackClientGrant = vi.fn(createTestMcpLoopbackClientGrant);
+    const projectNativeToolAuthority = vi.fn(() => ["read", "exec"]);
+    setCliRunnerPrepareTestDeps({
+      getActiveMcpLoopbackRuntime: vi.fn(() => ({
+        port: 31783,
+        ownerToken: "loopback-owner-token",
+        nonOwnerToken: "loopback-non-owner-token",
+      })),
+      createMcpLoopbackServerConfig: vi.fn(createTestMcpLoopbackServerConfig),
+      mintMcpLoopbackClientGrant,
+    });
+    setRawCliBackendForPrepareTest({
+      id: "claude-cli",
+      pluginId: "anthropic",
+      bundleMcp: true,
+      bundleMcpMode: "claude-config-file",
+      nativeToolMode: "selectable",
+      toolAvailabilityEnforcement: "execution-args",
+      resolveExecutionArgs: ({ baseArgs }) => baseArgs,
+      projectNativeToolAuthority,
+      config: {
+        command: "claude",
+        args: ["--print"],
+        output: "jsonl",
+        input: "stdin",
+        sessionMode: "existing",
+      },
+    });
+
+    await fixture.prepare({
+      provider: "claude-cli",
+      sessionEntry: { execHost: "node", execNode: "node-a" } as never,
+      cliToolAvailability: { native: ["Read", "Bash"], openClaw: ["message"] },
+    });
+
+    expect(projectNativeToolAuthority).not.toHaveBeenCalled();
+    for (const [grantParams] of mintMcpLoopbackClientGrant.mock.calls) {
+      expect(grantParams.context).not.toHaveProperty("nativeCronCreatorToolAllowlist");
+    }
+  });
+
   it("fails closed with upgrade guidance when a backend cannot enforce a runtime toolsAllow", async () => {
     const getActiveMcpLoopbackRuntime = vi.fn(() => ({
       port: 31783,
