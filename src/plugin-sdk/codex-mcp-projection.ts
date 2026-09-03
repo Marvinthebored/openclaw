@@ -26,14 +26,16 @@ export {
 export type CodexScheduledToolProjectionFactory = AgentHarnessScheduledToolProjectionFactory;
 export type CodexTtsProvenanceTransfer = AgentHarnessTtsProvenanceTransfer;
 
-const CODEX_NATIVE_CRON_CREATOR_AUTHORITY = [
-  "read",
-  "write",
-  "edit",
-  "apply_patch",
-  "exec",
-  "process",
-] as const;
+// The native surface OpenClaw hands to Codex code mode is its shell (OpenClaw drops
+// its own exec/read/write/edit dynamic tools in that mode, see the Codex plugin's
+// dynamic-tool profile), so the projection names the shell and the file reads every
+// Codex sandbox mode lets it perform. At the pinned Codex, the shell registers with an
+// environment, the stable default-on `shell_tool` feature, and a model whose shell
+// type is not disabled. Codex registers apply_patch per model (`apply_patch_tool_type`)
+// and write_stdin/process only under `unified_exec`, and file writes depend on the Codex
+// sandbox mode; OpenClaw observes none of those at capture, so they are never projected.
+// A creator keeps them only when its bridged tool surface actually carries them.
+const CODEX_NATIVE_CRON_CREATOR_AUTHORITY = ["read", "exec"] as const;
 
 /** Resolve the private scheduled-tool projection issuer for the Codex harness owner. */
 export function resolveCodexScheduledToolProjectionFactory(
