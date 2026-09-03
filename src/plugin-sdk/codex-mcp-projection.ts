@@ -26,16 +26,16 @@ export {
 export type CodexScheduledToolProjectionFactory = AgentHarnessScheduledToolProjectionFactory;
 export type CodexTtsProvenanceTransfer = AgentHarnessTtsProvenanceTransfer;
 
-// The native surface OpenClaw hands to Codex code mode is its shell (OpenClaw drops
-// its own exec/read/write/edit dynamic tools in that mode, see the Codex plugin's
-// dynamic-tool profile), so the projection names the shell and the file reads every
-// Codex sandbox mode lets it perform. At the pinned Codex, the shell registers with an
-// environment, the stable default-on `shell_tool` feature, and a model whose shell
-// type is not disabled. Codex registers apply_patch per model (`apply_patch_tool_type`)
-// and write_stdin/process only under `unified_exec`, and file writes depend on the Codex
-// sandbox mode; OpenClaw observes none of those at capture, so they are never projected.
-// A creator keeps them only when its bridged tool surface actually carries them.
-const CODEX_NATIVE_CRON_CREATOR_AUTHORITY = ["read", "exec"] as const;
+// OpenClaw's native code mode hands file access to Codex (it drops its own
+// exec/read/write/edit dynamic tools in that mode, see the Codex plugin's dynamic-tool
+// profile), so the projection names the file reads every Codex sandbox mode allows.
+// Shell is deliberately not projected: at the pinned Codex the shell registers only with
+// an environment, the `shell_tool` feature, and a model whose shell type is not disabled,
+// and OpenClaw cannot observe the realized tool plan at capture. A creator keeps `exec`
+// only through the bridged `gateway_exec` alias, which records the shell it actually had.
+// apply_patch (per model), write_stdin/process (`unified_exec`) and file writes (sandbox
+// mode) are likewise never projected; the bridged surface carries them when present.
+const CODEX_NATIVE_CRON_CREATOR_AUTHORITY = ["read"] as const;
 
 /** Resolve the private scheduled-tool projection issuer for the Codex harness owner. */
 export function resolveCodexScheduledToolProjectionFactory(

@@ -41,10 +41,10 @@ describe("codex MCP projection", () => {
       nativeToolSurfaceEnabled: true,
     });
 
-    expect(tools).toEqual([{ name: "read" }, { name: "exec" }]);
+    expect(tools).toEqual([{ name: "read" }]);
   });
 
-  it("never projects conditionally available write, edit, apply_patch, or process from native mode", async () => {
+  it("never projects conditionally available exec, write, edit, apply_patch, or process from native mode", async () => {
     const projection = await import("./codex-mcp-projection.js");
     const tools: Array<string | { name: string; pluginId?: string }> = [];
     const captureRef: { value?: { version: 1; source: "final-executable-surface" } } = {};
@@ -54,12 +54,12 @@ describe("codex MCP projection", () => {
     });
 
     const names = tools.map((tool) => (typeof tool === "string" ? tool : tool.name));
-    for (const conditional of ["write", "edit", "apply_patch", "process"]) {
+    for (const conditional of ["exec", "write", "edit", "apply_patch", "process"]) {
       expect(names).not.toContain(conditional);
     }
   });
 
-  it("captures apply_patch and process only when the bridged tool surface carries them", async () => {
+  it("captures exec, apply_patch and process only when the bridged tool surface carries them", async () => {
     const projection = await import("./codex-mcp-projection.js");
     const tools: Array<string | { name: string; pluginId?: string }> = [];
     const captureRef: { value?: { version: 1; source: "final-executable-surface" } } = {};
@@ -72,16 +72,17 @@ describe("codex MCP projection", () => {
     } satisfies AnyAgentTool;
 
     const processTool = { ...applyPatchTool, name: "process", label: "process" };
+    const gatewayExecTool = { ...applyPatchTool, name: "gateway_exec", label: "gateway_exec" };
 
     await projection.captureFinalCodexCronCreatorToolAllowlist(
       tools,
       captureRef,
-      [applyPatchTool, processTool],
+      [applyPatchTool, processTool, gatewayExecTool],
       { nativeToolSurfaceEnabled: true },
     );
 
     const names = tools.map((tool) => (typeof tool === "string" ? tool : tool.name));
-    expect(names).toEqual(["apply_patch", "process", "read", "exec"]);
+    expect(names).toEqual(["apply_patch", "process", "gateway_exec", "read"]);
   });
 
   it("does not invent native authority when Codex code mode is disabled", async () => {
