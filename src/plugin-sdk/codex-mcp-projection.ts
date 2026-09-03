@@ -29,9 +29,9 @@ export type CodexTtsProvenanceTransfer = AgentHarnessTtsProvenanceTransfer;
 // The native surface OpenClaw hands to Codex code mode is its shell (OpenClaw drops
 // its own exec/read/write/edit dynamic tools in that mode, see the Codex plugin's
 // dynamic-tool profile), so the projection names the shell and the file reads every
-// Codex sandbox mode lets it perform. At the pinned Codex, the shell registers with an
-// environment, the stable default-on `shell_tool` feature, and a model whose shell
-// type is not disabled. Codex registers apply_patch per model (`apply_patch_tool_type`)
+// Codex sandbox mode lets it perform. OpenClaw requests that shell explicitly in the
+// code-mode thread config (`features.shell_tool`, see thread-requests.ts), so it does not
+// depend on the codex-home default. Codex registers apply_patch per model (`apply_patch_tool_type`)
 // and write_stdin/process only under `unified_exec`, and file writes depend on the Codex
 // sandbox mode; OpenClaw observes none of those at capture, so they are never projected.
 // A creator keeps them only when its bridged tool surface actually carries them.
