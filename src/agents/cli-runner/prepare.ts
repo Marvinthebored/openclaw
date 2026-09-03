@@ -1211,10 +1211,21 @@ export async function prepareCliRunContext(
   const restrictedLoopbackToolsAllow =
     params.cliToolAvailability?.openClaw ??
     (promptBuildRestrictsTools ? projectedTools.map((tool) => tool.name) : undefined);
-  const mcpGrantContext =
-    mcpContextBase && restrictedLoopbackToolsAllow !== undefined
-      ? { ...mcpContextBase, toolsAllow: [...restrictedLoopbackToolsAllow] }
-      : mcpContextBase;
+  const nativeCronCreatorToolAllowlist =
+    !skipsTurnPreparation && params.disableTools !== true
+      ? backendResolved.projectNativeToolAuthority?.(params.cliToolAvailability?.native)
+      : undefined;
+  const mcpGrantContext = mcpContextBase
+    ? {
+        ...mcpContextBase,
+        ...(restrictedLoopbackToolsAllow !== undefined
+          ? { toolsAllow: [...restrictedLoopbackToolsAllow] }
+          : {}),
+        ...(nativeCronCreatorToolAllowlist?.length
+          ? { nativeCronCreatorToolAllowlist: [...nativeCronCreatorToolAllowlist] }
+          : {}),
+      }
+    : undefined;
   const toolBoundExtraSystemPromptHash = params.cliToolAvailability
     ? hashCliSessionText(
         JSON.stringify([

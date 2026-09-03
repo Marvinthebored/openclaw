@@ -47,6 +47,7 @@ export function replaceWithEffectiveCronCreatorToolAllowlist<T extends { name: s
   target: CronCreatorToolAllowlistEntry[],
   tools: readonly T[],
   toolMeta?: (tool: T) => { pluginId?: string } | undefined,
+  options: { canonicalToolNames?: readonly string[] } = {},
 ): void {
   target.length = 0;
   // Host-created alias projections (for example a Codex gateway shell alias) are
@@ -92,6 +93,25 @@ export function replaceWithEffectiveCronCreatorToolAllowlist<T extends { name: s
       ...(projection?.execTarget ? { execTarget: { ...projection.execTarget } } : {}),
     });
   }
+  // Native harness tools do not have OpenClaw tool objects, so their trusted
+  // runtime owner contributes canonical capability names at this same final seam.
+  // A native unpinned exec grant removes any narrower alias-only target pin.
+  for (const rawName of options.canonicalToolNames ?? []) {
+    const name = normalizeToolPolicyName(rawName);
+    if (!name) {
+      continue;
+    }
+    const existingIndex = indexByName.get(name);
+    const existing = existingIndex === undefined ? undefined : target[existingIndex];
+    if (existing !== undefined) {
+      if (typeof existing !== "string" && existing.execTarget) {
+        delete existing.execTarget;
+      }
+      continue;
+    }
+    indexByName.set(name, target.length);
+    target.push({ name });
+  }
 }
 
 /** Records the creator cap only after every runtime policy and schema quarantine has run. */
@@ -100,8 +120,9 @@ export function captureFinalEffectiveCronCreatorToolAllowlist<T extends { name: 
   captureRef: CronToolsAllowCaptureRef,
   tools: readonly T[],
   toolMeta?: (tool: T) => { pluginId?: string } | undefined,
+  options: { canonicalToolNames?: readonly string[] } = {},
 ): void {
-  replaceWithEffectiveCronCreatorToolAllowlist(target, tools, toolMeta);
+  replaceWithEffectiveCronCreatorToolAllowlist(target, tools, toolMeta, options);
   captureRef.value = { version: 1, source: "final-executable-surface" };
 }
 

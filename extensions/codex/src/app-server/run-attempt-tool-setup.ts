@@ -508,6 +508,7 @@ export async function prepareCodexAttemptTools(runtime: CodexAttemptRuntime) {
       cronCreatorToolAllowlist,
       cronCreatorToolAllowlistCaptureRef,
       toolBridge.availableTools,
+      { nativeToolSurfaceEnabled },
     );
     if (
       !authenticatedScheduledMode &&
@@ -540,6 +541,7 @@ export async function prepareCodexAttemptTools(runtime: CodexAttemptRuntime) {
           authorityTools,
           captureRef,
           toolBridge.availableTools,
+          { nativeToolSurfaceEnabled },
         );
         if (!captureRef.value) {
           throw new Error("cron creator authority snapshot did not produce provenance");
@@ -608,10 +610,12 @@ export async function prepareCodexAttemptTools(runtime: CodexAttemptRuntime) {
             tools: filterCodexDynamicTools(materialized.tools, pluginConfig),
             hookContext,
           });
-          await captureFinalCodexCronCreatorToolAllowlist(authorityTools, captureRef, [
-            ...toolBridge.availableTools,
-            ...projectedConfiguredMcp.availableTools,
-          ]);
+          await captureFinalCodexCronCreatorToolAllowlist(
+            authorityTools,
+            captureRef,
+            [...toolBridge.availableTools, ...projectedConfiguredMcp.availableTools],
+            { nativeToolSurfaceEnabled },
+          );
           if (!captureRef.value) {
             throw new Error("configured MCP authority snapshot did not produce provenance");
           }

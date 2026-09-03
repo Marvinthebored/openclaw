@@ -1264,6 +1264,7 @@ describe("mcp loopback server", () => {
       sourceReplyDeliveryMode: "message_tool_only",
       sourceReplyOnly: true,
       toolsAllow: ["message"],
+      nativeCronCreatorToolAllowlist: ["read", "write", "edit", "apply_patch", "exec", "process"],
       // The delegation gate lives in resolveGatewayScopedTools, so dropping
       // this field at the HTTP mapping silently disables it for CLI backends.
       delegationCapability: "report_only",

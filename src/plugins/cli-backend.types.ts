@@ -528,6 +528,12 @@ type CliBackendPluginBase = {
   /** How this backend enforces an exact per-run `toolAvailability` contract. */
   toolAvailabilityEnforcement?: CliBackendToolAvailabilityEnforcement;
   /**
+   * Projects backend-native model-callable tools into canonical OpenClaw authority
+   * names for persisted cron creator caps. Undefined input means the backend's
+   * unrestricted default native surface; an array is the exact restricted surface.
+   */
+  projectNativeToolAuthority?: (nativeTools: readonly string[] | undefined) => readonly string[];
+  /**
    * Backend-owned JSONL line parser for provider-specific stream formats.
    *
    * Tool events report execution already performed by the backend. OpenClaw

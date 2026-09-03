@@ -111,6 +111,8 @@ export function resolveGatewayScopedTools(params: {
   excludeToolNames?: Iterable<string>;
   /** Server-minted coding tools that must be mediated through the loopback surface. */
   mediatedToolNames?: Iterable<string>;
+  /** Host-projected canonical authority for native CLI tools absent from this bridge. */
+  nativeCronCreatorToolAllowlist?: readonly string[];
   disablePluginTools?: boolean;
   gatewayRequestedTools?: string[];
   /** Add the CLI-only, node-forced exec tool before applying the shared policy pipeline. */
@@ -572,8 +574,11 @@ export function resolveGatewayScopedTools(params: {
   if (shouldInheritEffectiveToolAllowlist) {
     replaceWithEffectiveToolAllowlist(inheritedToolAllowlist, inheritableTools);
   }
-  replaceWithEffectiveCronCreatorToolAllowlist(cronCreatorToolAllowlist, inheritableTools, (tool) =>
-    getPluginToolMeta(tool),
+  replaceWithEffectiveCronCreatorToolAllowlist(
+    cronCreatorToolAllowlist,
+    inheritableTools,
+    (tool) => getPluginToolMeta(tool),
+    { canonicalToolNames: params.nativeCronCreatorToolAllowlist },
   );
 
   return {

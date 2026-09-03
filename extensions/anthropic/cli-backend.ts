@@ -58,6 +58,40 @@ const CLAUDE_CLI_DEFAULT_ARGS = [
   "ScheduleWakeup,CronCreate,Bash(run_in_background:true),Monitor",
 ] as const;
 
+const CANONICAL_NATIVE_SHELL_AUTHORITY = [
+  "read",
+  "write",
+  "edit",
+  "apply_patch",
+  "exec",
+  "process",
+] as const;
+
+function projectClaudeNativeToolAuthority(
+  nativeTools: readonly string[] | undefined,
+): readonly string[] {
+  if (nativeTools === undefined) {
+    return CANONICAL_NATIVE_SHELL_AUTHORITY;
+  }
+  const authority = new Set<string>();
+  for (const rawName of nativeTools) {
+    const name = rawName.trim().split("(", 1)[0]?.toLowerCase();
+    if (name === "bash") {
+      for (const capability of CANONICAL_NATIVE_SHELL_AUTHORITY) {
+        authority.add(capability);
+      }
+    } else if (name === "read" || name === "grep" || name === "glob") {
+      authority.add("read");
+    } else if (name === "write") {
+      authority.add("write");
+    } else if (name === "edit" || name === "multiedit" || name === "notebookedit") {
+      authority.add("edit");
+      authority.add("apply_patch");
+    }
+  }
+  return CANONICAL_NATIVE_SHELL_AUTHORITY.filter((name) => authority.has(name));
+}
+
 function createClaudeCliAuthInput(params: {
   envName: "CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR" | "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR";
   value: string;
@@ -162,6 +196,7 @@ export function buildAnthropicCliBackend(
     bundleMcpMode: "claude-config-file",
     nativeToolMode: "selectable",
     toolAvailabilityEnforcement: "execution-args",
+    projectNativeToolAuthority: projectClaudeNativeToolAuthority,
     sideQuestionToolMode: "disabled",
     ownsNativeCompaction: true,
     manualCompaction: {

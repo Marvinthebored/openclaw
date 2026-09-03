@@ -31,4 +31,35 @@ describe("codex MCP projection", () => {
     expect(captureRef.value).toEqual({ version: 1, source: "final-executable-surface" });
     expect(authority).toBeUndefined();
   });
+
+  it("captures the canonical authority implied by Codex native code mode", async () => {
+    const projection = await import("./codex-mcp-projection.js");
+    const tools: Array<string | { name: string; pluginId?: string }> = [];
+    const captureRef: { value?: { version: 1; source: "final-executable-surface" } } = {};
+
+    await projection.captureFinalCodexCronCreatorToolAllowlist(tools, captureRef, [], {
+      nativeToolSurfaceEnabled: true,
+    });
+
+    expect(tools).toEqual([
+      { name: "read" },
+      { name: "write" },
+      { name: "edit" },
+      { name: "apply_patch" },
+      { name: "exec" },
+      { name: "process" },
+    ]);
+  });
+
+  it("does not invent native authority when Codex code mode is disabled", async () => {
+    const projection = await import("./codex-mcp-projection.js");
+    const tools: Array<string | { name: string; pluginId?: string }> = [];
+    const captureRef: { value?: { version: 1; source: "final-executable-surface" } } = {};
+
+    await projection.captureFinalCodexCronCreatorToolAllowlist(tools, captureRef, [], {
+      nativeToolSurfaceEnabled: false,
+    });
+
+    expect(tools).toEqual([]);
+  });
 });

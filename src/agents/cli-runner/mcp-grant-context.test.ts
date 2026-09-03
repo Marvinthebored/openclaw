@@ -9,6 +9,7 @@ import type { RunCliAgentParams } from "./types.js";
 function buildGrant(
   overrides: Partial<RunCliAgentParams> = {},
   delegationCapability?: "full" | "report_only",
+  nativeCronCreatorToolAllowlist?: string[],
 ) {
   const run = {
     sessionKey: "agent:main:telegram:group:chat123",
@@ -32,6 +33,7 @@ function buildGrant(
     agentId: "main",
     modelProvider: "openai",
     modelId: "gpt-5.6-luna",
+    nativeCronCreatorToolAllowlist,
   });
 }
 
@@ -171,5 +173,18 @@ describe("buildCliMcpGrantContext delegationCapability", () => {
     // is absent rather than explicitly "full".
     expect(buildGrant()).not.toHaveProperty("delegationCapability");
     expect(buildGrant({}, "full")).not.toHaveProperty("delegationCapability");
+  });
+});
+
+describe("buildCliMcpGrantContext native cron creator authority", () => {
+  it("carries only the host-projected canonical native surface", () => {
+    expect(buildGrant({}, undefined, ["read", "exec"]).nativeCronCreatorToolAllowlist).toEqual([
+      "read",
+      "exec",
+    ]);
+  });
+
+  it("leaves ordinary grants byte-compatible", () => {
+    expect(buildGrant()).not.toHaveProperty("nativeCronCreatorToolAllowlist");
   });
 });

@@ -115,6 +115,7 @@ export function buildCliMcpGrantContext(params: {
   modelProvider: string;
   modelId: string;
   toolsAllow?: string[];
+  nativeCronCreatorToolAllowlist?: string[];
 }): McpLoopbackRequestContext {
   const sessionKey = resolveCliMcpSessionKey(params.run, params.config, params.agentId);
   const runtimePolicySessionKey = normalizeOptionalMcpContextValue(
@@ -160,6 +161,13 @@ export function buildCliMcpGrantContext(params: {
     // Restricted runs get their allowlist stamped into the grant; the
     // loopback server enforces it on tools/list and tools/call.
     ...(params.toolsAllow ? { toolsAllow: params.toolsAllow } : {}),
+    ...(params.nativeCronCreatorToolAllowlist?.length
+      ? {
+          nativeCronCreatorToolAllowlist: uniqueStrings(
+            params.nativeCronCreatorToolAllowlist.map((name) => name.trim()).filter(Boolean),
+          ),
+        }
+      : {}),
     ...(params.run.skillWorkshopProposalRevision
       ? { skillWorkshop: { proposalRevision: params.run.skillWorkshopProposalRevision } }
       : {}),

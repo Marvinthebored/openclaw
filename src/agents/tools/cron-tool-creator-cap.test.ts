@@ -222,6 +222,20 @@ describe("cron tool creator cap", () => {
     expect(resolveCronCreatorExecToolTarget(directFirst)).toBeUndefined();
   });
 
+  it("drops an alias-only exec pin when the native harness also owns shell", () => {
+    const target: CronCreatorToolAllowlistEntry[] = [];
+
+    replaceWithEffectiveCronCreatorToolAllowlist(
+      target,
+      [gatewayExecAlias(testTool("exec"), "always")],
+      undefined,
+      { canonicalToolNames: ["exec"] },
+    );
+
+    expect(target).toEqual([{ name: "exec", aliasName: "gateway_exec" }]);
+    expect(resolveCronCreatorExecToolTarget(target)).toBeUndefined();
+  });
+
   it("keeps only restrictions shared by duplicate gateway aliases", () => {
     const guarded = gatewayExecAlias(testTool("exec"), "always");
     const unguarded = gatewayExecAlias(testTool("exec"));

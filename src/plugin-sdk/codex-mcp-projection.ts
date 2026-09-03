@@ -26,6 +26,15 @@ export {
 export type CodexScheduledToolProjectionFactory = AgentHarnessScheduledToolProjectionFactory;
 export type CodexTtsProvenanceTransfer = AgentHarnessTtsProvenanceTransfer;
 
+const CODEX_NATIVE_CRON_CREATOR_AUTHORITY = [
+  "read",
+  "write",
+  "edit",
+  "apply_patch",
+  "exec",
+  "process",
+] as const;
+
 /** Resolve the private scheduled-tool projection issuer for the Codex harness owner. */
 export function resolveCodexScheduledToolProjectionFactory(
   hostCapabilities: AgentHarnessHostCapabilities,
@@ -73,8 +82,13 @@ export async function captureFinalCodexCronCreatorToolAllowlist(
   target: CronCreatorToolAllowlistEntry[],
   captureRef: CronToolsAllowCaptureRef,
   tools: readonly AnyAgentTool[],
+  options: { nativeToolSurfaceEnabled?: boolean } = {},
 ) {
   const { captureFinalEffectiveCronCreatorToolAllowlist: capture } =
     await import("../agents/tools/cron-tool.js");
-  return capture(target, captureRef, tools, (tool) => getPluginToolMeta(tool));
+  return capture(target, captureRef, tools, (tool) => getPluginToolMeta(tool), {
+    canonicalToolNames: options.nativeToolSurfaceEnabled
+      ? CODEX_NATIVE_CRON_CREATOR_AUTHORITY
+      : undefined,
+  });
 }
