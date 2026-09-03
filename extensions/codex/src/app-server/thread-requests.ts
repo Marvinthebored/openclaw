@@ -45,6 +45,10 @@ export const CODEX_RING_ZERO_BASE_INSTRUCTIONS = "";
 const CODEX_CODE_MODE_THREAD_CONFIG: JsonObject = {
   "features.code_mode": true,
   "features.code_mode_only": false,
+  // Native code mode replaces OpenClaw's own exec/read/write/edit tools with the
+  // Codex shell, and cron creator caps project read/exec on the same premise, so
+  // request the shell explicitly instead of relying on the codex-home default.
+  "features.shell_tool": true,
   "features.apply_patch_streaming_events": true,
   suppress_unstable_features_warning: true,
 };
