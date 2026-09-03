@@ -9,21 +9,18 @@ describe("Claude CLI cron creator authority", () => {
       "read",
       "write",
       "edit",
-      "apply_patch",
       "exec",
-      "process",
+      "web_fetch",
+      "web_search",
     ]);
     expect(project?.(["Read", "Grep", "Glob"])).toEqual(["read"]);
     expect(project?.(["Write"])).toEqual(["write"]);
-    expect(project?.(["Edit", "NotebookEdit"])).toEqual(["edit", "apply_patch"]);
-    expect(project?.(["Bash"])).toEqual([
-      "read",
-      "write",
-      "edit",
-      "apply_patch",
-      "exec",
-      "process",
-    ]);
+    // Edit-family tools are file edits only; apply_patch is a distinct capability.
+    expect(project?.(["Edit", "MultiEdit", "NotebookEdit"])).toEqual(["edit"]);
+    // Background Bash is disallowed at launch, so Bash never yields process.
+    expect(project?.(["Bash", "Bash(git:*)"])).toEqual(["exec"]);
+    expect(project?.(["WebFetch", "WebSearch"])).toEqual(["web_fetch", "web_search"]);
+    expect(project?.(["Task", "TodoWrite"])).toEqual([]);
     expect(project?.([])).toEqual([]);
   });
 });

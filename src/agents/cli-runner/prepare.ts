@@ -126,6 +126,7 @@ import { resolveSandboxRuntimeStatus } from "../sandbox/runtime-status.js";
 import { buildSystemPromptReport } from "../system-prompt-report.js";
 import { appendModelIdentitySystemPrompt, buildModelIdentityPromptLine } from "../system-prompt.js";
 import { expandToolGroups, normalizeToolPolicyName } from "../tool-policy.js";
+import { assertNativeCronCreatorCapabilities } from "../tools/cron-tool-creator-cap.js";
 import { redactRunIdentifier, resolveRunWorkspaceDir } from "../workspace-run.js";
 import {
   DEFAULT_BOOTSTRAP_FILENAME,
@@ -1213,18 +1214,29 @@ export async function prepareCliRunContext(
     (promptBuildRestrictsTools ? projectedTools.map((tool) => tool.name) : undefined);
   // A node-placed CLI runs its native tools on the paired node, so that
   // authority must not be recorded as Gateway-host capability for scheduled runs.
+  // Validated here, at the backend boundary, so a bad projection fails this
+  // turn's preparation instead of every later loopback MCP request. Web search
+  // is disabled per run after the native surface is resolved, so its canonical
+  // capability is dropped here rather than trusted from the projector.
   const nativeCronCreatorToolAllowlist =
     !skipsTurnPreparation && params.disableTools !== true && !nodeClaudePlacement
       ? backendResolved.projectNativeToolAuthority?.(params.cliToolAvailability?.native)
       : undefined;
+  if (nativeCronCreatorToolAllowlist) {
+    assertNativeCronCreatorCapabilities(nativeCronCreatorToolAllowlist);
+  }
+  const effectiveNativeCronCreatorToolAllowlist =
+    params.toolOverrides?.webSearch === false
+      ? nativeCronCreatorToolAllowlist?.filter((name) => name !== "web_search")
+      : nativeCronCreatorToolAllowlist;
   const mcpGrantContext = mcpContextBase
     ? {
         ...mcpContextBase,
         ...(restrictedLoopbackToolsAllow !== undefined
           ? { toolsAllow: [...restrictedLoopbackToolsAllow] }
           : {}),
-        ...(nativeCronCreatorToolAllowlist?.length
-          ? { nativeCronCreatorToolAllowlist: [...nativeCronCreatorToolAllowlist] }
+        ...(effectiveNativeCronCreatorToolAllowlist?.length
+          ? { nativeCronCreatorToolAllowlist: [...effectiveNativeCronCreatorToolAllowlist] }
           : {}),
       }
     : undefined;

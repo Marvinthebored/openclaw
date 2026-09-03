@@ -578,7 +578,12 @@ export function resolveGatewayScopedTools(params: {
     cronCreatorToolAllowlist,
     inheritableTools,
     (tool) => getPluginToolMeta(tool),
-    { canonicalToolNames: params.nativeCronCreatorToolAllowlist },
+    {
+      canonicalToolNames: params.nativeCronCreatorToolAllowlist,
+      // The loopback grant only carries native authority for Gateway-placed
+      // CLI runs, so its native shell is pinned restrict-only to this host.
+      nativeExecTarget: { host: "gateway" },
+    },
   );
 
   return {

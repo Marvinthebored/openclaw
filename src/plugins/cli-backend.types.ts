@@ -531,6 +531,8 @@ type CliBackendPluginBase = {
    * Projects backend-native model-callable tools into canonical OpenClaw authority
    * names for persisted cron creator caps. Undefined input means the backend's
    * unrestricted default native surface; an array is the exact restricted surface.
+   * Output must stay within core's closed native-capability vocabulary
+   * (`NATIVE_CRON_CREATOR_CAPABILITIES`); anything else fails closed at capture.
    */
   projectNativeToolAuthority?: (nativeTools: readonly string[] | undefined) => readonly string[];
   /**

@@ -16,10 +16,50 @@ type NormalizedCronCreatorTool = {
   execTarget?: { host: "gateway"; ask?: "always" };
 };
 
+type CronCreatorCapCaptureOptions = {
+  /** Backend-projected native capabilities; must be exact vocabulary names. */
+  canonicalToolNames?: readonly string[];
+  /**
+   * Restrict-only pin for a native `exec` entry. Set only by a caller that knows
+   * the native shell ran on the Gateway host (the loopback grant path excludes
+   * node placement); a harness that may run its shell remotely leaves it unset.
+   */
+  nativeExecTarget?: { host: "gateway" };
+};
+
 type CronJobUpdatePatchPlan =
   | { kind: "ready"; patch: Record<string, unknown> }
   | { kind: "needs-current-job" }
   | { kind: "needs-creator-authority" };
+
+/**
+ * Closed core-owned vocabulary a CLI backend may project its native tools into.
+ * Anything else is a backend contract bug and fails closed at capture time so a
+ * raw harness tool name can never become a persisted cron capability.
+ */
+export const NATIVE_CRON_CREATOR_CAPABILITIES: ReadonlySet<string> = new Set([
+  "read",
+  "write",
+  "edit",
+  "apply_patch",
+  "exec",
+  "process",
+  "web_search",
+  "web_fetch",
+]);
+
+/** Fails closed on any backend-projected name outside the exact canonical vocabulary. */
+export function assertNativeCronCreatorCapabilities(names: readonly string[]): void {
+  for (const name of names) {
+    // Exact match, no trimming, case folding, or alias folding: a raw harness
+    // name such as "Bash" must be projected by its backend, never accepted here.
+    if (!NATIVE_CRON_CREATOR_CAPABILITIES.has(name)) {
+      throw new Error(
+        `cron creator authority rejected non-canonical native capability ${JSON.stringify(name)}`,
+      );
+    }
+  }
+}
 
 export const CRON_CREATOR_AUTHORITY_RECOVERY_MESSAGE =
   "Retry from a fresh authenticated direct-local operator turn, or create/edit via the CLI or Gateway with an explicit finite toolsAllow list containing only currently visible tools; no automation changes were saved.";
@@ -47,7 +87,7 @@ export function replaceWithEffectiveCronCreatorToolAllowlist<T extends { name: s
   target: CronCreatorToolAllowlistEntry[],
   tools: readonly T[],
   toolMeta?: (tool: T) => { pluginId?: string } | undefined,
-  options: { canonicalToolNames?: readonly string[] } = {},
+  options: CronCreatorCapCaptureOptions = {},
 ): void {
   target.length = 0;
   // Host-created alias projections (for example a Codex gateway shell alias) are
@@ -97,16 +137,17 @@ export function replaceWithEffectiveCronCreatorToolAllowlist<T extends { name: s
   // runtime owner contributes canonical capability names at this same final seam.
   // The native shell is a different surface from a Gateway exec alias, so an
   // existing alias entry (and any target pin it carries) stays authoritative.
-  for (const rawName of options.canonicalToolNames ?? []) {
-    const name = normalizeToolPolicyName(rawName);
-    if (!name) {
-      continue;
-    }
+  assertNativeCronCreatorCapabilities(options.canonicalToolNames ?? []);
+  for (const name of options.canonicalToolNames ?? []) {
     if (indexByName.has(name)) {
       continue;
     }
     indexByName.set(name, target.length);
-    target.push({ name });
+    target.push(
+      name === "exec" && options.nativeExecTarget
+        ? { name, execTarget: { ...options.nativeExecTarget } }
+        : { name },
+    );
   }
 }
 
@@ -116,7 +157,7 @@ export function captureFinalEffectiveCronCreatorToolAllowlist<T extends { name: 
   captureRef: CronToolsAllowCaptureRef,
   tools: readonly T[],
   toolMeta?: (tool: T) => { pluginId?: string } | undefined,
-  options: { canonicalToolNames?: readonly string[] } = {},
+  options: CronCreatorCapCaptureOptions = {},
 ): void {
   replaceWithEffectiveCronCreatorToolAllowlist(target, tools, toolMeta, options);
   captureRef.value = { version: 1, source: "final-executable-surface" };

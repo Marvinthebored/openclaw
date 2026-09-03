@@ -58,38 +58,43 @@ const CLAUDE_CLI_DEFAULT_ARGS = [
   "ScheduleWakeup,CronCreate,Bash(run_in_background:true),Monitor",
 ] as const;
 
-const CANONICAL_NATIVE_SHELL_AUTHORITY = [
+// Claude Code native tool -> core capability. Each native tool maps only to the
+// capability it is actually equivalent to. Bash is foreground shell only: the
+// launch arguments disallow Bash(run_in_background:true), so no `process`.
+const CLAUDE_NATIVE_TOOL_CAPABILITIES: Readonly<Record<string, readonly string[]>> = {
+  read: ["read"],
+  grep: ["read"],
+  glob: ["read"],
+  write: ["write"],
+  edit: ["edit"],
+  multiedit: ["edit"],
+  notebookedit: ["edit"],
+  bash: ["exec"],
+  webfetch: ["web_fetch"],
+  websearch: ["web_search"],
+};
+const CLAUDE_CAPABILITY_ORDER = [
   "read",
   "write",
   "edit",
-  "apply_patch",
   "exec",
-  "process",
+  "web_fetch",
+  "web_search",
 ] as const;
 
 function projectClaudeNativeToolAuthority(
   nativeTools: readonly string[] | undefined,
 ): readonly string[] {
-  if (nativeTools === undefined) {
-    return CANONICAL_NATIVE_SHELL_AUTHORITY;
-  }
+  // undefined = the unrestricted default native surface, i.e. every mapped tool.
+  const names = nativeTools ?? Object.keys(CLAUDE_NATIVE_TOOL_CAPABILITIES);
   const authority = new Set<string>();
-  for (const rawName of nativeTools) {
-    const name = rawName.trim().split("(", 1)[0]?.toLowerCase();
-    if (name === "bash") {
-      for (const capability of CANONICAL_NATIVE_SHELL_AUTHORITY) {
-        authority.add(capability);
-      }
-    } else if (name === "read" || name === "grep" || name === "glob") {
-      authority.add("read");
-    } else if (name === "write") {
-      authority.add("write");
-    } else if (name === "edit" || name === "multiedit" || name === "notebookedit") {
-      authority.add("edit");
-      authority.add("apply_patch");
+  for (const rawName of names) {
+    const name = rawName.trim().split("(", 1)[0]?.toLowerCase() ?? "";
+    for (const capability of CLAUDE_NATIVE_TOOL_CAPABILITIES[name] ?? []) {
+      authority.add(capability);
     }
   }
-  return CANONICAL_NATIVE_SHELL_AUTHORITY.filter((name) => authority.has(name));
+  return CLAUDE_CAPABILITY_ORDER.filter((name) => authority.has(name));
 }
 
 function createClaudeCliAuthInput(params: {
