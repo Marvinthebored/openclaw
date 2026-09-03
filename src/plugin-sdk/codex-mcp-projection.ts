@@ -26,17 +26,6 @@ export {
 export type CodexScheduledToolProjectionFactory = AgentHarnessScheduledToolProjectionFactory;
 export type CodexTtsProvenanceTransfer = AgentHarnessTtsProvenanceTransfer;
 
-// OpenClaw's native code mode hands file access to Codex (it drops its own
-// exec/read/write/edit dynamic tools in that mode, see the Codex plugin's dynamic-tool
-// profile), so the projection names the file reads every Codex sandbox mode allows.
-// Shell is deliberately not projected: at the pinned Codex the shell registers only with
-// an environment, the `shell_tool` feature, and a model whose shell type is not disabled,
-// and OpenClaw cannot observe the realized tool plan at capture. A creator keeps `exec`
-// only through the bridged `gateway_exec` alias, which records the shell it actually had.
-// apply_patch (per model), write_stdin/process (`unified_exec`) and file writes (sandbox
-// mode) are likewise never projected; the bridged surface carries them when present.
-const CODEX_NATIVE_CRON_CREATOR_AUTHORITY = ["read"] as const;
-
 /** Resolve the private scheduled-tool projection issuer for the Codex harness owner. */
 export function resolveCodexScheduledToolProjectionFactory(
   hostCapabilities: AgentHarnessHostCapabilities,
@@ -84,13 +73,8 @@ export async function captureFinalCodexCronCreatorToolAllowlist(
   target: CronCreatorToolAllowlistEntry[],
   captureRef: CronToolsAllowCaptureRef,
   tools: readonly AnyAgentTool[],
-  options: { nativeToolSurfaceEnabled?: boolean } = {},
 ) {
   const { captureFinalEffectiveCronCreatorToolAllowlist: capture } =
     await import("../agents/tools/cron-tool.js");
-  return capture(target, captureRef, tools, (tool) => getPluginToolMeta(tool), {
-    canonicalToolNames: options.nativeToolSurfaceEnabled
-      ? CODEX_NATIVE_CRON_CREATOR_AUTHORITY
-      : undefined,
-  });
+  return capture(target, captureRef, tools, (tool) => getPluginToolMeta(tool));
 }

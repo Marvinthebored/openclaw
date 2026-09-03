@@ -245,6 +245,7 @@ only for behavior that really belongs to the backend.
 | `authEpochMode`                    | Decide how auth changes invalidate stored CLI sessions                      |
 | `nativeToolMode`                   | Declare whether native tools are absent, always on, or host-selectable      |
 | `toolAvailabilityEnforcement`      | Declare whether exact tool caps are enforced in argv or execution staging   |
+| `projectNativeToolAuthority`       | Map the enforced native tool list to canonical capabilities for cron caps   |
 | `sideQuestionToolMode`             | Declare disabled native tools for `/btw` side questions                     |
 | `bundleMcp` / `bundleMcpMode`      | Opt into OpenClaw's loopback MCP tool bridge                                |
 | `ownsNativeCompaction`             | Backend owns its own automatic compaction - OpenClaw defers                 |
@@ -322,6 +323,19 @@ Declare how the backend enforces that contract:
 Runtime caps such as cron `toolsAllow` are normalized and group-expanded by
 OpenClaw before this contract is built. Native tools are disabled, and a
 backend without a complete declared enforcement path fails before execution.
+
+A backend whose native tools are model-callable may declare
+`projectNativeToolAuthority(nativeTools)` so that automations created from its
+sessions keep the creator's native capabilities. The input is the same host
+contract: `toolAvailability.native` (the exact enforced list) or `undefined` for
+the backend's declared default surface. Return only canonical names from the
+core vocabulary (`read`, `write`, `edit`, `apply_patch`, `exec`, `process`,
+`web_search`, `web_fetch`), each derived from a native tool the host enforces
+through this contract. Core validates the result before the loopback grant is
+minted and again at the final creator-cap capture; any other name fails the turn.
+Do not project capability that a separate runtime decides at its own startup
+(for example, a shell that a harness registers only under its own feature
+flags); such runtimes keep only what their bridged OpenClaw tools carry.
 
 ### `parseJsonlEvent`: provider-specific JSONL streams
 

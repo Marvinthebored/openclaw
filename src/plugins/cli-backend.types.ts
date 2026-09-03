@@ -529,10 +529,17 @@ type CliBackendPluginBase = {
   toolAvailabilityEnforcement?: CliBackendToolAvailabilityEnforcement;
   /**
    * Projects backend-native model-callable tools into canonical OpenClaw authority
-   * names for persisted cron creator caps. Undefined input means the backend's
-   * unrestricted default native surface; an array is the exact restricted surface.
-   * Output must stay within core's closed native-capability vocabulary
-   * (`NATIVE_CRON_CREATOR_CAPABILITIES`); anything else fails closed at capture.
+   * names for persisted cron creator caps.
+   *
+   * Host validation model: the input is the host's own tool-availability contract
+   * for the run (`toolAvailability.native`, the exact native list the backend
+   * enforces through `toolAvailabilityEnforcement`; undefined means the backend's
+   * declared default native surface). The backend must map only those names, one
+   * native tool to the capability it is equivalent to, and must not infer capability
+   * from a runtime it cannot observe. Core validates the output against its closed
+   * capability vocabulary before any loopback grant is minted and again at the final
+   * capture, and fails the turn on anything else. Node-placed runs and runs with
+   * tools disabled are never projected.
    */
   projectNativeToolAuthority?: (nativeTools: readonly string[] | undefined) => readonly string[];
   /**
