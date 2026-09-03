@@ -535,8 +535,9 @@ type CliBackendPluginBase = {
    * for the run (`toolAvailability.native`, the exact native list the backend
    * enforces through `toolAvailabilityEnforcement`; undefined means the backend's
    * declared default native surface). The backend must map only those names, one
-   * native tool to the capability it is equivalent to, and must not infer capability
-   * from a runtime it cannot observe. Core validates the output against its closed
+   * native tool to the capability it is equivalent to, and must not project anything
+   * that a per-model or per-sandbox setting it does not observe decides. Core validates
+   * the output against its closed
    * capability vocabulary before any loopback grant is minted and again at the final
    * capture, and fails the turn on anything else. Node-placed runs and runs with
    * tools disabled are never projected.

@@ -333,9 +333,11 @@ core vocabulary (`read`, `write`, `edit`, `apply_patch`, `exec`, `process`,
 `web_search`, `web_fetch`), each derived from a native tool the host enforces
 through this contract. Core validates the result before the loopback grant is
 minted and again at the final creator-cap capture; any other name fails the turn.
-Do not project capability that a separate runtime decides at its own startup
-(for example, a shell that a harness registers only under its own feature
-flags); such runtimes keep only what their bridged OpenClaw tools carry.
+A harness that owns its native surface at its own startup (Codex code mode,
+whose shell and file reads OpenClaw relies on when it drops its own exec, read,
+write, and edit tools) projects the capabilities that surface carries in every
+sandbox mode, and nothing that depends on a per-model or per-sandbox setting the
+host does not observe.
 
 ### `parseJsonlEvent`: provider-specific JSONL streams
 
