@@ -28,6 +28,7 @@ import {
   buildInboundUserContextPrefix,
   resolveInboundUserContextPromptJoiner,
 } from "./inbound-meta.js";
+import { prepareReplyConversation } from "./prompt-session-context.js";
 import {
   REPLY_RUN_IDLE_SETTLE_TIMEOUT_MS,
   createReplyOperation,
@@ -444,6 +445,15 @@ function baseParams(
   return {
     ...defaults,
     ...overrides,
+    conversation:
+      overrides.conversation ??
+      prepareReplyConversation({
+        ctx: sessionCtx,
+        sessionEntry:
+          overrides.sessionStore?.[overrides.sessionKey ?? defaults.sessionKey] ??
+          overrides.sessionEntry,
+        isHeartbeat: overrides.opts?.isHeartbeat,
+      }),
     ctx: { ...ctx, ...resolveTestCanonicalText(ctx) },
     sessionCtx: {
       ...sessionCtx,
@@ -1158,6 +1168,7 @@ describe("runPreparedReply media-only handling", () => {
       OriginatingTo: `${channel}-target`,
       ChatType: "direct",
     } as never;
+    params.conversation = prepareReplyConversation({ ctx: params.sessionCtx });
     params.command = {
       ...(params.command as Record<string, unknown>),
       surface: channel,
@@ -3613,6 +3624,7 @@ describe("runPreparedReply media-only handling", () => {
       liveChannel: "discord",
       liveTo: "channel-1",
       storedThreadId: undefined,
+      liveAccountId: "work",
       liveThreadId: undefined,
       expectedGroupChannel: "#ops",
       usesBaseSession: true,
@@ -3626,6 +3638,7 @@ describe("runPreparedReply media-only handling", () => {
       liveChannel: "discord",
       liveTo: "channel-1",
       storedThreadId: undefined,
+      liveAccountId: "work",
       liveThreadId: undefined,
       expectedGroupChannel: "#ops",
       usesBaseSession: true,
@@ -3639,6 +3652,7 @@ describe("runPreparedReply media-only handling", () => {
       liveChannel: "slack",
       liveTo: "C999",
       storedThreadId: undefined,
+      liveAccountId: "work",
       liveThreadId: undefined,
       expectedGroupChannel: undefined,
       usesBaseSession: false,
@@ -3652,6 +3666,7 @@ describe("runPreparedReply media-only handling", () => {
       liveChannel: "telegram",
       liveTo: "-100111",
       storedThreadId: 42,
+      liveAccountId: "work",
       liveThreadId: 42,
       expectedGroupChannel: "#ops",
       usesBaseSession: true,
@@ -3665,7 +3680,36 @@ describe("runPreparedReply media-only handling", () => {
       liveChannel: "telegram",
       liveTo: "-100111",
       storedThreadId: 42,
+      liveAccountId: "work",
       liveThreadId: 43,
+      expectedGroupChannel: undefined,
+      usesBaseSession: false,
+    },
+    {
+      name: "missing explicit account",
+      storedActivation: "always",
+      defaultActivation: "mention",
+      baseChannel: "discord",
+      baseTo: "channel-1",
+      liveChannel: "discord",
+      liveTo: "channel-1",
+      storedThreadId: undefined,
+      liveThreadId: undefined,
+      liveAccountId: undefined,
+      expectedGroupChannel: undefined,
+      usesBaseSession: false,
+    },
+    {
+      name: "missing explicit thread",
+      storedActivation: "always",
+      defaultActivation: "mention",
+      baseChannel: "telegram",
+      baseTo: "-100111",
+      liveChannel: "telegram",
+      liveTo: "-100111",
+      storedThreadId: 42,
+      liveThreadId: undefined,
+      liveAccountId: "work",
       expectedGroupChannel: undefined,
       usesBaseSession: false,
     },
@@ -3680,6 +3724,7 @@ describe("runPreparedReply media-only handling", () => {
       liveTo,
       storedThreadId,
       liveThreadId,
+      liveAccountId,
       expectedGroupChannel,
       usesBaseSession,
     }) => {
@@ -3717,7 +3762,19 @@ describe("runPreparedReply media-only handling", () => {
         heartbeatIsolatedBaseSessionKey: baseSessionKey,
       };
 
+      const conversation = prepareReplyConversation({
+        ctx: {
+          OriginatingChannel: liveChannel,
+          OriginatingTo: liveTo,
+          MessageThreadId: liveThreadId,
+          AccountId: liveAccountId,
+          ChatType: "channel",
+          InternalTurnSource: "cron",
+        },
+        sessionEntry: baseSessionEntry,
+      });
       await runPrepared({
+        conversation,
         opts: { isHeartbeat: true },
         defaultActivation,
         isNewSession: false,
@@ -3728,7 +3785,7 @@ describe("runPreparedReply media-only handling", () => {
           OriginatingChannel: liveChannel,
           OriginatingTo: liveTo,
           MessageThreadId: liveThreadId,
-          AccountId: "work",
+          AccountId: liveAccountId,
           ChatType: "channel",
           InternalTurnSource: "cron",
           SessionKey: `${baseSessionKey}:heartbeat`,
@@ -3738,7 +3795,7 @@ describe("runPreparedReply media-only handling", () => {
           OriginatingChannel: liveChannel,
           OriginatingTo: liveTo,
           MessageThreadId: liveThreadId,
-          AccountId: "work",
+          AccountId: liveAccountId,
           ChatType: "channel",
           InternalTurnSource: "cron",
         },
@@ -3763,7 +3820,7 @@ describe("runPreparedReply media-only handling", () => {
       expect(groupContextParams?.sessionCtx?.ChatType).toBe("channel");
       expect(groupContextParams?.sessionCtx?.GroupChannel).toBe(expectedGroupChannel);
       expect(buildGroupIntro).toHaveBeenCalledWith({
-        sessionEntry: usesBaseSession ? baseSessionEntry : isolatedSessionEntry,
+        activation: usesBaseSession ? storedActivation : undefined,
         defaultActivation,
       });
       expect(
@@ -3772,7 +3829,7 @@ describe("runPreparedReply media-only handling", () => {
         Provider: liveChannel,
         Surface: liveChannel,
         ChatType: "channel",
-        AccountId: "work",
+        AccountId: liveAccountId,
       });
       expect(call?.followupRun.run.chatType).toBe("channel");
       expect(call?.followupRun.run.extraSystemPromptStatic).toBe(
@@ -4414,12 +4471,16 @@ describe("runPreparedReply media-only handling", () => {
         SessionKey: "agent:main:slack:direct:U1",
         OriginatingChannel: "slack",
         OriginatingTo: "user:U1",
+        AccountId: "work",
+        ChatType: "direct",
       },
       sessionCtx: {
         ...createSessionBody("scheduled wake"),
         InternalTurnSource: "cron",
         OriginatingChannel: "slack",
         OriginatingTo: "user:U1",
+        AccountId: "work",
+        ChatType: "direct",
       },
       sessionEntry: {
         sessionId: "session-1",

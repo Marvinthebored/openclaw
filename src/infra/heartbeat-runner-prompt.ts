@@ -22,10 +22,7 @@ import {
   resolveHeartbeatResponseToolPrompt,
   type HeartbeatConfig,
 } from "./heartbeat-runner-config.js";
-import {
-  resolveHeartbeatSession,
-  resolveIsolatedHeartbeatSessionKey,
-} from "./heartbeat-runner-session.js";
+import { resolveHeartbeatSessionSelection } from "./heartbeat-runner-session.js";
 import {
   resolveHeartbeatWakePayloadFlags,
   type HeartbeatWakePayloadFlags,
@@ -51,7 +48,7 @@ export function truncateHeartbeatPreview(value: string | undefined): string | un
 type HeartbeatSkipReason = "empty-heartbeat-file" | typeof HEARTBEAT_SKIP_NO_PENDING_EVENT;
 
 type HeartbeatPreflight = HeartbeatWakePayloadFlags & {
-  session: ReturnType<typeof resolveHeartbeatSession>;
+  session: ReturnType<typeof resolveHeartbeatSessionSelection>;
   pendingEventEntries: ReturnType<typeof peekSystemEventEntries>;
   turnSourceDeliveryContext: ReturnType<typeof resolveSystemEventDeliveryContext>;
   hasTaggedCronEvents: boolean;
@@ -93,7 +90,7 @@ export async function resolveHeartbeatPreflight(params: {
     source: params.source,
     reason: params.reason,
   });
-  const session = resolveHeartbeatSession(
+  const session = resolveHeartbeatSessionSelection(
     params.cfg,
     params.agentId,
     params.heartbeat,
@@ -109,22 +106,7 @@ export async function resolveHeartbeatPreflight(params: {
   );
   // Wake-triggered runs should only inspect pending events when preflight peeks
   // the same queue that the run itself will execute/drain.
-  const shouldInspectWakePendingEvents = (() => {
-    if (!wakeFlags.isWakePayload) {
-      return false;
-    }
-    if (params.heartbeat?.isolatedSession !== true) {
-      return true;
-    }
-    const configuredSession = resolveHeartbeatSession(params.cfg, params.agentId, params.heartbeat);
-    const { isolatedSessionKey } = resolveIsolatedHeartbeatSessionKey({
-      agentId: params.agentId,
-      sessionKey: session.sessionKey,
-      configuredSessionKey: configuredSession.sessionKey,
-      sessionEntry: session.entry,
-    });
-    return isolatedSessionKey === session.sessionKey;
-  })();
+  const shouldInspectWakePendingEvents = wakeFlags.isWakePayload && session.inspectsRunQueue;
   const shouldInspectPendingEvents =
     wakeFlags.isExecEventWake ||
     wakeFlags.isCronWake ||

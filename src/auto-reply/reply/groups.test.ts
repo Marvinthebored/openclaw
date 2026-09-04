@@ -8,6 +8,18 @@ import {
 } from "../../test-utils/channel-plugins.js";
 import { normalizeSessionDeliveryState } from "../../utils/delivery-context.shared.js";
 import * as groups from "./groups.js";
+import { prepareReplyConversation } from "./prompt-session-context.js";
+
+async function requireMentionForConversation(
+  params: Parameters<typeof prepareReplyConversation>[0] & { cfg: OpenClawConfig },
+) {
+  const { cfg, ...input } = params;
+  const currentGroups = await import("./groups.js");
+  return currentGroups.resolveGroupRequireMention({
+    cfg,
+    group: prepareReplyConversation(input).group,
+  });
+}
 
 describe("group runtime loading", () => {
   beforeEach(() => {
@@ -91,7 +103,7 @@ describe("group runtime loading", () => {
     ).toContain("You see every message; most need no response. When you do reply");
     expect(
       isolatedGroups.buildGroupIntro({
-        sessionEntry: { groupActivation: "mention" } as never,
+        activation: "mention",
         defaultActivation: "always",
       }),
     ).toContain("Activation: trigger-only");
@@ -233,7 +245,6 @@ describe("group runtime loading", () => {
         normalizeChannelId: (channelId?: string) => channelId?.trim().toLowerCase(),
       };
     });
-    const isolatedGroups = await import("./groups.js");
     const persistedSessionEntry = {
       sessionId: "session-1",
       updatedAt: 1,
@@ -252,7 +263,7 @@ describe("group runtime loading", () => {
     };
 
     await expect(
-      isolatedGroups.resolveGroupRequireMention({
+      requireMentionForConversation({
         cfg: {
           channels: {
             slack: {
@@ -276,7 +287,7 @@ describe("group runtime loading", () => {
       }),
     ).resolves.toBe(false);
     await expect(
-      isolatedGroups.resolveGroupRequireMention({
+      requireMentionForConversation({
         cfg: {
           channels: {
             slack: {
@@ -291,7 +302,7 @@ describe("group runtime loading", () => {
       }),
     ).resolves.toBe(false);
     await expect(
-      isolatedGroups.resolveGroupRequireMention({
+      requireMentionForConversation({
         cfg: {
           channels: {
             slack: {
@@ -311,7 +322,7 @@ describe("group runtime loading", () => {
       }),
     ).resolves.toBe(false);
     await expect(
-      isolatedGroups.resolveGroupRequireMention({
+      requireMentionForConversation({
         cfg: {
           channels: {
             slack: {
@@ -327,7 +338,7 @@ describe("group runtime loading", () => {
       }),
     ).resolves.toBe(false);
     await expect(
-      isolatedGroups.resolveGroupRequireMention({
+      requireMentionForConversation({
         cfg: {
           channels: {
             slack: {
@@ -375,7 +386,6 @@ describe("group runtime loading", () => {
       normalizeChannelId: (channelId?: string) => channelId?.trim().toLowerCase(),
     }));
     const { extractExplicitGroupId } = await import("./group-id.js");
-    const isolatedGroups = await import("./groups.js");
 
     expect(extractExplicitGroupId("telegram:-1001:topic:77")).toBe("-1001");
 
@@ -388,7 +398,7 @@ describe("group runtime loading", () => {
       }),
     };
     const resolveForThread = (messageThreadId: number) =>
-      isolatedGroups.resolveGroupRequireMention({
+      requireMentionForConversation({
         cfg: {} as OpenClawConfig,
         ctx: {
           Provider: "telegram",
@@ -431,10 +441,9 @@ describe("group runtime loading", () => {
       getChannelPlugin: () => ({ groups: { resolveRequireMention } }),
       normalizeChannelId: (channelId?: string) => channelId?.trim().toLowerCase(),
     }));
-    const isolatedGroups = await import("./groups.js");
 
     await expect(
-      isolatedGroups.resolveGroupRequireMention({
+      requireMentionForConversation({
         cfg: {} as OpenClawConfig,
         ctx: {
           Provider: "zalouser",

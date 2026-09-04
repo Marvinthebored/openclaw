@@ -6,9 +6,14 @@ import {
   MODEL_SELECTION_LOCKED_MESSAGE,
   ModelSelectionLockedError,
 } from "../../sessions/model-overrides.js";
+import { normalizeSessionDeliveryState } from "../../utils/delivery-context.shared.js";
 import { getReplyPayloadMetadata } from "../reply-payload.js";
 import type { FinalizedTemplateContext as TemplateContext } from "../templating.js";
 import { resolveReplyDirectives } from "./get-reply-directives.js";
+import {
+  prepareReplyConversation,
+  type PreparedReplyConversation,
+} from "./prompt-session-context.js";
 import { buildTestCtx } from "./test-ctx.js";
 
 const mocks = vi.hoisted(() => ({
@@ -88,6 +93,7 @@ async function resolveHelloWithModelDefaults(params: {
   sessionCtx?: Partial<TemplateContext>;
   opts?: Parameters<typeof resolveReplyDirectives>[0]["opts"];
   modelError?: unknown;
+  conversation?: PreparedReplyConversation;
 }) {
   const resolveDefaultThinkingLevel = vi.fn(
     async (selection?: { model?: string }) =>
@@ -112,6 +118,20 @@ async function resolveHelloWithModelDefaults(params: {
   }
   const typing = makeTypingController();
 
+  const sessionCtx = {
+    Body: params.body ?? "hello",
+    BodyStripped: params.body ?? "hello",
+    BodyForAgent: params.body ?? "hello",
+    CommandBody: params.body ?? "hello",
+    commandText: params.body ?? "hello",
+    agentText: params.body ?? "hello",
+    rawText: params.body ?? "hello",
+    Provider: "whatsapp",
+    ...params.sessionCtx,
+  } as TemplateContext;
+
+  const sessionEntry = params.sessionEntry ?? makeSessionEntry();
+
   const result = await resolveReplyDirectives({
     ctx: buildTestCtx({
       Body: params.body ?? "hello",
@@ -123,23 +143,19 @@ async function resolveHelloWithModelDefaults(params: {
     agentDir: "/tmp/main-agent",
     workspaceDir: "/tmp",
     agentCfg: params.agentCfg ?? {},
-    sessionCtx: {
-      Body: params.body ?? "hello",
-      BodyStripped: params.body ?? "hello",
-      BodyForAgent: params.body ?? "hello",
-      CommandBody: params.body ?? "hello",
-      commandText: params.body ?? "hello",
-      agentText: params.body ?? "hello",
-      rawText: params.body ?? "hello",
-      Provider: "whatsapp",
-      ...params.sessionCtx,
-    } as TemplateContext,
-    sessionEntry: params.sessionEntry ?? makeSessionEntry(),
+    sessionCtx,
+    sessionEntry,
     sessionStore: params.sessionStore ?? {},
     sessionKey: "agent:main:whatsapp:+2000",
     storePath: "/tmp/sessions.json",
     sessionScope: "per-sender",
-    groupResolution: undefined,
+    conversation:
+      params.conversation ??
+      prepareReplyConversation({
+        ctx: sessionCtx,
+        sessionEntry: params.sessionStore?.["agent:main:whatsapp:+2000"] ?? sessionEntry,
+        isHeartbeat: params.opts?.isHeartbeat,
+      }),
     isGroup: false,
     triggerBodyNormalized: "hello",
     resetTriggered: false,
@@ -322,6 +338,7 @@ describe("resolveReplyDirectives", () => {
       sessionId: "target-session",
       chatType: "channel",
       groupId: "C123",
+      delivery: normalizeSessionDeliveryState({ context: { channel: "slack", to: "C123" } }),
     });
 
     await resolveHelloWithModelDefaults({
@@ -333,7 +350,10 @@ describe("resolveReplyDirectives", () => {
       sessionCtx: { InternalTurnSource: "heartbeat", Provider: undefined },
     });
 
-    expect(mockCallInput(mocks.resolveGroupRequireMention).sessionEntry).toBe(targetSessionEntry);
+    expect(mockCallInput(mocks.resolveGroupRequireMention).group).toMatchObject({
+      channel: "slack",
+      groupId: "C123",
+    });
   });
 
   it("uses the base room identity for isolated heartbeat group activation", async () => {
@@ -343,6 +363,7 @@ describe("resolveReplyDirectives", () => {
       chatType: "channel",
       groupId: "C123",
       groupChannel: "#general",
+      delivery: normalizeSessionDeliveryState({ context: { channel: "slack", to: "C123" } }),
     });
     const isolatedSessionEntry = makeSessionEntry({
       sessionId: "isolated-session",
@@ -352,6 +373,10 @@ describe("resolveReplyDirectives", () => {
     await resolveHelloWithModelDefaults({
       defaultThinking: "off",
       defaultReasoning: "on",
+      conversation: prepareReplyConversation({
+        ctx: { InternalTurnSource: "heartbeat" },
+        sessionEntry: baseSessionEntry,
+      }),
       sessionStore: {
         "agent:main:whatsapp:+2000": isolatedSessionEntry,
         [baseSessionKey]: baseSessionEntry,
@@ -360,7 +385,11 @@ describe("resolveReplyDirectives", () => {
       sessionCtx: { InternalTurnSource: "heartbeat", Provider: undefined },
     });
 
-    expect(mockCallInput(mocks.resolveGroupRequireMention).sessionEntry).toBe(baseSessionEntry);
+    expect(mockCallInput(mocks.resolveGroupRequireMention).group).toMatchObject({
+      channel: "slack",
+      groupId: "C123",
+      groupChannel: "#general",
+    });
   });
 
   it("returns a terminal retry when model preparation sees a rotated session", async () => {
@@ -618,7 +647,7 @@ describe("resolveReplyDirectives", () => {
       sessionKey: "agent:main:whatsapp:+2000",
       storePath: "/tmp/sessions.json",
       sessionScope: "per-sender",
-      groupResolution: undefined,
+      conversation: prepareReplyConversation({ ctx: { Provider: "whatsapp" } }),
       isGroup: false,
       triggerBodyNormalized: "hello",
       resetTriggered: false,
@@ -697,7 +726,7 @@ describe("resolveReplyDirectives", () => {
       sessionKey: "agent:main:telegram:+2000",
       storePath: "/tmp/sessions.json",
       sessionScope: "per-sender",
-      groupResolution: undefined,
+      conversation: prepareReplyConversation({ ctx: { Provider: "telegram" } }),
       isGroup: false,
       triggerBodyNormalized: "/trace on",
       resetTriggered: false,
@@ -939,7 +968,7 @@ describe("resolveReplyDirectives", () => {
       sessionKey: "agent:main:slack:C123",
       storePath: "/tmp/sessions.json",
       sessionScope: "per-sender",
-      groupResolution: undefined,
+      conversation: prepareReplyConversation({ ctx: sessionCtx }),
       isGroup: false,
       triggerBodyNormalized: "new session",
       resetTriggered: true,
@@ -1005,7 +1034,7 @@ describe("resolveReplyDirectives", () => {
       sessionKey: "agent:main:slack:C123",
       storePath: "/tmp/sessions.json",
       sessionScope: "per-sender",
-      groupResolution: undefined,
+      conversation: prepareReplyConversation({ ctx: sessionCtx }),
       isGroup: false,
       triggerBodyNormalized: "new session",
       resetTriggered: true,

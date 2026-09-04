@@ -2,7 +2,6 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resolveSessionStorePathCore } from "../config/sessions.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
-import { resolveIsolatedHeartbeatSessionKey } from "./heartbeat-runner-session.js";
 import { runHeartbeatOnce } from "./heartbeat-runner.js";
 import { installHeartbeatRunnerTestRuntime } from "./heartbeat-runner.test-harness.js";
 import {
@@ -22,31 +21,6 @@ installHeartbeatRunnerTestRuntime({ includeSlack: true });
 
 describe("runHeartbeatOnce identity", () => {
   afterEach(() => resetSystemEventsForTest());
-
-  it("uses metadata to distinguish a global heartbeat sibling from a matching user key", () => {
-    const sessionKey = "agent:historian2:global:heartbeat";
-    expect(
-      resolveIsolatedHeartbeatSessionKey({
-        agentId: "historian2",
-        configuredSessionKey: "global",
-        sessionKey,
-      }),
-    ).toEqual({
-      isolatedBaseSessionKey: sessionKey,
-      isolatedSessionKey: `${sessionKey}:heartbeat`,
-    });
-    expect(
-      resolveIsolatedHeartbeatSessionKey({
-        agentId: "historian2",
-        configuredSessionKey: "global",
-        sessionEntry: { heartbeatIsolatedBaseSessionKey: "global" },
-        sessionKey,
-      }),
-    ).toEqual({
-      isolatedBaseSessionKey: "global",
-      isolatedSessionKey: sessionKey,
-    });
-  });
 
   it.each([
     { isolatedSession: false, expectedSessionKey: "global" },

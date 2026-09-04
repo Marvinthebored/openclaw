@@ -26,16 +26,11 @@ import { normalizeThinkLevel } from "../thinking.js";
 import { SILENT_REPLY_TOKEN } from "../tokens.js";
 import { applySessionHints } from "./body.js";
 import { resolveTurnModelOverride } from "./dispatch-from-config.harness-defaults.js";
-import {
-  effectiveReplyRouteMatchesSessionDelivery,
-  resolveEffectiveReplyRoute,
-} from "./effective-reply-route.js";
 import { shouldUseReplyFastTestRuntime } from "./get-reply-fast-path.js";
 import {
   buildExecOverridePromptHint,
   hasInboundHistoryBody,
   hasReplyTargetContext,
-  resolvePromptSessionContextForSystemEvent,
   resolvePromptSilentReplyConversationType,
 } from "./get-reply-run-helpers.js";
 import { resolvePromptSourceReplyMode } from "./get-reply-run-source-mode.js";
@@ -67,6 +62,7 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
   const {
     ctx,
     sessionCtx,
+    conversation,
     cfg,
     agentId,
     agentCfg,
@@ -109,27 +105,7 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
       config: cfg,
       attributes: traceAttributes,
     });
-  const isolatedBaseSessionEntry = sessionEntry?.heartbeatIsolatedBaseSessionKey
-    ? sessionStore?.[sessionEntry.heartbeatIsolatedBaseSessionKey]
-    : undefined;
-  // The isolated row owns execution; only a route-matched base row owns conversation prompt state.
-  const hasCurrentRoute = Boolean(ctx.OriginatingChannel || ctx.OriginatingTo);
-  const conversationSessionEntry =
-    isolatedBaseSessionEntry &&
-    (!hasCurrentRoute ||
-      effectiveReplyRouteMatchesSessionDelivery({
-        route: resolveEffectiveReplyRoute({ ctx, entry: isolatedBaseSessionEntry }),
-        entry: isolatedBaseSessionEntry,
-        fallbackTo: isolatedBaseSessionEntry.groupId,
-      }))
-      ? isolatedBaseSessionEntry
-      : sessionEntry;
-  const promptSessionCtx = resolvePromptSessionContextForSystemEvent({
-    sessionCtx,
-    sessionEntry: conversationSessionEntry,
-    ctx,
-    isHeartbeat,
-  });
+  const promptSessionCtx = { ...sessionCtx, ...conversation.fields };
   copyChannelParticipantAdmissionEvidence(ctx, promptSessionCtx);
   if (sessionCtx !== ctx) {
     copyChannelParticipantAdmissionEvidence(sessionCtx, promptSessionCtx);
@@ -241,7 +217,7 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
     sourceConversationContextByMode[sessionPromptSourceReplyDeliveryMode ?? "automatic"];
   // Claude CLI fixes the system prompt at session creation; group intro must stay session-stable.
   const groupIntro = isGroupChat
-    ? buildGroupIntro({ sessionEntry: conversationSessionEntry, defaultActivation })
+    ? buildGroupIntro({ activation: conversation.activation, defaultActivation })
     : "";
   const isDirectedTurn = isDirectedSourceReplyTurn(ctx, cfg, isDirectChat, inboundEventKind);
   const isAmbientRoomEvent = inboundEventKind === "room_event" && !isDirectedTurn;
@@ -259,9 +235,7 @@ export async function prepareReplyRunContext(params: RunPreparedReplyParams) {
   const inboundMetaPrompt = buildInboundMetaSystemPrompt(
     isNewSession ? promptSessionCtx : { ...promptSessionCtx, ThreadStarterBody: undefined },
     cfg,
-    // promptSessionCtx restores the persisted conversation for system-event
-    // turns, so chat type and reply formatting match the delivery session.
-    { includeFormattingHints: !useFastReplyRuntime, formattingHintsCtx: promptSessionCtx },
+    { includeFormattingHints: !useFastReplyRuntime },
   );
   const execOverridePromptHint = buildExecOverridePromptHint({
     execOverrides,

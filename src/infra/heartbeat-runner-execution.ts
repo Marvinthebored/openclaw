@@ -14,6 +14,7 @@ import {
   resolveHeartbeatToolResponseFromReplyResult,
 } from "../auto-reply/heartbeat-tool-response.js";
 import { isHeartbeatAcknowledgementText } from "../auto-reply/heartbeat.js";
+import { prepareReplyConversation } from "../auto-reply/reply/prompt-session-context.js";
 import { resolveReplyOperationAgentTurn } from "../auto-reply/reply/reply-operation-agent-turn-state.js";
 import {
   REPLY_OPERATION_RUN_STATE,
@@ -26,7 +27,6 @@ import {
 import type { ChannelHeartbeatDeps } from "../channels/plugins/types.public.js";
 import { createReplyPrefixContext } from "../channels/reply-prefix.js";
 import { getRuntimeConfig } from "../config/config.js";
-import { resolveSessionStorePathCore } from "../config/sessions/paths.js";
 import {
   applySessionEntryLifecycleMutation,
   loadExactSessionEntry,
@@ -71,7 +71,6 @@ import {
 } from "./heartbeat-runner-prompt.js";
 import {
   resolveHeartbeatSession,
-  resolveIsolatedHeartbeatSessionKey,
   resolveStaleHeartbeatIsolatedSessionKey,
 } from "./heartbeat-runner-session.js";
 import { isHeartbeatEnabledForAgent, resolveHeartbeatIntervalMs } from "./heartbeat-summary.js";
@@ -410,26 +409,25 @@ export async function prepareHeartbeatRunStage(wake: ReadyHeartbeatWake) {
   const { cfg, agentId, heartbeat, preflight } = wake;
   const { scheduledTasks, startedAt } = wake;
   const { listActiveEmbeddedRuns, isReplyRunActive } = wake;
-  const { entry, sessionKey } = preflight.session;
+  const { entry, sessionKey, run, conversationEntry } = preflight.session;
   const previousUpdatedAt = entry?.updatedAt;
 
   // When isolatedSession is enabled, create a fresh session via the same
   // pattern as cron sessionTarget: "isolated". This gives the heartbeat
   // a new session ID (empty transcript) each run, avoiding the cost of
   // sending the full conversation history (~100K tokens) to the LLM.
-  // Delivery routing still uses the main session entry (lastChannel, lastTo).
-  const useIsolatedSession = heartbeat?.isolatedSession === true;
+  // Delivery routing uses the selected conversation, not the fresh execution row.
   const delivery = await resolveHeartbeatDeliveryTargetWithSessionRoute({
     cfg,
     agentId,
-    entry,
+    entry: conversationEntry,
     heartbeat,
     currentSessionKey: sessionKey,
-    // Isolated heartbeat runs drain system events from their dedicated
-    // `:heartbeat` session, not from the base session we peek during preflight.
-    // Reusing base-session turnSource routing here can pin later isolated runs
-    // to stale channels/threads because that base-session event context remains queued.
-    turnSource: useIsolatedSession ? undefined : preflight.turnSourceDeliveryContext,
+    // A base queue's route stays excluded; events on the actual isolated queue
+    // own their route, including exec completion after the base route moves.
+    turnSource: preflight.session.inspectsRunQueue
+      ? preflight.turnSourceDeliveryContext
+      : undefined,
   });
   // Routeless ambient polls are pure model burn, but only they may skip:
   // triggered wakes (hook/manual/cron/exec), polls with queued events, and
@@ -499,21 +497,12 @@ export async function prepareHeartbeatRunStage(wake: ReadyHeartbeatWake) {
     useHeartbeatResponseTool: useHeartbeatResponseToolPrompt,
   });
 
-  let runSessionKey = sessionKey;
+  const runSessionKey = run.sessionKey;
   let runSessionEntry = entry;
   let outboundPolicySessionKey: string | undefined;
-  if (useIsolatedSession) {
-    const configuredSession = resolveHeartbeatSession(cfg, agentId, heartbeat);
-    // Collapse only the repeated `:heartbeat` suffixes introduced by wake-triggered
-    // re-entry for heartbeat-created isolated sessions. Real session keys that
-    // happen to end with `:heartbeat` still get a distinct isolated sibling.
-    const { isolatedSessionKey, isolatedBaseSessionKey } = resolveIsolatedHeartbeatSessionKey({
-      agentId,
-      sessionKey,
-      configuredSessionKey: configuredSession.sessionKey,
-      sessionEntry: entry,
-    });
-    const isolatedStorePath = resolveSessionStorePathCore(cfg.session?.store, { agentId });
+  if (run.kind === "isolated") {
+    const { sessionKey: isolatedSessionKey, baseSessionKey: isolatedBaseSessionKey } = run;
+    const isolatedStorePath = preflight.session.storePath;
     const staleIsolatedSessionKey = resolveStaleHeartbeatIsolatedSessionKey({
       sessionKey,
       isolatedSessionKey,
@@ -581,7 +570,6 @@ export async function prepareHeartbeatRunStage(wake: ReadyHeartbeatWake) {
         sessionKey: staleIsolatedSessionKey,
       });
     }
-    runSessionKey = isolatedSessionKey;
     outboundPolicySessionKey = isolatedBaseSessionKey;
 
     const actualUseHeartbeatResponseToolPrompt = shouldUseHeartbeatResponseToolPrompt({
@@ -645,8 +633,27 @@ export async function invokeHeartbeatAgentRun(
   const getReplyFromConfig =
     opts.deps?.getReplyFromConfig ?? (await loadHeartbeatRunnerRuntime()).getReplyFromConfig;
   const heartbeatWakeAbortSignal = getHeartbeatWakeAbortSignal();
+  const heartbeatContext = {
+    Body: appendCronStyleCurrentTimeLine(prompt, cfg, startedAt),
+    From: sender,
+    To: sender,
+    OriginatingChannel:
+      !suppressOriginatingContext && delivery.channel !== "none" ? delivery.channel : undefined,
+    OriginatingTo: !suppressOriginatingContext ? delivery.to : undefined,
+    AccountId: delivery.accountId,
+    ChatType: delivery.chatType,
+    MessageThreadId: delivery.threadId,
+    InternalTurnSource: hasExecCompletion ? "exec" : hasCronEvents ? "cron" : "heartbeat",
+    SessionKey: runSessionKey,
+    AgentId: agentId,
+  } satisfies Parameters<typeof getReplyFromConfig>[0];
   const replyOpts = {
     isHeartbeat: true,
+    replyConversation: prepareReplyConversation({
+      ctx: heartbeatContext,
+      sessionEntry: suppressOriginatingContext ? undefined : prepared.conversationEntry,
+      isHeartbeat: true,
+    }),
     [REPLY_OPERATION_RUN_STATE]: replyOperationRunState,
     ...(heartbeatModelOverride ? { heartbeatModelOverride } : {}),
     suppressToolErrorWarnings: false,
@@ -658,24 +665,7 @@ export async function invokeHeartbeatAgentRun(
     bootstrapContextMode: heartbeat?.lightContext === true ? ("lightweight" as const) : undefined,
     onModelSelected: replyPrefix.onModelSelected,
   };
-  const replyResult = await getReplyFromConfig(
-    {
-      Body: appendCronStyleCurrentTimeLine(prompt, cfg, startedAt),
-      From: sender,
-      To: sender,
-      OriginatingChannel:
-        !suppressOriginatingContext && delivery.channel !== "none" ? delivery.channel : undefined,
-      OriginatingTo: !suppressOriginatingContext ? delivery.to : undefined,
-      AccountId: delivery.accountId,
-      ChatType: delivery.chatType,
-      MessageThreadId: delivery.threadId,
-      InternalTurnSource: hasExecCompletion ? "exec" : hasCronEvents ? "cron" : "heartbeat",
-      SessionKey: runSessionKey,
-      AgentId: agentId,
-    },
-    replyOpts,
-    cfg,
-  );
+  const replyResult = await getReplyFromConfig(heartbeatContext, replyOpts, cfg);
   const agentTurnStatus = resolveReplyOperationAgentTurn(replyOperationRunState);
   if (agentTurnStatus === "superseded" || agentTurnStatus === "cancelled") {
     return { kind: agentTurnStatus === "superseded" ? "preempted" : "cancelled" } as const;

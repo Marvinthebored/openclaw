@@ -1,13 +1,13 @@
 /** Resolves the effective reply route from current context and persisted session route. */
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import { normalizeChatType, type ChatType } from "../../channels/chat-type.js";
+import { getLoadedChannelPluginForRead } from "../../channels/plugins/registry-loaded.js";
 import type { SessionEntry } from "../../config/sessions/types.js";
 import {
   stripOutboundTargetKindPrefix,
   stripTargetProviderPrefix,
 } from "../../infra/outbound/channel-target-prefix.js";
 import { stringifyRouteThreadId } from "../../plugin-sdk/channel-route.js";
-import { normalizeOptionalAccountId } from "../../routing/account-id.js";
 import type { InputProvenance } from "../../sessions/input-provenance.js";
 import {
   deliveryContextFromSession,
@@ -48,33 +48,23 @@ export type EffectiveReplyRoute = {
 export function normalizeEffectiveReplyTarget(
   raw: string | undefined,
   channel: string | null | undefined,
+  threadId?: string | number,
 ): string | undefined {
-  const target = normalizeOptionalString(raw);
+  let target = normalizeOptionalString(raw);
+  if (target && channel && threadId != null) {
+    // The channel owns whether a separate thread is part of its conversation ID.
+    // Use the same identity for stored-context matching and group policy lookup.
+    target =
+      getLoadedChannelPluginForRead(channel)?.threading?.resolveCurrentChannelId?.({
+        to: target,
+        threadId,
+      }) ?? target;
+  }
   return target
     ? normalizeOptionalString(
         stripOutboundTargetKindPrefix(stripTargetProviderPrefix(target, channel ?? "")),
       )
     : undefined;
-}
-
-/** Matches the full channel, target, account, and thread tuple before persisted prompt state is reused. */
-export function effectiveReplyRouteMatchesSessionDelivery(params: {
-  route: EffectiveReplyRoute;
-  entry: EffectiveReplyRouteEntry;
-  fallbackTo?: string;
-}): boolean {
-  const persisted = deliveryContextFromSession(params.entry);
-  const channel = normalizeMessageChannel(params.route.channel);
-  const persistedChannel = normalizeMessageChannel(persisted?.channel);
-  return (
-    channel !== undefined &&
-    channel === persistedChannel &&
-    normalizeEffectiveReplyTarget(params.route.to, channel) ===
-      normalizeEffectiveReplyTarget(persisted?.to ?? params.fallbackTo, channel) &&
-    normalizeOptionalAccountId(params.route.accountId) ===
-      normalizeOptionalAccountId(persisted?.accountId) &&
-    stringifyRouteThreadId(params.route.threadId) === stringifyRouteThreadId(persisted?.threadId)
-  );
 }
 
 function isSessionsSendInterSessionHandoff(inputProvenance: InputProvenance | undefined): boolean {

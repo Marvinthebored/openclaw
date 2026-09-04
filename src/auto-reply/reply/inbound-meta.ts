@@ -562,9 +562,9 @@ function resolveInboundFormattingHints(
 export function buildInboundMetaSystemPrompt(
   ctx: TemplateContext,
   cfg: OpenClawConfig,
-  options?: { includeFormattingHints?: boolean; formattingHintsCtx?: TemplateContext },
+  options?: { includeFormattingHints?: boolean },
 ): string {
-  const chatType = normalizeChatType(options?.formattingHintsCtx?.ChatType ?? ctx.ChatType);
+  const chatType = normalizeChatType(ctx.ChatType);
   const isDirect = !chatType || chatType === "direct";
 
   // Keep system metadata strictly free of attacker-controlled strings (sender names, group subjects, etc.).
@@ -585,11 +585,11 @@ export function buildInboundMetaSystemPrompt(
     provider: normalizePromptMetadataString(ctx.Provider),
     surface: normalizePromptMetadataString(ctx.Surface),
     chat_type: chatType ?? (isDirect ? "direct" : undefined),
-    // System-event metadata follows the restored delivery conversation, not the wake source.
+    // Every conversation field uses the same prepared context, including formatting.
     response_format:
       options?.includeFormattingHints === false
         ? undefined
-        : resolveInboundFormattingHints(options?.formattingHintsCtx ?? ctx, cfg),
+        : resolveInboundFormattingHints(ctx, cfg),
   };
 
   // Keep the instructions local to the payload so the meaning survives prompt overrides.
