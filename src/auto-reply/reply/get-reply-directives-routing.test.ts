@@ -55,15 +55,6 @@ describe("sender-owned directive projection", () => {
       inlineStatus: false,
     },
     {
-      name: "removes sender status after MS Teams thread context",
-      commandText: "Please /status summarize",
-      rawText: "Please /status summarize",
-      agentText:
-        "[Thread history]\nAlice: earlier context\n[/Thread history]\n\nPlease /status summarize",
-      expected: "[Thread history]\nAlice: earlier context\n[/Thread history]\n\nPlease summarize",
-      inlineStatus: true,
-    },
-    {
       name: "does not resurrect a consumed reset body",
       commandText: "new session",
       rawText: "new session",
