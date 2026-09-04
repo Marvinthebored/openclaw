@@ -154,6 +154,12 @@ export function resolveReplyDirectiveRouting(params: {
       const leadingSender =
         rawText !== "" &&
         (params.agentText === rawText || params.agentText.startsWith(`${rawText}\n`));
+      const trailingSenderStart = params.agentText.length - rawText.length;
+      const trailingSender =
+        rawText !== "" &&
+        trailingSenderStart > 0 &&
+        params.agentText[trailingSenderStart - 1] === "\n" &&
+        params.agentText.endsWith(rawText);
       // A directive-only final line owns its newline, never the following content.
       const source =
         commandSource +
@@ -175,10 +181,17 @@ export function resolveReplyDirectiveRouting(params: {
         inlineCommand = shortcut.command;
         cleanedSender = shortcut.cleaned;
       }
-      // Only the whole body or demonstrated leading sender block can be projected.
-      // Non-leading, encoded, and flat-history bodies stay opaque; never search quoted context.
-      if (leadingSender && !params.agentText.trimStart().startsWith(HISTORY_CONTEXT_MARKER)) {
-        cleanedBody = cleanedSender + params.agentText.slice(source.length);
+      // Only a demonstrated edge-anchored sender block can be projected.
+      // Encoded and flat-history bodies stay opaque; never search quoted context.
+      const senderStart = leadingSender ? 0 : trailingSender ? trailingSenderStart : undefined;
+      if (
+        senderStart !== undefined &&
+        !params.agentText.trimStart().startsWith(HISTORY_CONTEXT_MARKER)
+      ) {
+        cleanedBody =
+          params.agentText.slice(0, senderStart) +
+          cleanedSender +
+          params.agentText.slice(senderStart + source.length);
       }
     }
     if (!params.agentText && !params.resetTriggered) {
