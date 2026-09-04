@@ -11,7 +11,10 @@ import { getReplyPayloadMetadata, setReplyPayloadMetadata } from "../reply-paylo
 import type { TemplateContext } from "../templating.js";
 import { markCommandSessionMetadataChanged } from "./command-session-metadata.js";
 import { buildCommandContext } from "./commands-context.js";
+import { resolveReplyDirectiveRouting } from "./get-reply-directives-routing.js";
 import { clearInlineDirectives } from "./get-reply-directives-utils.js";
+import { resolveReplyDirectives } from "./get-reply-directives.js";
+import { withFastReplyConfig } from "./get-reply-fast-path.test-support.js";
 import { handleInlineActions } from "./get-reply-inline-actions.js";
 import { stripInlineStatus } from "./reply-inline.js";
 import { buildTestCtx } from "./test-ctx.js";
@@ -2160,5 +2163,336 @@ describe("handleInlineActions", () => {
       deliverDespiteSourceReplySuppression: true,
     });
   });
+  it.each([
+    {
+      name: "forward-only help",
+      commandText: "",
+      agentText: "[Forwarded message]\n/help marker",
+      expected: "[Forwarded message]\n/help marker",
+      invokesHelp: false,
+    },
+    {
+      name: "caption with forwarded help",
+      commandText: "Please summarize",
+      agentText: "Please summarize\n[Forwarded message]\n/help marker",
+      expected: "Please summarize\n[Forwarded message]\n/help marker",
+      invokesHelp: false,
+    },
+    {
+      name: "sender-owned inline help",
+      commandText: "Please /help continue",
+      agentText: "Please /help continue",
+      expected: "Please continue",
+      invokesHelp: true,
+    },
+  ])(
+    "routes $name from the sender projection",
+    async ({ commandText, agentText, expected, invokesHelp }) => {
+      const ctx = buildTestCtx({
+        CommandBody: commandText,
+        RawBody: commandText,
+        BodyForAgent: agentText,
+        CommandAuthorized: true,
+      });
+      const onBlockReply = vi.fn(async () => {});
+      handleCommandsMock.mockImplementation(async ({ command }) => ({
+        shouldContinue: true,
+        ...(command.commandBodyNormalized === "/help"
+          ? { reply: { text: "Sender help output" } }
+          : {}),
+      }));
+      const routing = resolveReplyDirectiveRouting({
+        commandText: ctx.commandText,
+        agentText: ctx.agentText,
+        modelAliases: [],
+        canInterpretTextDirectives: true,
+        isAuthorizedSender: true,
+        isGroup: false,
+        wasMentioned: false,
+        ctx,
+        cfg: { commands: { text: true } },
+        agentId: "main",
+        resetTriggered: false,
+      });
+      const result = await runTestInlineActions({
+        ctx,
+        typing: createTypingController(),
+        cleanedBody: routing.cleanedBody,
+        command: {
+          isAuthorizedSender: true,
+          rawBodyNormalized: commandText,
+          commandBodyNormalized: commandText,
+        },
+        overrides: {
+          allowTextCommands: true,
+          cfg: { commands: { text: true } },
+          directives: routing.directives,
+          inlineCommand: routing.inlineCommand,
+          opts: { onBlockReply },
+        },
+      });
+      expect(result).toMatchObject({ kind: "continue", cleanedBody: expected });
+      if (invokesHelp) {
+        expect(onBlockReply).toHaveBeenCalledExactlyOnceWith({
+          text: "Sender help output",
+          isStatusNotice: true,
+        });
+      } else {
+        expect(onBlockReply).not.toHaveBeenCalled();
+        expect(handleCommandsMock).not.toHaveBeenCalled();
+      }
+    },
+  );
+  it("keeps recorded shortcuts inside a skill prompt template", async () => {
+    const body = "/skill office_hours compare /help and /commands";
+    const ctx = buildTestCtx({ Body: body, RawBody: body, CommandBody: body });
+    const onBlockReply = vi.fn(async () => {});
+    handleCommandsMock.mockImplementation(async ({ command }) => ({
+      shouldContinue: true,
+      ...(command.commandBodyNormalized === "/help" ? { reply: { text: "Help output" } } : {}),
+    }));
+    const result = await runTestInlineActions({
+      ctx,
+      typing: createTypingController(),
+      cleanedBody: body,
+      command: {
+        isAuthorizedSender: true,
+        rawBodyNormalized: body,
+        commandBodyNormalized: body,
+      },
+      overrides: {
+        allowTextCommands: true,
+        cfg: { commands: { text: true } },
+        skillCommands: officeHoursSkillCommands(),
+        inlineCommand: "/help",
+        opts: { onBlockReply },
+      },
+    });
+    const expected = "Act as an engineering advisor.\n\nFocus on:\ncompare /help and /commands";
+    expect(result).toMatchObject({ kind: "continue", cleanedBody: expected });
+    expect(ctx.Body).toBe(expected);
+    expect(onBlockReply).not.toHaveBeenCalled();
+    expect(
+      handleCommandsMock.mock.calls.map(([params]) => params.command.commandBodyNormalized),
+    ).toEqual([body]);
+  });
 });
 /* oxlint-disable max-lines -- TODO: split this grandfathered oversized file. */
+
+describe("sender command dispatch ownership", () => {
+  beforeEach(() => {
+    handleCommandsMock.mockReset();
+    listSkillCommandsForWorkspaceMock.mockReset();
+    listSkillCommandsForWorkspaceMock.mockReturnValue(officeHoursInlineSkillCommands());
+    getChannelPluginMock.mockReset();
+    createOpenClawToolsMock.mockReset();
+    buildStatusReplyMock.mockReset();
+  });
+
+  const scenarios = [
+    { name: "standalone with forwarded context", shape: "standalone", forwarded: true },
+    { name: "standalone without forwarded context", shape: "standalone", forwarded: false },
+    { name: "inline without forwarded context", shape: "inline", forwarded: false },
+    { name: "inline with forwarded context", shape: "inline", forwarded: true },
+    { name: "explicit skill reference", shape: "skill", forwarded: false },
+  ];
+  const rows = [
+    ...["/help", "/commands", "/whoami"].flatMap((commandName) =>
+      scenarios.map((scenario) => {
+        const commandText =
+          scenario.shape === "standalone"
+            ? commandName
+            : scenario.shape === "inline"
+              ? "Please " + commandName + " continue"
+              : "$office_hours compare " + commandName + " literally";
+        return {
+          name: scenario.name,
+          shape: scenario.shape,
+          forwarded: scenario.forwarded,
+          commandName,
+          commandText,
+          normalized: commandText,
+          botUsername: undefined,
+          expectedPrompt: "Please continue",
+        };
+      }),
+    ),
+    {
+      name: "colon standalone",
+      shape: "standalone",
+      forwarded: true,
+      commandName: "/help",
+      commandText: "/help:",
+      normalized: "/help",
+      botUsername: undefined,
+      expectedPrompt: "",
+    },
+    {
+      name: "uppercase alias standalone",
+      shape: "standalone",
+      forwarded: true,
+      commandName: "/whoami",
+      commandText: "/ID",
+      normalized: "/whoami",
+      botUsername: undefined,
+      expectedPrompt: "",
+    },
+    {
+      name: "multiline standalone",
+      shape: "standalone",
+      forwarded: true,
+      commandName: "/commands",
+      commandText: "/commands\nSeparate sender tail.",
+      normalized: "/commands",
+      botUsername: undefined,
+      expectedPrompt: "",
+    },
+    {
+      name: "spaced colon standalone",
+      shape: "standalone",
+      forwarded: true,
+      commandName: "/whoami",
+      commandText: "/whoami \t:",
+      normalized: "/whoami",
+      botUsername: undefined,
+      expectedPrompt: "",
+    },
+    {
+      name: "targeted standalone control",
+      shape: "standalone",
+      forwarded: true,
+      commandName: "/help",
+      commandText: "/help@OpenClaw:",
+      normalized: "/help",
+      botUsername: "OpenClaw",
+      expectedPrompt: "",
+    },
+    {
+      name: "leading arguments control",
+      shape: "inline",
+      forwarded: true,
+      commandName: "/help",
+      commandText: "/help Please explain",
+      normalized: "/help Please explain",
+      botUsername: undefined,
+      expectedPrompt: "Please explain",
+    },
+  ];
+
+  it.each(rows)(
+    "$name $commandName",
+    async ({
+      shape,
+      forwarded,
+      commandName,
+      commandText,
+      normalized,
+      botUsername,
+      expectedPrompt,
+    }) => {
+      const suffix = forwarded ? "\n[Forwarded message]\nA separate quoted request." : "";
+      const agentText = commandText + suffix;
+      const ctx = buildTestCtx({
+        Body: agentText,
+        BodyForAgent: agentText,
+        RawBody: commandText,
+        CommandBody: commandText,
+        CommandAuthorized: true,
+        Provider: "discord",
+        Surface: "discord",
+        From: "discord:123456789012345678",
+        To: "channel:223456789012345678",
+        SenderId: "123456789012345678",
+        BotUsername: botUsername,
+      });
+      const sessionCtx = { ...ctx, BodyStripped: ctx.agentText };
+      const typing = createTypingController();
+      const cfg = withFastReplyConfig({
+        commands: { text: true },
+        agents: { defaults: { thinkingDefault: "off" as const, reasoningDefault: "off" as const } },
+      });
+      const sessionEntry = { sessionId: "sender-command-session", updatedAt: 1 };
+      const onBlockReply = vi.fn(async (_reply: { text?: string }) => {});
+      const commandReply = "Output for " + commandName;
+      handleCommandsMock.mockImplementation(async ({ command }) =>
+        ["/help", "/commands", "/whoami"].includes(command.commandBodyNormalized)
+          ? { shouldContinue: false, reply: { text: commandReply } }
+          : { shouldContinue: true },
+      );
+
+      const directiveResult = await resolveReplyDirectives({
+        ctx,
+        cfg,
+        agentId: "main",
+        agentDir: "/tmp/main-agent",
+        workspaceDir: "/tmp",
+        agentCfg: cfg.agents.defaults,
+        sessionCtx,
+        sessionEntry,
+        sessionStore: {},
+        sessionKey: "agent:main:discord:direct:123456789012345678",
+        sessionScope: "per-sender",
+        groupResolution: undefined,
+        isGroup: false,
+        triggerBodyNormalized: ctx.commandText,
+        resetTriggered: false,
+        commandAuthorized: true,
+        defaultProvider: "openai",
+        defaultModel: "gpt-4o-mini",
+        aliasIndex: { byAlias: new Map(), byKey: new Map() },
+        provider: "openai",
+        model: "gpt-4o-mini",
+        hasResolvedHeartbeatModelOverride: false,
+        typing,
+      });
+      expect(directiveResult.kind).toBe("continue");
+      if (directiveResult.kind !== "continue") {
+        throw new Error("expected command routing continuation");
+      }
+      const routed = directiveResult.result;
+      expect(routed.command.isAuthorizedSender).toBe(true);
+      expect(routed.command.commandBodyNormalized).toBe(normalized);
+      const input = createHandleInlineActionsInput({
+        ctx,
+        typing,
+        cleanedBody: routed.cleanedBody,
+        command: routed.command,
+        overrides: {
+          cfg,
+          sessionEntry,
+          sessionKey: "agent:main:discord:direct:123456789012345678",
+          allowTextCommands: routed.allowTextCommands,
+          inlineStatusRequested: routed.inlineStatusRequested,
+          inlineCommand: routed.inlineCommand,
+          skillCommands: routed.skillCommands,
+          directives: routed.directives,
+          opts: { onBlockReply },
+        },
+      });
+      input.sessionCtx = sessionCtx;
+      const result = await handleInlineActions(input);
+      const dispatched = handleCommandsMock.mock.calls.map(
+        ([params]) => params.command.commandBodyNormalized,
+      );
+
+      if (shape === "skill") {
+        const expected = expandedOfficeHoursRequest(commandText);
+        expect(result).toMatchObject({ kind: "continue", cleanedBody: expected });
+        expect(sessionCtx.agentText).toBe(expected);
+        expect(dispatched).toEqual([]);
+        expect(onBlockReply).not.toHaveBeenCalled();
+      } else if (shape === "standalone") {
+        expect(dispatched.filter((body) => body === commandName)).toHaveLength(1);
+        expect(onBlockReply).not.toHaveBeenCalled();
+        expect(result).toMatchObject({ kind: "reply", reply: { text: commandReply } });
+      } else {
+        expect(dispatched.filter((body) => body === commandName)).toHaveLength(1);
+        expect(onBlockReply).toHaveBeenCalledExactlyOnceWith({
+          text: commandReply,
+          isStatusNotice: true,
+        });
+        expect(result).toMatchObject({ kind: "continue", cleanedBody: expectedPrompt + suffix });
+      }
+    },
+  );
+});

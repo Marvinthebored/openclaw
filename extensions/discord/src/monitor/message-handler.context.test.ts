@@ -158,28 +158,29 @@ describe("discord buildDiscordMessageProcessContext sender bot status", () => {
     );
   });
 
-  it("sends forwarded snapshot text to the agent without treating it as a command", async () => {
-    const forwardedText = "[Forwarded message]\n/status forwarded task content";
-    const ctx = await createBaseDiscordMessageContext({
-      baseText: "",
-      messageText: forwardedText,
-    });
+  it.each(["", "Please summarize"])(
+    "sends forwarded snapshot text with caption %j without treating it as a command",
+    async (baseText) => {
+      const forwardedText = "[Forwarded message]\n/status forwarded task content";
+      const messageText = [baseText, forwardedText].filter(Boolean).join("\n");
+      const ctx = await createBaseDiscordMessageContext({ baseText, messageText });
 
-    const result = await buildDiscordMessageProcessContext({
-      ctx,
-      text: forwardedText,
-      mediaList: [],
-    });
+      const result = await buildDiscordMessageProcessContext({
+        ctx,
+        text: messageText,
+        mediaList: [],
+      });
 
-    expect(result?.ctxPayload.BodyForAgent).toContain("forwarded task content");
-    expect(result?.ctxPayload.RawBody).toBe("");
-    expect(result?.ctxPayload.CommandBody).toBe("");
-    expect(result?.ctxPayload.CommandTurn).toMatchObject({
-      kind: "normal",
-      source: "message",
-      body: "",
-    });
-  });
+      expect(result?.ctxPayload.BodyForAgent).toBe(messageText);
+      expect(result?.ctxPayload.RawBody).toBe(baseText);
+      expect(result?.ctxPayload.CommandBody).toBe(baseText);
+      expect(result?.ctxPayload.CommandTurn).toMatchObject({
+        kind: "normal",
+        source: "message",
+        body: baseText,
+      });
+    },
+  );
 
   it("filters pending and inbound history by sender provenance in allowlist mode", async () => {
     const guildHistories = new Map<string, DiscordHistoryEntry[]>([
@@ -239,7 +240,10 @@ describe("discord buildDiscordMessageProcessContext sender bot status", () => {
   it("records an unavailable-attachment notice for path-less media facts", async () => {
     // Failed downloads produce path-less facts that core drops from the media
     // projection; the body notice is the model's only record of the attachment.
-    const ctx = await createBaseDiscordMessageContext();
+    const ctx = await createBaseDiscordMessageContext({
+      baseText: "look at this",
+      messageText: "look at this",
+    });
 
     const result = await buildDiscordMessageProcessContext({
       ctx,
@@ -256,8 +260,7 @@ describe("discord buildDiscordMessageProcessContext sender bot status", () => {
     expect(result.ctxPayload.Body).toContain("look at this");
     expect(result.ctxPayload.Body).toContain("[discord attachment unavailable]");
     // BodyForAgent is what the model reads; Body alone would leave it silent.
-    // It derives from the raw message text (harness baseText), not the envelope.
-    expect(result.ctxPayload.BodyForAgent).toContain("hi");
+    expect(result.ctxPayload.BodyForAgent).toContain("look at this");
     expect(result.ctxPayload.BodyForAgent).toContain("[discord attachment unavailable]");
   });
 

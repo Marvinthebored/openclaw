@@ -102,6 +102,7 @@ type ReplyDirectiveContinuation = {
   skillCommands?: SkillCommandSpec[];
   directives: InlineDirectives;
   cleanedBody: string;
+  inlineCommand?: string;
   messageProviderKey: string;
   elevatedEnabled: boolean;
   elevatedAllowed: boolean;
@@ -653,6 +654,7 @@ export async function resolveReplyDirectives(params: {
       skillCommands,
       directives,
       cleanedBody,
+      inlineCommand: routedDirectives.inlineCommand,
       messageProviderKey,
       elevatedEnabled,
       elevatedAllowed,

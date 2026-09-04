@@ -52,7 +52,7 @@ import type { InlineDirectives } from "./directive-handling.parse.js";
 import { extractExplicitGroupId } from "./group-id.js";
 import { stripMentions, stripStructuralPrefixes } from "./mentions.js";
 import type { createModelSelectionState } from "./model-selection.js";
-import { extractInlineSimpleCommand, getStandaloneSlashCommandName } from "./reply-inline.js";
+import { getStandaloneSlashCommandName } from "./reply-inline.js";
 import { createSkillCommandLoaders } from "./skill-command-loaders.js";
 import type { TypingController } from "./typing.js";
 
@@ -203,6 +203,7 @@ export async function handleInlineActions(params: {
   typing: TypingController;
   allowTextCommands: boolean;
   inlineStatusRequested: boolean;
+  inlineCommand?: string;
   command: Parameters<typeof handleCommands>[0]["command"];
   skillCommands?: SkillCommandSpec[];
   directives: InlineDirectives;
@@ -519,17 +520,15 @@ export async function handleInlineActions(params: {
     );
   };
 
+  // Standalone commands use ordinary dispatch even when the prompt contains extra context.
   const inlineCommand =
-    allowTextCommands && command.isAuthorizedSender && !hasExplicitSkillReferences
-      ? extractInlineSimpleCommand(cleanedBody)
-      : null;
-  if (inlineCommand) {
-    cleanedBody = inlineCommand.cleaned;
-    sessionCtx.Body = cleanedBody;
-    sessionCtx.agentText = cleanedBody;
-    sessionCtx.BodyForAgent = cleanedBody;
-    sessionCtx.BodyStripped = cleanedBody;
-  }
+    allowTextCommands &&
+    command.isAuthorizedSender &&
+    !skillInvocation &&
+    !hasExplicitSkillReferences &&
+    params.inlineCommand !== command.commandBodyNormalized
+      ? params.inlineCommand
+      : undefined;
 
   if (referenced) {
     if (referenced.error) {
@@ -654,15 +653,15 @@ export async function handleInlineActions(params: {
   if (inlineCommand) {
     const inlineCommandContext = {
       ...command,
-      rawBodyNormalized: inlineCommand.command,
-      commandBodyNormalized: inlineCommand.command,
+      rawBodyNormalized: inlineCommand,
+      commandBodyNormalized: inlineCommand,
     };
     const inlineResult = await runCommands(inlineCommandContext);
     queueModeOverride = inlineResult.queueModeOverride;
     skillSelections = mergeSelections(skillSelections, inlineResult.explicitSkillSelections);
     notifyInlineCommandSessionMetadataChanges();
     if (inlineResult.reply) {
-      if (!inlineCommand.cleaned) {
+      if (!cleanedBody) {
         typing.cleanup();
         return { kind: "reply", reply: markCommandReplyForDelivery(inlineResult.reply) };
       }
@@ -681,7 +680,7 @@ export async function handleInlineActions(params: {
 
   const shouldRunCommandHandlers =
     !hasExplicitSkillReferences &&
-    (inlineCommand !== null ||
+    (inlineCommand !== undefined ||
       directiveAck !== undefined ||
       inlineStatusRequested ||
       command.commandBodyNormalized.trim().startsWith("/"));

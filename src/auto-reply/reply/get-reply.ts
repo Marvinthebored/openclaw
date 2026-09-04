@@ -1148,6 +1148,7 @@ export async function getReplyFromConfig(
       typing,
       allowTextCommands,
       inlineStatusRequested,
+      inlineCommand: directiveResult.result.inlineCommand,
       command,
       skillCommands,
       directives,
