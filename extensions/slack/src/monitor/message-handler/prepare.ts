@@ -388,16 +388,6 @@ type SlackExplicitMentionState = {
   explicitlyMentioned: boolean;
 };
 
-type SlackMentionContextPayload = Pick<
-  FinalizedMsgContext,
-  | "WasMentioned"
-  | "ExplicitlyMentionedBot"
-  | "MentionedUserIds"
-  | "MentionedSubteamIds"
-  | "ImplicitMentionKinds"
-  | "MentionSource"
->;
-
 function collectUniqueSlackMentionIds(text: string, regex: RegExp): string[] {
   const ids: string[] = [];
   regex.lastIndex = 0;
@@ -473,32 +463,6 @@ function resolveSlackMentionSource(params: {
     return "implicit_thread";
   }
   return "none";
-}
-
-function buildSlackMentionContextPayload(params: {
-  isRoomish: boolean;
-  effectiveWasMentioned: boolean;
-  explicitlyMentioned: boolean;
-  mentionedUserIds: readonly string[];
-  mentionedSubteamIds: readonly string[];
-  matchedImplicitMentionKinds: readonly string[];
-  mentionSource: NonNullable<FinalizedMsgContext["MentionSource"]>;
-}): SlackMentionContextPayload {
-  if (!params.isRoomish) {
-    return {};
-  }
-  return {
-    WasMentioned: params.effectiveWasMentioned,
-    ExplicitlyMentionedBot: params.explicitlyMentioned,
-    MentionedUserIds: params.mentionedUserIds.length > 0 ? [...params.mentionedUserIds] : undefined,
-    MentionedSubteamIds:
-      params.mentionedSubteamIds.length > 0 ? [...params.mentionedSubteamIds] : undefined,
-    ImplicitMentionKinds:
-      params.matchedImplicitMentionKinds.length > 0
-        ? [...params.matchedImplicitMentionKinds]
-        : undefined,
-    MentionSource: params.mentionSource,
-  };
 }
 
 async function resolveSlackConversationContext(params: {
@@ -894,20 +858,22 @@ export async function prepareSlackMessage(params: {
     opts.wasMentioned === true ||
     explicitlyMentioned ||
     willImplicitlyThreadReply;
-  let routing = resolveSlackRoutingContext({
-    ctx,
-    account,
-    message,
-    isDirectMessage,
-    isGroupDm,
-    isRoom,
-    isRoomish,
-    channelConfig,
-    seedTopLevelRoomThread: seedTopLevelRoomThreadBySource,
-    assistantThreadTs: assistantThreadContext?.threadTs,
-    agentViewThreadTs,
-    eventScope: opts.eventScope,
-  });
+  const resolveMessageRouting = (seedTopLevelRoomThread: boolean) =>
+    resolveSlackRoutingContext({
+      ctx,
+      account,
+      message,
+      isDirectMessage,
+      isGroupDm,
+      isRoom,
+      isRoomish,
+      channelConfig,
+      seedTopLevelRoomThread,
+      assistantThreadTs: assistantThreadContext?.threadTs,
+      agentViewThreadTs,
+      eventScope: opts.eventScope,
+    });
+  let routing = resolveMessageRouting(seedTopLevelRoomThreadBySource);
 
   let mentionCheckTranscript: string | undefined;
   const resolveWasMentioned = (mentionRegexes: RegExp[]) =>
@@ -1221,20 +1187,7 @@ export async function prepareSlackMessage(params: {
     !seedTopLevelRoomThreadBySource && isRoom && !routing.isThreadReply && !hasBoundSession;
   let seededMentionRouting: typeof routing | undefined;
   const getSeededMentionRouting = () => {
-    seededMentionRouting ??= resolveSlackRoutingContext({
-      ctx,
-      account,
-      message,
-      isDirectMessage,
-      isGroupDm,
-      isRoom,
-      isRoomish,
-      channelConfig,
-      seedTopLevelRoomThread: true,
-      assistantThreadTs: assistantThreadContext?.threadTs,
-      agentViewThreadTs,
-      eventScope: opts.eventScope,
-    });
+    seededMentionRouting ??= resolveMessageRouting(true);
     return seededMentionRouting;
   };
 
@@ -1775,15 +1728,18 @@ export async function prepareSlackMessage(params: {
         shouldSeedInitialThreadContext
           ? true
           : undefined,
-      ...buildSlackMentionContextPayload({
-        isRoomish,
-        effectiveWasMentioned,
-        explicitlyMentioned,
-        mentionedUserIds,
-        mentionedSubteamIds,
-        matchedImplicitMentionKinds,
-        mentionSource,
-      }),
+      ...(isRoomish
+        ? {
+            WasMentioned: effectiveWasMentioned,
+            ExplicitlyMentionedBot: explicitlyMentioned,
+            MentionedUserIds: mentionedUserIds.length > 0 ? [...mentionedUserIds] : undefined,
+            MentionedSubteamIds:
+              mentionedSubteamIds.length > 0 ? [...mentionedSubteamIds] : undefined,
+            ImplicitMentionKinds:
+              matchedImplicitMentionKinds.length > 0 ? [...matchedImplicitMentionKinds] : undefined,
+            MentionSource: mentionSource,
+          }
+        : {}),
     },
   }) satisfies FinalizedMsgContext;
   ctxPayload.ReplyToMode = replyToMode;
