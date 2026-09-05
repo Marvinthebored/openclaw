@@ -906,6 +906,7 @@ describe("msteams monitor handler authz", () => {
         label: "Thread history",
         source: "msteams",
         type: "chat_window",
+        sessionTranscriptMode: "preserve",
         payload: {
           order: "chronological",
           messages: [
@@ -956,6 +957,7 @@ describe("msteams monitor handler authz", () => {
         label: "Thread history",
         source: "msteams",
         type: "chat_window",
+        sessionTranscriptMode: "preserve",
         payload: {
           order: "chronological",
           messages: [

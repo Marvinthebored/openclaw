@@ -168,6 +168,7 @@ export async function dispatchMSTeamsInboundTurn(params: {
               label: "Thread history",
               source: "msteams",
               type: "chat_window",
+              sessionTranscriptMode: "preserve",
               payload: { order: "chronological", messages: threadContext },
             },
           ]
