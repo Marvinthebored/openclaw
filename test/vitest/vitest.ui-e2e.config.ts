@@ -27,6 +27,7 @@ const uiE2eIncludePatterns = [
 export const uiE2eRealGatewayTestFiles = [
   "ui/src/e2e/agent-file-lifecycle.real-gateway.e2e.test.ts",
   "ui/src/e2e/chat-loading-performance.real-gateway.e2e.test.ts",
+  "ui/src/e2e/chat-project-media.real-gateway.e2e.test.ts",
   "ui/src/e2e/chat-widget-sandbox.real-gateway.e2e.test.ts",
   "ui/src/e2e/control-ui-auth-transports.e2e.test.ts",
   "ui/src/e2e/cron-duration-save.real-gateway.e2e.test.ts",
@@ -48,6 +49,7 @@ export const uiE2ePrivateServerTestFiles = [
   "ui/src/e2e/chat-code-block-fences.e2e.test.ts",
   "ui/src/e2e/chat-export-attribution.e2e.test.ts",
   "ui/src/e2e/chat-loading-performance.real-gateway.e2e.test.ts",
+  "ui/src/e2e/chat-project-media.real-gateway.e2e.test.ts",
   "ui/src/e2e/chat-widget-sandbox.real-gateway.e2e.test.ts",
   "ui/src/e2e/child-session-load-errors.e2e.test.ts",
   "ui/src/e2e/community-invite-showing.e2e.test.ts",
@@ -151,6 +153,8 @@ export function createUiE2eVitestConfig(
       projects: [
         {
           ...base,
+          // Each resource owner supplies its complete inventory and setup.
+          extends: false,
           cacheDir: ".artifacts/vite-ui-e2e-bundled",
           test: {
             ...projectTest,
@@ -163,6 +167,7 @@ export function createUiE2eVitestConfig(
         },
         {
           ...base,
+          extends: false,
           cacheDir: ".artifacts/vite-ui-e2e-standalone",
           test: {
             ...projectTest,
@@ -174,6 +179,7 @@ export function createUiE2eVitestConfig(
         },
         {
           ...base,
+          extends: false,
           cacheDir: ".artifacts/vite-ui-e2e-serial",
           test: {
             ...projectTest,
@@ -186,6 +192,7 @@ export function createUiE2eVitestConfig(
         },
         {
           ...base,
+          extends: false,
           cacheDir: ".artifacts/vite-ui-e2e-serial-standalone",
           test: {
             ...projectTest,

@@ -16,6 +16,7 @@ import { clearInlineDirectives } from "./get-reply-directives-utils.js";
 import { resolveReplyDirectives } from "./get-reply-directives.js";
 import { withFastReplyConfig } from "./get-reply-fast-path.test-support.js";
 import { handleInlineActions } from "./get-reply-inline-actions.js";
+import { prepareReplyConversation } from "./prompt-session-context.js";
 import { stripInlineStatus } from "./reply-inline.js";
 import { buildTestCtx } from "./test-ctx.js";
 import type { TypingController } from "./typing.js";
@@ -2539,7 +2540,7 @@ describe("sender command dispatch ownership", () => {
         sessionStore: {},
         sessionKey: "agent:main:discord:direct:123456789012345678",
         sessionScope: "per-sender",
-        groupResolution: undefined,
+        conversation: prepareReplyConversation({ ctx: sessionCtx, sessionEntry }),
         isGroup: false,
         triggerBodyNormalized: ctx.commandText,
         resetTriggered: false,

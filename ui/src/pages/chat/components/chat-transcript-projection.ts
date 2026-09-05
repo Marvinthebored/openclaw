@@ -36,6 +36,7 @@ import { renderBackgroundTasksStatusRow } from "./chat-background-tasks-status.t
 import { renderChatDivider, renderChatNotice } from "./chat-divider.ts";
 import { resolveMessageGroupSenderLabel } from "./chat-message-group.ts";
 import { resolveMessageReplyText } from "./chat-message-markdown.ts";
+import { assistantMediaPolicyKey } from "./chat-message-media.ts";
 import {
   getChatMediaRenderVersion,
   renderActivityGroup,
@@ -65,6 +66,7 @@ import { resolveAssistantDisplayAvatar } from "./chat-welcome.ts";
 import { renderTurnRecapRow } from "./chat-working-indicator.ts";
 
 type ChatTranscriptProjection = {
+  positionMessages: readonly unknown[];
   isDirectThread: boolean;
   isEmpty: boolean;
   showLoadingSkeleton: boolean;
@@ -83,6 +85,7 @@ export function projectChatTranscript(
   const displayStream = props.stream ?? null;
   const sessionHost = props.sessionHost ?? null;
   const activeSession = props.selectedSession;
+  const mediaPolicyKey = assistantMediaPolicyKey(activeSession, props.mediaPolicyEpoch);
   // Global-alias routing ignores the capped session list, which may omit the
   // canonical row. The scope gate keeps per-sender main threads direct.
   const isGlobalAliasKey =
@@ -280,6 +283,7 @@ export function projectChatTranscript(
     onRequestUpdate: requestUpdate,
     resourceBasePath: props.resourceBasePath,
     localMediaPreviewRoots: props.localMediaPreviewRoots ?? [],
+    mediaPolicyKey,
     connectionEpoch: props.connectionEpoch,
     assistantAttachmentAuthToken: props.assistantAttachmentAuthToken ?? null,
     resolveArtifactDownload: props.resolveArtifactDownload,
@@ -520,7 +524,33 @@ export function projectChatTranscript(
     (tailStatusOwner.kind !== "group" || !tailStatusOwner.isStreaming)
       ? tailStatusOwner.key
       : null;
+  const positionMessages: unknown[] = [];
   for (const item of transcriptItems) {
+    // Completed runs also contain folded work that is not a visible landmark.
+    const frameActionOwner =
+      item.kind === "agent-run-frame" && item.outcome.kind === "completed"
+        ? item.outcome.actionOwner
+        : null;
+    const visibleFrameSources =
+      item.kind === "agent-run-frame"
+        ? item.parts.flatMap((part) =>
+            part.kind === "group" && part.role === "assistant" && part.visibleContent !== "none"
+              ? part.messages.filter((source) => persistedMessageEntryId(source.message))
+              : [],
+          )
+        : [];
+    const positionSource =
+      item.kind === "group" &&
+      (item.role === "user" || item.role === "assistant") &&
+      item.visibleContent !== "none"
+        ? item.messages.find((source) => persistedMessageEntryId(source.message))
+        : item.kind === "agent-run-frame" && item.outcome.kind === "completed"
+          ? (visibleFrameSources.find((source) => source === frameActionOwner) ??
+            visibleFrameSources.at(-1))
+          : null;
+    if (positionSource) {
+      positionMessages.push(positionSource.message);
+    }
     const groups =
       item.kind === "agent-run-frame"
         ? agentRunFrameGroups(item)
@@ -641,6 +671,7 @@ export function projectChatTranscript(
     props.userAvatar,
     props.resourceBasePath,
     (props.localMediaPreviewRoots ?? []).join("\u0000"),
+    mediaPolicyKey,
     props.assistantAttachmentAuthToken,
     props.connectionEpoch,
     props.canvasPluginSurfaceUrl,
@@ -674,6 +705,7 @@ export function projectChatTranscript(
   };
   return {
     isDirectThread,
+    positionMessages: showLoadingSkeleton ? [] : positionMessages,
     isEmpty,
     showLoadingSkeleton,
     searchOpen: state.searchOpen,
