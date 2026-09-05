@@ -228,6 +228,7 @@ export async function prepareAgentRunDispatch(params: {
     ? loadSessionEntry(params.resolvedSessionKey, {
         ...(params.activeSessionAgentId ? { agentId: params.activeSessionAgentId } : {}),
         clone: false,
+        projection: "list",
       }).storePath
     : `agent:${params.activeSessionAgentId}`;
   let operationalRunInstance: OperationalRunInstanceRef | undefined;
@@ -235,6 +236,9 @@ export async function prepareAgentRunDispatch(params: {
     await params.acquireGatewayWorkAdmission(lifecycleStorePath);
     params.assertGatewayWorkAdmissionAllowed();
     if (!params.hasGatewayAdmissionOutcome()) {
+      // Close may finish its cancellation sweep while session acquisition waits.
+      // Reject before publishing a controller that the closing Gateway cannot cancel.
+      params.context.requestEntryLifetime?.signal.throwIfAborted();
       operationalRunInstance = createOperationalRunInstanceRef(params.runId);
       const now = Date.now();
       params.setAdmittedRunAbort(

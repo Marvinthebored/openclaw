@@ -54,7 +54,7 @@ export const SETUP_INFERENCE_TEST_PROMPT = "Reply with the single word OK. Do no
 const PROVIDER_AUTO_SETUP_KIND_PREFIX = "provider-auto:";
 
 export const AUTO_LOCAL_MODEL_LEAN_ANNOUNCEMENT =
-  "This model is small, so I set up the lean surface — switching to a bigger model later lifts it.";
+  "I enabled the lean tool surface for this local runtime.";
 
 export type ProviderAutoSetupInferenceKind = `provider-auto:${string}`;
 
@@ -199,6 +199,8 @@ export type ActivateSetupInferenceParams = {
   signal?: AbortSignal;
   /** Session cancellation gate; interactive credentials must never persist after cancel. */
   isCancelled?: () => boolean;
+  /** Lock the caller's cancellation boundary before the first durable setup effect. */
+  beforePersistentEffect?: () => void | Promise<void>;
   /** Observe the authored config held by the inference writer before it commits. */
   onCommitStarted?: (sourceConfig: OpenClawConfig) => void;
   /** Gateway callers await application only after releasing the setup queue and lane. */

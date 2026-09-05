@@ -46,10 +46,6 @@ function normalizePromptRouteChannel(raw?: string | null): string | undefined {
   return normalized && normalized !== "none" ? normalized : undefined;
 }
 
-export function normalizeToolProgressDetail(value: unknown): "explain" | "raw" | undefined {
-  return value === "explain" || value === "raw" ? value : undefined;
-}
-
 function resolvePersistedPromptProvider(entry?: SessionEntry): string | undefined {
   return normalizePromptRouteChannel(sessionDeliveryChannel(entry));
 }

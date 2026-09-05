@@ -1,10 +1,12 @@
 // Tests media-only get-reply runs and sandboxed media attachment handling.
 import { expectDefined } from "@openclaw/normalization-core";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { MAIN_SESSION_RECOVERY_WORK_ADMISSION_OWNER } from "../../agents/main-session-recovery/main-session-recovery-admission.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import { withSystemEventOwner } from "../../infra/system-event-ownership.js";
 import {
   enqueueSystemEvent,
+  enqueueSystemEventEntry,
   peekSystemEventEntries,
   resetSystemEventsForTest,
 } from "../../infra/system-events.js";
@@ -29,11 +31,8 @@ import {
   resolveInboundUserContextPromptJoiner,
 } from "./inbound-meta.js";
 import { prepareReplyConversation } from "./prompt-session-context.js";
-import {
-  REPLY_RUN_IDLE_SETTLE_TIMEOUT_MS,
-  createReplyOperation,
-  getActiveReplyRunCount,
-} from "./reply-run-registry.js";
+import { REPLY_RUN_IDLE_SETTLE_TIMEOUT_MS, createReplyOperation } from "./reply-run-registry.js";
+import { getActiveReplyRunCount } from "./reply-run-registry.registry.js";
 import { testing as replyRunTesting } from "./reply-run-registry.test-support.js";
 import { routeReply } from "./route-reply.runtime.js";
 import { drainFormattedSystemEvents } from "./session-system-events.js";
@@ -43,7 +42,7 @@ import {
   type SourceReplyDeliveryRuntimeOptions,
 } from "./source-reply-delivery-runtime.js";
 import { buildChannelSourceTurnId } from "./source-turn-id.js";
-import { withReplySystemEventSessionKey } from "./system-event-session-key.js";
+import { withReplySystemEventContext } from "./system-event-session-key.js";
 import { resolveTypingMode } from "./typing-mode.js";
 
 vi.mock("../../agents/auth-profiles/session-override.js", () => ({
@@ -559,6 +558,59 @@ describe("runPreparedReply media-only handling", () => {
     expect(requireRunReplyAgentCall().followupRun.run.workspaceDir).toBe("/tmp/session-worktree");
   });
 
+  it.each([
+    {
+      name: "unset",
+      defaultCwd: undefined,
+      agentCwd: undefined,
+      spawnedCwd: undefined,
+      expected: undefined,
+    },
+    {
+      name: "defaults",
+      defaultCwd: "/tmp/default-repo",
+      agentCwd: undefined,
+      spawnedCwd: undefined,
+      expected: "/tmp/default-repo",
+    },
+    {
+      name: "agent override",
+      defaultCwd: "/tmp/default-repo",
+      agentCwd: "/tmp/agent-repo",
+      spawnedCwd: undefined,
+      expected: "/tmp/agent-repo",
+    },
+    {
+      name: "spawned override",
+      defaultCwd: "/tmp/default-repo",
+      agentCwd: "/tmp/agent-repo",
+      spawnedCwd: "/tmp/session-repo",
+      expected: "/tmp/session-repo",
+    },
+  ])(
+    "keeps workspace separate from $name run cwd",
+    async ({ defaultCwd, agentCwd, spawnedCwd, expected }) => {
+      await runPreparedReply(
+        baseParams({
+          cfg: {
+            agents: { defaults: { cwd: defaultCwd }, entries: { default: { cwd: agentCwd } } },
+          },
+          workspaceDir: "/tmp/agent-workspace",
+          sessionEntry: {
+            sessionId: "session-1",
+            updatedAt: Date.now(),
+            spawnedCwd,
+            spawnedBy: spawnedCwd ? "agent:default:main" : undefined,
+          },
+        }),
+      );
+      expect(requireRunReplyAgentCall().followupRun.run).toMatchObject({
+        cwd: expected,
+        workspaceDir: "/tmp/agent-workspace",
+      });
+    },
+  );
+
   beforeEach(async () => {
     preparedReplyMockState.unexpectedCalls.length = 0;
     loadSessionEntryMock.mockReset();
@@ -595,6 +647,36 @@ describe("runPreparedReply media-only handling", () => {
       fullAccessAvailable: true,
     });
   });
+
+  it.each([
+    {
+      label: "agent raw overrides default explain",
+      defaults: "explain",
+      entry: "raw",
+      expected: "raw",
+    },
+    {
+      label: "agent explain overrides default raw",
+      defaults: "raw",
+      entry: "explain",
+      expected: "explain",
+    },
+    { label: "agent without a default", defaults: undefined, entry: "raw", expected: "raw" },
+    { label: "default without an override", defaults: "raw", entry: undefined, expected: "raw" },
+    { label: "unset detail", defaults: undefined, entry: undefined, expected: undefined },
+  ] as const)(
+    "passes $label tool progress detail into reply execution",
+    async ({ defaults, entry, expected }) => {
+      const agentCfg = { toolProgressDetail: defaults };
+      await runPrepared({
+        agentId: "worker",
+        agentCfg,
+        cfg: { agents: { defaults: agentCfg, entries: { worker: { toolProgressDetail: entry } } } },
+      });
+
+      expect(requireRunReplyAgentCall().toolProgressDetail).toBe(expected);
+    },
+  );
 
   it("includes current exec overrides in the queued runner prompt", async () => {
     await runPrepared({
@@ -2294,6 +2376,50 @@ describe("runPreparedReply media-only handling", () => {
     expect(embeddedAgentRuntime.waitForEmbeddedAgentRunEnd).not.toHaveBeenCalled();
     expect(vi.mocked(runReplyAgent)).toHaveBeenCalledOnce();
   });
+  it.each(["interrupt", "steer"] as const)(
+    "queues in %s mode behind admitted recovery after heartbeat preemption",
+    async (mode) => {
+      const queueSettings = await import("./queue/settings-runtime.js");
+      const embeddedAgentRuntime = await import("../../agents/embedded-agent.runtime.js");
+      const storePath = "/tmp/recovery-admission-sessions.json";
+      const recoveryAdmission = await beginSessionWorkAdmission({
+        scope: storePath,
+        identities: ["session-key", "session-recovery-starting"],
+        owner: MAIN_SESSION_RECOVERY_WORK_ADMISSION_OWNER,
+        assertAllowed: () => {},
+      });
+      vi.mocked(queueSettings.resolveQueueSettings).mockReturnValueOnce({ mode });
+      vi.mocked(embeddedAgentRuntime.resolveActiveEmbeddedRunSessionId).mockReturnValue(
+        "session-embedded-heartbeat",
+      );
+      vi.mocked(embeddedAgentRuntime.preemptAndDrainEmbeddedHeartbeatRun).mockResolvedValue(
+        "drained",
+      );
+
+      try {
+        await expect(
+          runPrepared({
+            isNewSession: false,
+            sessionId: "session-recovery-starting",
+            storePath,
+          }),
+        ).resolves.toEqual({ text: "ok" });
+
+        const call = requireRunReplyAgentCall();
+        expect(call.isActive).toBe(true);
+        expect(call.shouldSteer).toBe(false);
+        expect(call.shouldFollowup).toBe(true);
+      } finally {
+        recoveryAdmission.release();
+        vi.mocked(embeddedAgentRuntime.resolveActiveEmbeddedRunSessionId).mockReturnValue(
+          undefined,
+        );
+        vi.mocked(embeddedAgentRuntime.preemptAndDrainEmbeddedHeartbeatRun).mockResolvedValue(
+          "not-heartbeat",
+        );
+      }
+    },
+  );
   it("interrupts an embedded-only heartbeat before running a visible Telegram turn", async () => {
     const queueSettings = await import("./queue/settings-runtime.js");
     const embeddedAgentRuntime = await import("../../agents/embedded-agent.runtime.js");
@@ -2870,7 +2996,7 @@ describe("runPreparedReply media-only handling", () => {
       return sessionEntry?.authProfileOverride
         ? {
             profileId: sessionEntry.authProfileOverride,
-            source: sessionEntry.authProfileOverrideSource ?? "user",
+            source: sessionEntry.authProfileOverrideSource === "auto" ? "auto" : "user",
             routeRequirement: undefined,
           }
         : undefined;
@@ -3035,7 +3161,7 @@ describe("runPreparedReply media-only handling", () => {
       isNewSession: false,
       sessionId: "session-before-wait",
       sessionKey: dispatchSessionKey,
-      opts: withReplySystemEventSessionKey({}, routeSessionKey),
+      opts: withReplySystemEventContext({}, { sessionKey: routeSessionKey }),
       provider: "",
       model: "",
       resolvedThinkLevel: "off",
@@ -4564,6 +4690,67 @@ describe("runPreparedReply media-only handling", () => {
     expect(call.followupRun.run.extraSystemPrompt ?? "").not.toContain("Runtime System Events");
   });
 
+  it.each(["live", "replaced", "absent"] as const)(
+    "respects the heartbeat admission selection when it is %s",
+    async (selection) => {
+      const actualSystemEvents = await vi.importActual<typeof import("./session-system-events.js")>(
+        "./session-system-events.js",
+      );
+      vi.mocked(drainFormattedSystemEvents).mockImplementation(
+        actualSystemEvents.drainFormattedSystemEvents,
+      );
+      const queueKey = "agent:main:main:heartbeat:heartbeat";
+      const runKey = "agent:main:main:heartbeat";
+      const generic = expectDefined(
+        enqueueSystemEventEntry("Gateway restart completed", {
+          sessionKey: queueKey,
+          contextKey: "gateway:restart",
+        }),
+        "selected generic event",
+      );
+      enqueueSystemEvent("Reminder: dedicated cron work", { sessionKey: queueKey });
+      if (selection === "replaced") {
+        enqueueSystemEvent("Gateway replacement notification", {
+          sessionKey: queueKey,
+          contextKey: "gateway:restart",
+          replace: true,
+        });
+      }
+      enqueueSystemEvent("Notification queued after selection", { sessionKey: queueKey });
+      enqueueSystemEvent("Separate canonical queue notification", { sessionKey: runKey });
+      const before = peekSystemEventEntries(queueKey).map((event) => event.text);
+
+      await runPrepared({
+        agentId: "main",
+        ctx: createInboundBody("Dedicated heartbeat task"),
+        opts:
+          selection === "absent"
+            ? { isHeartbeat: true }
+            : withReplySystemEventContext(
+                { isHeartbeat: true },
+                { sessionKey: queueKey, events: [generic] },
+              ),
+        provider: "",
+        model: "",
+        resolvedThinkLevel: "off",
+        sessionKey: runKey,
+      });
+
+      const prompt = requireRunReplyAgentCall().followupRun.prompt;
+      expect(prompt.includes(generic.text)).toBe(selection === "live");
+      expect(prompt).not.toContain("Reminder: dedicated cron work");
+      expect(prompt).not.toContain("Gateway replacement notification");
+      expect(prompt).not.toContain("Notification queued after selection");
+      expect(prompt).not.toContain("Separate canonical queue notification");
+      expect(peekSystemEventEntries(queueKey).map((event) => event.text)).toEqual(
+        selection === "live" ? before.filter((text) => text !== generic.text) : before,
+      );
+      expect(peekSystemEventEntries(runKey).map((event) => event.text)).toEqual([
+        "Separate canonical queue notification",
+      ]);
+    },
+  );
+
   it("includes route system events in a thread-scoped turn", async () => {
     const actualSystemEvents = await vi.importActual<typeof import("./session-system-events.js")>(
       "./session-system-events.js",
@@ -4581,7 +4768,7 @@ describe("runPreparedReply media-only handling", () => {
     await runPrepared({
       agentId: "main",
       ctx: createInboundBody("report queued reactions"),
-      opts: withReplySystemEventSessionKey({}, "agent:main:slack:channel:c123"),
+      opts: withReplySystemEventContext({}, { sessionKey: "agent:main:slack:channel:c123" }),
       provider: "",
       model: "",
       resolvedThinkLevel: "off",
@@ -4654,12 +4841,67 @@ describe("runPreparedReply media-only handling", () => {
     const call = requireRunReplyAgentCall();
     // Think hint extracted before events arrived — level must be "low", not the model default.
     expect(call.followupRun.run.thinkLevel).toBe("low");
+    expect(call.followupRun.run.thinkLevelOverride).toBe("low");
     // The stripped user text (no "low" token) must still appear after the event block.
     expect(call.commandBody).toBe(`System: [t] Node connected.\n\n${code}`);
     expect(call.commandBody).not.toMatch(/^low\b/);
     // System events are still present in the body.
     expect(call.commandBody).toContain("System: [t] Node connected.");
   });
+
+  it.each([
+    { level: "high", clear: false, source: "turn" },
+    { level: "off", clear: false, source: "turn" },
+    { level: undefined, clear: true, source: "default" },
+    { level: undefined, clear: false, source: undefined },
+  ] as const)(
+    "records thinking origin $source for level=$level reset=$clear",
+    async ({ level, clear, source }) => {
+      const params = ownerParams();
+      params.directives = {
+        ...params.directives,
+        hasThinkDirective: level !== undefined || clear,
+        thinkLevel: level,
+        clearThinkLevel: clear,
+      };
+      params.resolvedThinkLevel = level;
+      await runPreparedReply(params);
+      expect(requireRunReplyAgentCall().followupRun.run.thinkLevelOverride).toBe(
+        source === "turn" ? level : source,
+      );
+    },
+  );
+
+  it.each(["on", "off", "full", undefined] as const)(
+    "carries parsed turn verbosity %s separately from session inheritance",
+    async (verboseLevel) => {
+      const params = ownerParams();
+      params.directives = {
+        ...params.directives,
+        hasVerboseDirective: verboseLevel !== undefined,
+        verboseLevel,
+      };
+      await runPreparedReply(params);
+      expect(requireRunReplyAgentCall().followupRun.run.verboseLevelOverride).toBe(verboseLevel);
+    },
+  );
+
+  it.each(["on", "off", "raw", undefined] as const)(
+    "carries the parsed turn trace %s without snapshotting the session preference",
+    async (traceLevel) => {
+      const params = ownerParams();
+      params.directives = {
+        ...params.directives,
+        hasTraceDirective: traceLevel !== undefined,
+        traceLevel,
+      };
+      params.sessionEntry = { sessionId: "session", updatedAt: Date.now(), traceLevel: "on" };
+      await runPreparedReply(params);
+      const run = requireRunReplyAgentCall().followupRun.run;
+      expect(run.traceLevelOverride).toBe(traceLevel);
+      expect(run.traceAuthorized).toBe(true);
+    },
+  );
 
   it("forwards resolved fast-mode override into the followup run", async () => {
     await runPrepared({
@@ -4718,7 +4960,10 @@ describe("runPreparedReply media-only handling", () => {
       baseParams({
         agentId: "alpha",
         sessionKey: "global",
-        opts: { isHeartbeat: true },
+        opts: withReplySystemEventContext(
+          { isHeartbeat: true },
+          { sessionKey: "global", events: peekSystemEventEntries("global") },
+        ),
       }),
     );
 

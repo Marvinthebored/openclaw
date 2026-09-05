@@ -235,7 +235,8 @@ export function resolveHeartbeatSessionSelection(
             sessionKey: isolatedBaseSessionKey,
             env,
           }),
-    inspectsRunQueue: session.sessionKey === isolatedSessionKey,
+    // Legacy isolated queues retain their route after the execution key is canonicalized.
+    inspectsRunQueue: session.sessionKey !== isolatedBaseSessionKey,
   } as const;
 }
 

@@ -14,9 +14,11 @@ import {
 import { prepareReplyConversation } from "../src/auto-reply/reply/prompt-session-context.js";
 import { deriveSessionMetaPatch } from "../src/config/sessions/metadata.js";
 import type { SessionEntry } from "../src/config/sessions/types.js";
+import { telegramMessagingForTest } from "../src/infra/outbound/targets.test-helpers.js";
 import { resetPluginRuntimeStateForTest, setActivePluginRegistry } from "../src/plugins/runtime.js";
 import { createTestRegistry } from "../src/test-utils/channel-plugins.js";
 import { normalizeSessionDeliveryState } from "../src/utils/delivery-context.shared.js";
+import { heartbeatRunnerTelegramPlugin } from "./helpers/infra/heartbeat-runner-channel-plugins.js";
 
 const stored: SessionEntry = {
   sessionId: "conversation",
@@ -310,5 +312,25 @@ describe("prepared reply conversation", () => {
     expect(
       buildGroupIntro({ activation: conversation.activation, defaultActivation: "mention" }),
     ).toContain("Activation: always-on");
+  });
+});
+
+describe("Telegram test target classification", () => {
+  it.each([
+    { name: "completion topic 42", to: "telegram:-100155462274:topic:42", expected: "group" },
+    { name: "moved base topic 88", to: "telegram:-100155462274:topic:88", expected: "group" },
+    { name: "basic negative group", to: "-123456789", expected: "group" },
+    { name: "positive direct chat", to: "123456789", expected: "direct" },
+    { name: "unresolved username", to: "@operations", expected: undefined },
+    { name: "nonnumeric negative target", to: "-not-a-number", expected: undefined },
+  ])("keeps test fixtures aligned with the public plugin for $name", ({ to, expected }) => {
+    const inferTargetChatType = telegramPlugin.messaging?.inferTargetChatType;
+    if (!inferTargetChatType) {
+      throw new Error("Telegram must provide target chat classification");
+    }
+    const actual = inferTargetChatType({ to });
+    expect(actual).toBe(expected);
+    expect(telegramMessagingForTest.inferTargetChatType?.({ to })).toBe(actual);
+    expect(heartbeatRunnerTelegramPlugin.messaging?.inferTargetChatType?.({ to })).toBe(actual);
   });
 });

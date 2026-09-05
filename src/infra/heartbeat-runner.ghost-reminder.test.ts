@@ -1,7 +1,11 @@
 // Covers heartbeat handling of queued reminder system events.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { drainFormattedSystemEvents } from "../auto-reply/reply/session-system-events.js";
+import { getReplySystemEventContext } from "../auto-reply/reply/system-event-session-key.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { clearCronJobActive, markCronJobActive, resetCronActiveJobs } from "../cron/active-jobs.js";
+import { readHeartbeatMonitorScratch, writeCronJobScratch } from "../cron/scratch-store.js";
+import { resolveCronJobsStorePathFromConfig } from "../cron/store.js";
 import { enqueueCommandInLane, type CommandLaneTaskMarker } from "../process/command-queue.js";
 import { CommandLane } from "../process/lanes.js";
 import { runHeartbeatOnce } from "./heartbeat-runner.js";
@@ -9,6 +13,7 @@ import {
   getFirstReplyContext,
   mockCallAt,
   seedMainSessionStore,
+  seedSessionStore,
   setupTelegramHeartbeatPluginRuntimeForTests,
   withTempHeartbeatSandbox,
   type HeartbeatReplyContext,
@@ -732,4 +737,165 @@ describe("Ghost reminder bug (issue #13317)", () => {
     expect(calledCtx?.SessionKey).toContain(":heartbeat");
     expect(sendTelegram).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { name: "shared tagged noise", queue: "shared", noise: true, tagged: true, outcome: "ack" },
+    {
+      name: "canonical tagged noise",
+      queue: "canonical",
+      noise: true,
+      tagged: true,
+      outcome: "ack",
+    },
+    { name: "legacy tagged noise", queue: "legacy", noise: true, tagged: true, outcome: "ack" },
+    {
+      name: "shared untagged suppressed",
+      queue: "shared",
+      noise: false,
+      tagged: false,
+      outcome: "suppressed",
+    },
+    {
+      name: "canonical untagged suppressed",
+      queue: "canonical",
+      noise: false,
+      tagged: false,
+      outcome: "suppressed",
+    },
+    {
+      name: "legacy untagged suppressed",
+      queue: "legacy",
+      noise: false,
+      tagged: false,
+      outcome: "suppressed",
+    },
+    {
+      name: "legacy untagged delivery failure",
+      queue: "legacy",
+      noise: false,
+      tagged: false,
+      outcome: "failed",
+    },
+    {
+      name: "legacy tagged suppressed",
+      queue: "legacy",
+      noise: false,
+      tagged: true,
+      outcome: "suppressed",
+    },
+    { name: "legacy untagged busy", queue: "legacy", noise: false, tagged: false, outcome: "busy" },
+    {
+      name: "shared tagged noise busy",
+      queue: "shared",
+      noise: true,
+      tagged: true,
+      outcome: "busy",
+    },
+  ])(
+    "keeps cron event consumption with its owner for $name",
+    async ({ queue, noise, tagged, outcome }) => {
+      await withTempHeartbeatSandbox(async ({ tmpDir, storePath, replySpy }) => {
+        const { cfg, sessionKey: baseKey } = await createConfig({
+          tmpDir,
+          storePath,
+          isolatedSession: queue !== "shared",
+        });
+        const canonicalKey = `${baseKey}:heartbeat`;
+        const queueKey =
+          queue === "shared"
+            ? baseKey
+            : queue === "canonical"
+              ? canonicalKey
+              : `${canonicalKey}:heartbeat`;
+        if (queueKey !== baseKey) {
+          await seedSessionStore(storePath, queueKey, {
+            sessionId: "previous-cron-run",
+            heartbeatIsolatedBaseSessionKey: baseKey,
+          });
+        }
+        const cronStore = resolveCronJobsStorePathFromConfig(cfg);
+        const monitor = readHeartbeatMonitorScratch(cronStore, "main");
+        if (!monitor) {
+          throw new Error("Expected the sandbox heartbeat monitor");
+        }
+        writeCronJobScratch({ storePath: cronStore, jobId: monitor.jobId, content: "" });
+        const eventText = noise ? "HEARTBEAT_OK" : "Reminder: review the scheduled owner report";
+        enqueueSystemEvent(eventText, {
+          sessionKey: queueKey,
+          ...(tagged ? { contextKey: "cron:owner-report" } : {}),
+        });
+        const sendTelegram = vi
+          .fn()
+          .mockResolvedValue({ messageId: "owner-report", chatId: "-100155462274" });
+        if (outcome === "failed") {
+          sendTelegram.mockRejectedValue(new Error("synthetic delivery failure"));
+        }
+        let formatted: string | undefined;
+        replySpy.mockImplementation(async (ctx, options) => {
+          const eventContext = getReplySystemEventContext(options);
+          const eventKey = eventContext?.sessionKey ?? ctx.SessionKey;
+          if (!eventKey) {
+            throw new Error("Expected the selected event queue");
+          }
+          // Exercise the real admission formatter; provider execution is the injected leaf.
+          formatted = await drainFormattedSystemEvents({
+            cfg,
+            agentId: "main",
+            sessionKey: eventKey,
+            isMainSession: false,
+            isNewSession: false,
+            events: eventContext?.events ?? [],
+          });
+          return {
+            text:
+              outcome === "suppressed"
+                ? "No channel reply."
+                : noise
+                  ? "HEARTBEAT_OK"
+                  : "Deliver the scheduled report",
+          };
+        });
+        const runOnce = () =>
+          runHeartbeatOnce({
+            cfg,
+            agentId: "main",
+            sessionKey: queueKey,
+            source: noise ? "interval" : "cron",
+            reason: noise ? "interval" : "cron:owner-report",
+            deps: {
+              getReplyFromConfig: replySpy,
+              telegram: sendTelegram,
+              getQueueSize: () => (outcome === "busy" ? 1 : 0),
+            },
+          });
+        const result = await runOnce();
+        if (outcome === "busy") {
+          expect(result).toMatchObject({ status: "skipped", reason: "requests-in-flight" });
+          expect(replySpy).not.toHaveBeenCalled();
+          expect(sendTelegram).not.toHaveBeenCalled();
+          expect(peekSystemEvents(queueKey)).toEqual([eventText]);
+          return;
+        }
+        expect(result.status).toBe(outcome === "failed" ? "failed" : "ran");
+        expect(replySpy).toHaveBeenCalledTimes(1);
+        expect(peekSystemEvents(queueKey)).toEqual(noise ? [] : [eventText]);
+        expect(formatted ?? "").not.toContain(eventText);
+        if (noise) {
+          expect(await runOnce()).toMatchObject({
+            status: "skipped",
+            reason: "empty-heartbeat-file",
+          });
+          expect(replySpy).toHaveBeenCalledTimes(1);
+          expect(sendTelegram).not.toHaveBeenCalled();
+        } else {
+          expectCronEventPrompt(getFirstReplyContext(replySpy), eventText);
+          if (outcome === "failed") {
+            expect(sendTelegram).toHaveBeenCalledTimes(1);
+          } else {
+            expect(sendTelegram).not.toHaveBeenCalled();
+          }
+        }
+      });
+    },
+  );
 });

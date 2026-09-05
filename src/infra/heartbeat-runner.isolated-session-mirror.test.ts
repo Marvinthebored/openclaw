@@ -343,7 +343,7 @@ describe("runHeartbeatOnce - isolated heartbeat outbound session mirror", () => 
           sessionKey: targetSessionKey,
           isMainSession: false,
           isNewSession: false,
-          suppressHeartbeatOwnedEvents: true,
+          events: nextHeartbeatPreflight.pendingEventEntries,
         });
         awareness = await drainFormattedSystemEvents({
           cfg,

@@ -1,6 +1,8 @@
 // Covers heartbeat delivery routes for queued events and isolated completions.
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { InternalGetReplyOptions } from "../auto-reply/reply/get-reply.types.js";
+import { drainFormattedSystemEvents } from "../auto-reply/reply/session-system-events.js";
+import { getReplySystemEventContext } from "../auto-reply/reply/system-event-session-key.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { resolveMainSessionKey } from "../config/sessions/main-session.js";
 import { resetCronActiveJobs } from "../cron/active-jobs.js";
@@ -132,16 +134,49 @@ describe("Heartbeat event routing", () => {
   });
 
   it.each([
-    { name: "base route", eventThreadId: undefined, baseThreadId: 42, expectedThreadId: 42 },
-    { name: "same-queue event", eventThreadId: 42, baseThreadId: 42, expectedThreadId: 42 },
-    { name: "moved base route", eventThreadId: 42, baseThreadId: 88, expectedThreadId: 42 },
+    {
+      name: "base route",
+      eventThreadId: undefined,
+      baseThreadId: 42,
+      expectedThreadId: 42,
+      legacy: false,
+    },
+    {
+      name: "same-queue event",
+      eventThreadId: 42,
+      baseThreadId: 42,
+      expectedThreadId: 42,
+      legacy: false,
+    },
+    {
+      name: "moved base route",
+      eventThreadId: 42,
+      baseThreadId: 88,
+      expectedThreadId: 42,
+      legacy: false,
+    },
+    {
+      name: "legacy same-queue event",
+      eventThreadId: 42,
+      baseThreadId: 42,
+      expectedThreadId: 42,
+      legacy: true,
+    },
+    {
+      name: "legacy moved base route",
+      eventThreadId: 42,
+      baseThreadId: 88,
+      expectedThreadId: 42,
+      legacy: true,
+    },
   ])(
     "delivers isolated exec completion using its $name",
-    async ({ eventThreadId, baseThreadId, expectedThreadId }) => {
+    async ({ eventThreadId, baseThreadId, expectedThreadId, legacy }) => {
       await withTempHeartbeatSandbox(async ({ tmpDir, storePath, replySpy }) => {
         const cfg = createLastTargetConfig({ tmpDir, storePath, isolatedSession: true });
         const baseKey = resolveMainSessionKey(cfg);
         const isolatedKey = `${baseKey}:heartbeat`;
+        const queueKey = legacy ? `${isolatedKey}:heartbeat` : isolatedKey;
         const target = (topic: number) => `telegram:-100155462274:topic:${topic}`;
         await writeTelegramSessionStore(storePath, baseKey, {
           sessionId: "base-conversation",
@@ -152,13 +187,13 @@ describe("Heartbeat event routing", () => {
           subject: "Operations",
           groupActivation: "always",
         });
-        await seedSessionStore(storePath, isolatedKey, {
+        await seedSessionStore(storePath, queueKey, {
           sessionId: "previous-isolated-run",
           heartbeatIsolatedBaseSessionKey: baseKey,
         });
         const completion = "Exec completed (background-report, code 0) :: report is ready";
         enqueueSystemEvent(completion, {
-          sessionKey: isolatedKey,
+          sessionKey: queueKey,
           ...(eventThreadId === undefined
             ? {}
             : {
@@ -177,7 +212,7 @@ describe("Heartbeat event routing", () => {
         const result = await runHeartbeatOnce({
           cfg,
           agentId: "main",
-          sessionKey: isolatedKey,
+          sessionKey: queueKey,
           reason: "exec-event",
           deps: { getReplyFromConfig: replySpy, telegram: sendTelegram },
         });
@@ -213,7 +248,11 @@ describe("Heartbeat event routing", () => {
           baseThreadId === expectedThreadId ? "always" : undefined,
         );
         expect(peekSystemEvents(isolatedKey)).toEqual([]);
+        expect(peekSystemEvents(queueKey)).toEqual([]);
         const rows = readSessionStoreForTest(storePath);
+        if (legacy) {
+          expect(rows[queueKey]).toBeUndefined();
+        }
         expect(rows[baseKey]?.sessionId).toBe("base-conversation");
         expect(rows[isolatedKey]?.heartbeatIsolatedBaseSessionKey).toBe(baseKey);
         expect(rows[isolatedKey]?.sessionId).not.toBe("previous-isolated-run");
@@ -221,6 +260,161 @@ describe("Heartbeat event routing", () => {
       });
     },
   );
+
+  it.each([
+    { name: "legacy isolated", queue: "legacy", dedicated: "none", busy: false },
+    { name: "canonical isolated", queue: "isolated", dedicated: "none", busy: false },
+    { name: "shared", queue: "shared", dedicated: "none", busy: false },
+    { name: "excluded base", queue: "base", dedicated: "none", busy: false },
+    { name: "legacy exec and cron", queue: "legacy", dedicated: "exec", busy: false },
+    { name: "legacy cron", queue: "legacy", dedicated: "cron", busy: false },
+    { name: "busy legacy", queue: "legacy", dedicated: "none", busy: true },
+  ])("preserves generic wake queue ownership for $name", async ({ queue, dedicated, busy }) => {
+    await withTempHeartbeatSandbox(async ({ tmpDir, storePath, replySpy }) => {
+      const cfg = createLastTargetConfig({
+        tmpDir,
+        storePath,
+        isolatedSession: queue !== "shared",
+      });
+      const baseKey = resolveMainSessionKey(cfg);
+      const isolatedKey = `${baseKey}:heartbeat`;
+      const queueKey =
+        queue === "legacy"
+          ? `${isolatedKey}:heartbeat`
+          : queue === "isolated"
+            ? isolatedKey
+            : baseKey;
+      await writeTelegramSessionStore(storePath, baseKey, { sessionId: "base-conversation" });
+      if (queueKey !== baseKey) {
+        await seedSessionStore(storePath, queueKey, {
+          sessionId: "previous-isolated-run",
+          heartbeatIsolatedBaseSessionKey: baseKey,
+        });
+      }
+      const generic = "Gateway restart ok: queued notification";
+      const completion = "Exec completed (queue-report, code 0) :: report is ready";
+      const reminder = "Reminder: review the scheduled report";
+      if (dedicated === "exec") {
+        enqueueSystemEvent(completion, { sessionKey: queueKey });
+      }
+      if (dedicated !== "none") {
+        enqueueSystemEvent(reminder, { sessionKey: queueKey, contextKey: "cron:queue-report" });
+      }
+      enqueueSystemEvent(generic, { sessionKey: queueKey });
+      const queuedBefore = peekSystemEvents(queueKey);
+      let queuedAtReply: string[] | undefined;
+      let formatted: string | undefined;
+      let legacyRowRemovedAtReply = false;
+      replySpy.mockImplementation(async (ctx, options) => {
+        queuedAtReply = peekSystemEvents(queueKey);
+        legacyRowRemovedAtReply = readSessionStoreForTest(storePath)[queueKey] === undefined;
+        const eventContext = getReplySystemEventContext(options);
+        const eventKey = eventContext?.sessionKey ?? ctx.SessionKey;
+        if (!eventKey) {
+          throw new Error("Expected the heartbeat's event or execution session key");
+        }
+        // Use the production generic-event formatter at the injected reply boundary.
+        // The full admission suite separately proves route-key fallback and busy deferral.
+        formatted = await drainFormattedSystemEvents({
+          cfg,
+          agentId: "main",
+          sessionKey: eventKey,
+          isMainSession: false,
+          isNewSession: false,
+          events: eventContext?.events ?? [],
+        });
+        return { text: "HEARTBEAT_OK" };
+      });
+
+      const result = await runHeartbeatOnce({
+        cfg,
+        agentId: "main",
+        sessionKey: queueKey,
+        source: "hook",
+        intent: "immediate",
+        reason: "hook:wake",
+        deps: {
+          getReplyFromConfig: replySpy,
+          getQueueSize: () => (busy ? 1 : 0),
+        },
+      });
+      if (busy) {
+        expect(result).toMatchObject({ status: "skipped", reason: "requests-in-flight" });
+        expect(replySpy).not.toHaveBeenCalled();
+        expect(peekSystemEvents(queueKey)).toEqual(queuedBefore);
+        expect(readSessionStoreForTest(storePath)[queueKey]).toBeDefined();
+        return;
+      }
+      expect(result.status).toBe("ran");
+      expect(replySpy).toHaveBeenCalledTimes(1);
+      expect(queuedAtReply).toEqual(queuedBefore);
+      const context = getFirstReplyContext(replySpy);
+      expect(context.SessionKey).toBe(queue === "shared" ? baseKey : isolatedKey);
+      expect(context.InternalTurnSource).toBe(dedicated === "none" ? "heartbeat" : dedicated);
+      if (queue === "legacy") {
+        expect(legacyRowRemovedAtReply).toBe(true);
+      }
+      if (queue === "base") {
+        expect(formatted ?? "").not.toContain(generic);
+        expect(peekSystemEvents(queueKey)).toEqual(queuedBefore);
+      } else {
+        expect(formatted).toContain(generic);
+        expect(formatted).not.toContain(completion);
+        expect(formatted).not.toContain(reminder);
+        expect(peekSystemEvents(queueKey)).toEqual(dedicated === "exec" ? [reminder] : []);
+      }
+      if (dedicated !== "none") {
+        expect(context.Body).toContain(dedicated === "exec" ? completion : reminder);
+        expect(context.Body).not.toContain(generic);
+      }
+      expect(readSessionStoreForTest(storePath)[baseKey]?.sessionId).toBe("base-conversation");
+    });
+  });
+
+  it("delivers an isolated group completion after its base conversation moves to a blocked direct chat", async () => {
+    await withTempHeartbeatSandbox(async ({ tmpDir, storePath, replySpy }) => {
+      const cfg = createLastTargetConfig({ tmpDir, storePath, isolatedSession: true });
+      cfg.agents!.defaults!.heartbeat!.directPolicy = "block";
+      const baseKey = resolveMainSessionKey(cfg);
+      const isolatedKey = `${baseKey}:heartbeat`;
+      await writeTelegramSessionStore(storePath, baseKey, {
+        sessionId: "moved-direct-conversation",
+        lastTo: "user:operator",
+        chatType: "direct",
+      });
+      await seedSessionStore(storePath, isolatedKey, {
+        sessionId: "original-group-run",
+        heartbeatIsolatedBaseSessionKey: baseKey,
+      });
+      const completion = "Exec completed (group-report, code 0) :: group report is ready";
+      enqueueSystemEvent(completion, {
+        sessionKey: isolatedKey,
+        deliveryContext: { channel: "telegram", to: "group:ops" },
+      });
+      const sendTelegram = vi
+        .fn()
+        .mockResolvedValue({ messageId: "group-report", chatId: "group:ops" });
+      replySpy.mockResolvedValue({ text: "Group report ready." });
+      const result = await runHeartbeatOnce({
+        cfg,
+        agentId: "main",
+        sessionKey: isolatedKey,
+        reason: "exec-event",
+        deps: { getReplyFromConfig: replySpy, telegram: sendTelegram },
+      });
+      expect(result.status).toBe("ran");
+      expectTelegramSend(sendTelegram, { to: "group:ops", text: "Group report ready." });
+      expect(getFirstReplyContext(replySpy)).toMatchObject({
+        SessionKey: isolatedKey,
+        OriginatingTo: "group:ops",
+        ChatType: "group",
+      });
+      expect(peekSystemEvents(isolatedKey)).toEqual([]);
+      expect(readSessionStoreForTest(storePath)[baseKey]?.sessionId).toBe(
+        "moved-direct-conversation",
+      );
+    });
+  });
 
   it("does not reuse stale turn-source routing for isolated wake runs", async () => {
     await withTempHeartbeatSandbox(async ({ tmpDir, storePath, replySpy }) => {
