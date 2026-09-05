@@ -60,6 +60,21 @@ vi.mock("../../channels/plugins/index.js", () => ({
   normalizeChannelId: (value?: string) => value?.trim().toLowerCase() || null,
 }));
 
+const renderedSlackMentionPattern = "<@BOT> \\(Bek \\(Ops\\)\\)";
+
+// Model the plugin-owned exact substitution fact at the loaded-plugin seam.
+vi.mock("../../channels/plugins/registry-loaded.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../channels/plugins/registry-loaded.js")>()),
+  getLoadedChannelPluginById: (id: string) =>
+    id === "slack"
+      ? {
+          mentions: {
+            stripPatterns: () => [renderedSlackMentionPattern, "<@[^>\\s]+>"],
+          },
+        }
+      : undefined,
+}));
+
 const createTypingController = (): TypingController => ({
   onReplyStart: async () => {},
   startTypingLoop: async () => {},
@@ -2243,6 +2258,98 @@ describe("handleInlineActions", () => {
       }
     },
   );
+  it.each([
+    {
+      name: "channel mention",
+      chatType: "channel" as const,
+      rawText: "<@BOT> (Bek (Ops)) Please /help continue",
+      commandSourceText: "<@BOT> (Bek (Ops)) Please /help continue",
+      commandText: "Please /help continue",
+      expected: "<@BOT> (Bek (Ops)) Please continue",
+    },
+    {
+      name: "direct mention",
+      chatType: "direct" as const,
+      rawText: "<@BOT> (Bek (Ops)) Please /help continue",
+      commandSourceText: "<@BOT> (Bek (Ops)) Please /help continue",
+      commandText: "Please /help continue",
+      expected: "<@BOT> (Bek (Ops)) Please continue",
+    },
+    {
+      name: "multiline sender before attachment context",
+      chatType: "channel" as const,
+      rawText: "<@BOT> (Bek (Ops)) Please /help\ncontinue\n[slack attachment unavailable]",
+      commandSourceText: "<@BOT> (Bek (Ops)) Please /help\ncontinue",
+      commandText: "Please /help continue",
+      expected: "<@BOT> (Bek (Ops)) Please\ncontinue\n[slack attachment unavailable]",
+    },
+  ])("routes a Slack inline shortcut once after $name rendering", async (params) => {
+    const { chatType, rawText, commandSourceText, commandText, expected } = params;
+    const ctx = buildTestCtx({
+      Provider: "slack",
+      Surface: "slack",
+      ChatType: chatType,
+      From: "slack:U1",
+      To: chatType === "direct" ? "slack:U1" : "slack:C1",
+      CommandBody: commandText,
+      RawBody: rawText,
+      BodyForAgent: rawText,
+      CommandAuthorized: true,
+      ChannelContext: { chat: { commandSourceText } },
+    });
+    const onBlockReply = vi.fn(async () => {});
+    handleCommandsMock.mockImplementation(async ({ command }) => ({
+      shouldContinue: true,
+      ...(command.commandBodyNormalized === "/help"
+        ? { reply: { text: "Sender help output" } }
+        : {}),
+    }));
+    const routing = resolveReplyDirectiveRouting({
+      commandText: ctx.commandText,
+      agentText: ctx.agentText,
+      modelAliases: [],
+      canInterpretTextDirectives: true,
+      isAuthorizedSender: true,
+      isGroup: chatType !== "direct",
+      wasMentioned: chatType !== "direct",
+      ctx,
+      cfg: { commands: { text: true } },
+      agentId: "main",
+      resetTriggered: false,
+    });
+    const result = await runTestInlineActions({
+      ctx,
+      typing: createTypingController(),
+      cleanedBody: routing.cleanedBody,
+      command: {
+        isAuthorizedSender: true,
+        rawBodyNormalized: commandText,
+        commandBodyNormalized: commandText,
+      },
+      overrides: {
+        allowTextCommands: true,
+        cfg: { commands: { text: true } },
+        directives: routing.directives,
+        inlineCommand: routing.inlineCommand,
+        opts: { onBlockReply },
+      },
+    });
+    expect(routing.inlineCommand).toBe("/help");
+    expect(result).toMatchObject({
+      kind: "continue",
+      cleanedBody: expected,
+    });
+    expect(onBlockReply).toHaveBeenCalledExactlyOnceWith({
+      text: "Sender help output",
+      isStatusNotice: true,
+    });
+    // The ordinary command pass still sees the full sender body; only one call selects /help.
+    expect(
+      handleCommandsMock.mock.calls
+        .map(([commandParams]) => commandParams.command.commandBodyNormalized)
+        .filter((body) => body === "/help"),
+    ).toEqual(["/help"]);
+  });
   it("keeps recorded shortcuts inside a skill prompt template", async () => {
     const body = "/skill office_hours compare /help and /commands";
     const ctx = buildTestCtx({ Body: body, RawBody: body, CommandBody: body });

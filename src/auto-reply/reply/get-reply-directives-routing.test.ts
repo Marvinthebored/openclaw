@@ -1,8 +1,122 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { resolveReplyDirectiveRouting } from "./get-reply-directives-routing.js";
 import { buildTestCtx } from "./test-ctx.js";
 
+const renderedMentionPattern = "<@BOT> \\(Bek \\(Ops\\)\\)";
+
+// Model the plugin-owned exact substitution fact at the loaded-plugin seam;
+// routing must not import Slack internals.
+vi.mock("../../channels/plugins/registry-loaded.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../channels/plugins/registry-loaded.js")>()),
+  getLoadedChannelPluginById: (id: string) =>
+    id === "slack"
+      ? { mentions: { stripPatterns: () => [renderedMentionPattern, "<@[^>\\s]+>"] } }
+      : undefined,
+}));
+
 describe("sender-owned directive projection", () => {
+  it.each([
+    {
+      name: "selects an inline shortcut after a rendered group mention",
+      rawText: "<@BOT> (Bek (Ops)) Please /help continue",
+      commandText: "Please /help continue",
+      expected: "<@BOT> (Bek (Ops)) Please continue",
+      chatType: "channel" as const,
+      isGroup: true,
+    },
+    {
+      name: "selects an inline shortcut when the rendered mention trails the text",
+      rawText: "Please /help continue <@BOT> (Bek (Ops))",
+      commandText: "Please /help continue",
+      expected: "Please continue <@BOT> (Bek (Ops))",
+      chatType: "channel" as const,
+      isGroup: true,
+    },
+    {
+      name: "selects an inline shortcut on a later line after a rendered mention",
+      rawText: "<@BOT> (Bek (Ops)) Please summarize\n/help",
+      commandText: "Please summarize /help",
+      expected: "<@BOT> (Bek (Ops)) Please summarize\n",
+      chatType: "channel" as const,
+      isGroup: true,
+    },
+    {
+      name: "selects an inline shortcut after mention rendering in a direct message",
+      rawText: "<@BOT> (Bek (Ops)) Please /help continue",
+      commandText: "Please /help continue",
+      expected: "<@BOT> (Bek (Ops)) Please continue",
+      chatType: "direct" as const,
+      isGroup: false,
+    },
+    {
+      name: "keeps attachment context after a multiline sender shortcut",
+      rawText: "<@BOT> (Bek (Ops)) Please /help\ncontinue\n[slack attachment unavailable]",
+      commandSourceText: "<@BOT> (Bek (Ops)) Please /help\ncontinue",
+      commandText: "Please /help continue",
+      expected: "<@BOT> (Bek (Ops)) Please\ncontinue\n[slack attachment unavailable]",
+      chatType: "channel" as const,
+      isGroup: true,
+    },
+  ])("$name", ({ rawText, commandSourceText, commandText, expected, chatType, isGroup }) => {
+    const preparedSource = commandSourceText ?? rawText;
+    const ctx = buildTestCtx({
+      Provider: "slack",
+      Surface: "slack",
+      ChatType: chatType,
+      CommandBody: commandText,
+      RawBody: rawText,
+      BodyForAgent: rawText,
+      CommandAuthorized: true,
+      ChannelContext: { chat: { commandSourceText: preparedSource } },
+    });
+    const result = resolveReplyDirectiveRouting({
+      commandText: ctx.commandText,
+      agentText: ctx.agentText,
+      modelAliases: [],
+      canInterpretTextDirectives: true,
+      isAuthorizedSender: true,
+      isGroup,
+      wasMentioned: true,
+      ctx,
+      cfg: { commands: { text: true } },
+      agentId: "main",
+      resetTriggered: false,
+    });
+    expect(result.inlineCommand).toBe("/help");
+    expect(result.cleanedBody).toBe(expected);
+  });
+
+  it("rejects prepared channel metadata that does not reconstruct the command body", () => {
+    const agentText = "[Forwarded message]\nPlease /help continue";
+    const ctx = buildTestCtx({
+      Provider: "slack",
+      Surface: "slack",
+      ChatType: "channel",
+      CommandBody: "Please /help continue",
+      RawBody: "unrelated sender text",
+      BodyForAgent: agentText,
+      CommandAuthorized: true,
+      ChannelContext: {
+        chat: { commandSourceText: "<@BOT> (Bek (Ops)) different /help text" },
+      },
+    });
+    const result = resolveReplyDirectiveRouting({
+      commandText: ctx.commandText,
+      agentText: ctx.agentText,
+      modelAliases: [],
+      canInterpretTextDirectives: true,
+      isAuthorizedSender: true,
+      isGroup: true,
+      wasMentioned: true,
+      ctx,
+      cfg: { commands: { text: true } },
+      agentId: "main",
+      resetTriggered: false,
+    });
+    expect(result.inlineCommand).toBeUndefined();
+    expect(result.cleanedBody).toBe(agentText);
+  });
+
   it.each([
     {
       name: "preserves forwarded status text beside an ordinary caption",

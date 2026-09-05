@@ -6,7 +6,7 @@ import { isDirectiveOnly } from "./directive-handling.directive-only.js";
 import { type InlineDirectives, parseInlineSessionDirectives } from "./directive-handling.parse.js";
 import { clearExecInlineDirectives, clearInlineDirectives } from "./get-reply-directives-utils.js";
 import { HISTORY_CONTEXT_MARKER } from "./history.js";
-import { stripMentions, stripStructuralPrefixes } from "./mentions.js";
+import { stripMentions } from "./mentions.js";
 import { extractInlineSimpleCommand, stripInlineStatus } from "./reply-inline.js";
 
 type DirectiveCommand = NonNullable<Parameters<typeof parseInlineSessionDirectives>[1]>["command"];
@@ -121,7 +121,7 @@ export function resolveReplyDirectiveRouting(params: {
   const requestedInlineCommand =
     params.canInterpretTextDirectives &&
     params.isAuthorizedSender &&
-    !params.nativeCommand &&
+    !params.command &&
     params.ctx.CommandSource !== "native"
       ? extractInlineSimpleCommand(cleanedCommand)
       : null;
@@ -131,19 +131,32 @@ export function resolveReplyDirectiveRouting(params: {
     params.commandText !== "" &&
     (cleanedCommand !== params.commandText || requestedInlineCommand)
   ) {
+    const preparedCommandSource = params.ctx.ChannelContext?.chat?.commandSourceText;
+    const preparedSource =
+      typeof preparedCommandSource === "string" ? preparedCommandSource : undefined;
     // Reset already projected its payload from rawText; otherwise retain the channel's raw source.
-    const rawText = params.resetTriggered ? params.agentText : params.ctx.rawText;
-    const normalizeSource = (text: string) =>
+    const fallbackRawText =
+      params.resetTriggered || params.agentText === params.commandText
+        ? params.agentText
+        : params.ctx.rawText;
+    const normalizeSource = (text: string, stripProviderMentions = params.isGroup) =>
       normalizeCommandBody(
-        params.isGroup ? stripMentions(text, params.ctx, params.cfg, params.agentId) : text,
+        stripProviderMentions ? stripMentions(text, params.ctx, params.cfg, params.agentId) : text,
         { botUsername: params.ctx.BotUsername },
       );
+    const preparedSourceMatches =
+      preparedSource !== undefined &&
+      normalizeSource(preparedSource, true) === params.commandText.trim();
+    // A channel may identify its exact sender span after provider rendering. Accept it only when
+    // provider-owned mention stripping reconstructs the same command body; supplemental context
+    // and arbitrary channel metadata must never become a command source.
+    const rawText = preparedSourceMatches ? preparedSource : fallbackRawText;
     const contentStart = rawText.length - rawText.trimStart().length;
     const lineEnd = rawText.indexOf("\n", contentStart);
     const firstLine = lineEnd < 0 ? rawText : rawText.slice(0, lineEnd);
     // Normalized commands may omit multiline tails. Those bytes remain prompt content.
     const commandSource =
-      params.resetTriggered || rawText.trim() === params.commandText.trim()
+      preparedSourceMatches || params.resetTriggered || rawText.trim() === params.commandText.trim()
         ? rawText
         : normalizeSource(firstLine) === params.commandText.trim()
           ? firstLine
@@ -164,7 +177,7 @@ export function resolveReplyDirectiveRouting(params: {
       const parsedSender = parseInlineSessionDirectives(source, {
         modelAliases: params.modelAliases,
         allowStatusDirective,
-        nativeCommand: params.nativeCommand,
+        command: params.command,
       });
       let cleanedSender = allowStatusDirective
         ? stripInlineStatus(parsedSender.cleaned).cleaned

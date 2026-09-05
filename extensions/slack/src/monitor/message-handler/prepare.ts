@@ -1392,7 +1392,8 @@ export async function prepareSlackMessage(params: {
   if (!resolvedMessageContent) {
     return drop("empty-content");
   }
-  const { rawBody, effectiveDirectMedia } = resolvedMessageContent;
+  const { rawBody, effectiveDirectMedia, commandSourceText, mentionStripPatterns } =
+    resolvedMessageContent;
   const bodyForAgent = preflightAudioTranscript
     ? formatSlackAudioTranscriptForAgent({
         transcript: preflightAudioTranscript,
@@ -1737,6 +1738,12 @@ export async function prepareSlackMessage(params: {
         label: directThreadRoutedToDmSession ? undefined : threadLabel,
       },
       groupSystemPrompt,
+    },
+    channelContext: {
+      chat: {
+        commandSourceText,
+        mentionStripPatterns,
+      },
     },
     extra: {
       GroupSubject: groupSessionSubject,
