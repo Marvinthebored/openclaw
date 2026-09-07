@@ -299,7 +299,12 @@ export function createOpenClawCodingToolsInternal(
   const applyPatchWorkspaceOnly =
     workspaceOnly ||
     (sessionCoreToolPolicy?.applyPatchWorkspaceOnly ?? applyPatchConfig?.workspaceOnly !== false);
-  const applyPatchContainmentSource = sessionCoreToolPolicy ? "session" : "config";
+  // A required root survives full permission mode and both workspaceOnly config switches.
+  const applyPatchContainmentSource = options?.requireWorkspaceOnly
+    ? "required-root"
+    : sessionCoreToolPolicy
+      ? "session"
+      : "config";
   const applyPatchEnabled =
     !readOnly &&
     applyPatchConfig?.enabled !== false &&
