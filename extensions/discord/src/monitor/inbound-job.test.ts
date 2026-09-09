@@ -54,9 +54,12 @@ describe("buildDiscordInboundJob", () => {
       ],
     });
 
-    const job = buildDiscordInboundJob(ctx);
+    const buildContext = vi.fn();
+    const job = buildDiscordInboundJob({ ...ctx, buildContext });
 
     expect("runtime" in job.payload).toBe(false);
+    expect("buildContext" in job.payload).toBe(false);
+    expect(job.runtime.buildContext).toBe(buildContext);
     expect("client" in job.payload).toBe(false);
     expect("threadBindings" in job.payload).toBe(false);
     expect("discordRestFetch" in job.payload).toBe(false);
