@@ -3773,6 +3773,20 @@ describe("CLI attempt execution", () => {
     });
   });
 
+  it("keeps native Git attribution in replayable runtime context, not the user prompt", async () => {
+    const attribution = "Git commit attribution: no enabled co-author credit.";
+    const fragment = { kind: "runtime-instruction" as const, text: "Existing runtime instruction" };
+    const embeddedArg = await runOpenClawEmbeddedAttemptForTest({
+      opts: { gitCoauthorAttribution: attribution, runtimeContextFragments: [fragment] },
+      runId: "native-coauthor-replay",
+    });
+    expect(String(embeddedArg.prompt)).not.toContain(attribution);
+    expect(embeddedArg.runtimeContextFragments).toEqual([
+      fragment,
+      { kind: "runtime-instruction", text: attribution },
+    ]);
+  });
+
   it("keeps live stream output for visible subagent lane runs", async () => {
     const embeddedArg = await runOpenClawEmbeddedAttemptForTest({
       opts: { lane: "subagent" },
