@@ -1347,6 +1347,13 @@
                   "index",
                   "start/showcase",
                   "start/why-openclaw",
+                  "start/why-openclaw/the-trust-boundary",
+                  "start/why-openclaw/policy-as-code",
+                  "start/why-openclaw/identity-and-roles",
+                  "start/why-openclaw/secrets",
+                  "start/why-openclaw/versioned-state-guarded-upgrades",
+                  "start/why-openclaw/provenance",
+                  "start/why-openclaw/openclaw-and-hermes-agent",
                   "concepts/features"
                 ]
               },
@@ -1511,7 +1518,20 @@
                       "channels/matrix-push-rules"
                     ]
                   },
-                  "channels/msteams",
+                  {
+                    "group": "Microsoft Teams",
+                    "pages": [
+                      "channels/msteams",
+                      "channels/msteams/setup",
+                      "channels/msteams/access-control",
+                      "channels/msteams/authentication",
+                      "channels/msteams/manifest-and-permissions",
+                      "channels/msteams/configuration",
+                      "channels/msteams/messaging",
+                      "channels/msteams/cards-and-actions",
+                      "channels/msteams/troubleshooting"
+                    ]
+                  },
                   "channels/signal",
                   {
                     "group": "Slack",
@@ -1531,7 +1551,22 @@
                     ]
                   },
                   "channels/sms",
-                  "channels/telegram",
+                  {
+                    "group": "Telegram",
+                    "pages": [
+                      "channels/telegram",
+                      "channels/telegram/setup",
+                      "channels/telegram/access-control",
+                      "channels/telegram/messaging",
+                      "channels/telegram/threads-and-sessions",
+                      "channels/telegram/rich-messages",
+                      "channels/telegram/media",
+                      "channels/telegram/events",
+                      "channels/telegram/transports",
+                      "channels/telegram/mini-app",
+                      "channels/telegram/troubleshooting"
+                    ]
+                  },
                   "channels/whatsapp"
                 ]
               },
@@ -1913,6 +1948,20 @@
                     "group": "Browsing and fetching pages",
                     "pages": [
                       "tools/browser",
+                      {
+                        "group": "Browser",
+                        "pages": [
+                          "tools/browser/setup",
+                          "tools/browser/profiles",
+                          "tools/browser/configuration",
+                          "tools/browser/remote",
+                          "tools/browser/security",
+                          "tools/browser/existing-session",
+                          "tools/browser/isolation",
+                          "tools/browser/troubleshooting",
+                          "tools/browser/agent-tools"
+                        ]
+                      },
                       "tools/browser-control",
                       "tools/browser-linux-troubleshooting",
                       "tools/browser-login",
@@ -1949,6 +1998,18 @@
                   "tools/goal",
                   "tools/steer",
                   "tools/subagents",
+                  {
+                    "group": "Sub-agents",
+                    "pages": [
+                      "tools/subagents/slash-command",
+                      "tools/subagents/tool-reference",
+                      "tools/subagents/thread-bound-sessions",
+                      "tools/subagents/nesting",
+                      "tools/subagents/announce",
+                      "tools/subagents/tool-policy",
+                      "tools/subagents/operations"
+                    ]
+                  },
                   "tools/swarm",
                   "tools/acp-agents",
                   {
@@ -2474,6 +2535,16 @@
                       "cli/daemon",
                       "cli/fleet",
                       "cli/gateway",
+                      {
+                        "group": "Gateway",
+                        "pages": [
+                          "cli/gateway/running",
+                          "cli/gateway/restart-and-supervision",
+                          "cli/gateway/query",
+                          "cli/gateway/service",
+                          "cli/gateway/discovery"
+                        ]
+                      },
                       "cli/health",
                       "cli/logs",
                       "cli/status"
@@ -2579,6 +2650,17 @@
                     "group": "Plugins and skills",
                     "pages": [
                       "cli/plugins",
+                      {
+                        "group": "Plugins CLI",
+                        "pages": [
+                          "cli/plugins/authoring",
+                          "cli/plugins/install",
+                          "cli/plugins/list",
+                          "cli/plugins/uninstall-and-update",
+                          "cli/plugins/inspect-and-diagnose",
+                          "cli/plugins/marketplace"
+                        ]
+                      },
                       "cli/path",
                       "cli/policy",
                       {
@@ -2614,6 +2696,17 @@
                       "cli/dns",
                       "cli/docs",
                       "cli/mcp",
+                      {
+                        "group": "MCP",
+                        "pages": [
+                          "cli/mcp/serve",
+                          "cli/mcp/registry",
+                          "cli/mcp/json-output",
+                          "cli/mcp/transports",
+                          "cli/mcp/control-ui",
+                          "cli/mcp/apps"
+                        ]
+                      },
                       "cli/proxy",
                       "cli/wiki"
                     ]

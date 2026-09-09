@@ -74,8 +74,9 @@ describe("discord buildDiscordMessageProcessContext sender bot status", () => {
   });
 
   it("builds the payload through the host channel context builder when one is supplied", async () => {
-    const buildContext = vi.fn(buildChannelInboundEventContext);
-    const ctx = { ...(await createBaseDiscordMessageContext()), buildContext };
+    const host = { buildContext: buildChannelInboundEventContext };
+    const buildContext = vi.spyOn(host, "buildContext");
+    const ctx = { ...(await createBaseDiscordMessageContext()), buildContext: host.buildContext };
 
     const result = await buildDiscordMessageProcessContext({ ctx, text: "hi", mediaList: [] });
     if (!result) {

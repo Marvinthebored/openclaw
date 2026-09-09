@@ -123,17 +123,19 @@ describe("buildDiscordInboundJob", () => {
 
   it("re-materializes the process context with an overridden abort signal", async () => {
     const ctx = await createBaseDiscordMessageContext();
+    const buildContext = vi.fn();
     const ingressSettlement = {
       settle: vi.fn(async () => {}),
       abandon: vi.fn(async () => {}),
       cancel: vi.fn(async () => {}),
     };
-    const job = buildDiscordInboundJob(ctx, { ingressSettlement });
+    const job = buildDiscordInboundJob({ ...ctx, buildContext }, { ingressSettlement });
     const overrideAbortController = new AbortController();
 
     const rematerialized = materializeDiscordInboundJob(job, overrideAbortController.signal);
 
     expect(rematerialized.runtime).toBe(ctx.runtime);
+    expect(rematerialized.buildContext).toBe(buildContext);
     expect(rematerialized.client).toBe(ctx.client);
     expect(rematerialized.threadBindings).toBe(ctx.threadBindings);
     expect(rematerialized.abortSignal).toBe(overrideAbortController.signal);
