@@ -1308,8 +1308,7 @@ export function runAgentAttempt(params: {
     );
   }
 
-  // Native replay keeps host instructions in the persisted runtime-context carrier,
-  // rather than adding a model-only suffix that disappears from historical user text.
+  // The native carrier keeps host instructions stable across transcript replay.
   const replayableAttribution =
     !isRawModelRun && agentHarnessPolicy.runtime === "openclaw"
       ? params.opts.gitCoauthorAttribution?.trim()
