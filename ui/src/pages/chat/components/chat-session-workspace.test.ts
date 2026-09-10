@@ -18,7 +18,7 @@ function recordSidebarContent(this: SessionWorkspaceHost, content: SidebarSelect
 function loadedSidebarContent(state: SessionWorkspaceHost): Promise<SidebarContent> {
   return vi.waitFor(() => {
     const content = state.sidebarContent;
-    if (!content || content.kind === "loading") {
+    if (!content || content.kind === "loading" || content.kind === "unavailable") {
       throw new Error("Sidebar content is not loaded");
     }
     return content;
