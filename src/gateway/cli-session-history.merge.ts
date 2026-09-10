@@ -127,9 +127,9 @@ function extractComparableText(
   const stripResult = isClaudeImport
     ? stripTrailingCliImageMentions(joined)
     : { text: joined, stripped: false };
-  const normalizeText = (text: string) => {
+  const normalizeText = (value: string) => {
     const visible = stripInlineDirectiveTagsForDisplay(
-      role === "user" ? stripInboundMetadata(text) : text,
+      role === "user" ? stripInboundMetadata(value) : value,
     ).text;
     return visible.replace(/\s+/g, " ").trim();
   };
@@ -359,9 +359,10 @@ function findFirstTimestampCandidateInRange(
 
 function findMinimumOrderCursor(
   entries: ComparableHistoryMessage[],
-  cursor: number,
+  startCursor: number,
   minimumOrder: number,
 ): number {
+  let cursor = startCursor;
   let end = entries.length;
   while (cursor < end) {
     const middle = Math.floor((cursor + end) / 2);

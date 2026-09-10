@@ -767,7 +767,7 @@ describe("cli session history", () => {
       expect(merged).toEqual([
         {
           ...localMessage,
-          __openclaw: { ...localMessage.__openclaw, ...importedMessage.__openclaw },
+          __openclaw: { ...localMessage["__openclaw"], ...importedMessage["__openclaw"] },
         },
       ]);
       expect({ localMessage, importedMessage }).toEqual(before);
@@ -2176,7 +2176,7 @@ describe("cli session history", () => {
 
       expect(merged).toEqual([
         earlierLocal,
-        { ...imageLocal, __openclaw: { ...imageLocal.__openclaw, ...imageMeta } },
+        { ...imageLocal, __openclaw: { ...imageLocal["__openclaw"], ...imageMeta } },
         laterImport,
       ]);
     },
