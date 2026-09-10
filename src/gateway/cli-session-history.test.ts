@@ -824,22 +824,170 @@ describe("cli session history", () => {
     expect(merged).toEqual([localMessage, importedMessage]);
   });
 
-  it.each([CLAUDE_RESUME_DRIFT_NOTES[0], `${CLAUDE_RESUME_DRIFT_NOTES[0]}\nhello`])(
-    "matches literal note text without a blank separator: %s",
-    (content) => {
-      const localMessage = { role: "user", content, timestamp: 1_000 };
-      const importedMeta = {
+  it.each([
+    CLAUDE_RESUME_DRIFT_NOTES[0],
+    `${CLAUDE_RESUME_DRIFT_NOTES[0]}\nhello`,
+    ...CLAUDE_RESUME_DRIFT_NOTES.map((note) => `${note}\n\nhello`),
+  ])("matches literal note text: %s", (content) => {
+    const localMessage = { role: "user", content, timestamp: 1_000 };
+    const importedMeta = {
+      importedFrom: "claude-cli",
+      cliSessionId: "session-1",
+      externalId: "literal-note",
+    };
+
+    const merged = mergeImportedChatHistoryMessages({
+      localMessages: [localMessage],
+      importedMessages: [{ ...localMessage, timestamp: 1_001, __openclaw: importedMeta }],
+    });
+
+    expect(merged).toEqual([{ ...localMessage, __openclaw: importedMeta }]);
+  });
+
+  it("prefers a literal note match and preserves the distinct unprefixed turn", () => {
+    const literal = `${CLAUDE_RESUME_DRIFT_NOTES[0]}\n\nhello`;
+    const localMessages = [
+      { role: "user", content: "hello", timestamp: 1_000 },
+      { role: "user", content: literal, timestamp: 1_001 },
+    ];
+    const importedMeta = {
+      importedFrom: "claude-cli",
+      cliSessionId: "session-1",
+      externalId: "literal-note",
+    };
+
+    const merged = mergeImportedChatHistoryMessages({
+      localMessages,
+      importedMessages: [
+        { role: "user", content: literal, timestamp: 1_002, __openclaw: importedMeta },
+      ],
+    });
+
+    expect(merged).toEqual([localMessages[0], { ...localMessages[1], __openclaw: importedMeta }]);
+  });
+
+  it.each(["text", "external identity"])(
+    "keeps an ordinary unprefixed import eligible after a literal %s match",
+    (matchKind) => {
+      const literal = `${CLAUDE_RESUME_DRIFT_NOTES[0]}\n\nhello`;
+      const literalMeta = {
         importedFrom: "claude-cli",
         cliSessionId: "session-1",
         externalId: "literal-note",
       };
+      const plainMeta = { ...literalMeta, externalId: "plain-user" };
+      const localMessages = [
+        { role: "user", content: "hello", timestamp: 1_000 },
+        {
+          role: "user",
+          content: literal,
+          timestamp: 1_001,
+          ...(matchKind === "external identity" ? { __openclaw: literalMeta } : {}),
+        },
+      ];
 
       const merged = mergeImportedChatHistoryMessages({
-        localMessages: [localMessage],
-        importedMessages: [{ ...localMessage, timestamp: 1_001, __openclaw: importedMeta }],
+        localMessages,
+        importedMessages: [
+          { role: "user", content: literal, timestamp: 1_002, __openclaw: literalMeta },
+          { role: "user", content: "hello", timestamp: 1_003, __openclaw: plainMeta },
+        ],
       });
 
-      expect(merged).toEqual([{ ...localMessage, __openclaw: importedMeta }]);
+      expect(merged).toEqual([
+        { ...localMessages[0], __openclaw: plainMeta },
+        { ...localMessages[1], __openclaw: literalMeta },
+      ]);
+    },
+  );
+
+  it.each([
+    {
+      label: "literal then stripped",
+      firstLocalIsLiteral: false,
+      firstImportTime: 1_002,
+      secondImportTime: 1_003,
+    },
+    {
+      label: "stripped then literal",
+      firstLocalIsLiteral: true,
+      firstImportTime: 600_001,
+      secondImportTime: 1_002,
+    },
+  ])(
+    "keeps repeated native text order when matching $label",
+    ({ firstLocalIsLiteral, firstImportTime, secondImportTime }) => {
+      const literal = `${CLAUDE_RESUME_DRIFT_NOTES[0]}\n\nhello`;
+      const localMessages = [
+        { role: "user", content: firstLocalIsLiteral ? literal : "hello", timestamp: 1_000 },
+        {
+          role: "user",
+          content: firstLocalIsLiteral ? "hello" : literal,
+          timestamp: firstImportTime,
+        },
+      ];
+      const firstMeta = {
+        importedFrom: "claude-cli",
+        cliSessionId: "session-1",
+        externalId: "first-import",
+      };
+      const laterImport = {
+        role: "user",
+        content: literal,
+        timestamp: secondImportTime,
+        __openclaw: { ...firstMeta, externalId: "later-import" },
+      };
+
+      const merged = mergeImportedChatHistoryMessages({
+        localMessages,
+        importedMessages: [
+          { role: "user", content: literal, timestamp: firstImportTime, __openclaw: firstMeta },
+          laterImport,
+        ],
+      });
+
+      expect(merged).toHaveLength(3);
+      expect(merged).toContainEqual(localMessages[0]);
+      expect(merged).toContainEqual({ ...localMessages[1], __openclaw: firstMeta });
+      expect(merged).toContainEqual(laterImport);
+    },
+  );
+
+  it.each([1_000, undefined])(
+    "keeps ordinary matches after an unsuccessful stripped lookup (timestamp=%s)",
+    (timestamp) => {
+      const literal = `${CLAUDE_RESUME_DRIFT_NOTES[0]}\n\nhello`;
+      const localMessages = [
+        { role: "user", content: "hello", timestamp },
+        { role: "user", content: literal, timestamp: 1_001 },
+      ];
+      const literalMeta = {
+        importedFrom: "claude-cli",
+        cliSessionId: "session-1",
+        externalId: "literal-user",
+      };
+      const plainMeta = { ...literalMeta, externalId: "plain-user" };
+      const repeatedImport = {
+        role: "user",
+        content: literal,
+        timestamp: 1_003,
+        __openclaw: { ...literalMeta, externalId: "repeated-user" },
+      };
+
+      const merged = mergeImportedChatHistoryMessages({
+        localMessages,
+        importedMessages: [
+          { role: "user", content: literal, timestamp: 1_002, __openclaw: literalMeta },
+          repeatedImport,
+          { role: "user", content: "hello", timestamp: 1_004, __openclaw: plainMeta },
+        ],
+      });
+
+      expect(merged).toEqual([
+        { ...localMessages[0], __openclaw: plainMeta },
+        { ...localMessages[1], __openclaw: literalMeta },
+        repeatedImport,
+      ]);
     },
   );
 
@@ -1947,6 +2095,92 @@ describe("cli session history", () => {
     expect(merged[1]).toBe(exactLocal);
     expect(readRecord(readRecord(merged[2])["__openclaw"]).externalId).toBe("later-id");
   });
+
+  it.each([CLAUDE_RESUME_DRIFT_NOTES[0], CLAUDE_RESUME_DRIFT_NOTES[1]])(
+    "keeps drift-note order after an edited exact identity: %s",
+    (laterNote) => {
+      const earlierLocal = { role: "user", content: "Original ask", timestamp: 1_000 };
+      const exactMeta = {
+        importedFrom: "claude-cli",
+        cliSessionId: "session-1",
+        externalId: "exact-user",
+      };
+      const exactLocal = {
+        role: "user",
+        content: "Edited ask",
+        timestamp: 1_001,
+        __openclaw: exactMeta,
+      };
+      const laterImport = {
+        role: "user",
+        content: `${laterNote}\n\nOriginal ask`,
+        timestamp: 1_003,
+        __openclaw: { ...exactMeta, externalId: "later-user" },
+      };
+
+      const merged = mergeImportedChatHistoryMessages({
+        localMessages: [earlierLocal, exactLocal],
+        importedMessages: [
+          {
+            role: "user",
+            content: `${CLAUDE_RESUME_DRIFT_NOTES[0]}\n\nOriginal ask`,
+            timestamp: 1_002,
+            __openclaw: exactMeta,
+          },
+          laterImport,
+        ],
+      });
+
+      expect(merged).toEqual([earlierLocal, exactLocal, laterImport]);
+    },
+  );
+
+  it.each([CLAUDE_RESUME_DRIFT_NOTES[0], CLAUDE_RESUME_DRIFT_NOTES[1]])(
+    "keeps drift-note order after an exact image turn: %s",
+    (laterNote) => {
+      const earlierLocal = { role: "user", content: "Same caption", timestamp: 1_000 };
+      const localEntryId = "local-image-order";
+      const imageLocal = {
+        role: "user",
+        content: "Same caption",
+        timestamp: 1_001,
+        __openclaw: {
+          id: localEntryId,
+          media: [{ kind: "image", contentType: "image/png", path: "/media/inbound/order.png" }],
+        },
+      };
+      const imageMeta = {
+        importedFrom: "claude-cli",
+        cliSessionId: "session-1",
+        externalId: "image-user",
+      };
+      const laterImport = {
+        role: "user",
+        content: `${laterNote}\n\nSame caption`,
+        timestamp: 1_003,
+        __openclaw: { ...imageMeta, externalId: "later-user" },
+      };
+
+      const merged = mergeImportedChatHistoryMessages({
+        localMessages: [earlierLocal, imageLocal],
+        importedMessages: [
+          {
+            role: "user",
+            content: `${CLAUDE_RESUME_DRIFT_NOTES[0]}\n\nSame caption\n\n${formatCliImageTurnContext(hashCliImageTurnEntryId(localEntryId))}\n\n@/tmp/openclaw/openclaw-cli-images/${"a".repeat(64)}.png`,
+            timestamp: 1_002,
+            __openclaw: imageMeta,
+          },
+          laterImport,
+        ],
+      });
+
+      expect(merged).toEqual([
+        earlierLocal,
+        { ...imageLocal, __openclaw: { ...imageLocal.__openclaw, ...imageMeta } },
+        laterImport,
+      ]);
+    },
+  );
 
   it("does not surface a secret present only in imported history after merge", async () => {
     await withClaudeProjectsDir(async ({ homeDir, sessionId, filePath }) => {

@@ -247,9 +247,11 @@ register a small wrapper backend plugin.
 - Helper runs with a caller-owned in-memory transcript use that history for hooks, bounded session notes, and fresh-session reseeding, including meaningful history before compaction. Empty memory stays empty even when the run carries another session's storage identity. Context-engine maintenance rewrites that same memory before the helper returns, even when the engine requests background maintenance. Durable transcripts retain their background maintenance path. An explicitly owned native CLI binding can still resume. Resumed turns send the current prompt and bounded session notes without replaying the conversation history.
 
 When prompt content changes, a compatible CLI session can resume with an OpenClaw
-context note before the current user prompt. Chat history ignores that exact note
-when matching imported Claude user turns to local turns, so the same turn appears
-once. Stored transcript text and unmatched imported turns remain intact.
+context note before the current user prompt. Chat history first matches imported
+Claude user turns against the full local text, including any literal quote of the
+note. If that does not match, it ignores one exact context note for comparison, so
+the same turn appears once. Stored transcript text and unmatched imported turns
+remain intact.
 
 ### History account boundaries
 

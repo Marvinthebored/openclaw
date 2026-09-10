@@ -26,6 +26,7 @@ type ComparableHistoryMessage = {
   cliImageTurnKey?: string;
   role?: string;
   text?: string;
+  driftNoteText?: string;
   timestamp?: number;
 };
 
@@ -89,6 +90,7 @@ function extractComparableText(
   hasCliImageMentions: boolean;
   cliImageTurnKey?: string;
   text?: string;
+  driftNoteText?: string;
 } {
   if (!message || typeof message !== "object") {
     return { hasCliImageMentions: false };
@@ -121,13 +123,22 @@ function extractComparableText(
   if (!joined) {
     return { hasCliImageMentions: false };
   }
-  const stripResult = isClaudeCliImportedUserMessage(message, role)
-    ? stripTrailingCliImageMentions(stripCliSessionDriftNote(rawText).trim())
+  const isClaudeImport = isClaudeCliImportedUserMessage(message, role);
+  const stripResult = isClaudeImport
+    ? stripTrailingCliImageMentions(joined)
     : { text: joined, stripped: false };
-  const visible = stripInlineDirectiveTagsForDisplay(
-    role === "user" ? stripInboundMetadata(stripResult.text) : stripResult.text,
-  ).text;
-  const normalized = visible.replace(/\s+/g, " ").trim();
+  const normalizeText = (text: string) => {
+    const visible = stripInlineDirectiveTagsForDisplay(
+      role === "user" ? stripInboundMetadata(text) : text,
+    ).text;
+    return visible.replace(/\s+/g, " ").trim();
+  };
+  const normalized = normalizeText(stripResult.text);
+  const withoutDriftNote = isClaudeImport ? stripCliSessionDriftNote(rawText) : rawText;
+  const driftNoteText =
+    withoutDriftNote !== rawText
+      ? normalizeText(stripTrailingCliImageMentions(withoutDriftNote.trim()).text)
+      : undefined;
   const meta = asOptionalRecord(asOptionalRecord(message)?.["__openclaw"]);
   const storedImageTurnKey = normalizeOptionalString(meta?.cliImageTurnKey);
   return {
@@ -136,6 +147,7 @@ function extractComparableText(
       ? { cliImageTurnKey: storedImageTurnKey ?? readCliImageTurnContext(joined) }
       : {}),
     ...(normalized ? { text: normalized } : {}),
+    ...(driftNoteText ? { driftNoteText } : {}),
   };
 }
 
@@ -158,6 +170,7 @@ function prepareComparableMessage(
     ...(comparableText.cliImageTurnKey ? { cliImageTurnKey: comparableText.cliImageTurnKey } : {}),
     role,
     text: comparableText.text,
+    driftNoteText: comparableText.driftNoteText,
     timestamp: asFiniteNumber(record.timestamp),
   };
 }
@@ -344,6 +357,24 @@ function findFirstTimestampCandidateInRange(
   return best;
 }
 
+function findMinimumOrderCursor(
+  entries: ComparableHistoryMessage[],
+  cursor: number,
+  minimumOrder: number,
+): number {
+  let end = entries.length;
+  while (cursor < end) {
+    const middle = Math.floor((cursor + end) / 2);
+    const candidate = entries[middle];
+    if (candidate && candidate.order < minimumOrder) {
+      cursor = middle + 1;
+    } else {
+      end = middle;
+    }
+  }
+  return cursor;
+}
+
 function findTimestampMatch(
   summary: TimestampSummary | undefined,
   timestamp: number | undefined,
@@ -353,51 +384,56 @@ function findTimestampMatch(
   if (!summary) {
     return undefined;
   }
-  while (
-    summary.missingTimestampCursor < summary.missingTimestamps.length &&
-    (summary.missingTimestamps[summary.missingTimestampCursor]?.order ?? Number.POSITIVE_INFINITY) <
-      minimumOrder
-  ) {
+  while (summary.missingTimestampCursor < summary.missingTimestamps.length) {
+    const candidate = summary.missingTimestamps[summary.missingTimestampCursor];
+    if (!candidate || !consumed.has(candidate)) {
+      break;
+    }
     summary.missingTimestampCursor += 1;
   }
-  while (
-    summary.timestampedOrderCursor < summary.timestampedByOrder.length &&
-    (summary.timestampedByOrder[summary.timestampedOrderCursor]?.order ??
-      Number.POSITIVE_INFINITY) < minimumOrder
-  ) {
-    const skipped = summary.timestampedByOrder[summary.timestampedOrderCursor];
-    if (skipped) {
-      summary.timestampRoot = removeTimestampCandidate(summary.timestampRoot, skipped);
+  while (summary.timestampedOrderCursor < summary.timestampedByOrder.length) {
+    const candidate = summary.timestampedByOrder[summary.timestampedOrderCursor];
+    if (!candidate || !consumed.has(candidate)) {
+      break;
     }
     summary.timestampedOrderCursor += 1;
   }
+  // An alternate text view can impose a higher floor than this index owns.
+  // Keep order-only skips local until a match commits that floor for this text.
   if (timestamp === undefined) {
-    while (summary.missingTimestampCursor < summary.missingTimestamps.length) {
-      const candidate = summary.missingTimestamps[summary.missingTimestampCursor];
-      if (candidate && !consumed.has(candidate)) {
+    let missingCursor = findMinimumOrderCursor(
+      summary.missingTimestamps,
+      summary.missingTimestampCursor,
+      minimumOrder,
+    );
+    let timestampedCursor = findMinimumOrderCursor(
+      summary.timestampedByOrder,
+      summary.timestampedOrderCursor,
+      minimumOrder,
+    );
+    while (missingCursor < summary.missingTimestamps.length) {
+      const candidate = summary.missingTimestamps[missingCursor];
+      if (candidate && candidate.order >= minimumOrder && !consumed.has(candidate)) {
         break;
       }
-      summary.missingTimestampCursor += 1;
+      missingCursor += 1;
     }
-    while (summary.timestampedOrderCursor < summary.timestampedByOrder.length) {
-      const candidate = summary.timestampedByOrder[summary.timestampedOrderCursor];
-      if (candidate && !consumed.has(candidate)) {
+    while (timestampedCursor < summary.timestampedByOrder.length) {
+      const candidate = summary.timestampedByOrder[timestampedCursor];
+      if (candidate && candidate.order >= minimumOrder && !consumed.has(candidate)) {
         break;
       }
-      summary.timestampedOrderCursor += 1;
+      timestampedCursor += 1;
     }
-    const missing = summary.missingTimestamps[summary.missingTimestampCursor];
-    const timestamped = summary.timestampedByOrder[summary.timestampedOrderCursor];
+    const missing = summary.missingTimestamps[missingCursor];
+    const timestamped = summary.timestampedByOrder[timestampedCursor];
     const candidate =
       missing && (!timestamped || missing.order < timestamped.order) ? missing : timestamped;
     if (!candidate) {
       return undefined;
     }
-    if (candidate === missing) {
-      summary.missingTimestampCursor += 1;
-    } else {
-      summary.timestampedOrderCursor += 1;
-    }
+    summary.missingTimestampCursor = missingCursor + (candidate === missing ? 1 : 0);
+    summary.timestampedOrderCursor = timestampedCursor + (candidate === timestamped ? 1 : 0);
     return candidate;
   }
   let timestamped = findFirstTimestampCandidateInRange(
@@ -429,13 +465,18 @@ function findTimestampMatch(
     }
     return timestamped;
   }
-  while (summary.missingTimestampCursor < summary.missingTimestamps.length) {
-    const candidate = summary.missingTimestamps[summary.missingTimestampCursor];
-    if (candidate && !consumed.has(candidate)) {
-      summary.missingTimestampCursor += 1;
+  let missingCursor = findMinimumOrderCursor(
+    summary.missingTimestamps,
+    summary.missingTimestampCursor,
+    minimumOrder,
+  );
+  while (missingCursor < summary.missingTimestamps.length) {
+    const candidate = summary.missingTimestamps[missingCursor];
+    if (candidate && candidate.order >= minimumOrder && !consumed.has(candidate)) {
+      summary.missingTimestampCursor = missingCursor + 1;
       return candidate;
     }
-    summary.missingTimestampCursor += 1;
+    missingCursor += 1;
   }
   return undefined;
 }
@@ -535,13 +576,24 @@ export function mergeImportedChatHistoryMessages(params: {
   const consumedLocalCandidates = new Set<ComparableHistoryMessage>();
   const advanceRoleTextMinimumOrder = (
     entry: ComparableHistoryMessage,
-    matchedOrder = entry.order,
+    matched: ComparableHistoryMessage,
   ) => {
-    if (!entry.role || !entry.text) {
+    if (!entry.role) {
       return;
     }
-    const key = JSON.stringify([entry.role, entry.text]);
-    roleTextMinimumOrder.set(key, Math.max(roleTextMinimumOrder.get(key) ?? 0, matchedOrder + 1));
+    // A literal match must not consume order for an unrelated unprefixed turn.
+    // Other matches also advance the note-free view, including edited identities.
+    const matchedText = matched.text === entry.text ? entry.text : entry.driftNoteText;
+    for (const text of [entry.text, matchedText]) {
+      if (!text) {
+        continue;
+      }
+      const key = JSON.stringify([entry.role, text]);
+      roleTextMinimumOrder.set(
+        key,
+        Math.max(roleTextMinimumOrder.get(key) ?? 0, matched.order + 1),
+      );
+    }
   };
   const indexEntry = (entry: ComparableHistoryMessage) => {
     if (entry.externalIdentityKey) {
@@ -584,7 +636,7 @@ export function mergeImportedChatHistoryMessages(params: {
       const exactIdentityMatch = exactExternalIdentityIndex.get(externalIdentityKey);
       if (exactIdentityMatch) {
         consumedLocalCandidates.add(exactIdentityMatch);
-        advanceRoleTextMinimumOrder(imported, exactIdentityMatch.order);
+        advanceRoleTextMinimumOrder(imported, exactIdentityMatch);
         continue;
       }
     }
@@ -614,27 +666,37 @@ export function mergeImportedChatHistoryMessages(params: {
         changed = true;
       }
       consumedLocalCandidates.add(imageDuplicate);
-      advanceRoleTextMinimumOrder(imported, imageDuplicate.order);
+      advanceRoleTextMinimumOrder(imported, imageDuplicate);
       continue;
     }
-    const roleTextKey =
-      imported.role && imported.text ? JSON.stringify([imported.role, imported.text]) : undefined;
-    const minimumOrder = roleTextKey ? (roleTextMinimumOrder.get(roleTextKey) ?? 0) : 0;
-    const duplicate = imported.hasCliImageMentions
-      ? undefined
-      : imported.externalIdentityKey
-        ? findRoleTextCandidate(
-            identitylessRoleTextIndex,
-            imported,
-            consumedLocalCandidates,
-            minimumOrder,
-          )
-        : findRoleTextCandidate(
-            allMessageRoleTextIndex,
-            imported,
-            consumedLocalCandidates,
-            minimumOrder,
-          );
+    let duplicate: ComparableHistoryMessage | undefined;
+    if (!imported.hasCliImageMentions) {
+      const index = imported.externalIdentityKey
+        ? identitylessRoleTextIndex
+        : allMessageRoleTextIndex;
+      const importedMinimumOrder =
+        roleTextMinimumOrder.get(JSON.stringify([imported.role, imported.text])) ?? 0;
+      // A user can quote the complete note. Prefer that literal local turn
+      // before comparing the text after an OpenClaw-generated note.
+      for (const text of [imported.text, imported.driftNoteText]) {
+        if (!imported.role || !text) {
+          continue;
+        }
+        const minimumOrder = Math.max(
+          importedMinimumOrder,
+          roleTextMinimumOrder.get(JSON.stringify([imported.role, text])) ?? 0,
+        );
+        duplicate = findRoleTextCandidate(
+          index,
+          { ...imported, text },
+          consumedLocalCandidates,
+          minimumOrder,
+        );
+        if (duplicate) {
+          break;
+        }
+      }
+    }
     if (duplicate) {
       const projected = projectImportedIdentity(duplicate.message, imported.message);
       if (projected !== duplicate.message) {
@@ -646,7 +708,7 @@ export function mergeImportedChatHistoryMessages(params: {
         changed = true;
       }
       consumedLocalCandidates.add(duplicate);
-      advanceRoleTextMinimumOrder(imported, duplicate.order);
+      advanceRoleTextMinimumOrder(imported, duplicate);
       continue;
     }
     merged.push(imported);
