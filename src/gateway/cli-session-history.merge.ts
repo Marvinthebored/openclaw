@@ -10,6 +10,7 @@ import {
   hashCliImageTurnEntryId,
   readCliImageTurnContext,
 } from "../agents/cli-image-turn-correlation.js";
+import { stripCliSessionDriftNote } from "../agents/cli-session.js";
 import { isOpenClawCliImageCachePath } from "../agents/embedded-agent-runner/run/images.media-refs.js";
 import { stripInboundMetadata } from "../auto-reply/reply/strip-inbound-meta.js";
 import { isImageMediaFact, readPersistedMediaFacts } from "../media/media-facts.js";
@@ -115,12 +116,13 @@ function extractComparableText(
   if (parts.length === 0) {
     return { hasCliImageMentions: false };
   }
-  const joined = parts.join("\n").trim();
+  const rawText = parts.join("\n");
+  const joined = rawText.trim();
   if (!joined) {
     return { hasCliImageMentions: false };
   }
   const stripResult = isClaudeCliImportedUserMessage(message, role)
-    ? stripTrailingCliImageMentions(joined)
+    ? stripTrailingCliImageMentions(stripCliSessionDriftNote(rawText).trim())
     : { text: joined, stripped: false };
   const visible = stripInlineDirectiveTagsForDisplay(
     role === "user" ? stripInboundMetadata(stripResult.text) : stripResult.text,
