@@ -1717,6 +1717,13 @@ openclaw-session-discussion {
   }
 }
 
+.review-unavailable {
+  display: grid;
+  gap: 4px;
+  font-size: var(--control-ui-text-sm);
+  overflow-wrap: anywhere;
+}
+
 /* Mobile: Full-screen modal */
 /* ── Session diff panel (sessions.diff sidebar content) ── */
 
