@@ -183,6 +183,26 @@ export type CliSessionReuseResult =
     }
   | { mode: "invalidate"; invalidatedReason: CliSessionInvalidatedReason };
 
+const CLI_SESSION_DRIFT_NOTE_PREFIX =
+  "OpenClaw resumed this CLI session after prompt content changed.";
+
+/** User-turn note telling a resumed CLI session that its prompt content drifted. */
+export function buildCliSessionDriftNote(reasons: readonly CliSessionContentDriftReason[]): string {
+  return `${CLI_SESSION_DRIFT_NOTE_PREFIX} Follow the current turn's instructions; changed=${reasons.join(",")}.`;
+}
+
+/**
+ * Claude records the drift note as ordinary user text. Strip it so an imported
+ * row still compares equal to the local turn it duplicates.
+ */
+export function stripCliSessionDriftNote(text: string): string {
+  if (!text.startsWith(CLI_SESSION_DRIFT_NOTE_PREFIX)) {
+    return text;
+  }
+  const separator = text.indexOf("\n\n");
+  return separator === -1 ? "" : text.slice(separator + 2);
+}
+
 /** Decide whether a stored CLI session can be reused for the current auth/prompt/cwd/MCP state. */
 export function resolveCliSessionReuse(params: {
   binding?: CliSessionBinding;

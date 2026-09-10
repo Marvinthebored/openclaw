@@ -720,6 +720,35 @@ describe("cli session history", () => {
     },
   );
 
+  it("dedupes a drift-note user import against the local turn it repeats", () => {
+    const timestamp = Date.parse("2026-09-10T10:57:09.764Z");
+    const localMessage = {
+      role: "user",
+      content: "test ping...",
+      timestamp,
+      __openclaw: { id: "local-test-ping", senderIsOwner: true },
+    };
+    const importedMessage = {
+      role: "user",
+      content:
+        "OpenClaw resumed this CLI session after prompt content changed. Follow the current turn's instructions; changed=system-prompt,prompt-tools.\n\ntest ping...",
+      timestamp: timestamp + 1_531,
+      __openclaw: {
+        importedFrom: "claude-cli",
+        cliSessionId: "session-1",
+        externalId: "469988d1-1f29-4ffd-a4b4-26a349e765df",
+      },
+    };
+
+    const merged = mergeImportedChatHistoryMessages({
+      localMessages: [localMessage],
+      importedMessages: [importedMessage],
+    });
+
+    expect(merged).toHaveLength(1);
+    expect(readRecord(merged[0]).content).toBe("test ping...");
+  });
+
   it("retains mention-only imports near unrelated local image turns", () => {
     const timestamp = Date.parse("2026-03-26T16:29:54.500Z");
     const importedMessage = {
