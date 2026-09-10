@@ -520,7 +520,7 @@ describe("session workspace artifacts", () => {
       expect(createSessionWorkspaceProps(state).error).toMatch(/InvalidCharacterError|invalid/i),
     );
     expect(handleOpenSidebar).toHaveBeenCalledOnce();
-    expect(state.sidebarContent).toBeNull();
+    expect(state.sidebarContent).toMatchObject({ kind: "unavailable" });
   });
 });
 
@@ -765,7 +765,10 @@ describe("openSessionWorkspaceFile", () => {
       ),
     );
     expect(handleOpenSidebar).toHaveBeenCalledOnce();
-    expect(state.sidebarContent).toBeNull();
+    expect(state.sidebarContent).toEqual({
+      kind: "unavailable",
+      message: "Failed to load screenshots/result.png",
+    });
   });
 
   it("does not render base64 content as text when the preview discriminator disagrees", async () => {
@@ -799,7 +802,36 @@ describe("openSessionWorkspaceFile", () => {
       expect(createSessionWorkspaceProps(state).error).toBe("Failed to load notes.txt"),
     );
     expect(handleOpenSidebar).toHaveBeenCalledOnce();
-    expect(state.sidebarContent).toBeNull();
+    expect(state.sidebarContent).toEqual({
+      kind: "unavailable",
+      message: "Failed to load notes.txt",
+    });
+  });
+
+  it("keeps a rejected file open as an unavailable Review selection", async () => {
+    const handleOpenSidebar = vi.fn(recordSidebarContent);
+    const state = {
+      client: {},
+      connected: true,
+      handleOpenSidebar,
+      hello: gatewayHello([]),
+      sessionKey: "agent:main:current",
+      sidebarContent: null,
+      sessions: {
+        getFile: vi.fn().mockRejectedValue(new Error("session file not found")),
+      },
+    } as unknown as SessionWorkspaceHost;
+
+    openSessionWorkspaceFile(state, { path: "/outside/workspace/chat.md" });
+
+    await vi.waitFor(() =>
+      expect(state.sidebarContent).toEqual({
+        kind: "unavailable",
+        message: "session file not found",
+      }),
+    );
+    expect(createSessionWorkspaceProps(state).error).toBe("session file not found");
+    expect(handleOpenSidebar).toHaveBeenCalledOnce();
   });
 
   it("opens unsupported session files as metadata without treating bytes as text", async () => {

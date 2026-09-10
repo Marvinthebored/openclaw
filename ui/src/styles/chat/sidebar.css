@@ -1718,6 +1718,14 @@ openclaw-session-discussion {
 }
 
 /* Mobile: Full-screen modal */
+/* Review selection that failed to open (path outside the workspace, missing file). */
+.review-unavailable {
+  display: grid;
+  gap: 4px;
+  font-size: var(--control-ui-text-sm);
+  overflow-wrap: anywhere;
+}
+
 /* ── Session diff panel (sessions.diff sidebar content) ── */
 
 .session-diff {

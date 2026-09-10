@@ -630,6 +630,45 @@ describe("chat pane embedded panels", () => {
     expect(state.sidebarContent).toBeNull();
   });
 
+  it("shows why a file could not open instead of falling back to the session diff", async () => {
+    const request = vi.fn().mockResolvedValue({
+      sessionKey: "agent:main:review",
+      branch: "feature/review",
+      baseRef: "main",
+      additions: 1,
+      deletions: 1,
+      files: [{ path: "example.txt", status: "modified", additions: 1, deletions: 1 }],
+    });
+    const state = {
+      client: { request },
+      connected: true,
+      connectionEpoch: 1,
+      hello: { features: { methods: ["sessions.diff"] } },
+      sessionKey: "agent:main:review",
+      sidebarContent: { kind: "unavailable", message: "Failed to load docs/chat.md" },
+      sidebarLayout: { columns: [] },
+    } as unknown as ChatPageHost;
+    const mount = document.body.appendChild(document.createElement("div"));
+    const definitions = sidebarPanelDefinitions({
+      state,
+      renderDetail: (content) =>
+        html`<openclaw-chat-detail-panel
+          .content=${content}
+          embedded
+        ></openclaw-chat-detail-panel>`,
+      workspace: html`<div>Files</div>`,
+    } as Parameters<typeof sidebarPanelDefinitions>[0]);
+    await renderPanelFixture(mount, openSlot({ columns: [] }, "detail"), definitions);
+
+    const notice = mount.querySelector(".review-unavailable");
+    expect(notice?.getAttribute("role")).toBe("alert");
+    expect(notice?.classList.contains("danger")).toBe(true);
+    expect(notice?.querySelector("strong")?.textContent).toBe("Unable to open");
+    expect(notice?.querySelector("span")?.textContent).toBe("Failed to load docs/chat.md");
+    expect(mount.querySelector("openclaw-session-diff")).toBeNull();
+    expect(request).not.toHaveBeenCalled();
+  });
+
   it("enumerates a structural loading variant for every side-panel tab", async () => {
     const expected = {
       browser: "browser",
