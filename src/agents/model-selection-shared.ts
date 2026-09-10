@@ -1391,6 +1391,15 @@ export function buildConfiguredModelCatalog(params: {
       );
       const api = model.api ?? accepted?.api ?? provider.api;
       const baseUrl = model.baseUrl ?? accepted?.baseUrl ?? provider.baseUrl;
+      // Session-selectable context windows are catalog facts a config row cannot author.
+      const contextWindowSelection = accepted?.contextWindows
+        ? {
+            contextWindows: accepted.contextWindows,
+            ...(accepted.contextWindowDefault
+              ? { contextWindowDefault: accepted.contextWindowDefault }
+              : {}),
+          }
+        : {};
       const name = normalizeOptionalString(model?.name) || id;
       const contextWindow =
         typeof model?.contextWindow === "number" && model.contextWindow > 0
@@ -1417,6 +1426,7 @@ export function buildConfiguredModelCatalog(params: {
         api,
         ...(baseUrl ? { baseUrl } : {}),
         contextWindow,
+        ...contextWindowSelection,
         contextTokens,
         reasoning,
         ...(typeof model?.reasoning === "boolean" ? { configuredReasoning: model.reasoning } : {}),
