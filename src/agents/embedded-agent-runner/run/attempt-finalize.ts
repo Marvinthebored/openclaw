@@ -235,7 +235,7 @@ export async function completeEmbeddedAttemptAfterTurn(
           runtimeContext: {
             provider: attempt.provider,
             modelId: attempt.modelId,
-            modelContextWindow: attempt.model.contextWindow,
+            modelContextWindow: attempt.modelContextWindow,
             tokenBudget: attempt.contextTokenBudget,
           },
         });

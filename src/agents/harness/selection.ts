@@ -595,7 +595,7 @@ export async function runAgentHarnessAttempt(
       runtimeContext: {
         provider: internalParams.provider,
         modelId: internalParams.modelId,
-        modelContextWindow: internalParams.model.contextWindow,
+        modelContextWindow: internalParams.modelContextWindow,
         tokenBudget: internalParams.contextTokenBudget,
       },
     });
