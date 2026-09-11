@@ -268,6 +268,9 @@ export const en: TranslationMap & {
     workspaceLabel: "Workspace",
     branchLabel: "Branch",
     runsOn: "Runs on {providerId} · {profileId}",
+    machineLabel: "Machine",
+    machineCpu: "{cpu} vCPU",
+    machineMemory: "{memory} GB",
     more: "+{count} more",
     changedFile: "{count} file",
     changedFiles: "{count} files",
@@ -4064,8 +4067,7 @@ export const en: TranslationMap & {
       dismissing: "Dismissing…",
       emptyTitle: "No mentions yet",
       emptyBody: "When someone mentions you in a chat, it appears here.",
-      retention:
-        "Mentions are kept for up to seven days. Gateway restarts preserve your Inbox and dismissals.",
+      retention: "Mentions expire after 7 days.",
       notifications: "Notification settings",
       loading: "Loading mentions…",
       unavailable: "Sign in and connect to the Gateway to see your mentions.",
@@ -4649,6 +4651,7 @@ export const en: TranslationMap & {
       tokensWrittenToCache: "Tokens written to cache",
       tokensReadFromCache: "Tokens read from cache",
       noContextData: "No context data",
+      contextOutOfDate: "These context details are out of date. Refresh usage and try again.",
       systemPromptBreakdown: "System Prompt Breakdown",
       collapse: "Collapse",
       collapseAll: "Collapse All",
@@ -5483,7 +5486,8 @@ export const en: TranslationMap & {
       modes: {
         "read-only": {
           label: "Read Only",
-          description: "Read within the session root; writes and commands are blocked.",
+          description:
+            "Agent tools can read within the session root, but cannot write or run commands.",
         },
         guarded: {
           label: "Guarded",
@@ -5547,6 +5551,7 @@ export const en: TranslationMap & {
       editFile: "Edit file",
       searchInFile: "Search in file",
       showInFiles: "Show in Files",
+      unavailable: "Unable to open",
       previousMatch: "Previous match",
       nextMatch: "Next match",
       overwrite: "Overwrite",
@@ -5959,6 +5964,9 @@ export const en: TranslationMap & {
       statusRunningMany: "{count} running tasks",
       statusPreviewMore: "+{count} more",
       stopTask: "Stop {title}",
+      now: "Now",
+      toolCallsOne: "1 tool call",
+      toolCallsMany: "{count} tool calls",
       toolUseOne: "1 tool use",
       toolUseMany: "{count} tool uses",
       detailLoading: "Loading task details…",
