@@ -33,6 +33,10 @@ import {
 import { resolveComposerMenus } from "../chat/components/chat-composer-menus.ts";
 import type { ChatComposerPlusMenuView } from "../chat/components/chat-composer-plus-menu.ts";
 import {
+  observeComposerResize,
+  restoreComposerHeightOverride,
+} from "../chat/components/chat-composer-resize.ts";
+import {
   createSkillMenuState,
   handleSkillMenuKeydown,
   renderSkillMenu,
@@ -162,7 +166,16 @@ export class NewSessionComposerTextareaController {
     this.textarea = nextTextarea;
     if (nextTextarea) {
       observeTextareaOverflow(nextTextarea);
+      restoreComposerHeightOverride(nextTextarea);
       scheduleTextareaHeightAdjustment(nextTextarea);
+    }
+  };
+
+  readonly composerInputRef = (element?: Element) => {
+    // observeComposerResize is idempotent per element; listeners are owned
+    // by the handles themselves, so page teardown needs no explicit cleanup.
+    if (element instanceof HTMLElement) {
+      observeComposerResize(element);
     }
   };
 
@@ -559,6 +572,7 @@ export function renderNewSessionComposer(options: NewSessionComposerOptions) {
       @dragover=${attachmentDropHandlers.onDragover}
     >
       <div
+        ${ref(options.textareaController.composerInputRef)}
         class="agent-chat__input agent-chat__input--mobile-toolbar${
           options.dictationActive ? " agent-chat__input--dictating" : ""
         }"

@@ -5662,6 +5662,8 @@ export const en: TranslationMap & {
       fallbackReason: "Reason: {reason}",
       fallbackAttempts: "Attempts: {attempts}",
       cancelReply: "Cancel reply",
+      resizeInputHeight: "Drag to resize the message box. Double-click to reset.",
+      resizeInputWidth: "Drag to widen the chat column. Double-click to reset.",
       attachmentPreview: "Attachment preview",
       browserAnnotation: "Browser annotation",
       browserAnnotationPreview: "Browser annotation preview",

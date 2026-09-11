@@ -33,6 +33,10 @@ import { createComposerKeyDownHandler } from "./chat-composer-keydown.ts";
 import type { HumanMentionMenuHost } from "./chat-composer-mention-menu.ts";
 import { resolveComposerMenus } from "./chat-composer-menus.ts";
 import {
+  rebindComposerResizeInput,
+  restoreComposerHeightOverride,
+} from "./chat-composer-resize.ts";
+import {
   isSkillMenuVisible,
   resetSkillMenuState,
   type SkillMenuHost,
@@ -108,7 +112,9 @@ export function renderChatComposer(props: ChatComposerProps) {
   const visibleDraft =
     state.composingDraft?.key === draftKey ? state.composingDraft.value : props.draft;
   state.composerInputRef ??= (element?: Element) => {
+    const prev = state.composerInput;
     state.composerInput = replaceComposerPopoverAnchor(state.composerInput, element);
+    rebindComposerResizeInput(prev, state.composerInput);
   };
   state.textareaRef ??= (element?: Element) => {
     const nextTextarea = element instanceof HTMLTextAreaElement ? element : null;
@@ -119,6 +125,7 @@ export function renderChatComposer(props: ChatComposerProps) {
     state.composerTextarea = nextTextarea;
     if (nextTextarea) {
       observeTextareaOverflow(nextTextarea);
+      restoreComposerHeightOverride(nextTextarea);
       scheduleTextareaHeightAdjustment(nextTextarea);
       if (state.restoreComposerFocus) {
         state.restoreComposerFocus = false;
