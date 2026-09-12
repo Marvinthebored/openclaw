@@ -681,6 +681,7 @@ export class ChatPane extends ChatPaneLayoutRender {
       allowExternalEmbedUrls: state.allowExternalEmbedUrls,
       fetchLinkFavicon,
       chatMessageMaxWidth: state.settings.chatMessageMaxWidth,
+      onComposerWidthCommit: (value) => state.applySettings({ chatMessageMaxWidth: value }),
       assistantAttachmentAuthToken: resolveAssistantAttachmentAuthToken(state as never),
       resolveArtifactDownload: (params) => resolveChatArtifactDownload(state, params),
       basePath: state.basePath,

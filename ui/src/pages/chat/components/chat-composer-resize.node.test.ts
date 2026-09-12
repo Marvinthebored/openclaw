@@ -8,7 +8,7 @@ import {
   COMPOSER_COLUMN_MIN_PX,
   COMPOSER_HEIGHT_MIN_PX,
   parseStoredPixels,
-} from "./chat-composer-resize.ts";
+} from "./chat-composer-resize-geometry.ts";
 
 describe("parseStoredPixels", () => {
   it("accepts positive pixel values", () => {

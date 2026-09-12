@@ -114,7 +114,9 @@ export function renderChatComposer(props: ChatComposerProps) {
   state.composerInputRef ??= (element?: Element) => {
     const prev = state.composerInput;
     state.composerInput = replaceComposerPopoverAnchor(state.composerInput, element);
-    rebindComposerResizeInput(prev, state.composerInput);
+    rebindComposerResizeInput(prev, state.composerInput, {
+      onWidthCommit: props.onComposerWidthCommit ?? undefined,
+    });
   };
   state.textareaRef ??= (element?: Element) => {
     const nextTextarea = element instanceof HTMLTextAreaElement ? element : null;
