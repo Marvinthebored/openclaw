@@ -86,16 +86,20 @@ function findColumnRoot(input: HTMLElement): HTMLElement {
   );
 }
 
-function currentColumnMaxPx(root: HTMLElement): number {
-  // Computed style resolves rem/percentages to px, so drags starting from a
-  // Settings-authored value (e.g. "80%") still get a pixel baseline. The
-  // first drag after such a value commits it as px; reset returns to default.
+function currentColumnMaxPx(root: HTMLElement, input: HTMLElement): number {
+  // Custom properties stay author-unit in computed style, so the default
+  // "48rem" (and any Settings-authored rem/% value) never matches a px
+  // regex. When no explicit px token exists, measure the composer shell:
+  // it already reflects min(available, token), while the root card spans
+  // the full chat width and would make the first drag jump. The first drag
+  // from a non-px value commits it as px; reset returns to default.
   const computed = getComputedStyle(root).getPropertyValue("--chat-thread-max-width").trim();
   const match = /^(\d+(?:\.\d+)?)px$/u.exec(computed);
   if (match) {
     return Number(match[1]);
   }
-  return Math.max(Math.round(root.getBoundingClientRect().width), COMPOSER_COLUMN_MIN_PX);
+  const shell = input.closest<HTMLElement>(".agent-chat__composer-shell") ?? input;
+  return Math.max(Math.round(shell.getBoundingClientRect().width), COMPOSER_COLUMN_MIN_PX);
 }
 
 function applyColumnPreview(root: HTMLElement, value: string | null): void {
@@ -247,7 +251,7 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
       }
       const root = findColumnRoot(input);
       // Dragging left (negative dx) widens the column; dragging right narrows.
-      const startMax = currentColumnMaxPx(root);
+      const startMax = currentColumnMaxPx(root, input);
       let committed = `${startMax}px`;
       startDrag(
         sideHandle,
