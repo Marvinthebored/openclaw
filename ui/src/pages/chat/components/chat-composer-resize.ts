@@ -209,6 +209,11 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
   const topHandle = makeHandle(TOP_HANDLE_CLASS, "horizontal");
   const sideHandle = makeHandle(SIDE_HANDLE_CLASS, "vertical");
   const abort = new AbortController();
+  let preferredHeight = readStoredHeightPx();
+  const rememberHeight = (px: number | null) => {
+    preferredHeight = px;
+    writeStoredHeightPx(px);
+  };
   const syncValues = () => {
     const textarea = findTextarea(input);
     for (const [handle, value, min, max] of [
@@ -244,7 +249,6 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
         return;
       }
       const startMax = currentTextareaMaxPx(textarea);
-      const previous = textarea.style.maxHeight;
       let dy = 0;
       startDrag(
         topHandle,
@@ -256,10 +260,9 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
         },
         (cancelled) => {
           if (cancelled || Math.abs(dy) < COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX) {
-            textarea.style.maxHeight = previous;
-            adjustTextareaHeight(textarea);
+            applyHeightOverride(textarea, preferredHeight);
           } else {
-            writeStoredHeightPx(currentTextareaMaxPx(textarea));
+            rememberHeight(currentTextareaMaxPx(textarea));
           }
           syncValues();
         },
@@ -272,7 +275,7 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
     (event) => {
       event.preventDefault();
       event.stopPropagation();
-      writeStoredHeightPx(null);
+      rememberHeight(null);
       const textarea = findTextarea(input);
       if (textarea) {
         applyHeightOverride(textarea, null);
@@ -376,7 +379,7 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
         if (height && textarea) {
           const px = clampComposerHeightPx(next, window.innerHeight);
           applyHeightOverride(textarea, px);
-          writeStoredHeightPx(px);
+          rememberHeight(px);
         } else if (!height) {
           const value = `${clampComposerColumnMaxPx(next, window.innerWidth)}px`;
           applyColumnPreview(findColumnRoot(input), value);
@@ -387,10 +390,21 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
       { signal: abort.signal },
     );
   }
-  const observer = new ResizeObserver(syncValues);
-  observer.observe(input);
-  abort.signal.addEventListener("abort", () => observer.disconnect(), { once: true });
-  window.addEventListener("resize", syncValues, { signal: abort.signal });
+  const observer = typeof ResizeObserver === "function" ? new ResizeObserver(syncValues) : null;
+  observer?.observe(input);
+  abort.signal.addEventListener("abort", () => observer?.disconnect(), { once: true });
+  window.addEventListener(
+    "resize",
+    () => {
+      // The viewport constrains the display, not the remembered user choice.
+      const textarea = findTextarea(input);
+      if (textarea && preferredHeight !== null) {
+        applyHeightOverride(textarea, preferredHeight);
+      }
+      syncValues();
+    },
+    { signal: abort.signal },
+  );
 
   input.prepend(topHandle);
   input.prepend(sideHandle);

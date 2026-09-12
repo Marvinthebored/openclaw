@@ -46,7 +46,7 @@ import {
 } from "./session-accessor.sqlite-entry-equality.js";
 import {
   collectSessionEntryLookupKeys,
-  parseReadableSqliteSessionEntryRow,
+  parseReadableSqliteSessionEntryRows,
   readExactSessionEntryRowValidated,
   readSessionEntryRow,
   readLifecycleTargetSnapshot,
@@ -172,9 +172,9 @@ export function loadSessionEntryReadOnly(scope: SessionAccessScope): SessionEntr
 }
 
 /** Lists persisted session keys without materializing their entry JSON. */
-export function listSessionEntryKeysReadOnly(
+export async function listSessionEntryKeysReadOnly(
   scope: Partial<Omit<SessionAccessScope, "sessionKey">> = {},
-): string[] {
+): Promise<string[]> {
   const resolved = resolveSqliteScope({ ...scope, sessionKey: "" });
   const result = withOpenClawAgentDatabaseReadOnly((database) => {
     const db = getSessionKysely(database.db);
@@ -213,13 +213,11 @@ export function listSessionChildEntriesReadOnly(
         .where("session_key", "!=", resolved.sessionKey)
         .orderBy("session_key", "asc"),
     ).rows;
-    return childRows.flatMap((row) => {
-      if (isInternalSessionEffectsKey(row.session_key)) {
-        return [];
-      }
-      const entry = parseReadableSqliteSessionEntryRow(database, row, scope.projection);
-      return entry ? [{ sessionKey: row.session_key, entry }] : [];
-    });
+    return parseReadableSqliteSessionEntryRows(
+      database,
+      childRows.filter((row) => !isInternalSessionEffectsKey(row.session_key)),
+      scope.projection,
+    );
   }, toDatabaseOptions(resolved));
   return result.found ? result.value : [];
 }

@@ -330,6 +330,15 @@ suite.define(() => {
           await waitForControlUiGatewayReady(page);
           await expect.poll(() => readEditorMaxHeight(page), { timeout: 10_000 }).toBe(grownHeight);
 
+          // A viewport-only change must not erase the remembered maximum.
+          await page.setViewportSize({ width: 1440, height: 300 });
+          await expect.poll(() => readEditorMaxHeight(page)).toBe("240px");
+          expect(
+            await page.evaluate((key) => localStorage.getItem(key), COMPOSER_HEIGHT_STORAGE_KEY),
+          ).toBe(storedHeight);
+          await page.setViewportSize({ width: 1440, height: 1000 });
+          await expect.poll(() => readEditorMaxHeight(page)).toBe(grownHeight);
+
           // Double-click returns the editor to its CSS cap.
           await page.locator(TOP_GRIP).dblclick();
           await expect

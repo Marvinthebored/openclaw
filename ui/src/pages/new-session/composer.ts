@@ -22,7 +22,7 @@ import {
 import {
   adjustTextareaHeight,
   disconnectTextareaOverflowObserver,
-  observeTextareaOverflow,
+  replaceComposerTextarea,
   paneDomId,
   scheduleTextareaHeightAdjustment,
 } from "../chat/components/chat-composer-dom.ts";
@@ -159,16 +159,9 @@ export class NewSessionComposerTextareaController {
   capabilityMenuView: ChatComposerPlusMenuView = "root";
 
   readonly ref = (element?: Element) => {
-    const nextTextarea = element instanceof HTMLTextAreaElement ? element : null;
-    if (this.textarea && this.textarea !== nextTextarea) {
-      disconnectTextareaOverflowObserver(this.textarea);
-    }
-    if (this.textarea && !nextTextarea) {
-      this.resetPlaceholder();
-    }
+    const nextTextarea = replaceComposerTextarea(this.textarea, element);
     this.textarea = nextTextarea;
     if (nextTextarea) {
-      observeTextareaOverflow(nextTextarea);
       restoreComposerHeightOverride(nextTextarea);
       scheduleTextareaHeightAdjustment(nextTextarea);
     }
