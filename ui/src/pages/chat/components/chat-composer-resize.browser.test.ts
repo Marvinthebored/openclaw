@@ -89,3 +89,69 @@ it("reclamps cancellation after the viewport changes during a drag", async () =>
   await page.viewport(1440, 1000);
   await expect.poll(() => textarea.getBoundingClientRect().height).toBe(800);
 });
+
+for (const orientation of ["horizontal", "vertical"]) {
+  it(`keeps the ${orientation} gesture owned by its first pointer`, async () => {
+    await page.viewport(1440, 1000);
+    const textarea = mount(true);
+    const commit = vi.fn();
+    observeComposerResize(input, { onWidthCommit: commit });
+    const grip = input.querySelector<HTMLElement>(`[aria-orientation=${orientation}]`)!;
+    const capture = vi.spyOn(grip, "setPointerCapture").mockImplementation(() => {});
+    const send = (type: string, pointerId: number, delta = 0) =>
+      grip.dispatchEvent(
+        new PointerEvent(type, {
+          pointerId,
+          pointerType: "touch",
+          button: 0,
+          clientX: 100 + delta,
+          clientY: 100 + delta,
+        }),
+      );
+    const initial = textarea.style.maxHeight;
+    send("pointerdown", 1);
+    send("pointerdown", 2);
+    send("pointermove", 2, 200);
+    send("pointerup", 2, 200);
+    send("pointercancel", 2);
+    expect(capture).toHaveBeenCalledTimes(1);
+    expect(textarea.style.maxHeight).toBe(initial);
+    expect(commit).not.toHaveBeenCalled();
+    expect(localStorage.getItem(COMPOSER_HEIGHT_STORAGE_KEY)).toBe("800");
+    expect(input.classList.contains("agent-chat__composer-resizing")).toBe(true);
+    send("pointermove", 1, 100);
+    send("pointerup", 1, 100);
+    expect(input.classList.contains("agent-chat__composer-resizing")).toBe(false);
+    if (orientation === "horizontal") {
+      expect(localStorage.getItem(COMPOSER_HEIGHT_STORAGE_KEY)).toBe("700");
+    } else {
+      expect(commit).toHaveBeenCalledTimes(1);
+    }
+    send("pointerdown", 3);
+    expect(capture).toHaveBeenCalledTimes(2);
+    send("pointercancel", 3);
+  });
+}
+
+for (const teardown of ["lostpointercapture", "unmount"]) {
+  it(`cancels an active gesture on ${teardown}`, async () => {
+    await page.viewport(1440, 1000);
+    const textarea = mount(true);
+    const grip = input.querySelector<HTMLElement>("[aria-orientation=horizontal]")!;
+    vi.spyOn(grip, "setPointerCapture").mockImplementation(() => {});
+    grip.dispatchEvent(new PointerEvent("pointerdown", { pointerId: 1, button: 0, clientY: 100 }));
+    grip.dispatchEvent(new PointerEvent("pointermove", { pointerId: 1, clientY: 200 }));
+    expect(textarea.style.maxHeight).toBe("700px");
+    if (teardown === "unmount") {
+      rebindComposerResizeInput(input, null);
+    } else {
+      grip.dispatchEvent(new PointerEvent("lostpointercapture", { pointerId: 1 }));
+    }
+    expect(textarea.style.maxHeight).toBe("800px");
+    expect(input.classList.contains("agent-chat__composer-resizing")).toBe(false);
+    grip.dispatchEvent(new PointerEvent("pointermove", { pointerId: 1, clientY: 300 }));
+    grip.dispatchEvent(new PointerEvent("pointerup", { pointerId: 1 }));
+    expect(textarea.style.maxHeight).toBe("800px");
+    expect(localStorage.getItem(COMPOSER_HEIGHT_STORAGE_KEY)).toBe("800");
+  });
+}

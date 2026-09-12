@@ -44,6 +44,7 @@ type ComposerResizeState = {
   abort: AbortController;
   onWidthCommit: ComposerWidthCommit;
   syncValues: () => void;
+  cancelDrag: (() => void) | null;
 };
 
 const composerResizeStates = new WeakMap<HTMLElement, ComposerResizeState>();
@@ -132,32 +133,47 @@ function startDrag(
   onMove: (dx: number, dy: number) => void,
   onEnd: (cancelled: boolean) => void,
 ): void {
+  const input = handle.closest<HTMLElement>(".agent-chat__input");
+  const state = input ? composerResizeStates.get(input) : undefined;
+  if (!state || state.cancelDrag) {
+    return;
+  }
   event.preventDefault();
   event.stopPropagation();
+  const pointerId = event.pointerId;
   const startX = event.clientX;
   const startY = event.clientY;
   handle.setPointerCapture(event.pointerId);
-  const input = handle.closest<HTMLElement>(".agent-chat__input");
   input?.classList.add(DRAGGING_CLASS);
   const move = (moveEvent: PointerEvent) => {
-    onMove(moveEvent.clientX - startX, moveEvent.clientY - startY);
+    if (moveEvent.pointerId === pointerId) {
+      onMove(moveEvent.clientX - startX, moveEvent.clientY - startY);
+    }
   };
-  const end = (endEvent: PointerEvent, cancelled: boolean) => {
+  const finish = (cancelled: boolean) => {
+    state.cancelDrag = null;
     handle.removeEventListener("pointermove", move);
     handle.removeEventListener("pointerup", up);
     handle.removeEventListener("pointercancel", cancel);
-    if (handle.hasPointerCapture(endEvent.pointerId)) {
-      handle.releasePointerCapture(endEvent.pointerId);
+    handle.removeEventListener("lostpointercapture", cancel);
+    if (handle.hasPointerCapture(pointerId)) {
+      handle.releasePointerCapture(pointerId);
     }
     input?.classList.remove(DRAGGING_CLASS);
     onEnd(cancelled);
   };
   const up = (upEvent: PointerEvent) => {
-    end(upEvent, false);
+    if (upEvent.pointerId === pointerId) {
+      finish(false);
+    }
   };
   const cancel = (cancelEvent: PointerEvent) => {
-    end(cancelEvent, true);
+    if (cancelEvent.pointerId === pointerId) {
+      finish(true);
+    }
   };
+  state.cancelDrag = () => finish(true);
+  handle.addEventListener("lostpointercapture", cancel);
   handle.addEventListener("pointermove", move);
   handle.addEventListener("pointerup", up);
   handle.addEventListener("pointercancel", cancel);
@@ -191,6 +207,7 @@ function disconnectComposerResize(input: HTMLElement): void {
   if (!state) {
     return;
   }
+  state.cancelDrag?.();
   state.abort.abort();
   state.topHandle.remove();
   state.sideHandle.remove();
@@ -235,7 +252,14 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
       handle.setAttribute("aria-valuemax", String(Math.max(max, value)));
     }
   };
-  const state: ComposerResizeState = { topHandle, sideHandle, abort, onWidthCommit, syncValues };
+  const state: ComposerResizeState = {
+    topHandle,
+    sideHandle,
+    abort,
+    onWidthCommit,
+    syncValues,
+    cancelDrag: null,
+  };
   labelHandles(state);
 
   topHandle.addEventListener(
