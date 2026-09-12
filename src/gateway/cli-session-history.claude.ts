@@ -7,6 +7,7 @@ import {
   asFiniteNumber,
   parseDateStringTimestampMs,
 } from "@openclaw/normalization-core/number-coercion";
+import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeOptionalString } from "@openclaw/normalization-core/string-coerce";
 import {
   readCliImageTurnContext,
@@ -286,23 +287,14 @@ function isClaudeCliVisibleHarnessContext(entry: ClaudeCliProjectEntry): boolean
   return entry.isCompactSummary === true || entry.isVisibleInTranscriptOnly === true;
 }
 
-function isClaudeCliTaskNotificationOrigin(entry: ClaudeCliProjectEntry): boolean {
-  if (entry === null || typeof entry !== "object") return false;
-  const origin = (entry as { origin?: unknown }).origin;
-  if (origin === null || typeof origin !== "object") return false;
-  return (origin as { kind?: unknown }).kind === "task-notification";
-}
-
 function isClaudeCliTaskNotification(
   entry: ClaudeCliProjectEntry,
   content: string | unknown[],
 ): boolean {
-  // Native origin is the authorship signal: all 13 genuine harness
-  // notifications carry origin {kind:"task-notification"} while 295 sampled
-  // operator turns have no origin. Envelope text alone is insufficient —
-  // an operator can paste the same XML into the session.
-  if (!isClaudeCliTaskNotificationOrigin(entry)) return false;
+  // Native origin establishes authorship; operator-pasted XML must stay a user turn.
   return (
+    isRecord(entry.origin) &&
+    entry.origin.kind === "task-notification" &&
     typeof content === "string" &&
     content.startsWith("<task-notification>") &&
     content.endsWith("</task-notification>")
