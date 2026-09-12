@@ -285,6 +285,14 @@ function isClaudeCliVisibleHarnessContext(entry: ClaudeCliProjectEntry): boolean
   return entry.isCompactSummary === true || entry.isVisibleInTranscriptOnly === true;
 }
 
+function isClaudeCliTaskNotification(content: string | unknown[]): boolean {
+  return (
+    typeof content === "string" &&
+    content.startsWith("<task-notification>") &&
+    content.endsWith("</task-notification>")
+  );
+}
+
 export function resolveClaudeCliPromptTextCandidates(
   entry: ClaudeCliProjectEntry,
   content: string | unknown[],
@@ -417,16 +425,18 @@ export function parseClaudeCliHistoryEntry(
     if (cliImageTurnKey && typeof content === "string") {
       content = stripCliImageTurnContext(content, cliImageTurnKey);
     }
-    // Record provenance here, where the native flags are known, so downstream
+    // Record provenance here, where the native row shape is known, so downstream
     // display never has to infer operator authorship from message text.
-    const harnessInjected = isClaudeCliVisibleHarnessContext(entry);
+    const sourceTool = isClaudeCliTaskNotification(content)
+      ? "claude_cli_task_notification"
+      : isClaudeCliVisibleHarnessContext(entry)
+        ? "cli_harness_context"
+        : undefined;
     return attachOpenClawTranscriptMeta(
       {
         role: "user",
         content,
-        ...(harnessInjected
-          ? { provenance: { kind: "internal_system", sourceTool: "cli_harness_context" } }
-          : {}),
+        ...(sourceTool ? { provenance: { kind: "internal_system", sourceTool } } : {}),
         ...(timestamp !== undefined ? { timestamp } : {}),
       },
       { ...baseMeta, ...(cliImageTurnKey ? { cliImageTurnKey } : {}) },

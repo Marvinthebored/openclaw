@@ -420,7 +420,7 @@ describe("cli session history", () => {
     });
   });
 
-  it("omits isMeta rows and records visible harness context provenance", async () => {
+  it("omits isMeta rows and records internal Claude context provenance", async () => {
     await withClaudeProjectsDir(async ({ homeDir, sessionId, filePath }) => {
       await fs.writeFile(
         filePath,
@@ -467,6 +467,21 @@ describe("cli session history", () => {
               content: "Transcript-only synthetic context row.",
             },
           },
+          {
+            type: "user",
+            uuid: "task-notification-1",
+            timestamp: "2026-03-26T16:29:58.000Z",
+            message: {
+              role: "user",
+              content: [
+                "<task-notification>",
+                "<task-id>task-1</task-id>",
+                "<status>completed</status>",
+                "<summary>Background review finished.</summary>",
+                "</task-notification>",
+              ].join("\n"),
+            },
+          },
         ]
           .map((line) => JSON.stringify(line))
           .join("\n"),
@@ -475,7 +490,7 @@ describe("cli session history", () => {
 
       const messages = readClaudeCliSessionMessages({ cliSessionId: sessionId, homeDir });
 
-      expect(messages).toHaveLength(3);
+      expect(messages).toHaveLength(4);
       expect(JSON.stringify(messages)).not.toContain("Base directory for this skill");
       // The operator-authored turn stays free of injected provenance.
       expectFields(messages[0], { role: "user" });
@@ -488,6 +503,10 @@ describe("cli session history", () => {
       expectFields(readRecord(messages[2]).provenance, {
         kind: "internal_system",
         sourceTool: "cli_harness_context",
+      });
+      expectFields(readRecord(messages[3]).provenance, {
+        kind: "internal_system",
+        sourceTool: "claude_cli_task_notification",
       });
     });
   });
