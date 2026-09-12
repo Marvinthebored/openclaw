@@ -1,7 +1,7 @@
 // Chat composer resize grips through a real Gateway: the height grip
 // persists per-device, the width grip commits through the Message width
 // setting (single owner), and both survive reload.
-import { readFile, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Page } from "playwright";
 import { expect, it } from "vitest";
@@ -144,7 +144,9 @@ suite.define(() => {
     let dashboard = await owner.cli(["dashboard", "--json"]);
     const deadline = Date.now() + 60_000;
     while (dashboard.code !== 0 && Date.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      await new Promise((resolve) => {
+        setTimeout(resolve, 3000);
+      });
       dashboard = await owner.cli(["dashboard", "--json"]);
     }
     expect(

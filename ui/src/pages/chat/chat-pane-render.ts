@@ -80,10 +80,8 @@ export class ChatPane extends ChatPaneLayoutRender {
     const selectedSession = selectedChatSessionRow(state);
     const swarmTarget = this.resolveChatReadTarget();
     const selectedSessionArchived = this.isCurrentSessionArchived(state);
-    const mutationAccess = readChatPaneMutationAccess(
-      this.context.gateway.snapshot,
-      state.sessionKey,
-    );
+    const gatewaySnapshot = this.context.gateway.snapshot;
+    const mutationAccess = readChatPaneMutationAccess(gatewaySnapshot, state.sessionKey);
     const observerDigest = pickFreshestObserverDigest(
       state.observerDigest,
       projectSessionObserverDigest(
@@ -155,7 +153,6 @@ export class ChatPane extends ChatPaneLayoutRender {
       sessionKey: `${currentAgentId ?? ""}\0${state.sessionKey}`,
       session: selectedSession,
     });
-    const gatewaySnapshot = this.context.gateway.snapshot;
     const placementComposer = this.placementComposerPresentation(
       selectedSession,
       placementStartup !== null,
