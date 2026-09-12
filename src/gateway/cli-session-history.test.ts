@@ -471,6 +471,22 @@ describe("cli session history", () => {
             type: "user",
             uuid: "task-notification-1",
             timestamp: "2026-03-26T16:29:58.000Z",
+            origin: { kind: "task-notification" },
+            message: {
+              role: "user",
+              content: [
+                "<task-notification>",
+                "<task-id>task-1</task-id>",
+                "<status>completed</status>",
+                "<summary>Background review finished.</summary>",
+                "</task-notification>",
+              ].join("\n"),
+            },
+          },
+          {
+            type: "user",
+            uuid: "operator-pasted-xml-1",
+            timestamp: "2026-03-26T16:29:59.000Z",
             message: {
               role: "user",
               content: [
@@ -490,7 +506,7 @@ describe("cli session history", () => {
 
       const messages = readClaudeCliSessionMessages({ cliSessionId: sessionId, homeDir });
 
-      expect(messages).toHaveLength(4);
+      expect(messages).toHaveLength(5);
       expect(JSON.stringify(messages)).not.toContain("Base directory for this skill");
       // The operator-authored turn stays free of injected provenance.
       expectFields(messages[0], { role: "user" });
@@ -508,6 +524,9 @@ describe("cli session history", () => {
         kind: "internal_system",
         sourceTool: "claude_cli_task_notification",
       });
+      // Identical envelope text without the native origin stays operator-authored.
+      expectFields(messages[4], { role: "user" });
+      expect(readRecord(messages[4]).provenance).toBeUndefined();
     });
   });
 

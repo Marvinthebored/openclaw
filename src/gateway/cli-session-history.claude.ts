@@ -39,6 +39,7 @@ export type ClaudeCliProjectEntry = {
   isMeta?: unknown;
   isCompactSummary?: unknown;
   isVisibleInTranscriptOnly?: unknown;
+  origin?: unknown;
   message?: {
     role?: unknown;
     content?: unknown;
@@ -285,7 +286,22 @@ function isClaudeCliVisibleHarnessContext(entry: ClaudeCliProjectEntry): boolean
   return entry.isCompactSummary === true || entry.isVisibleInTranscriptOnly === true;
 }
 
-function isClaudeCliTaskNotification(content: string | unknown[]): boolean {
+function isClaudeCliTaskNotificationOrigin(entry: ClaudeCliProjectEntry): boolean {
+  if (entry === null || typeof entry !== "object") return false;
+  const origin = (entry as { origin?: unknown }).origin;
+  if (origin === null || typeof origin !== "object") return false;
+  return (origin as { kind?: unknown }).kind === "task-notification";
+}
+
+function isClaudeCliTaskNotification(
+  entry: ClaudeCliProjectEntry,
+  content: string | unknown[],
+): boolean {
+  // Native origin is the authorship signal: all 13 genuine harness
+  // notifications carry origin {kind:"task-notification"} while 295 sampled
+  // operator turns have no origin. Envelope text alone is insufficient —
+  // an operator can paste the same XML into the session.
+  if (!isClaudeCliTaskNotificationOrigin(entry)) return false;
   return (
     typeof content === "string" &&
     content.startsWith("<task-notification>") &&
@@ -427,7 +443,7 @@ export function parseClaudeCliHistoryEntry(
     }
     // Record provenance here, where the native row shape is known, so downstream
     // display never has to infer operator authorship from message text.
-    const sourceTool = isClaudeCliTaskNotification(content)
+    const sourceTool = isClaudeCliTaskNotification(entry, content)
       ? "claude_cli_task_notification"
       : isClaudeCliVisibleHarnessContext(entry)
         ? "cli_harness_context"
