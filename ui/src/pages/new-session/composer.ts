@@ -3,7 +3,9 @@ import { guard } from "lit/directives/guard.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { live } from "lit/directives/live.js";
 import { ref } from "lit/directives/ref.js";
+import { styleMap } from "lit/directives/style-map.js";
 import type { GatewayBrowserClient } from "../../api/gateway.ts";
+import { loadSettings } from "../../app/settings.ts";
 import { icons } from "../../components/icons.ts";
 import type { ImageLightboxItem } from "../../components/image-lightbox.ts";
 import { t } from "../../i18n/index.ts";
@@ -33,7 +35,7 @@ import {
 import { resolveComposerMenus } from "../chat/components/chat-composer-menus.ts";
 import type { ChatComposerPlusMenuView } from "../chat/components/chat-composer-plus-menu.ts";
 import {
-  observeComposerResize,
+  rebindComposerResizeInput,
   restoreComposerHeightOverride,
 } from "../chat/components/chat-composer-resize.ts";
 import {
@@ -138,6 +140,7 @@ function renderStartControl(options: NewSessionComposerOptions) {
 }
 
 export class NewSessionComposerTextareaController {
+  private composerInput: HTMLElement | null = null;
   private textarea: HTMLTextAreaElement | null = null;
   private placeholderFrame: number | null = null;
   private placeholderStartedAt: number | null = null;
@@ -172,11 +175,9 @@ export class NewSessionComposerTextareaController {
   };
 
   readonly composerInputRef = (element?: Element) => {
-    // observeComposerResize is idempotent per element; listeners are owned
-    // by the handles themselves, so page teardown needs no explicit cleanup.
-    if (element instanceof HTMLElement) {
-      observeComposerResize(element);
-    }
+    const next = element instanceof HTMLElement ? element : null;
+    rebindComposerResizeInput(this.composerInput, next);
+    this.composerInput = next;
   };
 
   syncDraft(message: string) {
@@ -345,6 +346,7 @@ export class NewSessionComposerTextareaController {
   }
 
   disconnect() {
+    this.composerInputRef();
     this.mentionMenu.dispose();
     this.resetPlaceholder();
     this.skillCommandClient = null;
@@ -559,6 +561,7 @@ export function renderNewSessionComposer(options: NewSessionComposerOptions) {
   return html`
     <div
       class="agent-chat__composer-shell new-session-page__composer"
+      style=${styleMap({ "--chat-thread-max-width": loadSettings().chatMessageMaxWidth })}
       @drop=${(event: DragEvent) => {
         if (options.nativeTerminal && event.dataTransfer?.files.length) {
           event.preventDefault();

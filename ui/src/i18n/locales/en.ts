@@ -5662,8 +5662,10 @@ export const en: TranslationMap & {
       fallbackReason: "Reason: {reason}",
       fallbackAttempts: "Attempts: {attempts}",
       cancelReply: "Cancel reply",
-      resizeInputHeight: "Drag to resize the message box. Double-click to reset.",
-      resizeInputWidth: "Drag to widen the chat column. Double-click to reset.",
+      resizeInputHeight:
+        "Message box height limit. Drag or use Up/Down arrows. Home/End set limits. Enter or double-click resets.",
+      resizeInputWidth:
+        "Chat column width. Drag or use Left/Right arrows. Home/End set limits. Enter or double-click resets.",
       attachmentPreview: "Attachment preview",
       browserAnnotation: "Browser annotation",
       browserAnnotationPreview: "Browser annotation preview",

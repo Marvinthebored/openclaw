@@ -43,6 +43,7 @@ type ComposerResizeState = {
   sideHandle: HTMLElement;
   abort: AbortController;
   onWidthCommit: ComposerWidthCommit;
+  syncValues: () => void;
 };
 
 const composerResizeStates = new WeakMap<HTMLElement, ComposerResizeState>();
@@ -77,7 +78,7 @@ function findTextarea(input: HTMLElement): HTMLTextAreaElement | null {
 
 function findColumnRoot(input: HTMLElement): HTMLElement {
   // --chat-thread-max-width caps both the transcript (.chat-thread-inner) and
-  // the composer shell, so one token widens the whole centred column. The
+  // the composer shell, so one token widens the whole centered column. The
   // chat view renders this token from settings via styleMap; the grip only
   // previews through it mid-drag. Fall back to the shell, then the input.
   return (
@@ -165,6 +166,7 @@ function startDrag(
 function makeHandle(className: string, orientation: "horizontal" | "vertical"): HTMLElement {
   const handle = document.createElement("div");
   handle.className = className;
+  handle.tabIndex = 0;
   handle.setAttribute("role", "separator");
   handle.setAttribute("aria-orientation", orientation);
   handle.dataset.composerResizeHandle = className;
@@ -201,12 +203,34 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
     // Host callbacks close over live state; keep the newest one.
     existing.onWidthCommit = onWidthCommit;
     labelHandles(existing);
+    existing.syncValues();
     return;
   }
   const topHandle = makeHandle(TOP_HANDLE_CLASS, "horizontal");
   const sideHandle = makeHandle(SIDE_HANDLE_CLASS, "vertical");
   const abort = new AbortController();
-  const state: ComposerResizeState = { topHandle, sideHandle, abort, onWidthCommit };
+  const syncValues = () => {
+    const textarea = findTextarea(input);
+    for (const [handle, value, min, max] of [
+      [
+        topHandle,
+        textarea ? currentTextareaMaxPx(textarea) : COMPOSER_HEIGHT_MIN_PX,
+        COMPOSER_HEIGHT_MIN_PX,
+        clampComposerHeightPx(Infinity, window.innerHeight),
+      ],
+      [
+        sideHandle,
+        currentColumnMaxPx(input),
+        COMPOSER_COLUMN_MIN_PX,
+        clampComposerColumnMaxPx(Infinity, window.innerWidth),
+      ],
+    ] as const) {
+      handle.setAttribute("aria-valuenow", String(value));
+      handle.setAttribute("aria-valuemin", String(Math.min(min, value)));
+      handle.setAttribute("aria-valuemax", String(Math.max(max, value)));
+    }
+  };
+  const state: ComposerResizeState = { topHandle, sideHandle, abort, onWidthCommit, syncValues };
   labelHandles(state);
 
   topHandle.addEventListener(
@@ -220,14 +244,24 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
         return;
       }
       const startMax = currentTextareaMaxPx(textarea);
+      const previous = textarea.style.maxHeight;
+      let dy = 0;
       startDrag(
         topHandle,
         event,
-        (_dx, dy) => {
-          applyHeightOverride(textarea, startMax - dy);
+        (_dx, delta) => {
+          dy = delta;
+          applyHeightOverride(textarea, startMax - delta);
+          syncValues();
         },
-        () => {
-          writeStoredHeightPx(currentTextareaMaxPx(textarea));
+        (cancelled) => {
+          if (cancelled || Math.abs(dy) < COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX) {
+            textarea.style.maxHeight = previous;
+            adjustTextareaHeight(textarea);
+          } else {
+            writeStoredHeightPx(currentTextareaMaxPx(textarea));
+          }
+          syncValues();
         },
       );
     },
@@ -243,6 +277,7 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
       if (textarea) {
         applyHeightOverride(textarea, null);
       }
+      syncValues();
     },
     { signal: abort.signal },
   );
@@ -270,6 +305,7 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
           }
           committed = `${clampComposerColumnMaxPx(startMax - dx, window.innerWidth)}px`;
           applyColumnPreview(root, committed);
+          syncValues();
         },
         (cancelled) => {
           if (!shouldCommitWidthDrag(cancelled, maxAbsDx, Math.abs(lastDx))) {
@@ -280,6 +316,7 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
             // default until the host's next render.
             const owned = loadSettings().chatMessageMaxWidth;
             applyColumnPreview(root, owned ?? null);
+            syncValues();
             return;
           }
           // Preview already shows the committed value, so the host's
@@ -299,23 +336,67 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
       // setting so its next render omits the token (default width).
       applyColumnPreview(findColumnRoot(input), null);
       composerResizeStates.get(input)?.onWidthCommit(undefined);
+      syncValues();
     },
     { signal: abort.signal },
   );
 
+  for (const [handle, grow, shrink] of [
+    [topHandle, "ArrowUp", "ArrowDown"],
+    [sideHandle, "ArrowLeft", "ArrowRight"],
+  ] as const) {
+    handle.addEventListener("focus", syncValues, { signal: abort.signal });
+    handle.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.altKey ||
+          event.ctrlKey ||
+          event.metaKey ||
+          ![grow, shrink, "Home", "End", "Enter"].includes(event.key)
+        ) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.key === "Enter") {
+          handle.dispatchEvent(new MouseEvent("dblclick"));
+          return;
+        }
+        const textarea = findTextarea(input);
+        const height = handle === topHandle;
+        const current =
+          height && textarea ? currentTextareaMaxPx(textarea) : currentColumnMaxPx(input);
+        const next =
+          event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? Infinity
+              : current + (event.key === grow ? 16 : -16);
+        if (height && textarea) {
+          const px = clampComposerHeightPx(next, window.innerHeight);
+          applyHeightOverride(textarea, px);
+          writeStoredHeightPx(px);
+        } else if (!height) {
+          const value = `${clampComposerColumnMaxPx(next, window.innerWidth)}px`;
+          applyColumnPreview(findColumnRoot(input), value);
+          state.onWidthCommit(value);
+        }
+        syncValues();
+      },
+      { signal: abort.signal },
+    );
+  }
+  const observer = new ResizeObserver(syncValues);
+  observer.observe(input);
+  abort.signal.addEventListener("abort", () => observer.disconnect(), { once: true });
+  window.addEventListener("resize", syncValues, { signal: abort.signal });
+
   input.prepend(topHandle);
   input.prepend(sideHandle);
 
-  // Hosts that own width rendering (chat view styleMap) need no mount-time
-  // application: restoring here would run from the input ref before the
-  // element is attached to its .chat ancestor. Hosts without one
-  // (new-session page) read the single owned setting so the box reflects it.
-  if (!options?.onWidthCommit) {
-    const owned = loadSettings().chatMessageMaxWidth;
-    if (owned) {
-      findColumnRoot(input).style.setProperty("--chat-thread-max-width", owned);
-    }
-  }
+  // Hosts render the width setting on their column/shell. Input refs run
+  // before ancestors attach, so mount-time restoration cannot find its owner.
   const textarea = findTextarea(input);
   if (textarea) {
     const stored = readStoredHeightPx();

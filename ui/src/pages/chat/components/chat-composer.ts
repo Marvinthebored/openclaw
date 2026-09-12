@@ -70,17 +70,15 @@ function resolveChatSlashCommandArgOptions(
   command: SlashCommandDef,
   props: ChatComposerProps,
 ): string[] {
-  if (command.key !== "think") {
-    return command.argOptions ?? [];
-  }
-  if (props.modelSwitching) {
-    return [];
-  }
-  return resolveThinkingCommandArgOptionsForSession(
-    props.selectedSession,
-    props.sessions?.defaults,
-    props.modelCatalog,
-  );
+  return command.key !== "think"
+    ? (command.argOptions ?? [])
+    : props.modelSwitching
+      ? []
+      : resolveThinkingCommandArgOptionsForSession(
+          props.selectedSession,
+          props.sessions?.defaults,
+          props.modelCatalog,
+        );
 }
 
 export function renderChatComposer(props: ChatComposerProps) {
