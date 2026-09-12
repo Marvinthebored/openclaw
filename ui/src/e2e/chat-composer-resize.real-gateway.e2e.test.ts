@@ -24,6 +24,7 @@ const COMPOSER_HEIGHT_STORAGE_KEY = "***";
 const TOP_GRIP = ".agent-chat__composer-resize-top";
 const SIDE_GRIP = ".agent-chat__composer-resize-side";
 const COMPOSER_INPUT = ".agent-chat__input";
+const COMPOSER_SHELL = ".agent-chat__composer-shell";
 const COMPOSER_TEXTAREA = ".agent-chat__composer-combobox > textarea";
 const CHAT_COLUMN = ".card.chat";
 const MESSAGE_WIDTH_INPUT = "[data-settings-chat-message-width]";
@@ -200,6 +201,17 @@ suite.define(() => {
         await waitForControlUiGatewayReady(page);
         await expect.poll(() => readColumnToken(page), { timeout: 10_000 }).toBe("720px");
 
+        // A click without movement is not a resize: the stored value
+        // survives untouched instead of being rewritten as px (P1).
+        await page.locator(COMPOSER_INPUT).hover();
+        await page.locator(SIDE_GRIP).click();
+        await page.waitForTimeout(500);
+        expect(await readWidthSetting(page)).toBe("720px");
+        expect(await readColumnToken(page)).toBe("720px");
+        if (captureEnabled) {
+          await page.screenshot({ path: path.join(artifactDir, "02-noop-click-keeps-720.png") });
+        }
+
         // Dragging the side grip left widens the column AND updates the
         // single owned setting (P1: no competing persistence).
         await page.locator(COMPOSER_INPUT).hover();
@@ -207,7 +219,7 @@ suite.define(() => {
         await expect.poll(() => readWidthSetting(page), { timeout: 10_000 }).toBe("920px");
         await expect.poll(() => readColumnToken(page), { timeout: 10_000 }).toBe("920px");
         if (captureEnabled) {
-          await page.screenshot({ path: path.join(artifactDir, "02-width-dragged-920.png") });
+          await page.screenshot({ path: path.join(artifactDir, "03-width-dragged-920.png") });
         }
 
         // Reload restores the dragged width from the setting (P2: the host
@@ -217,6 +229,37 @@ suite.define(() => {
         await expect.poll(() => readColumnToken(page), { timeout: 10_000 }).toBe("920px");
         expect(await readWidthSetting(page)).toBe("920px");
 
+        // Oversized pixel preference: store a cap wider than a narrowed
+        // pane can show, then narrow-drag. The baseline comes from the
+        // rendered shell, so the drag responds from the first pixel
+        // instead of swallowing the overshoot (P2).
+        expect((await page.goto(settingsUrl.toString()))?.status()).toBe(200);
+        await waitForControlUiSettingsTakeover(page);
+        const wideInput = page.locator(MESSAGE_WIDTH_INPUT);
+        await wideInput.waitFor();
+        await wideInput.scrollIntoViewIfNeeded();
+        await wideInput.fill("1300px");
+        await wideInput.blur();
+        await expect.poll(() => readWidthSetting(page), { timeout: 10_000 }).toBe("1300px");
+        await page.setViewportSize({ width: 1000, height: 1000 });
+        expect((await page.goto(chatUrl.toString()))?.status()).toBe(200);
+        await waitForControlUiGatewayReady(page);
+        await expect.poll(() => readColumnToken(page), { timeout: 10_000 }).toBe("1300px");
+        const shellBox = await page.locator(COMPOSER_SHELL).boundingBox();
+        expect(shellBox, "composer shell has a hit box").toBeTruthy();
+        const shellWidthPx = Math.round(shellBox!.width);
+        // The narrowed pane really does show less than the stored cap.
+        expect(shellWidthPx).toBeLessThan(1300);
+        await page.locator(COMPOSER_INPUT).hover();
+        await dragGrip(page, SIDE_GRIP, 120, 0);
+        const narrowedWidth = `${shellWidthPx - 120}px`;
+        await expect.poll(() => readWidthSetting(page), { timeout: 10_000 }).toBe(narrowedWidth);
+        await expect.poll(() => readColumnToken(page), { timeout: 10_000 }).toBe(narrowedWidth);
+        if (captureEnabled) {
+          await page.screenshot({ path: path.join(artifactDir, "04-oversized-narrowed.png") });
+        }
+        await page.setViewportSize({ width: 1440, height: 1000 });
+
         // Double-click resets to the default and clears the setting, so
         // Settings and the column agree again.
         await page.locator(COMPOSER_INPUT).hover();
@@ -225,7 +268,7 @@ suite.define(() => {
         const resetToken = await readColumnToken(page);
         expect(resetToken).not.toBe("920px");
         if (captureEnabled) {
-          await page.screenshot({ path: path.join(artifactDir, "03-width-reset.png") });
+          await page.screenshot({ path: path.join(artifactDir, "05-width-reset.png") });
         }
 
         // Height: fill past the six-line cap, drag the top grip up, and
@@ -247,7 +290,7 @@ suite.define(() => {
         );
         expect(storedHeight, "height override persists per-device").toBeTruthy();
         if (captureEnabled) {
-          await page.screenshot({ path: path.join(artifactDir, "04-height-dragged.png") });
+          await page.screenshot({ path: path.join(artifactDir, "06-height-dragged.png") });
         }
 
         // Reload restores the persisted height on the fresh textarea.
@@ -272,6 +315,10 @@ suite.define(() => {
               sessionKey,
               widthSettingAfterDrag: "920px",
               widthTokenAfterReload: "920px",
+              widthSettingAfterNoopClick: "720px",
+              oversizedStoredWidth: "1300px",
+              oversizedShellWidthPx: shellWidthPx,
+              widthSettingAfterOversizedNarrow: narrowedWidth,
               widthSettingAfterReset: null,
               widthTokenAfterReset: resetToken,
               editorCappedHeightPx: cappedHeight,

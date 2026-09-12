@@ -7,7 +7,9 @@ import {
   clampComposerHeightPx,
   COMPOSER_COLUMN_MIN_PX,
   COMPOSER_HEIGHT_MIN_PX,
+  COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX,
   parseStoredPixels,
+  shouldCommitWidthDrag,
 } from "./chat-composer-resize-geometry.ts";
 
 describe("parseStoredPixels", () => {
@@ -37,6 +39,35 @@ describe("clampComposerHeightPx", () => {
 
   it("passes through in-range values rounded to whole pixels", () => {
     expect(clampComposerHeightPx(240.4, 900)).toBe(240);
+  });
+});
+
+describe("shouldCommitWidthDrag", () => {
+  it("commits intentional drags that end away from the origin", () => {
+    expect(shouldCommitWidthDrag(false, 200, 200)).toBe(true);
+    expect(
+      shouldCommitWidthDrag(
+        false,
+        COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX,
+        COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX,
+      ),
+    ).toBe(true);
+  });
+
+  it("preserves the stored value for clicks and pointer jitter", () => {
+    expect(shouldCommitWidthDrag(false, 0, 0)).toBe(false);
+    expect(
+      shouldCommitWidthDrag(
+        false,
+        COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX - 1,
+        COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX - 1,
+      ),
+    ).toBe(false);
+  });
+
+  it("preserves the stored value for cancelled and out-and-back drags", () => {
+    expect(shouldCommitWidthDrag(true, 200, 200)).toBe(false);
+    expect(shouldCommitWidthDrag(false, 200, 0)).toBe(false);
   });
 });
 

@@ -7,7 +7,9 @@ import {
   COMPOSER_COLUMN_MIN_PX,
   COMPOSER_HEIGHT_MIN_PX,
   COMPOSER_HEIGHT_STORAGE_KEY,
+  COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX,
   parseStoredPixels,
+  shouldCommitWidthDrag,
 } from "./chat-composer-resize-geometry.ts";
 
 // Drag handles on the composer input: a top grip grows the editor past its
@@ -86,18 +88,13 @@ function findColumnRoot(input: HTMLElement): HTMLElement {
   );
 }
 
-function currentColumnMaxPx(root: HTMLElement, input: HTMLElement): number {
-  // Custom properties stay author-unit in computed style, so the default
-  // "48rem" (and any Settings-authored rem/% value) never matches a px
-  // regex. When no explicit px token exists, measure the composer shell:
-  // it already reflects min(available, token), while the root card spans
-  // the full chat width and would make the first drag jump. The first drag
-  // from a non-px value commits it as px; reset returns to default.
-  const computed = getComputedStyle(root).getPropertyValue("--chat-thread-max-width").trim();
-  const match = /^(\d+(?:\.\d+)?)px$/u.exec(computed);
-  if (match) {
-    return Number(match[1]);
-  }
+function currentColumnMaxPx(input: HTMLElement): number {
+  // Always measure the rendered shell: the token stays author-unit in
+  // computed style (so "48rem" never parses as px), and a stored pixel
+  // token can exceed the visible composer when the pane is narrower than
+  // the cap. The shell already reflects min(available, token), so drags
+  // respond from the first pixel in both directions. The first drag from
+  // a non-px value commits it as px; reset returns to default.
   const shell = input.closest<HTMLElement>(".agent-chat__composer-shell") ?? input;
   return Math.max(Math.round(shell.getBoundingClientRect().width), COMPOSER_COLUMN_MIN_PX);
 }
@@ -132,7 +129,7 @@ function startDrag(
   handle: HTMLElement,
   event: PointerEvent,
   onMove: (dx: number, dy: number) => void,
-  onEnd: () => void,
+  onEnd: (cancelled: boolean) => void,
 ): void {
   event.preventDefault();
   event.stopPropagation();
@@ -144,18 +141,25 @@ function startDrag(
   const move = (moveEvent: PointerEvent) => {
     onMove(moveEvent.clientX - startX, moveEvent.clientY - startY);
   };
-  const end = (endEvent: PointerEvent) => {
+  const end = (endEvent: PointerEvent, cancelled: boolean) => {
     handle.removeEventListener("pointermove", move);
-    handle.removeEventListener("pointercancel", end);
+    handle.removeEventListener("pointerup", up);
+    handle.removeEventListener("pointercancel", cancel);
     if (handle.hasPointerCapture(endEvent.pointerId)) {
       handle.releasePointerCapture(endEvent.pointerId);
     }
     input?.classList.remove(DRAGGING_CLASS);
-    onEnd();
+    onEnd(cancelled);
+  };
+  const up = (upEvent: PointerEvent) => {
+    end(upEvent, false);
+  };
+  const cancel = (cancelEvent: PointerEvent) => {
+    end(cancelEvent, true);
   };
   handle.addEventListener("pointermove", move);
-  handle.addEventListener("pointerup", end, { once: true });
-  handle.addEventListener("pointercancel", end);
+  handle.addEventListener("pointerup", up);
+  handle.addEventListener("pointercancel", cancel);
 }
 
 function makeHandle(className: string, orientation: "horizontal" | "vertical"): HTMLElement {
@@ -251,16 +255,33 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
       }
       const root = findColumnRoot(input);
       // Dragging left (negative dx) widens the column; dragging right narrows.
-      const startMax = currentColumnMaxPx(root, input);
+      const startMax = currentColumnMaxPx(input);
       let committed = `${startMax}px`;
+      let maxAbsDx = 0;
+      let lastDx = 0;
       startDrag(
         sideHandle,
         event,
         (dx) => {
+          lastDx = dx;
+          maxAbsDx = Math.max(maxAbsDx, Math.abs(dx));
+          if (maxAbsDx < COMPOSER_WIDTH_DRAG_COMMIT_THRESHOLD_PX) {
+            return;
+          }
           committed = `${clampComposerColumnMaxPx(startMax - dx, window.innerWidth)}px`;
           applyColumnPreview(root, committed);
         },
-        () => {
+        (cancelled) => {
+          if (!shouldCommitWidthDrag(cancelled, maxAbsDx, Math.abs(lastDx))) {
+            // Clicks, jitter, cancellations, and out-and-back drags never
+            // owned the setting. Restore the stored preference instead of
+            // clearing blindly: the host renders it as inline style on
+            // this same element, so a bare remove would drop to the CSS
+            // default until the host's next render.
+            const owned = loadSettings().chatMessageMaxWidth;
+            applyColumnPreview(root, owned ?? null);
+            return;
+          }
           // Preview already shows the committed value, so the host's
           // styleMap render lands with no visible jump.
           composerResizeStates.get(input)?.onWidthCommit(committed);
