@@ -399,7 +399,12 @@ suite.define(() => {
           });
           expect(await readEditorMaxHeight(page)).toBe(`${minimumHeight}px`);
           await top.press("End");
-          expect(await readEditorMaxHeight(page)).toBe("800px");
+          // End selects the largest height the visible pane allows, not a fixed
+          // share of the window: strictly past the six-line cap, inside the pane.
+          const endHeight = px(await readEditorMaxHeight(page));
+          expect(endHeight).toBeGreaterThan(cappedHeight);
+          const chatBox = (await page.locator(".card.chat, .chat").first().boundingBox())!;
+          expect(endHeight).toBeLessThan(chatBox.height);
           await top.press("Enter");
           expect(await readEditorMaxHeight(page)).toBe(`${cappedHeight}px`);
           expect(

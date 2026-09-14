@@ -5,7 +5,6 @@ import { live } from "lit/directives/live.js";
 import { ref } from "lit/directives/ref.js";
 import { styleMap } from "lit/directives/style-map.js";
 import type { GatewayBrowserClient } from "../../api/gateway.ts";
-import { loadSettings } from "../../app/settings.ts";
 import { icons } from "../../components/icons.ts";
 import type { ImageLightboxItem } from "../../components/image-lightbox.ts";
 import { t } from "../../i18n/index.ts";
@@ -36,7 +35,7 @@ import {
 } from "../chat/components/chat-composer-mention-menu.ts";
 import { resolveComposerMenus } from "../chat/components/chat-composer-menus.ts";
 import type { ChatComposerPlusMenuView } from "../chat/components/chat-composer-plus-menu.ts";
-import { rebindComposerResizeInput } from "../chat/components/chat-composer-resize.ts";
+import { ComposerColumnWidthOwner } from "../chat/components/chat-composer-resize.ts";
 import {
   createSkillMenuState,
   handleSkillMenuKeydown,
@@ -144,7 +143,7 @@ function renderStartControl(options: NewSessionComposerOptions) {
 export class NewSessionComposerTextareaController {
   // An opening gets one cast; typing and async picker updates never reroll it.
   readonly critterVisit = Math.random();
-  private composerInput: HTMLElement | null = null;
+  readonly columnWidth = new ComposerColumnWidthOwner();
   private textarea: HTMLTextAreaElement | null = null;
   private placeholderFrame: number | null = null;
   private placeholderStartedAt: number | null = null;
@@ -168,12 +167,6 @@ export class NewSessionComposerTextareaController {
     if (nextTextarea) {
       scheduleTextareaHeightAdjustment(nextTextarea);
     }
-  };
-
-  readonly composerInputRef = (element?: Element) => {
-    const next = element instanceof HTMLElement ? element : null;
-    rebindComposerResizeInput(this.composerInput, next, { heightEnabled: false });
-    this.composerInput = next;
   };
 
   syncDraft(message: string) {
@@ -342,7 +335,7 @@ export class NewSessionComposerTextareaController {
   }
 
   disconnect() {
-    this.composerInputRef();
+    this.columnWidth.inputRef();
     this.mentionMenu.dispose();
     this.resetPlaceholder();
     this.skillCommandClient = null;
@@ -557,7 +550,7 @@ export function renderNewSessionComposer(options: NewSessionComposerOptions) {
   return html`
     <div
       class="agent-chat__composer-shell new-session-page__composer"
-      style=${styleMap({ "--chat-thread-max-width": loadSettings().chatMessageMaxWidth })}
+      style=${styleMap({ "--chat-thread-max-width": options.textareaController.columnWidth.value })}
       @drop=${(event: DragEvent) => {
         if (options.nativeTerminal && event.dataTransfer?.files.length) {
           event.preventDefault();
@@ -571,7 +564,7 @@ export function renderNewSessionComposer(options: NewSessionComposerOptions) {
       @dragover=${attachmentDropHandlers.onDragover}
     >
       <div
-        ${ref(options.textareaController.composerInputRef)}
+        ${ref(options.textareaController.columnWidth.inputRef)}
         class="agent-chat__input agent-chat__input--mobile-toolbar${
           options.dictationActive ? " agent-chat__input--dictating" : ""
         }"

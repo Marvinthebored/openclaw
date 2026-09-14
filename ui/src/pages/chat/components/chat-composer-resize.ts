@@ -351,7 +351,12 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
           textarea && textarea.getBoundingClientRect().height >= paneHeightLimit(textarea) - 1,
         ),
     );
-    sideHandle.classList.toggle("is-custom-width", Boolean(loadSettings().chatMessageMaxWidth));
+    // Renders must not read storage: the host already paints the owned width
+    // onto the column root as an inline token, so the DOM is the source here.
+    sideHandle.classList.toggle(
+      "is-custom-width",
+      Boolean(findColumnRoot(input).style.getPropertyValue("--chat-thread-max-width")),
+    );
     for (const [handle, value, min, max] of [
       [
         topHandle,
@@ -615,6 +620,31 @@ export function rebindComposerResizeInput(
   if (next) {
     observeComposerResize(next, options);
   }
+}
+
+/** Owned Message width for hosts without page-level settings state (New
+    Session). Reads storage exactly once, on first attach; afterwards only the
+    grip's own commit updates it. Render paths read `.value`, never storage. */
+export class ComposerColumnWidthOwner {
+  value: string | undefined;
+  private loaded = false;
+  private input: HTMLElement | null = null;
+
+  private readonly onWidthCommit: ComposerWidthCommit = (value) => {
+    this.value = value;
+    patchSettings({ chatMessageMaxWidth: value });
+  };
+
+  readonly inputRef = (element?: Element): void => {
+    const next = element instanceof HTMLElement ? element : null;
+    if (next && !this.loaded) {
+      this.loaded = true;
+      this.value = loadSettings().chatMessageMaxWidth;
+    }
+    const { onWidthCommit } = this;
+    rebindComposerResizeInput(this.input, next, { heightEnabled: false, onWidthCommit });
+    this.input = next;
+  };
 }
 
 export function restoreComposerHeightOverride(textarea: HTMLTextAreaElement): void {
