@@ -76,22 +76,6 @@ function buildCliContextEngineUserMessage(prompt: string): AgentMessage {
   } as AgentMessage;
 }
 
-function buildCliContextEngineAssistantMessage(params: {
-  text: string;
-  provider: string;
-  model: string;
-  usage?: {
-    input?: number;
-    output?: number;
-    cacheRead?: number;
-    cacheWrite?: number;
-    total?: number;
-  };
-  stopReason: StopReason;
-}): AgentMessage {
-  return buildCliHookAssistantMessage(params) as AgentMessage;
-}
-
 type CliAgentEndHookParams = Parameters<typeof runAgentEndSideEffects>[0];
 
 function shouldAwaitCliAgentEndHook(params: RunCliAgentParams): boolean {
@@ -153,6 +137,7 @@ export async function persistCliAssistantTranscript(params: {
     total?: number;
   };
   stopReason: StopReason;
+  yielded?: true;
 }): Promise<{
   owned: boolean;
   idempotencyKey?: string;
@@ -196,22 +181,35 @@ export async function persistCliAssistantTranscript(params: {
           ...write,
           prepareAssistantTranscriptMessage: runParams.prepareAssistantTranscriptMessage,
         }),
-      message: buildAssistantMessage({
-        model: {
-          api: "cli",
-          provider: runParams.provider,
-          id: params.modelId,
-        },
-        content: [{ type: "text", text: params.text }],
-        stopReason: params.stopReason,
-        usage: buildUsageWithNoCost({
-          input: params.usage?.input,
-          output: params.usage?.output,
-          cacheRead: params.usage?.cacheRead,
-          cacheWrite: params.usage?.cacheWrite,
-          totalTokens: params.usage?.total,
+      message: {
+        ...buildAssistantMessage({
+          model: {
+            api: "cli",
+            provider: runParams.provider,
+            id: params.modelId,
+          },
+          content: [{ type: "text", text: params.text }],
+          stopReason: params.stopReason,
+          usage: buildUsageWithNoCost({
+            input: params.usage?.input,
+            output: params.usage?.output,
+            cacheRead: params.usage?.cacheRead,
+            cacheWrite: params.usage?.cacheWrite,
+            totalTokens: params.usage?.total,
+          }),
         }),
-      }),
+        // A paused turn owns visible progress, not a final answer. Keep the
+        // existing keyed-segment contract without hiding narration or media.
+        ...(params.yielded && params.stopReason === "stop"
+          ? {
+              openclawStreamFallback: {
+                replacementText: params.text,
+                source: "segment",
+                itemId: runParams.runId,
+              },
+            }
+          : {}),
+      },
     });
     if (!result.ok) {
       log.warn(`CLI assistant transcript persistence skipped: ${result.reason}`);
@@ -332,6 +330,9 @@ export async function persistCliRunBlock(
         // Skip only this stale blocked-message write; the outer runner still returns blocked.
         return;
       }
+      const { restoreSessionColdTranscript } =
+        await import("../../config/sessions/session-cold-storage.js");
+      await restoreSessionColdTranscript(sessionTarget);
       sessionManager = SessionManager.open(sessionTarget);
     }
     sessionManager.appendMessage(
@@ -374,6 +375,12 @@ export async function finalizeCliContextEngineTurn(params: {
           runParams.abortSignal?.aborted === true,
         yieldAborted: false,
         isHeartbeat: isHeartbeatLifecycleRunKind(runParams.bootstrapContextRunKind),
+        runtimeContext: {
+          provider: runParams.modelProvider ?? runParams.provider,
+          modelId: context.modelId,
+          modelContextWindow: runParams.modelContextWindow,
+          tokenBudget: context.contextWindowInfo?.tokens,
+        },
       });
     }
   } else {
@@ -384,13 +391,13 @@ export async function finalizeCliContextEngineTurn(params: {
     }
     if (params.assistantText) {
       turnMessages.push(
-        buildCliContextEngineAssistantMessage({
+        buildCliHookAssistantMessage({
           text: params.assistantText,
           provider: runParams.provider,
           model: context.modelId,
           usage: params.output.usage,
           stopReason: resolveCliAssistantStopReason(params.output),
-        }),
+        }) as AgentMessage,
       );
     }
 
@@ -418,6 +425,7 @@ export async function finalizeCliContextEngineTurn(params: {
       runMaintenance: async (maintenanceParams) =>
         await runHarnessContextEngineMaintenance({
           ...maintenanceParams,
+          onDeferredMaintenance: context.deferContextEngineDisposalUntil,
           withSessionManagerRewriteLock: async (operation) => await operation(),
         }),
       warn: (message) => log.warn(message),

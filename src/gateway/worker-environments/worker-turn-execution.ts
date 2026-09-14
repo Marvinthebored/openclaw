@@ -16,7 +16,6 @@ import { buildPersistedUserTurnMessage } from "../../sessions/user-turn-transcri
 import { prepareSkillResourceDelivery } from "../../skills/runtime/resources.js";
 import { parseWorkerLaunchPlan } from "../../worker/launch-descriptor.js";
 import { WORKER_PROVIDER_REPLAY_LOCAL_RETRY_MESSAGE } from "../../worker/transcript-message.js";
-import { prepareGitHubPublicationAvailability } from "../github-publication-availability.js";
 import {
   STALE_WORKER_BUILD_REASON,
   StaleWorkerBuildError,
@@ -24,6 +23,7 @@ import {
 } from "./admission.js";
 import { sameWorkerSessionTurnClaim } from "./placement-record.js";
 import { prepareWorkerDesktopLaunchPlan } from "./worker-desktop-launch-plan.js";
+import { prepareWorkerGitHubBinding } from "./worker-github-binding.js";
 import { registerWorkerSkillAuthoring } from "./worker-skill-authoring.js";
 import { waitForTurnOperation } from "./worker-turn-admission.js";
 import {
@@ -80,7 +80,7 @@ export async function executeWorkerTurn(
     );
   }
   await recoverWorkspaceBeforeTurn(params);
-  const githubPublicationAvailable = await prepareGitHubPublicationAvailability({
+  const github = await prepareWorkerGitHubBinding({
     sessionId: placement.sessionId,
     sessionKey: placement.sessionKey,
     agentId: placement.agentId,
@@ -91,7 +91,24 @@ export async function executeWorkerTurn(
   turn.onExecutionStarted?.({ lifecycleGeneration: turn.lifecycleGeneration });
   turn.onExecutionPhase?.({ phase: "runner_entered", backend: "cloud-worker" });
   const transcriptTarget = resolveWorkerTurnTranscriptTarget(turn);
-  const manager = SessionManager.open(transcriptTarget);
+  // The unrecorded-input fallback retains its writable view and captured append custody.
+  const readAsynchronously =
+    turn.suppressNextUserMessagePersistence === true ||
+    turn.userTurnTranscriptRecorder?.hasPersisted() === true;
+  // Pending recorder writes keep the synchronous read-before-persist ordering.
+  const manager = readAsynchronously
+    ? await SessionManager.openModelContextAsync(transcriptTarget, { signal: turn.abortSignal })
+    : turn.userTurnTranscriptRecorder
+      ? SessionManager.openModelContext(transcriptTarget)
+      : SessionManager.open(transcriptTarget);
+  if (readAsynchronously) {
+    params.assertRunCurrent?.();
+    turn.abortSignal?.throwIfAborted();
+    if (!params.placements.validateTurnClaim(params.turnClaim)) {
+      throw new Error("Worker turn claim changed during context preparation");
+    }
+    resolveWorkerTurnTranscriptTarget(turn);
+  }
   const userMessageAlreadyPersisted =
     turn.suppressNextUserMessagePersistence === true ||
     turn.userTurnTranscriptRecorder?.hasPersisted() === true;
@@ -104,11 +121,15 @@ export async function executeWorkerTurn(
   let baseLeafId = manager.getLeafId();
   if (!userMessageAlreadyPersisted) {
     const persisted = turn.userTurnTranscriptRecorder
-      ? await turn.userTurnTranscriptRecorder.persistApproved({ cwd: params.localWorkspaceDir })
+      ? await turn.userTurnTranscriptRecorder.persistApproved({
+          cwd:
+            params.workspace.kind === "local"
+              ? params.workspace.path
+              : placement.remoteWorkspaceDir,
+        })
       : undefined;
     if (persisted) {
       baseLeafId = persisted.messageId;
-      turn.userTurnTranscriptRecorder?.markRuntimePersisted(persisted.message, persisted.admission);
       turn.onUserMessagePersisted?.(persisted.message);
     } else if (turn.userTurnTranscriptRecorder?.hasPersisted()) {
       baseLeafId = SessionManager.open(transcriptTarget).getLeafId();
@@ -147,7 +168,6 @@ export async function executeWorkerTurn(
       prepareComputer: () => params.environments.prepareComputer?.(params.turnClaim),
       modelRef,
       turn,
-      githubPublicationAvailable,
       portalAvailable,
     });
   params.placements.authorizeWorkerTurnTools(params.turnClaim, toolAuthority.allowedToolNames);
@@ -236,7 +256,7 @@ export async function executeWorkerTurn(
     const media = await prepareWorkerTurnMedia({
       turn,
       history,
-      localWorkspaceDir: params.localWorkspaceDir,
+      workspace: params.workspace,
       remoteWorkspaceDir: placement.remoteWorkspaceDir,
       tunnel,
       isAuthorized,
@@ -320,6 +340,7 @@ export async function executeWorkerTurn(
             prompt: media.prompt,
             suppressPromptTranscript: true,
             workspaceDir: placement.remoteWorkspaceDir,
+            ...(github ? { github } : {}),
             ...(skillResources ? { skillResources } : {}),
             ...(turn.skillLibraryAuthoring &&
             toolAuthority.allowedToolNames.includes("skill_workshop")
@@ -457,7 +478,7 @@ export async function executeWorkerTurn(
       placements: params.placements,
       turnClaim: params.turnClaim,
       workspaceOperations: params.workspaceOperations,
-      localWorkspaceDir: params.localWorkspaceDir,
+      workspace: params.workspace,
       transcriptTarget,
       tunnel,
       ...(params.prepareAcceptedWorkspacePublication

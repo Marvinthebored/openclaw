@@ -17,6 +17,7 @@ struct RootSidebar: View {
     let isDrawerLayout: Bool
     let isDismissButtonEnabled: Bool
     let selectDestination: (RootTabs.SidebarDestination) -> Void
+    let selectSession: (OpenClawChatSessionEntry) -> Void
     let hideSidebar: () -> Void
 
     var body: some View {
@@ -537,7 +538,8 @@ struct RootSidebar: View {
             sessions: self.model.sessions,
             currentSessionKey: "main",
             mainSessionKey: self.appModel.defaultChatSessionKey,
-            activeAgentID: self.appModel.chatAgentId)
+            activeAgentID: self.appModel.chatAgentId,
+            sessionRoutingContract: self.appModel.chatSessionRoutingContract)
     }
 
     private var resolvedSelectedSessionKey: String {
@@ -545,7 +547,8 @@ struct RootSidebar: View {
             sessions: self.model.sessions,
             currentSessionKey: self.appModel.chatSessionKey,
             mainSessionKey: self.appModel.defaultChatSessionKey,
-            activeAgentID: self.appModel.chatAgentId)
+            activeAgentID: self.appModel.chatAgentId,
+            sessionRoutingContract: self.appModel.chatSessionRoutingContract)
     }
 
     private var visibleSessionSections: [ChatSessionSidebarModel.Section] {
@@ -554,7 +557,8 @@ struct RootSidebar: View {
             currentSessionKey: self.appModel.chatSessionKey,
             mainSessionKey: self.appModel.defaultChatSessionKey,
             activeAgentID: self.appModel.chatAgentId,
-            groups: self.sessionGroups)
+            groups: self.sessionGroups,
+            sessionRoutingContract: self.appModel.chatSessionRoutingContract)
     }
 
     struct SessionLayout: Equatable {
@@ -606,8 +610,7 @@ struct RootSidebar: View {
         let session = node.session
         let isSelected = session.key == selectedSessionKey
         return Button {
-            self.appModel.openChat(sessionKey: session.key)
-            self.selectSidebarDestination(.chat)
+            self.selectSession(session)
         } label: {
             HStack(spacing: 9) {
                 ZStack {

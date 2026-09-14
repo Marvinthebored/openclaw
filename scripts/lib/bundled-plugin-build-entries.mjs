@@ -93,6 +93,18 @@ function shouldBuildBundledDistEntry(packageJson) {
   return packageJson?.openclaw?.build?.bundledDist !== false;
 }
 
+/**
+ * Standalone and isolated source-checkout builds retain the package's declared format.
+ * @returns {"cjs" | "esm"}
+ */
+export function resolvePluginRuntimeFormat(packageJson) {
+  return packageJson?.openclaw?.build?.runtimeFormat === "cjs" ? "cjs" : "esm";
+}
+
+export function pluginRuntimeExtension(runtimeFormat) {
+  return runtimeFormat === "cjs" ? ".cjs" : ".js";
+}
+
 function isExcludedTopLevelPublicSurfaceFile(fileName) {
   const normalizedName = fileName.toLowerCase();
   return (
@@ -104,8 +116,27 @@ function isExcludedTopLevelPublicSurfaceFile(fileName) {
   );
 }
 
-/** Collect plugin source entry files declared by package export metadata. */
-export function collectPluginSourceEntries(packageJson) {
+const CATALOG_ENTRY_FIELDS = ["providerCatalogEntry", "capabilityCatalogEntry"];
+
+function collectPluginCatalogSourceEntries(manifest) {
+  return CATALOG_ENTRY_FIELDS.map((field) => manifest[field]).filter(
+    (entry) => typeof entry === "string" && entry.trim().length > 0,
+  );
+}
+
+/** Keep catalog declarations aligned with the artifact owner that emits their modules. */
+export function mapPluginCatalogEntries(manifest, mapEntry) {
+  const result = { ...manifest };
+  for (const field of CATALOG_ENTRY_FIELDS) {
+    if (typeof manifest[field] === "string") {
+      result[field] = mapEntry(manifest[field]);
+    }
+  }
+  return result;
+}
+
+/** Collect plugin source entry files declared by package and manifest metadata. */
+export function collectPluginSourceEntries(packageJson, manifest = {}) {
   let packageEntries = Array.isArray(packageJson?.openclaw?.extensions)
     ? packageJson.openclaw.extensions.filter(
         (entry) => typeof entry === "string" && entry.trim().length > 0,
@@ -119,7 +150,36 @@ export function collectPluginSourceEntries(packageJson) {
   if (setupEntry) {
     packageEntries = Array.from(new Set([...packageEntries, setupEntry]));
   }
-  return packageEntries.length > 0 ? packageEntries : ["./index.ts"];
+  return [
+    ...new Set([
+      ...(packageEntries.length > 0 ? packageEntries : ["./index.ts"]),
+      ...collectPluginCatalogSourceEntries(manifest),
+      ...(Array.isArray(packageJson?.openclaw?.build?.workerEntries)
+        ? packageJson.openclaw.build.workerEntries.filter(
+            (entry) => typeof entry === "string" && entry.trim().length > 0,
+          )
+        : []),
+    ]),
+  ];
+}
+
+/** Select typed plugin contracts, not runtime loader sidecars or implementation helpers. */
+export function collectPluginDeclarationSourceEntries(packageJson, sourceEntries) {
+  const entryName = (entry) =>
+    entry.replace(/^\.\/(?:dist\/)?/u, "").replace(/(?:\.d)?\.[cm]?[jt]s$/u, "");
+  const publicNames = new Set(["api", "runtime-api", "contract-api"]);
+  function collectExports(value) {
+    if (typeof value === "string") {
+      publicNames.add(entryName(value));
+    } else if (value && typeof value === "object") {
+      for (const entry of Object.values(value)) {
+        collectExports(entry);
+      }
+    }
+  }
+  collectExports(packageJson?.exports);
+  collectExports(packageJson?.types ?? packageJson?.typings);
+  return sourceEntries.filter((entry) => publicNames.has(entryName(entry)));
 }
 
 /** Collect top-level public plugin surface files that should be built. */
@@ -226,13 +286,24 @@ function collectBundledPluginCandidates(cwd, extensionsRoot) {
     .toSorted((left, right) => left.dirName.localeCompare(right.dirName));
 }
 
+/** Share raw source discovery within one config evaluation; policy reads stay independent. */
+export function createBundledPluginBuildInventory(cwd = process.cwd()) {
+  let candidates;
+  return {
+    cwd,
+    getCandidates: () =>
+      (candidates ??= collectBundledPluginCandidates(cwd, path.join(cwd, BUNDLED_PLUGIN_ROOT_DIR))),
+  };
+}
+
 /** Collect all bundled plugin build entries for the current checkout. */
 export function collectBundledPluginBuildEntries(params = {}) {
   const cwd = params.cwd ?? process.cwd();
   const env = params.env ?? process.env;
   const extensionsRoot = path.join(cwd, BUNDLED_PLUGIN_ROOT_DIR);
   const dockerSelectedBuildIds = parseDockerSelectedPluginBuildIdFilter(env);
-  const candidates = collectBundledPluginCandidates(cwd, extensionsRoot);
+  const candidates =
+    params.getCandidates?.() ?? collectBundledPluginCandidates(cwd, extensionsRoot);
   const entries = [];
 
   for (const candidate of candidates) {
@@ -257,18 +328,28 @@ export function collectBundledPluginBuildEntries(params = {}) {
     if (!shouldBuildBundledCluster(dirName, env, { packageJson })) {
       continue;
     }
-    if (!shouldBuildBundledDistEntry(packageJson) && !dockerSelectedBuildIds?.has(dirName)) {
+    const externalSourceEntry =
+      params.includeExternalSourceEntries === true &&
+      (packageJson?.openclaw?.release?.publishToNpm === true ||
+        packageJson?.openclaw?.release?.publishToClawHub === true);
+    if (
+      !shouldBuildBundledDistEntry(packageJson) &&
+      !dockerSelectedBuildIds?.has(dirName) &&
+      !externalSourceEntry
+    ) {
       continue;
     }
 
+    const manifest = hasManifest ? JSON.parse(fs.readFileSync(manifestPath, "utf8")) : {};
     entries.push({
       id: dirName,
       hasManifest,
       hasPackageJson: packageJson !== null,
       packageJson,
+      catalogSourceEntries: collectPluginCatalogSourceEntries(manifest),
       sourceEntries: Array.from(
         new Set([
-          ...(hasManifest ? collectPluginSourceEntries(packageJson) : []),
+          ...(hasManifest ? collectPluginSourceEntries(packageJson, manifest) : []),
           ...topLevelPublicSurfaceEntries,
         ]),
       ),
@@ -303,14 +384,43 @@ export function collectBundledPluginBuildEntries(params = {}) {
   return entries.filter((entry) => filteredBuildIds.has(entry.id));
 }
 
+/** One source-checkout output plan for compilation, metadata, and readiness checks. */
+export function collectSourceCheckoutPluginBuildEntries(params = {}) {
+  const env = params.env ?? process.env;
+  const dockerSelected = parseDockerSelectedPluginBuildIdFilter(env);
+  const excluded = collectRootPackageExcludedExtensionDirs(params);
+  return collectBundledPluginBuildEntries({
+    ...params,
+    includeExternalSourceEntries: !dockerSelected,
+  })
+    .filter(({ id }) =>
+      NON_PACKAGED_BUNDLED_PLUGIN_DIRS.has(id)
+        ? env.OPENCLAW_BUILD_PRIVATE_QA === "1"
+        : !dockerSelected || !excluded.has(id) || dockerSelected.has(id),
+    )
+    .map((entry) => {
+      const isolated =
+        !dockerSelected &&
+        !NON_PACKAGED_BUNDLED_PLUGIN_DIRS.has(entry.id) &&
+        (excluded.has(entry.id) || !shouldBuildBundledDistEntry(entry.packageJson));
+      // Docker-selected plugins belong to the unified ESM graph, irrespective
+      // of their standalone format. Never infer ownership from files left on disk.
+      const runtimeFormat = isolated ? resolvePluginRuntimeFormat(entry.packageJson) : "esm";
+      return Object.assign(entry, {
+        isolated,
+        runtimeExtension: pluginRuntimeExtension(runtimeFormat),
+      });
+    });
+}
+
 /** Retain channel config migrations with core schemas, independently of plugin installation. */
 export function collectChannelConfigDoctorBuildEntries(params = {}) {
   const cwd = params.cwd ?? process.cwd();
   const entries = {};
-  for (const { pluginDir } of collectBundledPluginCandidates(
-    cwd,
-    path.join(cwd, BUNDLED_PLUGIN_ROOT_DIR),
-  )) {
+  const candidates =
+    params.getCandidates?.() ??
+    collectBundledPluginCandidates(cwd, path.join(cwd, BUNDLED_PLUGIN_ROOT_DIR));
+  for (const { pluginDir } of candidates) {
     const manifestPath = path.join(pluginDir, "openclaw.plugin.json");
     if (!fs.existsSync(manifestPath)) {
       continue;

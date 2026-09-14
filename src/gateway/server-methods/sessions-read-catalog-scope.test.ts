@@ -59,6 +59,7 @@ async function listSessions(params: {
 }) {
   const responses: Parameters<RespondFn>[] = [];
   await sessionReadHandlers["sessions.list"]?.({
+    req: { type: "req", id: "session-list-test", method: "sessions.list" },
     params: params.request,
     client: params.client,
     context: params.context,
@@ -129,6 +130,8 @@ function preparedOwner(params: {
     agentDir: resolveAgentDir(params.config, params.agentId),
     workspaceDir,
     config: params.config,
+    observationConfig: params.config,
+    isCurrent: () => true,
     activeProjectKeys: [],
     authModes: {},
     metadataSnapshot: createPluginMetadataSnapshotFixture(),

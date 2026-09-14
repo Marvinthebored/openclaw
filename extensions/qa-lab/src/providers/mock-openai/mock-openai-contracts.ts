@@ -39,19 +39,38 @@ export type QaMockProviderDispatchResult = {
 };
 
 export type StreamEvent =
-  | { type: "response.created"; response: { id: string } }
+  | {
+      type: "response.created";
+      response: {
+        id: string;
+        object: "response";
+        status: "in_progress";
+        output: Array<Record<string, unknown>>;
+        created_at: number;
+        model?: string;
+      };
+    }
   | {
       type: "response.failed";
       response: {
         id: string;
+        object: "response";
         status: "failed";
+        output: Array<Record<string, unknown>>;
         error?: { code: string; message: string };
       };
     }
   | {
       type: "response.output_item.added";
-      output_index?: number;
+      output_index: number;
       item: Record<string, unknown>;
+    }
+  | {
+      type: "response.content_part.added" | "response.content_part.done";
+      item_id: string;
+      output_index: number;
+      content_index: number;
+      part: MockOutputText;
     }
   | {
       type: "response.output_text.delta";
@@ -69,25 +88,40 @@ export type StreamEvent =
     }
   | {
       type: "response.function_call_arguments.delta";
-      item_id?: string;
-      output_index?: number;
+      item_id: string;
+      output_index: number;
       delta: string;
+    }
+  | {
+      type: "response.function_call_arguments.done";
+      item_id: string;
+      output_index: number;
+      name: string;
+      arguments: string;
     }
   | {
       type: "response.custom_tool_call_input.delta";
       item_id: string;
       call_id: string;
+      output_index: number;
       delta: string;
     }
   | {
+      type: "response.custom_tool_call_input.done";
+      item_id: string;
+      output_index: number;
+      input: string;
+    }
+  | {
       type: "response.output_item.done";
-      output_index?: number;
+      output_index: number;
       item: Record<string, unknown>;
     }
   | {
       type: "response.completed";
       response: {
         id: string;
+        object: "response";
         status: "completed";
         output: Array<Record<string, unknown>>;
         usage: {
@@ -97,6 +131,20 @@ export type StreamEvent =
         };
       };
     };
+
+export type MockOutputText = { type: "output_text"; text: string; annotations: [] };
+
+export type MockAssistantMessageSpec = {
+  id: string;
+  phase?: "commentary" | "final_answer";
+  streamDeltas?: string[];
+  text: string;
+};
+
+export type MockToolCallItem = { id: string; call_id: string; name: string; namespace?: string } & (
+  | { type: "function_call"; arguments: string }
+  | { type: "custom_tool_call"; input: string; status: "completed" }
+);
 
 /**
  * Provider variant tag for `body.model`. The mock previously ignored
@@ -229,10 +277,8 @@ export const QA_THINKING_VISIBILITY_OFF_PROMPT_RE = /qa thinking visibility chec
 export const QA_THINKING_VISIBILITY_MAX_PROMPT_RE = /qa thinking visibility check max/i;
 export const QA_EMPTY_RESPONSE_RECOVERY_PROMPT_RE = /empty response continuation qa check/i;
 export const QA_EMPTY_RESPONSE_EXHAUSTION_PROMPT_RE = /empty response exhaustion qa check/i;
-export const QA_EMPTY_RESPONSE_SIDE_EFFECT_RECOVERY_PROMPT_RE =
-  /empty response after write recovery qa check/i;
-export const QA_EMPTY_RESPONSE_SIDE_EFFECT_EXHAUSTION_PROMPT_RE =
-  /empty response after write exhaustion qa check/i;
+export const QA_EMPTY_RESPONSE_SIDE_EFFECT_PROMPT_RE =
+  /empty response after write (recovery|exhaustion) qa check/i;
 export const QA_REPEATED_REQUEST_RECOVERY_PROMPT_RE = /repeated request recovery gateway qa check/i;
 export const QA_REPEATED_REQUEST_QUEUED_REPLY_PROMPT_RE =
   /repeated request queued reply gateway qa check/i;
@@ -244,7 +290,6 @@ export const QA_TOOL_PROGRESS_PROMPT_RE = /tool progress( error)? qa check/i;
 export const QA_TOOL_LOOP_GLOBAL_BREAKER_PROMPT_RE = /global tool loop breaker qa check/i;
 export const QA_PROVIDER_HTTP_503_AFTER_TOOL_PROMPT_RE = /provider http 503 after tool qa check/i;
 export const QA_GROUP_VISIBLE_REPLY_TOOL_PROMPT_RE = /qa group visible reply tool check/i;
-export const QA_MSTEAMS_AMBIGUOUS_TIMEOUT_PROMPT_RE = /qa msteams ambiguous gateway timeout/i;
 export const QA_MSTEAMS_THREAD_DEDUPE_PROMPT_RE = /qa msteams thread message-tool final dedupe/i;
 export const QA_THREAD_REPLY_RECEIPT_PROMPT_RE =
   /qa thread reply receipt check[\s\S]*channel id: `([^`]+)`[\s\S]*thread id: `([^`]+)`/i;
@@ -300,9 +345,16 @@ export const QA_SUBAGENT_DIRECT_FALLBACK_WORKER_RE = /subagent direct fallback w
 export const QA_SUBAGENT_SELF_YIELD_WORKER_RE = /subagent self yield qa worker/i;
 export const QA_SUBAGENT_SELF_YIELD_FOLLOW_UP_RE = /subagent self yield qa remote job finished/i;
 export const QA_SUBAGENT_TERMINAL_MATRIX_PROMPT_RE =
-  /subagent terminal reply qa check:\s*(visible|silent|empty|restart|fallback)/i;
+  /subagent terminal reply qa check:\s*(visible|silent|empty|restart|fallback|private)/i;
 export const QA_SUBAGENT_TERMINAL_MATRIX_WORKER_RE =
   /subagent terminal reply qa worker:\s*(visible|silent|empty|restart|fallback)/i;
+export const QA_SUBAGENT_PRIVATE_WORKER_RE =
+  /subagent private completion qa worker:\s*(first|second)/i;
+export const QA_SUBAGENT_PRIVATE_RESULT_RE = /QA-PARENT-PRIVATE-CHILD1-[A-F0-9]{32}/u;
+export const QA_SUBAGENT_PRIVATE_SECOND_RESULT = "QA-PARENT-PRIVATE-CHILD2-DONE";
+export const QA_SUBAGENT_EMPTY_PARENT_VISIBLE_PROMPT_RE = /reply to the requester after spawning/i;
+export const QA_SUBAGENT_EMPTY_WORKER_NO_OUTPUT_PROMPT_RE =
+  /return no assistant output after the write/i;
 
 export function buildStrandedFinalRecoveryText(): string {
   return [
@@ -335,6 +387,7 @@ export const QA_SUBAGENT_TERMINAL_MARKERS = {
   restart: "QA-SUBAGENT-TERMINAL-RESTART-OK",
   fallback: "QA-SUBAGENT-TERMINAL-FALLBACK-OK",
 } as const;
+export const QA_SUBAGENT_EMPTY_PARENT_VISIBLE_MARKER = "QA-SUBAGENT-EMPTY-PARENT-ACK";
 export const QA_SUBAGENT_TERMINAL_METADATA_SENTINEL = "QA-SUBAGENT-TERMINAL-INTERNAL-MUST-NOT-LEAK";
 export const QA_NATIVE_STOP_DELAY_PROMPT_RE =
   /subagent recovery worker native command target proof\.\s*wait until stopped\./i;
@@ -432,6 +485,17 @@ export function transcriptionTextForAudioRequest(rawBody: string) {
   return QA_AUDIO_TRANSCRIPTION_TEXT;
 }
 
+export function isPreviewCompletion(
+  event: StreamEvent | AnthropicStreamEvent,
+  previous: StreamEvent | AnthropicStreamEvent | undefined,
+) {
+  // Message builders keep each preview's last delta next to text.done.
+  // Plain answers also finish text, but must not acquire a preview pause.
+  return (
+    event.type === "response.output_text.done" && previous?.type === "response.output_text.delta"
+  );
+}
+
 export async function writeSse(
   res: ServerResponse,
   events: Array<StreamEvent | AnthropicStreamEvent>,
@@ -445,7 +509,7 @@ export async function writeSse(
   const completionIndex =
     pauseMs === undefined
       ? -1
-      : events.findIndex((event) => event.type === "response.output_text.done");
+      : events.findIndex((event, index) => isPreviewCompletion(event, events[index - 1]));
   const body =
     frames.slice(Math.max(0, completionIndex)).join("") +
     (protocol === "responses" ? "data: [DONE]\n\n" : "");
@@ -467,28 +531,6 @@ export function isRemoteCompactionV2Request(input: ResponsesInputItem[]) {
   // Codex sends compaction through /responses with a trigger item. Keep it
   // outside scenario dispatch so maintenance calls never become tool evidence.
   return input.some((item) => item.type === "compaction_trigger");
-}
-
-export function buildRemoteCompactionV2Events(): [
-  Extract<StreamEvent, { type: "response.output_item.done" }>,
-  Extract<StreamEvent, { type: "response.completed" }>,
-] {
-  const item = {
-    type: "compaction",
-    encrypted_content: "QA_MOCK_REMOTE_COMPACTION_SUMMARY",
-  };
-  return [
-    { type: "response.output_item.done", item },
-    {
-      type: "response.completed",
-      response: {
-        id: "resp_mock_compaction_1",
-        status: "completed",
-        output: [item],
-        usage: { input_tokens: 64, output_tokens: 16, total_tokens: 80 },
-      },
-    },
-  ];
 }
 
 export type AnthropicStreamEvent = Record<string, unknown> & {

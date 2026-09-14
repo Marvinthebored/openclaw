@@ -14,6 +14,7 @@ export type SessionPatch = {
   color?: string | null;
   category?: string | null;
   boardFace?: "chat" | "dashboard";
+  boardPresentation?: "split" | "expanded" | null;
   model?: string | null;
   contextWindow?: string | null;
   thinkingLevel?: string | null;
@@ -45,8 +46,10 @@ export type SessionPatchOptions = {
   deferListRefresh?: boolean;
 };
 
+export type SessionPatchResult = SessionsPatchResult & { listRefreshError?: string };
+
 export type SessionPatchRoute = (
   key: string,
   patch: SessionPatch,
   options?: SessionPatchOptions,
-) => Promise<SessionsPatchResult | null>;
+) => Promise<SessionPatchResult | null>;

@@ -6,10 +6,9 @@ import type {
   ControlUiSessionBranch,
   ControlUiSessionPullRequest,
 } from "../../../../../src/gateway/control-ui-contract.js";
-import type { GitHubPublicationView } from "../chat-github-publication.ts";
+import type { GitHubPublicationView } from "../../../lib/sessions/github-publication-controller.ts";
 import {
   chatPullRequestId,
-  createPullRequestBranch,
   dismissChatPullRequest,
   listDismissedChatPullRequests,
   renderChatPullRequests,
@@ -17,7 +16,8 @@ import {
 
 function publication(overrides: Partial<GitHubPublicationView> = {}): GitHubPublicationView {
   return {
-    busy: false,
+    activity: null,
+    canWrite: true,
     locked: false,
     options: null,
     selection: {
@@ -65,32 +65,6 @@ function sessionBranch(overrides: Partial<ControlUiSessionBranch> = {}): Control
   };
 }
 
-describe("createPullRequestBranch", () => {
-  it("passes the branch through when no live PR exists", () => {
-    const branch = sessionBranch();
-    expect(createPullRequestBranch([], branch)).toBe(branch);
-    expect(createPullRequestBranch([pullRequest({ state: "merged" })], branch)).toBe(branch);
-    expect(createPullRequestBranch([pullRequest({ state: "closed" })], branch)).toBe(branch);
-  });
-
-  it("hides the row while an open or draft PR exists, even a dismissed one", () => {
-    expect(createPullRequestBranch([pullRequest()], sessionBranch())).toBeUndefined();
-    expect(
-      createPullRequestBranch([pullRequest({ state: "draft" })], sessionBranch()),
-    ).toBeUndefined();
-  });
-
-  it("does not second-guess diff counts; the gateway owns branch emptiness", () => {
-    expect(
-      createPullRequestBranch([], sessionBranch({ additions: 0, deletions: 0 })),
-    ).toBeDefined();
-    expect(
-      createPullRequestBranch([], sessionBranch({ additions: undefined, deletions: undefined })),
-    ).toBeDefined();
-    expect(createPullRequestBranch([], undefined)).toBeUndefined();
-  });
-});
-
 describe("renderChatPullRequests", () => {
   let container: HTMLDivElement;
 
@@ -103,11 +77,48 @@ describe("renderChatPullRequests", () => {
     container.remove();
   });
 
+  it("does not call account discovery Publishing before any publication is admitted", () => {
+    render(
+      renderChatPullRequests({
+        pullRequests: [],
+        branch: sessionBranch(),
+        status: "ready",
+        expanded: false,
+        onExpand: () => {},
+        onDismiss: () => {},
+        publication: publication({ activity: "read", selection: null }),
+      }),
+      container,
+    );
+    expect(container.textContent).not.toContain("Publishing");
+    expect(container.querySelector<HTMLButtonElement>(".chat-pr__create")?.disabled).toBe(true);
+  });
+
+  it.each(["open", "draft", "closed", "merged"] as const)(
+    "marks retained %s PR status unavailable without pretending it is rate limited",
+    (state) => {
+      render(
+        renderChatPullRequests({
+          pullRequests: [pullRequest({ state })],
+          status: "unavailable",
+          expanded: false,
+          onExpand: () => {},
+          onDismiss: () => {},
+        }),
+        container,
+      );
+      const warning = container.querySelector(".chat-pr__warning");
+      expect(warning?.getAttribute("aria-label")).toContain("could not be refreshed");
+      expect(warning?.getAttribute("aria-label")).not.toContain("rate limit");
+      expect(container.querySelector(".chat-pr__number")?.textContent).toBe("#103469");
+    },
+  );
+
   it("renders nothing without pull requests", () => {
     render(
       renderChatPullRequests({
         pullRequests: [],
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -121,7 +132,7 @@ describe("renderChatPullRequests", () => {
     render(
       renderChatPullRequests({
         pullRequests: [pullRequest()],
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -154,7 +165,7 @@ describe("renderChatPullRequests", () => {
             checks: { state: "failing", passed: 65, failed: 2, skipped: 31, running: 0 },
           }),
         ],
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -188,7 +199,7 @@ describe("renderChatPullRequests", () => {
     render(
       renderChatPullRequests({
         pullRequests,
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand,
         onDismiss: () => {},
@@ -208,7 +219,7 @@ describe("renderChatPullRequests", () => {
     render(
       renderChatPullRequests({
         pullRequests,
-        rateLimited: false,
+        status: "ready",
         expanded: true,
         onExpand,
         onDismiss: () => {},
@@ -231,7 +242,7 @@ describe("renderChatPullRequests", () => {
             checksUrl: undefined,
           }),
         ],
-        rateLimited: true,
+        status: "rate-limited",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -251,7 +262,7 @@ describe("renderChatPullRequests", () => {
     render(
       renderChatPullRequests({
         pullRequests: [pullRequest()],
-        rateLimited: true,
+        status: "rate-limited",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -266,7 +277,7 @@ describe("renderChatPullRequests", () => {
       renderChatPullRequests({
         pullRequests: [],
         branch: sessionBranch(),
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -300,7 +311,7 @@ describe("renderChatPullRequests", () => {
       renderChatPullRequests({
         pullRequests: [],
         branch: sessionBranch(),
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -322,7 +333,7 @@ describe("renderChatPullRequests", () => {
         // Unpushed branch with local changed files: the gateway omits
         // createUrl because GitHub's pull/new page would 404.
         branch: sessionBranch({ createUrl: undefined, additions: 12, deletions: 3 }),
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -339,10 +350,10 @@ describe("renderChatPullRequests", () => {
 
   it("shows Gateway publication request and terminal URL states", () => {
     const onPublish = vi.fn();
-    const props = {
+    const props: Parameters<typeof renderChatPullRequests>[0] = {
       pullRequests: [],
       branch: sessionBranch(),
-      rateLimited: false,
+      status: "ready",
       expanded: false,
       onExpand: () => {},
       onDismiss: () => {},
@@ -419,12 +430,42 @@ describe("renderChatPullRequests", () => {
     expect(container.querySelector("a.chat-pr__create")).toBeNull();
   });
 
+  it.each(["system-configured", "agent-override"] as const)(
+    "shows a sole %s publisher as information behind the publication arrow",
+    (source) => {
+      const shared = { source, accountId: 1, login: "system-bot" };
+      const onSelect = vi.fn();
+      render(
+        renderChatPullRequests({
+          pullRequests: [],
+          branch: sessionBranch(),
+          status: "ready",
+          expanded: false,
+          onExpand: () => {},
+          onDismiss: () => {},
+          publication: publication({
+            options: { shared, personal: null, pendingPersonal: null, latestShared: null },
+            selection: { source: "shared", expected: shared },
+            onSelect,
+          }),
+        }),
+        container,
+      );
+      expect(container.querySelector("select")).toBeNull();
+      expect(container.querySelector('button[aria-label="Publication account"]')).not.toBeNull();
+      const popover = container.querySelector("wa-popover");
+      expect(popover?.textContent).toContain("Publish as @system-bot");
+      expect(container.querySelector(".chat-pr__publication-outcome")).toBeNull();
+      expect(onSelect).not.toHaveBeenCalled();
+    },
+  );
+
   it("keeps the shared cloud flow available and explains the personal workspace boundary", () => {
     render(
       renderChatPullRequests({
         pullRequests: [],
         branch: sessionBranch(),
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -445,7 +486,7 @@ describe("renderChatPullRequests", () => {
       renderChatPullRequests({
         pullRequests: [],
         branch: sessionBranch(),
-        rateLimited: true,
+        status: "rate-limited",
         expanded: false,
         onExpand: () => {},
         onDismiss: () => {},
@@ -464,7 +505,7 @@ describe("renderChatPullRequests", () => {
     render(
       renderChatPullRequests({
         pullRequests: [pullRequest()],
-        rateLimited: false,
+        status: "ready",
         expanded: false,
         onExpand: () => {},
         onDismiss,

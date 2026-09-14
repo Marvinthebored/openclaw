@@ -16,7 +16,6 @@ import {
   resolveManagedStreamMediaUrls,
 } from "./embedded-agent-subscribe.handlers.messages.replies.js";
 import {
-  buildAssistantStreamData,
   emitAssistantCommentaryStreamData,
   emitAssistantMessageStart,
   emitReasoningEnd,
@@ -35,6 +34,7 @@ import { warnIfAssistantEmittedSuspiciousText } from "./embedded-agent-subscribe
 import {
   createThinkingTagStreamState,
   extractAssistantThinking,
+  extractAssistantVisibleText,
   extractEmbeddedAssistantText,
   extractThinkingFromTaggedText,
   promoteThinkingTagsToBlocks,
@@ -87,7 +87,7 @@ export function handleMessageEnd(
       rawText: coerceChatContentText(extractEmbeddedAssistantText(assistantMessage)),
       rawThinking: extractAssistantThinking(assistantMessage),
     }));
-    emitAssistantCommentaryStreamData(ctx, assistantMessage);
+    emitAssistantCommentaryStreamData(ctx, assistantMessage, true);
     // Commentary-tagged tool turns can still carry durable reasoning under /reasoning on.
     const suppressedTrimmedReasoning = ctx.state.includeReasoning
       ? extractAssistantThinking(assistantMessage).trim()
@@ -123,13 +123,21 @@ export function handleMessageEnd(
     rawThinking: extractAssistantThinking(assistantMessage),
   }));
   warnIfAssistantEmittedSuspiciousText(ctx, assistantMessage);
+  const messageToolText = extractStandaloneMessageToolText(rawVisibleText, {
+    allowRoutedReply: isOpenAiCompletionsAssistantMessage(assistantMessage),
+    allowCurrentSourceReply:
+      ctx.params.sourceReplyDeliveryMode === "message_tool_only" &&
+      ctx.builtinToolNames?.has("message") === true,
+  });
+  // JSON decoding can introduce control syntax after snapshot sanitization.
+  // Retain the selected text phase without requiring another outer <final> envelope.
   const text =
-    extractStandaloneMessageToolText(rawVisibleText, {
-      allowRoutedReply: isOpenAiCompletionsAssistantMessage(assistantMessage),
-      allowCurrentSourceReply:
-        ctx.params.sourceReplyDeliveryMode === "message_tool_only" &&
-        ctx.builtinToolNames?.has("message") === true,
-    }) ?? rawVisibleText;
+    messageToolText === undefined
+      ? rawVisibleText
+      : extractAssistantVisibleText(
+          scopeAssistantMessageToStreamBlock(assistantMessage, snapshot.parts[0]?.index, undefined),
+          () => messageToolText,
+        );
   // Exact NO_REPLY stays silent. The legacy rewrite (silentReplyRewrite) was
   // removed by contract; global messaging-tool send evidence is not a
   // user-route reply and must never be mirrored into the final payload.
@@ -142,9 +150,9 @@ export function handleMessageEnd(
   ctx.resetPartialReplyDirectives();
   const parsedText = parseReplyDirectives(trimmedText);
   // Final media is emitted after the buffered text drains, never on its first chunk.
-  recordPendingAssistantReplyDirectives(ctx.state, { ...parsedText, mediaUrls: undefined });
+  recordPendingAssistantReplyDirectives(ctx.state, parsedText);
   const cleanedText = parsedText.text;
-  const { mediaUrls } = resolveSendableOutboundReplyParts(parsedText);
+  const { mediaUrls } = resolveSendableOutboundReplyParts(parsedText, { text: "" });
   const managedMediaUrls = resolveManagedStreamMediaUrls(ctx.state, mediaUrls);
 
   const sourceMessage = { ...assistantMessage, content: sourceContent };
@@ -178,7 +186,7 @@ export function handleMessageEnd(
   if (text !== rawVisibleText) {
     // A structured message-tool result is projected before it enters the reply buffer.
     ctx.state.blockState.textIsVisible = true;
-    replaceBlockReplyBuffer(ctx, text);
+    replaceBlockReplyBuffer(ctx, cleanedText);
   } else if (ctx.blockChunker.consumedLength === 0) {
     // Observing a native index does not mean its predecessors were delivered:
     // phase-pending and suppressed streams can leave the whole message unsent.
@@ -189,13 +197,15 @@ export function handleMessageEnd(
             ctx.state.lastAssistantTextItemId,
           )
         : -1;
-    const pendingText =
+    const pendingSnapshot =
       preparedIndex >= 0 && Array.isArray(sourceContent)
         ? extractAssistantStreamSnapshot(ctx, {
             ...sourceMessage,
             content: sourceContent.slice(preparedIndex + 1),
-          }).text
-        : sourceSnapshot.text;
+          })
+        : sourceSnapshot;
+    const pendingText =
+      pendingSnapshot === snapshot ? cleanedText : parseReplyDirectives(pendingSnapshot.text).text;
     ctx.state.blockState = {
       thinking: false,
       final: false,
@@ -239,8 +249,7 @@ export function handleMessageEnd(
     // Late text_end events still use the partial lane's tag/inline state.
     const { thinking, final, inlineCode } = ctx.state.partialBlockState;
     ctx.state.partialBlockState = { thinking, final, inlineCode };
-    ctx.state.lastStreamedAssistant = undefined;
-    ctx.state.lastStreamedAssistantCleaned = undefined;
+    ctx.state.assistantStream = undefined;
     ctx.state.reasoningStreamOpen = false;
   };
 
@@ -249,13 +258,16 @@ export function handleMessageEnd(
     !suppressDeterministicApprovalOutput &&
     !suppressMessageToolOnlySourceReplyOutput
   ) {
-    const data = buildAssistantStreamData({
-      text: cleanedText,
-      mediaUrls,
-      managedMediaUrls,
-      phase: assistantPhase,
-    });
-    ctx.emitAssistantStreamData(data, { finalMessage: true });
+    ctx.emitAssistantStreamData(
+      {
+        text: cleanedText,
+        delta: "",
+        mediaUrls: mediaUrls.length ? mediaUrls : undefined,
+        managedMediaUrls: managedMediaUrls.length ? managedMediaUrls : undefined,
+        phase: assistantPhase,
+      },
+      { finalMessage: true },
+    );
   }
 
   const silentExpectedWithoutSentinel =

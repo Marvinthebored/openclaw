@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { buildWidgetDocument } from "../../../../src/canvas/wrap.js";
 import { BOARD_GRID_GAP, BOARD_GRID_ROW_HEIGHT } from "../../lib/board/grid.ts";
 import type { BoardSnapshot } from "../../lib/board/types.ts";
 import "../../styles/base.css";
+import "../../styles/chat/board.css";
 import "./board-view.ts";
 
 type OpenClawBoardView = HTMLElementTagNameMap["openclaw-board-view"];
@@ -41,13 +43,16 @@ const source: BoardSnapshot = {
   ],
 };
 
-async function mount(applyOps = vi.fn(async () => undefined)): Promise<OpenClawBoardView> {
+async function mount(
+  applyOps = vi.fn(async () => undefined),
+  parent: HTMLElement = document.body,
+): Promise<OpenClawBoardView> {
   const view = document.createElement("openclaw-board-view");
   view.snapshot = structuredClone(source);
   view.activeTabId = "main";
   view.widgetFrameUrl = () => "about:blank";
   view.callbacks = { applyOps, grant: vi.fn(async () => undefined), selectTab: vi.fn() };
-  document.body.append(view);
+  parent.append(view);
   await view.updateComplete;
   await Promise.all(
     [...view.querySelectorAll("openclaw-board-widget-cell")].map((cell) => cell.updateComplete),
@@ -159,14 +164,18 @@ describe.skipIf(!hasBrowserLayout)("openclaw-board-view browser layout", () => {
     return sink;
   }
 
+  function finishDocumentAnimations(): void {
+    for (const animation of document.getAnimations()) {
+      animation.finish();
+    }
+  }
+
   // Headless CI renderers can stall the animation timeline, leaving the 120ms
   // hide transition permanently mid-flight; finishing transitions asserts the
   // target visibility state instead of the renderer's clock. A genuinely
   // matching reveal selector still fails: its finished end state is visible.
   function expectChromeHidden(widget: HTMLElement, bar: HTMLElement): void {
-    for (const animation of document.getAnimations()) {
-      animation.finish();
-    }
+    finishDocumentAnimations();
     const revealState = JSON.stringify({
       hover: widget.matches(":hover"),
       focusWithin: widget.matches(":focus-within"),
@@ -401,20 +410,110 @@ describe.skipIf(!hasBrowserLayout)("openclaw-board-view browser layout", () => {
         data: { type: "openclaw:widget-size", height: 300 },
       }),
     );
-    // The card hugs its exact content height (300px + 2x12px card inset); the
+    // The card hugs its content (300px + 2x12px inset + 2px border); the
     // ceil-to-row slack stays outside the card as grid background.
-    await vi.waitFor(() => expect(Math.round(first.getBoundingClientRect().height)).toBe(324));
+    await vi.waitFor(() => expect(Math.round(frame.getBoundingClientRect().height)).toBe(300));
+    expect(Math.round(first.getBoundingClientRect().height)).toBe(326);
     expect(second.getBoundingClientRect().top).toBeGreaterThan(secondTopBefore);
 
     const cardBody = first.querySelector<HTMLElement>(".board-widget__body");
     expect(first.classList.contains("board-widget--card")).toBe(true);
     expect(getComputedStyle(cardBody!).paddingTop).toBe("12px");
     expect(second.classList.contains("board-widget--frameless")).toBe(true);
+    // Other tests can leave the shared browser's pointer or focus over this widget.
+    const { page } = await import("vitest/browser");
+    await page.elementLocator(document.body).hover({ position: { x: 0, y: 0 } });
+    focusSink().focus({ preventScroll: true });
+    expect(second.matches(":hover")).toBe(false);
+    expect(second.matches(":focus-within")).toBe(false);
     expect(getComputedStyle(second).backgroundColor).toBe("rgba(0, 0, 0, 0)");
+    finishDocumentAnimations();
     expect(getComputedStyle(second).borderTopColor).toBe("rgba(0, 0, 0, 0)");
     second.focus();
+    finishDocumentAnimations();
     expect(getComputedStyle(second).borderTopColor).not.toBe("rgba(0, 0, 0, 0)");
   });
+
+  it.each(
+    (["card", "full-bleed", "frameless"] as const).flatMap((presentation) => [
+      { presentation, surface: "grid" },
+      { presentation, surface: "focused singleton" },
+    ]),
+  )(
+    "keeps a $presentation widget stable in a $surface when its content fills the iframe viewport",
+    async ({ presentation, surface }) => {
+      const focused = surface === "focused singleton";
+      const host = document.createElement("div");
+      const parent = document.createElement("div");
+      if (focused) {
+        host.className = "sidebar-region sidebar-region--open sidebar-region--expanded";
+        host.style.width = "1200px";
+        parent.className = "board-session-surface__board";
+        parent.style.height = "500px";
+        host.append(parent);
+        document.body.append(host);
+      }
+      const view = await mount(undefined, focused ? parent : document.body);
+      view.snapshot = {
+        ...structuredClone(source),
+        ...(focused ? { tabs: [source.tabs[0]!] } : {}),
+        widgets: [{ ...source.widgets[0]!, presentation, ...(focused ? { sizeW: 12 } : {}) }],
+      };
+      await view.updateComplete;
+      const cell = view.querySelector("openclaw-board-widget-cell")!;
+      await cell.updateComplete;
+      const frame = cell.querySelector("iframe")!;
+      const initialHeight = frame.getBoundingClientRect().height;
+      const reports: number[] = [];
+      const recordSize = (event: MessageEvent) => {
+        if (event.source === frame.contentWindow && event.data?.type === "openclaw:widget-size") {
+          reports.push(event.data.height);
+        }
+      };
+      window.addEventListener("message", recordSize);
+      try {
+        frame.srcdoc = buildWidgetDocument(
+          "Viewport-sized dashboard",
+          "<style>body{min-height:100vh}</style><main>Dashboard content</main>",
+        );
+        await vi.waitFor(() => expect(reports.length).toBeGreaterThan(0));
+        for (const expanded of focused ? [true, false, true] : [false]) {
+          if (focused) {
+            host.classList.toggle("sidebar-region--expanded", expanded);
+          }
+          // Each host resize can trigger another content report; allow repeated
+          // layout cycles so changing the shell cannot shrink or grow the frame.
+          for (let index = 0; index < 12; index += 1) {
+            await new Promise<void>((resolve) => {
+              requestAnimationFrame(() => resolve());
+            });
+          }
+          expect(frame.getBoundingClientRect().height).toBeCloseTo(initialHeight, 0);
+          expect(reports.every((height) => height === initialHeight)).toBe(true);
+          expect(view.querySelector("iframe")).toBe(frame);
+          if (focused) {
+            const widget = cell.querySelector<HTMLElement>(".board-widget")!;
+            const body = cell.querySelector<HTMLElement>(".board-widget__body")!;
+            expect(getComputedStyle(widget).borderTopWidth).toBe(expanded ? "0px" : "1px");
+            expect(getComputedStyle(body).paddingTop).toBe(
+              !expanded && presentation === "card" ? "12px" : "0px",
+            );
+            if (expanded) {
+              expect(getComputedStyle(widget).borderRadius).toBe("0px");
+              expect(getComputedStyle(body).borderRadius).toBe("0px");
+              const bounds = frame.getBoundingClientRect();
+              const available = parent.getBoundingClientRect();
+              expect(bounds.left).toBeCloseTo(available.left, 0);
+              expect(bounds.top).toBeCloseTo(available.top, 0);
+              expect(bounds.right).toBeCloseTo(available.right, 0);
+            }
+          }
+        }
+      } finally {
+        window.removeEventListener("message", recordSize);
+      }
+    },
+  );
 
   it("rejects tab drop targets owned by another board", async () => {
     const applyOps = vi.fn(async () => undefined);

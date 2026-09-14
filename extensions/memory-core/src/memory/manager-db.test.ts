@@ -7,7 +7,8 @@ import {
   ensureMemoryIndexSchema,
   loadSqliteVecExtension,
 } from "openclaw/plugin-sdk/memory-core-host-engine-storage";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import * as storage from "openclaw/plugin-sdk/memory-core-host-engine-storage";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   configureMemoryCoreDreamingStateForTests,
   resetMemoryCoreDreamingStateForTests,
@@ -16,8 +17,9 @@ import {
   cleanupAgedMemoryReindexTempFiles,
   closeMemoryDatabase,
   openMemoryDatabaseAtPath,
-  publishMemoryDatabaseTables,
+  prepareMemoryDatabasePublication,
   readMemoryDatabaseRevision,
+  MemoryIndexRevisionConflictError,
   resetMemoryDatabase,
 } from "./manager-db.js";
 import { waitForMemoryReindexLock } from "./manager-reindex-lock.js";
@@ -32,6 +34,13 @@ function ensureTestMemorySchema(db: DatabaseSync, cacheEnabled = true, ftsEnable
 
 async function expectPathMissing(targetPath: string): Promise<void> {
   await expect(fs.access(targetPath)).rejects.toThrow("ENOENT");
+}
+
+async function publishPreparedMemoryDatabase(
+  params: Parameters<typeof prepareMemoryDatabasePublication>[0],
+): Promise<void> {
+  const publish = await prepareMemoryDatabasePublication(params);
+  publish();
 }
 
 describe("memory manager database publication", () => {
@@ -172,9 +181,10 @@ describe("memory manager database publication", () => {
         .run("new", 9, "when flying");
       sourceDb.close();
 
-      await publishMemoryDatabaseTables({
+      await publishPreparedMemoryDatabase({
         targetDb,
         sourcePath,
+        sourceHasVectors: false,
         metaKey: "meta",
         expectedRevision: 0,
       });
@@ -206,9 +216,10 @@ describe("memory manager database publication", () => {
         .run("stale", "[]");
       sourceDb.close();
 
-      await publishMemoryDatabaseTables({
+      await publishPreparedMemoryDatabase({
         targetDb,
         sourcePath,
+        sourceHasVectors: false,
         metaKey: "memory_index_meta",
         expectedRevision: readMemoryDatabaseRevision(targetDb),
       });
@@ -257,9 +268,10 @@ describe("memory manager database publication", () => {
       const expectedRevision = readMemoryDatabaseRevision(targetDb);
       sourceDb.close();
 
-      await publishMemoryDatabaseTables({
+      await publishPreparedMemoryDatabase({
         targetDb,
         sourcePath,
+        sourceHasVectors: false,
         metaKey: "meta",
         expectedRevision,
       });
@@ -329,9 +341,10 @@ describe("memory manager database publication", () => {
       const expectedRevision = readMemoryDatabaseRevision(targetDb);
       sourceDb.close();
 
-      await publishMemoryDatabaseTables({
+      await publishPreparedMemoryDatabase({
         targetDb,
         sourcePath,
+        sourceHasVectors: false,
         metaKey: "meta",
         expectedRevision,
       });
@@ -388,13 +401,32 @@ describe("memory manager database publication", () => {
         .run("vector", JSON.stringify([0, 1, 0]));
       sourceDb.close();
 
-      await publishMemoryDatabaseTables({
-        targetDb,
-        sourcePath,
-        metaKey: "memory_index_meta",
-        expectedRevision: readMemoryDatabaseRevision(targetDb),
-        vectorExtensionPath: sourceVector.extensionPath,
-      });
+      const originalLoad = storage.loadSqliteVecExtension;
+      const load = vi
+        .spyOn(storage, "loadSqliteVecExtension")
+        .mockImplementationOnce(async (params) => {
+          // Provider/import preparation can yield; the shared target must still be
+          // usable by unrelated agent writes with no attached shadow in that window.
+          await Promise.resolve();
+          expect(targetDb.prepare("PRAGMA database_list").all()).not.toContainEqual(
+            expect.objectContaining({ name: "memory_reindex" }),
+          );
+          targetDb.exec("BEGIN IMMEDIATE; COMMIT;");
+          return originalLoad(params);
+        });
+      try {
+        await publishPreparedMemoryDatabase({
+          targetDb,
+          sourcePath,
+          sourceHasVectors: true,
+          metaKey: "memory_index_meta",
+          expectedRevision: readMemoryDatabaseRevision(targetDb),
+          vectorExtensionPath: sourceVector.extensionPath,
+        });
+        expect(load).toHaveBeenCalledOnce();
+      } finally {
+        load.mockRestore();
+      }
 
       expect(targetDb.prepare("SELECT id FROM memory_index_chunks_vec").all()).toEqual([
         { id: "vector" },
@@ -436,14 +468,15 @@ describe("memory manager database publication", () => {
       concurrentDb.close();
       concurrentDb = undefined;
 
-      await expect(
-        publishMemoryDatabaseTables({
-          targetDb,
-          sourcePath,
-          metaKey: "memory_index_meta",
-          expectedRevision,
-        }),
-      ).rejects.toThrow(/changed while full reindex was building/);
+      const publication = publishPreparedMemoryDatabase({
+        targetDb,
+        sourcePath,
+        sourceHasVectors: false,
+        metaKey: "memory_index_meta",
+        expectedRevision,
+      });
+      await expect(publication).rejects.toBeInstanceOf(MemoryIndexRevisionConflictError);
+      await expect(publication).rejects.toThrow(/changed while full reindex was building/);
       expect(
         targetDb
           .prepare("SELECT hash FROM memory_index_sources WHERE path = ? AND source = ?")
@@ -460,32 +493,40 @@ describe("memory manager database publication", () => {
     }
   });
 
-  it("preserves the live embedding cache when the shadow index has caching disabled", async () => {
+  it("preserves the live embedding cache instead of publishing the shadow cache", async () => {
     const targetPath = path.join(fixtureRoot, "target.sqlite");
     const sourcePath = path.join(fixtureRoot, "source.sqlite");
     const targetDb = new DatabaseSync(targetPath);
     const sourceDb = new DatabaseSync(sourcePath);
     try {
       ensureTestMemorySchema(targetDb);
-      ensureTestMemorySchema(sourceDb, false);
+      ensureTestMemorySchema(sourceDb);
       targetDb
         .prepare(
           `INSERT INTO memory_embedding_cache (
              provider, model, provider_key, hash, embedding, dims, updated_at
            ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         )
-        .run("test", "model", "key", "hash", "[]", 0, 1);
+        .run("test", "model", "key", "live-hash", "[]", 0, 1);
+      sourceDb
+        .prepare(
+          `INSERT INTO memory_embedding_cache (
+             provider, model, provider_key, hash, embedding, dims, updated_at
+           ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run("test", "model", "key", "shadow-hash", "[1]", 1, 2);
       sourceDb.close();
 
-      await publishMemoryDatabaseTables({
+      await publishPreparedMemoryDatabase({
         targetDb,
         sourcePath,
+        sourceHasVectors: false,
         metaKey: "memory_index_meta",
         expectedRevision: readMemoryDatabaseRevision(targetDb),
       });
 
       expect(targetDb.prepare("SELECT hash FROM memory_embedding_cache").all()).toEqual([
-        { hash: "hash" },
+        { hash: "live-hash" },
       ]);
     } finally {
       try {
@@ -513,12 +554,12 @@ describe("memory manager database publication", () => {
     try {
       cleanupAgedMemoryReindexTempFiles(databasePath);
     } finally {
-      lock.release();
+      await lock.release();
     }
 
     await expectPathMissing(oldShadow);
     await expectPathMissing(`${oldShadow}-wal`);
     await expectPathMissing(`${oldShadow}-journal`);
-    await expect(fs.access(youngShadow)).resolves.toBeUndefined();
+    await fs.access(youngShadow);
   });
 });

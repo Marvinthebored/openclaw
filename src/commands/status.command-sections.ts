@@ -15,6 +15,7 @@ import type { Tone } from "../memory-host-sdk/status.js";
 import type { SessionStatus, StatusSummary } from "../status/types.js";
 import { formatDeliveryQueueHealthLine } from "./health-format.js";
 import type { HealthSummary } from "./health.js";
+import { formatSqliteWalHealthWarning } from "./sqlite-wal-health.js";
 import type { AgentLocalStatus } from "./status.agent-local.js";
 import type { MemoryStatusSnapshot, MemoryPluginStatus } from "./status.scan.shared.js";
 
@@ -142,11 +143,10 @@ export function buildStatusLastHeartbeatValue(params: {
     return params.muted("none");
   }
   const age = params.formatTimeAgo(Date.now() - params.lastHeartbeat.ts);
-  const channel = params.lastHeartbeat.channel ?? "unknown";
   const accountLabel = params.lastHeartbeat.accountId
     ? `account ${params.lastHeartbeat.accountId}`
     : null;
-  return [params.lastHeartbeat.status, `${age} ago`, channel, accountLabel]
+  return [params.lastHeartbeat.status, age, params.lastHeartbeat.channel, accountLabel]
     .filter(Boolean)
     .join(" · ");
 }
@@ -272,6 +272,7 @@ export function buildStatusSecurityAuditLines(params: {
 /** Builds gateway, channel, and delivery queue health table rows. */
 export function buildStatusHealthRows(params: {
   health: HealthSummary;
+  sqliteWal?: StatusSummary["sqliteWal"];
   formatHealthChannelLines: (summary: HealthSummary, opts: { accountMode: "all" }) => string[];
   ok: (value: string) => string;
   warn: (value: string) => string;
@@ -284,6 +285,10 @@ export function buildStatusHealthRows(params: {
       Detail: `${params.health.durationMs}ms`,
     },
   ];
+  const sqliteWalWarning = formatSqliteWalHealthWarning(params.sqliteWal);
+  if (sqliteWalWarning) {
+    rows.push({ Item: "SQLite WAL", Status: params.warn("WARN"), Detail: sqliteWalWarning });
+  }
   if (params.health.eventLoop) {
     rows.push({
       Item: "Event loop",
@@ -308,7 +313,7 @@ export function buildStatusHealthRows(params: {
     const status =
       normalized === "healthy" || normalized.startsWith("ok") || normalized.startsWith("configured")
         ? params.ok("OK")
-        : normalized.startsWith("not configured")
+        : normalized.startsWith("not configured") || normalized.startsWith("disabled")
           ? params.muted("OFF")
           : normalized.startsWith("linked")
             ? params.ok("LINKED")
@@ -403,7 +408,7 @@ export function buildStatusModelSelectionLines(params: {
       `  Session selected: ${selected}`,
       reasonLine,
       clearLine,
-      "  Docs: https://docs.openclaw.ai/concepts/models#selection-source-and-fallback-behavior",
+      "  Docs: https://docs.openclaw.ai/concepts/models#selection-source-and-fallback-strictness",
     );
   }
   if (mismatches.length > limit) {

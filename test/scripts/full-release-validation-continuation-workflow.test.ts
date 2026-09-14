@@ -50,6 +50,7 @@ describe("full release metadata checkouts", () => {
       job: "resolve_target",
       checkout: "Checkout trusted workflow helper",
       entrypoint: "release-tooling-identity.mjs",
+      fullCheckout: true,
     },
     {
       job: "evidence_reuse",
@@ -79,13 +80,25 @@ describe("full release metadata checkouts", () => {
     },
   ])(
     "runs $job tooling from the complete scripts tree",
-    ({ job, checkout, entrypoint, extraPath }) => {
+    ({ job, checkout, entrypoint, extraPath, fullCheckout }) => {
       const root = mkdtempSync(join(tmpdir(), "openclaw-release-sparse-"));
       try {
         const toolingCheckout = step(job, checkout).with as Record<string, unknown>;
-        expect(toolingCheckout["sparse-checkout-cone-mode"]).toBe(false);
-        const paths = sparsePaths(toolingCheckout);
-        expect(paths).toEqual(extraPath ? ["scripts", extraPath] : ["scripts"]);
+        if (fullCheckout) {
+          expect(toolingCheckout).not.toHaveProperty("sparse-checkout");
+          expect(toolingCheckout).not.toHaveProperty("sparse-checkout-cone-mode");
+          expect(toolingCheckout).toMatchObject({
+            ref: "${{ github.sha }}",
+            path: "workflow",
+            "fetch-depth": 1,
+            "persist-credentials": false,
+            submodules: false,
+          });
+        } else {
+          expect(toolingCheckout["sparse-checkout-cone-mode"]).toBe(false);
+          const paths = sparsePaths(toolingCheckout);
+          expect(paths).toEqual(extraPath ? ["scripts", extraPath] : ["scripts"]);
+        }
 
         const checkoutRoot = join(root, checkoutPath(toolingCheckout));
         cpSync("scripts", join(checkoutRoot, "scripts"), { recursive: true });
@@ -183,7 +196,6 @@ describe("full release same-parent recovery workflow", () => {
     expect(workflow.on.workflow_dispatch.inputs).not.toHaveProperty("continuation_plan_json");
     for (const job of [
       "docker_runtime_assets_preflight",
-      "candidate_acquisition",
       "normal_ci",
       "plugin_prerelease_independent",
       "plugin_prerelease_candidate",
@@ -194,6 +206,16 @@ describe("full release same-parent recovery workflow", () => {
     ]) {
       expect(String(workflow.jobs[job]?.if), job).toContain("github.run_attempt == 1");
     }
+    for (const [job, dispatch] of [
+      ["prepare_npm_package", "Dispatch immutable npm artifact producer"],
+      ["prepare_docker_release", "Dispatch immutable Docker artifact producer"],
+      ["candidate_acquisition", "Dispatch immutable validation candidate producer"],
+    ] as const) {
+      expect(String(workflow.jobs[job]?.if), job).not.toContain("github.run_attempt");
+      expect(step(job, dispatch).if).toBe("github.run_attempt == 1");
+      expect(step(job, "Recover original artifact producer").if).toBeUndefined();
+    }
+    expect(String(workflow.jobs.qualify_npm_package?.if)).not.toContain("github.run_attempt");
     expect(source).not.toContain("continuationSource");
     expect(source).not.toContain("continuation_plan_json");
   });
@@ -223,9 +245,12 @@ describe("full release same-parent recovery workflow", () => {
         "run-id": "${{ github.run_id }}",
       },
     });
-    expect(upload.with).toMatchObject({
-      name: "full-release-execution-plan-${{ github.run_id }}",
-      overwrite: true,
+    expect(upload).toMatchObject({
+      if: "${{ always() && github.run_attempt == 1 && steps.plan.outputs.sha256 != '' && steps.plan.outputs.source_parent_attempt == '1' }}",
+      with: {
+        name: "full-release-execution-plan-${{ github.run_id }}",
+        overwrite: false,
+      },
     });
     for (const job of ["release_decision", "diagnostic_drain", "summary"]) {
       expect(step(job, "Download immutable release execution plan").with).toMatchObject({
