@@ -133,7 +133,7 @@ export function renderSidebarFile(
           controls
             ? html`
                 <div class="sidebar-file-view__actions">
-                  ${renderFileWrapButton(controls)}
+                  ${!controls.htmlPreview || controls.htmlPreview.source ? renderFileWrapButton(controls) : nothing}
                   ${
                     controls.htmlPreview
                       ? html`<button
