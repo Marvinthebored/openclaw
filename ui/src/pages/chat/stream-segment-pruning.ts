@@ -72,8 +72,34 @@ export function discardStreamSegmentIndexes(
   );
 }
 
+/** The final assistant row can persist after its run has already been cleared.
+ * Fall back to the run the surviving segments name, or their transient text
+ * renders a second time beside the durable message that replaced it. */
+function reconciledStreamRunId(state: StreamSegmentPruningState): string | undefined {
+  if (state.chatRunId) {
+    return state.chatRunId;
+  }
+  const segments = state.chatStreamSegments ?? [];
+  if (segments.length === 0) {
+    return undefined;
+  }
+  const runIds = new Set<string | undefined>();
+  for (const segment of segments) {
+    // A segment already carried past a later turn belongs to that turn's
+    // display, so an earlier run's durable row must never retire it.
+    if (normalizeOptionalString(segment.afterBoundaryRunId)) {
+      return undefined;
+    }
+    runIds.add(normalizeOptionalString(segment.runId));
+  }
+  // Only an unambiguous owner may stand in. An untagged stray means some
+  // segment's run is unknown, so no id present can speak for all of them.
+  const [only] = runIds;
+  return runIds.size === 1 && only ? only : undefined;
+}
+
 export function reconcilePersistedAssistantStream(state: StreamSegmentPruningState): void {
-  const runId = state.chatRunId;
+  const runId = reconciledStreamRunId(state);
   if (!runId) {
     return;
   }
