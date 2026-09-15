@@ -16,7 +16,7 @@ suite.define(() => {
       it(`${route} at ${width}: agreed handle visibility and reset`, async () => {
         await suite.withPage(
           { viewport: { width, height: 900 }, colorScheme: "dark" },
-          async ({ page }) => {
+          async ({ context, page }) => {
             await installMockGateway(page, { historyMessages: [] });
             await page.goto(`${suite.server.baseUrl}${route}`);
             const editor = page.locator(".agent-chat__composer-combobox > textarea");
@@ -136,13 +136,15 @@ suite.define(() => {
               // pane, End must not select a window-based cap that overflows
               // the clipped conversation and hides part of the composer.
               await page.setViewportSize({ width, height: 900 });
+              // Only the pane's box changes, exactly as a stacked-split divider
+              // does: no window resize event. The pane ResizeObserver must
+              // recompute the ceiling on its own.
               const setPaneHeight = (px: string) =>
                 page.evaluate((value) => {
                   const chat = document.querySelector<HTMLElement>(".card.chat, .chat")!;
                   chat.style.height = value;
                   chat.style.maxHeight = value;
                   chat.style.overflow = value ? "hidden" : "";
-                  window.dispatchEvent(new Event("resize"));
                 }, px);
               await setPaneHeight("360px");
               await top.focus();
@@ -178,6 +180,30 @@ suite.define(() => {
                   COMPOSER_HEIGHT_STORAGE_KEY,
                 ),
               ).toBe(storedEnd);
+              // Same through grow mode with a long draft: shrink the pane by
+              // its box alone, the remembered ceiling must follow it down and
+              // back up. This is the divider path the window-resize handler
+              // never sees.
+              await top.press("Enter");
+              await editor.fill("one\ntwo\nthree");
+              await dragTop(-48);
+              await editor.fill(lines(100));
+              const tallCeiling = await editor.evaluate((el) =>
+                Number.parseFloat(el.style.maxHeight),
+              );
+              await setPaneHeight("300px");
+              await expect
+                .poll(() => editor.evaluate((el) => Number.parseFloat(el.style.maxHeight)))
+                .toBeLessThan(300);
+              const shrunk = (await page.locator(".agent-chat__input").boundingBox())!;
+              const shrunkPane = (await page.locator(".card.chat, .chat").first().boundingBox())!;
+              expect(shrunk.y + shrunk.height).toBeLessThanOrEqual(
+                shrunkPane.y + shrunkPane.height + 1,
+              );
+              await setPaneHeight("");
+              await expect
+                .poll(() => editor.evaluate((el) => Number.parseFloat(el.style.maxHeight)))
+                .toBe(tallCeiling);
               await top.press("Enter");
               // Width changes must reflow the same draft and recover on widening.
               // Re-enter grow mode first: the reset above restored the default cap,
@@ -210,6 +236,46 @@ suite.define(() => {
               await editor.fill(lines(15));
               expect(await top.count()).toBe(0);
               expect(await editor.evaluate((el) => el.style.maxHeight)).toBe("");
+              // Width is owned by settings, not cached here: a Message width
+              // change written from another tab must repaint this mounted page
+              // through the live settings snapshot, with no grip interaction.
+              const shell = page.locator(".agent-chat__composer-shell");
+              const before = (await shell.boundingBox())!.width;
+              // Settings are scoped to the gateway the page is connected to, not
+              // to the test server: take the key the page itself wrote.
+              const settingsKey = await page.evaluate(
+                () =>
+                  Object.keys(localStorage).find((key) =>
+                    key.startsWith("openclaw.control.settings.v1:"),
+                  ) ?? null,
+              );
+              expect(settingsKey).not.toBeNull();
+              const otherTab = await context.newPage();
+              await otherTab.route("**/preference-writer", (request) =>
+                request.fulfill({
+                  contentType: "text/html",
+                  body: "<!doctype html><title>Preference writer</title>",
+                }),
+              );
+              await otherTab.goto(`${suite.server.baseUrl}preference-writer`);
+              await otherTab.evaluate((key) => {
+                const current = JSON.parse(localStorage.getItem(key) ?? "{}");
+                localStorage.setItem(
+                  key,
+                  JSON.stringify({ ...current, chatMessageMaxWidth: "560px" }),
+                );
+              }, settingsKey!);
+              await expect.poll(async () => (await shell.boundingBox())!.width).toBe(560);
+              expect(before).not.toBe(560);
+              // Restore the default width the same way, so the shared checks
+              // below start from the accepted hover-only state.
+              await otherTab.evaluate((key) => {
+                const current = JSON.parse(localStorage.getItem(key) ?? "{}");
+                delete current.chatMessageMaxWidth;
+                localStorage.setItem(key, JSON.stringify(current));
+              }, settingsKey!);
+              await expect.poll(async () => (await shell.boundingBox())!.width).toBe(before);
+              await otherTab.close();
             }
             await editor.hover();
             await expect.poll(opacity).toBe("0");
@@ -258,9 +324,9 @@ suite.define(() => {
               await page.mouse.move(sx + dx, sy);
               await editor.evaluate(async (el) => {
                 el.dispatchEvent(new InputEvent("input", { bubbles: true }));
-                await new Promise<void>((resolve) =>
-                  requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-                );
+                await new Promise<void>((resolve) => {
+                  requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+                });
               });
               expect(Math.abs((await side.boundingBox())!.x - savedBox.x - dx)).toBeLessThan(2);
             }

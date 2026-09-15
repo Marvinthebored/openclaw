@@ -328,7 +328,25 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
     preferredHeight = px;
     writeStoredHeightPx(px);
   };
+  // Geometry can change without any window event: a stacked-split divider
+  // resizes the containing pane, a side panel opens, the input itself grows.
+  // The ceiling derives from the pane, so the pane must be observed — but the
+  // input ref runs before its ancestors attach, so the pane cannot be found
+  // at construction. Resolve it on the first sync after connection.
+  let observer: ResizeObserver | null = null;
+  let observedPane: HTMLElement | null = null;
+  const observePaneOnceConnected = () => {
+    if (observedPane || !observer || !input.isConnected) {
+      return;
+    }
+    const pane = input.closest<HTMLElement>(".chat");
+    if (pane && pane !== input) {
+      observedPane = pane;
+      observer.observe(pane);
+    }
+  };
   const syncValues = () => {
+    observePaneOnceConnected();
     const textarea = findTextarea(input);
     topHandle.hidden =
       !heightEnabled ||
@@ -560,7 +578,7 @@ export function observeComposerResize(input: HTMLElement, options?: ComposerResi
       { signal: abort.signal },
     );
   }
-  const observer = typeof ResizeObserver === "function" ? new ResizeObserver(syncValues) : null;
+  observer = typeof ResizeObserver === "function" ? new ResizeObserver(syncValues) : null;
   observer?.observe(input);
   abort.signal.addEventListener("abort", () => observer?.disconnect(), { once: true });
   window.addEventListener(
@@ -620,31 +638,6 @@ export function rebindComposerResizeInput(
   if (next) {
     observeComposerResize(next, options);
   }
-}
-
-/** Owned Message width for hosts without page-level settings state (New
-    Session). Reads storage exactly once, on first attach; afterwards only the
-    grip's own commit updates it. Render paths read `.value`, never storage. */
-export class ComposerColumnWidthOwner {
-  value: string | undefined;
-  private loaded = false;
-  private input: HTMLElement | null = null;
-
-  private readonly onWidthCommit: ComposerWidthCommit = (value) => {
-    this.value = value;
-    patchSettings({ chatMessageMaxWidth: value });
-  };
-
-  readonly inputRef = (element?: Element): void => {
-    const next = element instanceof HTMLElement ? element : null;
-    if (next && !this.loaded) {
-      this.loaded = true;
-      this.value = loadSettings().chatMessageMaxWidth;
-    }
-    const { onWidthCommit } = this;
-    rebindComposerResizeInput(this.input, next, { heightEnabled: false, onWidthCommit });
-    this.input = next;
-  };
 }
 
 export function restoreComposerHeightOverride(textarea: HTMLTextAreaElement): void {
