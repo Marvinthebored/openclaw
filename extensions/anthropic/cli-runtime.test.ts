@@ -237,6 +237,47 @@ describe("Claude native stdio boundary", () => {
     expect(resultDetail(await running).finalBackgroundAnswer).toBe(true);
   });
 
+  it("keeps an interim result open until a timed-out Bash call reports back", async () => {
+    // Claude Code moves a foreground Bash call to the background after its
+    // timeout, emits an interim result, then a task_notification turn. The run
+    // must stay admitted across that gap so the notification turn keeps its
+    // tools: its hook requests reach host policy instead of a stale-run denial.
+    const context = await createContext("background-bash-success", {
+      liveSession: createLiveSession(),
+    });
+    let settled = false;
+    const running = collect(context).then((records) => {
+      settled = true;
+      return records;
+    });
+    await vi.waitFor(async () => {
+      expect(await readFile(path.join(context.cwd, "background.ready"), "utf8")).toBe("ready");
+    });
+    expect(settled).toBe(false);
+    await writeFile(path.join(context.cwd, "background.release"), "release");
+    const detail = resultDetail(await running);
+    expect(detail.finalBackgroundAnswer).toBe(true);
+    // Host policy, not the stale-run guard, answered the notification turn's hook.
+    expect(context.requestToolPermission).toHaveBeenCalledWith(
+      expect.objectContaining({ toolName: "Read", toolCallId: "tool-bg-read" }),
+    );
+    expect(detail.notificationDecision).toMatchObject({
+      hookSpecificOutput: {
+        hookEventName: "PreToolUse",
+        permissionDecision: "deny",
+        permissionDecisionReason: "Fixture denied.",
+      },
+    });
+  });
+
+  it("does not hold the turn for a Bash call started in the background", async () => {
+    // run_in_background work may never finish; holding it would block the next input.
+    const context = await createContext("background-bash-explicit", {
+      liveSession: createLiveSession(),
+    });
+    expect(resultDetail(await collect(context)).explicitBackground).toBe(true);
+  });
+
   it.each([
     { type: "token" as const, descriptor: "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR" },
     { type: "api_key" as const, descriptor: "CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR" },

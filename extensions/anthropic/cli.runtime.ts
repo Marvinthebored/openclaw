@@ -17,7 +17,37 @@ import { createClaudeCliTransport } from "./cli-transport.js";
 import { createClaudeCliUserInputAuthorizer } from "./cli-user-input.js";
 
 const IDLE_TIMEOUT_MS = 10 * 60 * 1_000;
+// Claude Code emits an interim result while these run, then task_notification
+// and a second result, so the turn stays admitted until the second result.
 const RESULT_HOLDING_TASK_TYPES = new Set(["local_agent", "local_workflow"]);
+// A foreground Bash call that Claude Code moved to the background after its
+// timeout behaves the same way, and the model is still waiting on it. An
+// explicit run_in_background call (dev servers, watchers) is not held: it may
+// never finish, and holding it would block the next input until the run timeout.
+// A task started in the foreground that then appears in the background task
+// list has been moved; that does not depend on when task_updated arrives.
+const TIMEOUT_BACKGROUNDED_TASK_TYPE = "local_bash";
+
+type BackgroundTask = { taskId: string; taskType: string };
+
+function readBackgroundTask(value: unknown): BackgroundTask | undefined {
+  if (!isRecord(value) || typeof value.task_id !== "string" || !value.task_id) {
+    return undefined;
+  }
+  return typeof value.task_type === "string"
+    ? { taskId: value.task_id, taskType: value.task_type }
+    : undefined;
+}
+
+/** Background work whose final answer Claude Code delivers in a later result. */
+function hasResultHoldingBackgroundTasks(session: ClaudeCliSession): boolean {
+  return session.backgroundTasks.some(
+    (task) =>
+      RESULT_HOLDING_TASK_TYPES.has(task.taskType) ||
+      (task.taskType === TIMEOUT_BACKGROUNDED_TASK_TYPE &&
+        session.foregroundTaskIds.has(task.taskId)),
+  );
+}
 
 type ClaudeCliTurn = {
   context: CliBackendExecuteContext;
@@ -35,7 +65,9 @@ type ClaudeCliSession = {
   transport?: ReturnType<typeof createClaudeCliTransport>;
   currentTurn?: ClaudeCliTurn;
   idleTimer?: ReturnType<typeof setTimeout>;
-  hasBackgroundTasks: boolean;
+  backgroundTasks: BackgroundTask[];
+  /** Tasks Claude Code started in the foreground during the current turn. */
+  foregroundTaskIds: Set<string>;
   hasInputLifecycle: boolean;
   closed: boolean;
 };
@@ -179,11 +211,14 @@ function closeSession(
 
 function completeTurn(session: ClaudeCliSession, turn: ClaudeCliTurn) {
   session.currentTurn = undefined;
+  // Task ids are only meaningful within the turn that started them.
+  session.foregroundTaskIds.clear();
   turn.controller.abort();
   turn.events.end();
-  if (!session.capability || session.hasBackgroundTasks) {
+  const holdsBackgroundTasks = hasResultHoldingBackgroundTasks(session);
+  if (!session.capability || holdsBackgroundTasks) {
     // A failed parent does not stop native background continuations. Never lend them a new turn.
-    session.handle.close(session.hasBackgroundTasks ? "abort" : "idle");
+    session.handle.close(holdsBackgroundTasks ? "abort" : "idle");
   } else {
     session.idleTimer = setTimeout(() => session.handle.close("idle"), IDLE_TIMEOUT_MS);
     session.idleTimer.unref();
@@ -213,15 +248,20 @@ async function acceptMessage(session: ClaudeCliSession, message: Record<string, 
   ) {
     return;
   }
+  if (message.type === "system" && message.subtype === "task_started") {
+    // task_type is optional here; the background task list names it later.
+    if (
+      typeof message.task_id === "string" &&
+      message.task_id &&
+      message.is_backgrounded === false
+    ) {
+      session.foregroundTaskIds.add(message.task_id);
+    }
+  }
   if (message.type === "system" && message.subtype === "background_tasks_changed") {
-    session.hasBackgroundTasks = (Array.isArray(message.tasks) ? message.tasks : []).some(
-      (task) =>
-        isRecord(task) &&
-        typeof task.task_type === "string" &&
-        RESULT_HOLDING_TASK_TYPES.has(task.task_type) &&
-        typeof task.task_id === "string" &&
-        task.task_id.length > 0,
-    );
+    session.backgroundTasks = (Array.isArray(message.tasks) ? message.tasks : [])
+      .map(readBackgroundTask)
+      .filter((task): task is BackgroundTask => task !== undefined);
   }
   if (!turn.events.write(message)) {
     await once(turn.events, "drain", { signal: turn.controller.signal });
@@ -230,7 +270,7 @@ async function acceptMessage(session: ClaudeCliSession, message: Record<string, 
     turn.sawTerminalResult = true;
     // Background agents/workflows hold successful interim results, never terminal failures.
     if (
-      !session.hasBackgroundTasks ||
+      !hasResultHoldingBackgroundTasks(session) ||
       message.is_error === true ||
       (typeof message.subtype === "string" && message.subtype.startsWith("error")) ||
       (typeof message.result === "string" && hasClaudeRawToolInvocation(message.result))
@@ -243,7 +283,8 @@ async function acceptMessage(session: ClaudeCliSession, message: Record<string, 
 function createSession(capability?: CliBackendLiveSessionCapability): ClaudeCliSession {
   const session: ClaudeCliSession = {
     capability,
-    hasBackgroundTasks: false,
+    backgroundTasks: [],
+    foregroundTaskIds: new Set(),
     hasInputLifecycle: false,
     closed: false,
     handle: {
