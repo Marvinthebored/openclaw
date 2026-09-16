@@ -202,7 +202,9 @@ export function filterVisibleSessionRows(
     return (
       sessionMatchesVisibleSessionScope(row, options) &&
       !isSubagentSessionKey(row.key) &&
-      !row.spawnedBy
+      // Explicit groups promote independent spawned conversations in the sidebar.
+      // Apply that same rule before search and navigation discard child rows.
+      (!row.spawnedBy || normalizeOptionalString(row.category) != null)
     );
   });
 }
