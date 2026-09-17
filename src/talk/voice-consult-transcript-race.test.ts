@@ -194,7 +194,10 @@ it("returns the spoken answer from a consult whose caller kept talking", async (
       });
     }
     appendConsultReply();
-    return { payloads: [{ text: CONSULT_REPLY }], meta: {} };
+    // Speak back what survived persistence, so a silently dropped append cannot
+    // still satisfy the transport assertion below.
+    const persisted = readMessageTexts(scope).at(-1);
+    return { payloads: persisted ? [{ text: persisted }] : [], meta: {} };
   };
 
   const result = await consultRealtimeVoiceAgent({
