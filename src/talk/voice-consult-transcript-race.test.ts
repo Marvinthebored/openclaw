@@ -85,18 +85,19 @@ async function prepareConsultTurn(label: string) {
     content: "what is on the calendar tomorrow?",
     timestamp: 2,
   });
-  if (!admission.anchor) {
+  // Narrowing on a property access is discarded inside the closure below, so
+  // bind the anchor to a local the checker can keep narrowed.
+  const anchor = admission.anchor;
+  if (!anchor) {
     throw new Error("missing current-turn anchor");
   }
   const appendConsultReply = () =>
-    runWithSessionTranscriptReadFence(
-      { ...admission.anchor, logicalTurnId: label, role: "user" },
-      () =>
-        SessionManager.openBounded(scope, {
-          cwd: dir,
-          maxBytes: 8192,
-          maxEvents: 16,
-        }).appendMessage(buildAssistantMessage(CONSULT_REPLY)),
+    runWithSessionTranscriptReadFence({ ...anchor, logicalTurnId: label, role: "user" }, () =>
+      SessionManager.openBounded(scope, {
+        cwd: dir,
+        maxBytes: 8192,
+        maxEvents: 16,
+      }).appendMessage(buildAssistantMessage(CONSULT_REPLY)),
     );
   return { appendConsultReply, manager, scope, sessionKey, storePath };
 }
