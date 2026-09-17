@@ -521,7 +521,7 @@ export function renderChatPaneHeader(props: ChatPaneHeaderProps) {
                 : nothing
             }
             ${
-              props.mergedChrome && !compactSessionActions
+              props.mergedChrome
                 ? html`<openclaw-tooltip .content=${t("chat.openCommandPalette")}>
                     <button
                       class="btn btn--ghost btn--icon chat-icon-btn chat-pane__palette-open"
