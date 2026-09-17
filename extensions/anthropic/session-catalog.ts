@@ -109,29 +109,25 @@ function toGenericClaudeHost(
     connected: host.connected,
     canStartTerminal: host.kind === "gateway" ? cliAvailable : host.canStartTerminal === true,
     ...(host.nodeId ? { nodeId: host.nodeId } : {}),
-    // An OpenClaw session that merely routes its turns through the Claude CLI
-    // writes a thread here, but it is not a Claude Code conversation: it owns a
-    // sidebar row of its own. Listing it would hide that row inside this catalog
-    // and pull the session out of the group the operator filed it under.
-    sessions: host.sessions
-      .filter((session) => {
-        const boundSession = bound.get(adoptedSourceKey(host.hostId, session.threadId));
-        return !boundSession || boundSession.adopted;
-      })
-      .map((session) => {
-        const terminal = catalogTerminal.terminalEligibility(host, session.source, cliAvailable);
-        const nodeCli =
-          host.kind === "node" &&
-          host.canContinueClaude === true &&
-          session.source === "claude-cli";
-        const existingSessionKey = bound.get(
-          adoptedSourceKey(host.hostId, session.threadId),
-        )?.sessionKey;
-        // Already-adopted rows stay continuable even if node policy later denies
-        // the run command: continue only returns the existing session key, and
-        // the turn itself still fails closed at invoke time.
-        const continuable = terminal.localResumable || nodeCli || Boolean(existingSessionKey);
-        return {
+    sessions: host.sessions.flatMap((session) => {
+      const boundSession = bound.get(adoptedSourceKey(host.hostId, session.threadId));
+      // An OpenClaw session that merely routes its turns through the Claude CLI
+      // writes a thread here, but it is not a Claude Code conversation: it owns a
+      // sidebar row of its own. Listing it would hide that row inside this catalog
+      // and pull the session out of the group the operator filed it under.
+      if (boundSession && !boundSession.adopted) {
+        return [];
+      }
+      const terminal = catalogTerminal.terminalEligibility(host, session.source, cliAvailable);
+      const nodeCli =
+        host.kind === "node" && host.canContinueClaude === true && session.source === "claude-cli";
+      const existingSessionKey = boundSession?.sessionKey;
+      // Already-adopted rows stay continuable even if node policy later denies
+      // the run command: continue only returns the existing session key, and
+      // the turn itself still fails closed at invoke time.
+      const continuable = terminal.localResumable || nodeCli || Boolean(existingSessionKey);
+      return [
+        {
           threadId: session.threadId,
           ...(session.name ? { name: session.name } : {}),
           ...(session.color ? { color: session.color } : {}),
@@ -151,8 +147,9 @@ function toGenericClaudeHost(
           canContinue: continuable,
           canArchive: false,
           canOpenTerminal: terminal.canOpenTerminal,
-        };
-      }),
+        },
+      ];
+    }),
     ...(host.nextCursor ? { nextCursor: host.nextCursor } : {}),
     ...(host.error ? { error: host.error } : {}),
   };
