@@ -1,5 +1,8 @@
+import { writeFile } from "node:fs/promises";
+import path from "node:path";
 import type { BrowserContext } from "playwright";
 import { afterEach, expect, it } from "vitest";
+import { takeControlUiElementScreenshot } from "../test-helpers/control-ui-e2e-screenshot.ts";
 import { installMockGateway } from "../test-helpers/control-ui-e2e.ts";
 import { createControlUiE2eSuite } from "./control-ui-e2e-suite.test-support.ts";
 import { installNativeWebChrome } from "./native-nav.test-support.ts";
@@ -18,9 +21,12 @@ suite.define(() => {
     context = undefined;
   });
 
+  const captureProof = process.env.OPENCLAW_CAPTURE_UI_PROOF === "1";
+
   async function openPage(options: {
     hasTouch?: boolean;
     height?: number;
+    phone?: boolean;
     webChrome?: boolean;
     width?: number;
   }) {
@@ -28,6 +34,14 @@ suite.define(() => {
       hasTouch: options.hasTouch,
       locale: "en-US",
       serviceWorkers: "block",
+      ...(options.phone
+        ? {
+            deviceScaleFactor: 3,
+            isMobile: true,
+            userAgent:
+              "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1",
+          }
+        : {}),
       viewport: { height: options.height ?? 900, width: options.width ?? 1280 },
     });
     const page = await context.newPage();
@@ -250,7 +264,7 @@ suite.define(() => {
   });
 
   it("keeps the command palette on screen at phone width, in chat and in the drawer", async () => {
-    const page = await openPage({ hasTouch: true, height: 852, width: 393 });
+    const page = await openPage({ hasTouch: true, height: 852, phone: true, width: 393 });
     const shell = page.locator(".shell");
     await expect.poll(() => shell.getAttribute("class")).toContain("shell--mobile-nav");
     // Plain mobile web merges the chat chrome and hides the topbar, so neither
@@ -260,6 +274,14 @@ suite.define(() => {
 
     const paletteButton = page.locator(".chat-pane__header .chat-pane__palette-open");
     await expect.poll(() => paletteButton.isVisible()).toBe(true);
+    if (captureProof) {
+      await writeFile(
+        path.join(suite.artifactDir, "01-chat-title-bar.png"),
+        await takeControlUiElementScreenshot(page, page.locator(".chat-pane__header").first(), [
+          paletteButton,
+        ]),
+      );
+    }
 
     await page.getByRole("button", { name: "Expand sidebar" }).click();
     await expect.poll(() => shell.getAttribute("class")).toContain("shell--nav-drawer-open");
@@ -270,8 +292,26 @@ suite.define(() => {
       .poll(() => page.locator(".shell-nav .sidebar-brand__collapse").isVisible())
       .toBe(false);
 
+    if (captureProof) {
+      await writeFile(
+        path.join(suite.artifactDir, "02-sidebar-drawer.png"),
+        await takeControlUiElementScreenshot(page, page.locator(".sidebar-brand").first(), [
+          drawerSearch,
+        ]),
+      );
+    }
+
     await drawerSearch.click();
-    await page.locator(".cmd-palette__input").waitFor({ state: "visible" });
+    const paletteInput = page.locator(".cmd-palette__input");
+    await paletteInput.waitFor({ state: "visible" });
+    if (captureProof) {
+      await writeFile(
+        path.join(suite.artifactDir, "03-command-palette.png"),
+        await takeControlUiElementScreenshot(page, page.locator(".cmd-palette").first(), [
+          paletteInput,
+        ]),
+      );
+    }
   });
 
   it.each([
