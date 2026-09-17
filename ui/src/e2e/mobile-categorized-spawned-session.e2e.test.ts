@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { expect, it } from "vitest";
 import { takeControlUiElementScreenshot } from "../test-helpers/control-ui-e2e-screenshot.ts";
@@ -89,11 +89,9 @@ suite.define(() => {
       await expect.poll(() => page.locator(`[data-session-key="${parentKey}"]`).count()).toBe(0);
 
       if (captureProof) {
-        const evidenceDir = path.resolve(process.cwd(), ".github/pr-evidence");
-        await mkdir(evidenceDir, { recursive: true });
         const sidebar = page.locator(".shell-nav:visible").first();
         await writeFile(
-          path.join(evidenceDir, "mobile-categorized-spawned-session-after.png"),
+          path.join(suite.artifactDir, "01-mobile-sidebar-drawer.png"),
           await takeControlUiElementScreenshot(page, sidebar, [office, group]),
         );
       }
@@ -110,10 +108,8 @@ suite.define(() => {
       const paletteOption = page.locator(".cmd-palette__item").filter({ hasText: "OFFICE HA" });
       await paletteOption.waitFor({ state: "visible" });
       if (captureProof) {
-        const evidenceDir = path.resolve(process.cwd(), ".github/pr-evidence");
-        await mkdir(evidenceDir, { recursive: true });
         await writeFile(
-          path.join(evidenceDir, "mobile-categorized-spawned-session-command-palette-after.png"),
+          path.join(suite.artifactDir, "02-command-palette.png"),
           await takeControlUiElementScreenshot(page, palette, [paletteInput, paletteOption]),
         );
       }

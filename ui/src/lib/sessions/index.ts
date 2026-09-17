@@ -43,7 +43,6 @@ export {
   filterVisibleSessionRows,
   resolveSessionNavigation,
   sessionMatchesArchivedFilter,
-  sessionMatchesVisibleSessionScope,
   scopedAgentIdForSession,
   scopedAgentListParamsForRefreshTarget,
   scopedAgentListParamsForSession,

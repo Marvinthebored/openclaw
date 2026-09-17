@@ -172,7 +172,7 @@ export function sessionMatchesArchivedFilter(
   return (row.archived === true) === (archivedFilter === "archived");
 }
 
-export function sessionMatchesVisibleSessionScope(
+function sessionMatchesVisibleSessionScope(
   row: GatewaySessionRow,
   options: VisibleSessionRowOptions,
 ): boolean {
