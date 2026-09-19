@@ -171,11 +171,8 @@ export function canRebasePreparedAssistantInTransaction(
     ) {
       return true;
     }
-    // A live Talk call keeps transcribing while an agent consult runs. Those rows
-    // record speech the realtime model already owns; the consult's own turn is the
-    // separate keyed user above. They never open an agent turn, so they must not
-    // strand the reply they were spoken over. Match the full marker the voice
-    // writer stamps, so a partial or forwarded provenance still faces the fence.
+    // Final Talk speech records history without admitting another agent turn.
+    // Both writer markers must match; other provenance still faces the fence.
     if (
       row.provenance_kind === REALTIME_VOICE_PROVENANCE.kind &&
       row.provenance_source_channel === REALTIME_VOICE_PROVENANCE.sourceChannel

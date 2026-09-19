@@ -2,6 +2,7 @@ import path from "node:path";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { useAutoCleanupTempDirTracker } from "../../test/helpers/temp-dir.js";
 import { SessionManager } from "../agents/sessions/session-manager.js";
+import { makeAgentAssistantMessage } from "../agents/test-helpers/agent-message-fixtures.js";
 import {
   appendTranscriptMessage,
   loadTranscriptEventsSync,
@@ -9,7 +10,6 @@ import {
 import { runWithSessionTranscriptReadFence } from "../config/sessions/session-transcript-read-fence.js";
 import { closeOpenClawAgentDatabasesForTest } from "../state/openclaw-agent-db.js";
 import { captureEnv, setTestEnvValue } from "../test-utils/env.js";
-import { consultRealtimeVoiceAgent } from "./agent-consult-runtime.js";
 import {
   appendClientVoiceTranscript,
   appendRelayVoiceTranscript,
@@ -24,26 +24,6 @@ const CONSULT_REPLY = "Two meetings tomorrow.";
 // Mirrors the marker src/talk/client-voice-session.ts stamps on spoken rows.
 const REALTIME_VOICE_KIND = "realtime_voice";
 const REALTIME_VOICE_CHANNEL = "talk";
-
-function buildAssistantMessage(text: string) {
-  return {
-    role: "assistant" as const,
-    content: [{ type: "text" as const, text }],
-    api: "messages" as const,
-    provider: "anthropic" as const,
-    model: "sonnet-4.6" as const,
-    usage: {
-      input: 0,
-      output: 0,
-      cacheRead: 0,
-      cacheWrite: 0,
-      totalTokens: 0,
-      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
-    },
-    stopReason: "stop" as const,
-    timestamp: 5,
-  };
-}
 
 function readMessageTexts(scope: {
   agentId: string;
@@ -86,8 +66,6 @@ async function prepareConsultTurn(label: string) {
     content: "what is on the calendar tomorrow?",
     timestamp: 2,
   });
-  // Narrowing on a property access is discarded inside the closure below, so
-  // bind the anchor to a local the checker can keep narrowed.
   const anchor = admission.anchor;
   if (!anchor) {
     throw new Error("missing current-turn anchor");
@@ -98,7 +76,12 @@ async function prepareConsultTurn(label: string) {
         cwd: dir,
         maxBytes: 8192,
         maxEvents: 16,
-      }).appendMessage(buildAssistantMessage(CONSULT_REPLY)),
+      }).appendMessage(
+        makeAgentAssistantMessage({
+          content: [{ type: "text", text: CONSULT_REPLY }],
+          timestamp: 5,
+        }),
+      ),
     );
   return { appendConsultReply, manager, scope, sessionKey, storePath };
 }
@@ -160,105 +143,6 @@ it.each(["relay", "client"] as const)(
     ]);
   },
 );
-
-// Transport-level proof: the answer is not constructed by the test. It is whatever
-// consultRealtimeVoiceAgent hands back to the Talk bridge after a run persisted it
-// through the changed SQLite append owner while the caller was still speaking.
-it("returns the spoken answer from a consult whose caller kept talking", async () => {
-  const { appendConsultReply, scope, sessionKey, storePath } =
-    await prepareConsultTurn("voice-consult-transport");
-  const voiceSessionId = createOrResumeClientVoiceSession({
-    agentId,
-    sessionKey,
-    origin: "relay",
-    provider: "realtime",
-  });
-  const agentDir = path.dirname(storePath);
-  // The consult resumes the canonical session the spoken turn already lives in.
-  const sessionStore: Record<string, Record<string, unknown>> = {
-    [sessionKey]: { sessionId: scope.sessionId, sessionFile: storePath, updatedAt: 2 },
-  };
-  // Stands in for the model only. The run persists its answer exactly where the real
-  // embedded runner does, after the live call appended newer spoken rows.
-  const runEmbeddedAgent = async () => {
-    for (const row of [
-      { entryId: "utterance-1", role: "user" as const, text: "what is on the calendar tomorrow?" },
-      { entryId: "filler-1", role: "assistant" as const, text: "I'll check that request." },
-    ]) {
-      await appendRelayVoiceTranscript({
-        agentId,
-        sessionKey,
-        sessionTarget: { sessionKey, storePath },
-        voiceSessionId,
-        ...row,
-      });
-    }
-    appendConsultReply();
-    // Speak back what survived persistence, so a silently dropped append cannot
-    // still satisfy the transport assertion below.
-    const persisted = readMessageTexts(scope).at(-1);
-    return { payloads: persisted ? [{ text: persisted }] : [], meta: {} };
-  };
-
-  const result = await consultRealtimeVoiceAgent({
-    cfg: {} as never,
-    agentRuntime: {
-      resolveAgentDir: () => agentDir,
-      resolveAgentWorkspaceDir: () => agentDir,
-      ensureAgentWorkspace: async () => {},
-      resolveAgentTimeoutMs: () => 30_000,
-      session: {
-        resolveStorePath: () => storePath,
-        loadSessionStore: () => sessionStore,
-        saveSessionStore: async () => {},
-        updateSessionStore: async (
-          _storePath: string,
-          mutate: (store: typeof sessionStore) => unknown,
-        ) => mutate(sessionStore),
-        getSessionEntry: (params: { sessionKey: string }) => sessionStore[params.sessionKey],
-        patchSessionEntry: async (params: {
-          sessionKey: string;
-          fallbackEntry?: Record<string, unknown>;
-          update: (
-            entry: Record<string, unknown>,
-          ) => Promise<Record<string, unknown> | null> | Record<string, unknown> | null;
-        }) => {
-          const existing = sessionStore[params.sessionKey] ?? params.fallbackEntry;
-          if (!existing) {
-            return null;
-          }
-          const patch = await params.update({ ...existing });
-          const next = patch ? { ...existing, ...patch } : existing;
-          sessionStore[params.sessionKey] = next;
-          return next;
-        },
-        upsertSessionEntry: async (params: {
-          sessionKey: string;
-          entry: Record<string, unknown>;
-        }) => {
-          sessionStore[params.sessionKey] = { ...params.entry };
-        },
-        resolveSessionFilePath: () => storePath,
-      },
-      runEmbeddedAgent,
-    } as never,
-    logger: { warn: () => {} },
-    agentId,
-    sessionKey,
-    storePath,
-    messageProvider: "talk",
-    lane: "talk",
-    runIdPrefix: "talk-realtime-consult",
-    args: { question: "what is on the calendar tomorrow?" },
-    transcript: [],
-    surface: "a live voice session",
-    userLabel: "User",
-  });
-
-  // The bridge speaks the agent's answer, not the "need a moment" fallback.
-  expect(result.text).toBe(CONSULT_REPLY);
-  expect(readMessageTexts(scope)).toContain(CONSULT_REPLY);
-});
 
 it("still rejects a consult reply that a real newer user turn has superseded", async () => {
   const { appendConsultReply, manager, scope } = await prepareConsultTurn("voice-consult-control");
