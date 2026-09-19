@@ -103,7 +103,7 @@ suite.define(() => {
     expect(metrics).toEqual({ bodyScrollTop: 0, htmlScrollTop: 0, rootScrollY: 0 });
   });
 
-  it("keeps drawer and search on screen in the narrow chat title bar", async () => {
+  it("keeps drawer and search reachable from the narrow chat title bar", async () => {
     const page = await openPage({ width: 900 });
     const header = page.locator(".chat-pane__header").first();
     await expect
@@ -113,8 +113,9 @@ suite.define(() => {
     await expect
       .poll(() => header.getByRole("button", { name: "Expand sidebar" }).isVisible())
       .toBe(true);
-    await expect.poll(() => header.locator(".chat-pane__palette-open").isVisible()).toBe(true);
-    await header.locator(".chat-pane__palette-open").click();
+    await expect.poll(() => header.locator(".chat-pane__palette-open").count()).toBe(0);
+    await header.locator(".chat-header-session-menu__trigger").click();
+    await page.getByText("Open command palette", { exact: true }).click();
     await page.locator(".cmd-palette__input").waitFor({ state: "visible" });
   });
 
@@ -263,31 +264,28 @@ suite.define(() => {
       .toEqual(["32px", "32px"]);
   });
 
-  it("keeps the command palette on screen at phone width, in chat and in the drawer", async () => {
+  it("opens search from the phone drawer while keeping the chat header compact", async () => {
     const page = await openPage({ hasTouch: true, height: 852, phone: true, width: 393 });
     const shell = page.locator(".shell");
     await expect.poll(() => shell.getAttribute("class")).toContain("shell--mobile-nav");
-    // Plain mobile web merges the chat chrome and hides the topbar, so neither
-    // the topbar nor a collapsed sidebar can carry the palette here.
     await expect.poll(() => shell.getAttribute("class")).toContain("shell--merged-chat-chrome");
     await expect.poll(() => page.locator(".topbar").isVisible()).toBe(false);
 
-    const paletteButton = page.locator(".chat-pane__header .chat-pane__palette-open");
-    await expect.poll(() => paletteButton.isVisible()).toBe(true);
+    const header = page.locator(".chat-pane__header").first();
+    const drawerButton = header.getByRole("button", { name: "Expand sidebar" });
+    await drawerButton.waitFor({ state: "visible" });
+    await expect.poll(() => header.locator(".chat-pane__palette-open").count()).toBe(0);
     if (captureProof) {
       await writeFile(
         path.join(suite.artifactDir, "01-chat-title-bar.png"),
-        await takeControlUiElementScreenshot(page, page.locator(".chat-pane__header").first(), [
-          paletteButton,
-        ]),
+        await takeControlUiElementScreenshot(page, header, [drawerButton]),
       );
     }
 
-    await page.getByRole("button", { name: "Expand sidebar" }).click();
+    await drawerButton.tap();
     await expect.poll(() => shell.getAttribute("class")).toContain("shell--nav-drawer-open");
     const drawerSearch = page.locator(".shell-nav .sidebar-brand__search");
     await expect.poll(() => drawerSearch.isVisible()).toBe(true);
-    // The drawer has no collapsed state to return to.
     await expect
       .poll(() => page.locator(".shell-nav .sidebar-brand__collapse").isVisible())
       .toBe(false);
@@ -301,9 +299,10 @@ suite.define(() => {
       );
     }
 
-    await drawerSearch.click();
+    await drawerSearch.tap();
     const paletteInput = page.locator(".cmd-palette__input");
     await paletteInput.waitFor({ state: "visible" });
+    await expect.poll(() => paletteInput.evaluate((input) => input.matches(":focus"))).toBe(true);
     if (captureProof) {
       await writeFile(
         path.join(suite.artifactDir, "03-command-palette.png"),

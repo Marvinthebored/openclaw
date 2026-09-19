@@ -162,20 +162,8 @@ describe("chat pane header", () => {
     expect(container.querySelector('[data-action="rail"]')).toBeNull();
     expect(container.querySelector('[data-action="session-menu"]')).not.toBeNull();
     expect(container.querySelector(".chat-pane__nav-toggle")).not.toBeNull();
-    expect(container.querySelector(".chat-open-split-view")).toBeNull();
-    // The command palette is the one action that stays on screen: merged chrome
-    // hides the topbar, so the menu would otherwise be its only entry point.
-    expect(container.querySelector(".chat-pane__palette-open")).not.toBeNull();
-  });
-
-  it("omits the command palette button when the topbar still owns it", () => {
-    const { container } = mountHeader({
-      narrow: true,
-      mergedChrome: false,
-      sessionMenuAction: html`<button data-action="session-menu"></button>`,
-    });
-
     expect(container.querySelector(".chat-pane__palette-open")).toBeNull();
+    expect(container.querySelector(".chat-open-split-view")).toBeNull();
   });
 
   it("keeps narrow catalog panel shortcuts visible without a session menu", () => {
