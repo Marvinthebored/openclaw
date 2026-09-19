@@ -18,6 +18,7 @@ import {
   compareSessionRowsByUpdatedAt,
   filterVisibleSessionRows,
   resolveSessionNavigation,
+  sessionMatchesVisibleSessionScope,
 } from "../lib/sessions/index.ts";
 import {
   areUiSessionKeysEquivalent,
@@ -481,11 +482,13 @@ export function collectCategorizedChildRootRows(input: {
   visibilityOptions: Parameters<typeof filterVisibleSessionRows>[1];
 }): GatewaySessionRow[] {
   const scopedRootKeys = new Set(input.scopedRoots.map((row) => row.key));
-  return filterVisibleSessionRows(input.rows, input.visibilityOptions).filter(
+  return input.rows.filter(
     (row) =>
       !scopedRootKeys.has(row.key) &&
+      !isSubagentSessionKey(row.key) &&
       normalizeOptionalString(row.category) != null &&
-      resolveUiSessionNavigationParentKey(row) != null,
+      resolveUiSessionNavigationParentKey(row) != null &&
+      sessionMatchesVisibleSessionScope(row, input.visibilityOptions),
   );
 }
 

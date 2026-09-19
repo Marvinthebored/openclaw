@@ -172,7 +172,7 @@ export function sessionMatchesArchivedFilter(
   return (row.archived === true) === (archivedFilter === "archived");
 }
 
-function sessionMatchesVisibleSessionScope(
+export function sessionMatchesVisibleSessionScope(
   row: GatewaySessionRow,
   options: VisibleSessionRowOptions,
 ): boolean {
@@ -202,8 +202,7 @@ export function filterVisibleSessionRows(
     return (
       sessionMatchesVisibleSessionScope(row, options) &&
       !isSubagentSessionKey(row.key) &&
-      // Explicit groups promote independent spawned conversations in the sidebar.
-      // Apply that same rule before search and navigation discard child rows.
+      // Explicit groups keep persistent spawned conversations in shared navigation.
       (!row.spawnedBy || normalizeOptionalString(row.category) != null)
     );
   });

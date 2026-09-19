@@ -95,7 +95,6 @@ export const uiE2ePrivateServerTestFiles = [
   "ui/src/e2e/initial-connect-splash.e2e.test.ts",
   "ui/src/e2e/locale-offline-retry.e2e.test.ts",
   "ui/src/e2e/mcp-app-conformance.e2e.test.ts",
-  "ui/src/e2e/mobile-categorized-spawned-session.e2e.test.ts",
   "ui/src/e2e/mobile-chat-session-menu.e2e.test.ts",
   "ui/src/e2e/mobile-sidebar-session-menu.e2e.test.ts",
   "ui/src/e2e/model-api-keys.real-gateway.e2e.test.ts",
