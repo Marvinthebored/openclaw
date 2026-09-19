@@ -45,11 +45,7 @@ import {
 } from "./memory-write-provenance.js";
 import { resolveSandboxPathMapping, toRelativeWorkspacePath } from "./path-policy.js";
 import type { AgentTool, AgentToolResult } from "./runtime/index.js";
-import {
-  assertSandboxPath,
-  isSandboxRootEscapeError,
-  normalizeFileReferencePrefix,
-} from "./sandbox-paths.js";
+import { assertSandboxPath, normalizeFileReferencePrefix } from "./sandbox-paths.js";
 import { resolveSandboxFileMutationQueueKey } from "./sandbox/file-mutation-identity.js";
 import type { SandboxFsBridge } from "./sandbox/fs-bridge.js";
 import {
@@ -834,6 +830,10 @@ export function wrapToolMemoryFlushAppendOnlyWrite(
       };
     },
   };
+}
+
+function isSandboxRootEscapeError(error: unknown): error is Error {
+  return error instanceof Error && /^Path escapes sandbox root \(/i.test(error.message);
 }
 
 function withWorkspaceSafeTempHint(error: unknown): unknown {

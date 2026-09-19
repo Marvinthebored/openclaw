@@ -88,11 +88,6 @@ export function resolveSandboxPath(params: { filePath: string; cwd: string; root
   return { resolved, relative };
 }
 
-/** True when an error is a sandbox/workspace root containment rejection. */
-export function isSandboxRootEscapeError(error: unknown): error is Error {
-  return error instanceof Error && /^Path escapes sandbox root \(/i.test(error.message);
-}
-
 const HOST_ROOT_ESCAPE = Symbol.for("openclaw.hostRootEscape");
 
 /**
@@ -100,21 +95,47 @@ const HOST_ROOT_ESCAPE = Symbol.for("openclaw.hostRootEscape");
  * enforce their own mount boundary and leave their rejections untagged, so callers can
  * tell the two apart without reading the message text.
  */
-function markHostRootEscape(error: Error): Error {
-  if (Object.isExtensible(error)) {
-    Object.defineProperty(error, HOST_ROOT_ESCAPE, {
-      configurable: true,
-      enumerable: false,
-      value: true,
-      writable: true,
-    });
+export function markHostRootEscape<E>(error: E): E {
+  try {
+    if (error instanceof Error && Object.isExtensible(error)) {
+      Object.defineProperty(error, HOST_ROOT_ESCAPE, { value: true });
+    }
+  } catch {
+    // Diagnostic annotation must never replace the original rejection.
   }
   return error;
 }
 
 /** True when a rejection came from the host workspace root rather than a container mount. */
 export function isHostRootEscapeError(error: unknown): error is Error {
-  return error instanceof Error && Reflect.get(error, HOST_ROOT_ESCAPE) === true;
+  try {
+    return error instanceof Error && Reflect.get(error, HOST_ROOT_ESCAPE) === true;
+  } catch {
+    return false;
+  }
+}
+
+function rethrowHostPathAliasError(error: unknown): never {
+  // Only the direct host validator calls this. fs-safe reports escape kinds as
+  // messages; bridge errors never enter this classifier. Other alias and I/O
+  // failures must keep their own explanation.
+  if (isPathBoundaryEscapeError(error, "sandbox root")) {
+    throw markHostRootEscape(error);
+  }
+  throw error;
+}
+
+/** Classify fs-safe's untyped escape errors only at a known validator boundary. */
+export function isPathBoundaryEscapeError(
+  error: unknown,
+  boundary: "sandbox root" | "workspace root",
+): error is Error {
+  return (
+    error instanceof Error &&
+    /^(?:Path escapes|Path resolves outside|Symlink escapes) (sandbox root|workspace root) \(/.exec(
+      error.message,
+    )?.[1] === boundary
+  );
 }
 
 const realpathNative = promisify(fs.realpath.native);
@@ -248,7 +269,7 @@ export async function assertSandboxPath(params: {
     rootPath: root,
     boundaryLabel: "sandbox root",
     policy,
-  });
+  }).catch(rethrowHostPathAliasError);
   // Also check raw parents: absolute input can enter the root only after a
   // symlink/.. prefix outside it, which the alias guard normalizes away.
   const rawTarget = await assertRawParentWithinRoot(normalized);
@@ -258,7 +279,7 @@ export async function assertSandboxPath(params: {
       rootPath: rawTarget.rootCanonical,
       boundaryLabel: "sandbox root",
       policy,
-    });
+    }).catch(rethrowHostPathAliasError);
   }
   return resolved;
 }
