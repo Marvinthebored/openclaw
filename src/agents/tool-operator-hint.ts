@@ -1,10 +1,4 @@
-/**
- * Operator-only remediation hints for agent tool failures.
- *
- * Carries text that belongs in the Gateway log but is kept out of the model-visible failure
- * message, because it names configuration that relaxes a containment boundary. This keeps the
- * lever out of the model's turn context; it is defense in depth, not a confidentiality boundary.
- */
+/** Keeps operator remediation separate from model-visible tool failures. */
 
 const TOOL_OPERATOR_HINT = Symbol.for("openclaw.toolOperatorHint");
 
@@ -14,10 +8,10 @@ const TOOL_OPERATOR_HINT = Symbol.for("openclaw.toolOperatorHint");
  * effort: a non-extensible error is returned unchanged rather than masked.
  */
 export function withToolOperatorHint<E>(error: E, hint: string): E {
-  if (!(error instanceof Error) || !Object.isExtensible(error) || readToolOperatorHint(error)) {
-    return error;
-  }
   try {
+    if (!(error instanceof Error) || !Object.isExtensible(error) || readToolOperatorHint(error)) {
+      return error;
+    }
     Object.defineProperty(error, TOOL_OPERATOR_HINT, {
       configurable: true,
       enumerable: false,
@@ -32,9 +26,13 @@ export function withToolOperatorHint<E>(error: E, hint: string): E {
 
 /** Read operator-facing remediation text from a tool failure, when one was attached. */
 export function readToolOperatorHint(error: unknown): string | undefined {
-  if (!(error instanceof Error)) {
+  try {
+    if (!(error instanceof Error)) {
+      return undefined;
+    }
+    const hint: unknown = Object.getOwnPropertyDescriptor(error, TOOL_OPERATOR_HINT)?.value;
+    return typeof hint === "string" && hint.trim() ? hint : undefined;
+  } catch {
     return undefined;
   }
-  const hint: unknown = Reflect.get(error, TOOL_OPERATOR_HINT);
-  return typeof hint === "string" && hint.trim() ? hint : undefined;
 }

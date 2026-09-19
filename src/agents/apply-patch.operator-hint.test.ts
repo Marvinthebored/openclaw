@@ -7,7 +7,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { ApplyPatchContainmentSource } from "./apply-patch-containment-hint.js";
 import { createApplyPatchTool } from "./apply-patch.js";
 import { createMemoryPatchSandbox } from "./apply-patch.test-support.js";
@@ -145,6 +145,112 @@ describe("apply_patch workspace containment hint", () => {
     expect(isHostRootEscapeError(error)).toBe(false);
     expect(readToolOperatorHint(error)).toBeUndefined();
   });
+
+  it("hints host admission failures for declared sandbox workspace mappings", async () => {
+    const sandbox = createMemoryPatchSandbox();
+    const tool = createApplyPatchTool({
+      ...sandbox.options,
+      containmentSource: "config",
+      sandbox: {
+        ...sandbox.options.sandbox,
+        bridge: { ...sandbox.bridge, pathMappings: [] },
+        workspaceMounts: [],
+      },
+    });
+    const error = await captureFailure(tool, addFilePatch("escaped.md"));
+
+    expect(error).toMatchObject({
+      message: "Path escapes sandbox root (/local/workspace): escaped.md",
+    });
+    expect(readToolOperatorHint(error)).toContain("workspace-contained by configuration");
+    expect(sandbox.createFileExclusive).not.toHaveBeenCalled();
+    expect(sandbox.files.size).toBe(0);
+  });
+
+  it.runIf(process.platform !== "win32")(
+    "hints host symlink escapes without treating in-root hardlinks as escapes",
+    async () => {
+      await withTempDir(async (dir) => {
+        const root = path.join(dir, "workspace");
+        const outside = path.join(dir, "outside");
+        await fs.mkdir(root);
+        await fs.mkdir(outside);
+        await fs.writeFile(path.join(outside, "note.md"), "original\n");
+        const link = path.join(root, "link");
+        await fs.symlink(outside, link, "dir");
+        const tool = createApplyPatchTool({ cwd: root, containmentSource: "config" });
+        const update = (target: string) =>
+          `*** Begin Patch\n*** Update File: ${target}\n@@\n-original\n+changed\n*** End Patch`;
+        const escaped = await captureFailure(tool, update("link/note.md"));
+
+        expect(escaped).toMatchObject({
+          message: `Symlink escapes sandbox root (${root}): ${link}`,
+        });
+        expect(readToolOperatorHint(escaped)).toContain("workspace-contained by configuration");
+        await expect(fs.readFile(path.join(outside, "note.md"), "utf8")).resolves.toBe(
+          "original\n",
+        );
+
+        await fs.writeFile(path.join(root, "source.md"), "original\n");
+        await fs.link(path.join(root, "source.md"), path.join(root, "linked.md"));
+        const hardlink = await captureFailure(tool, update("linked.md"));
+        expect(hardlink).toMatchObject({ message: expect.stringMatching(/hardlink/i) });
+        expect(readToolOperatorHint(hardlink)).toBeUndefined();
+        await expect(fs.readFile(path.join(root, "source.md"), "utf8")).resolves.toBe("original\n");
+      });
+    },
+  );
+
+  it.runIf(process.platform !== "win32").each(["delete", "provenance read"] as const)(
+    "keeps the containment hint when a parent changes before %s",
+    async (operation) => {
+      await withTempDir(async (dir) => {
+        const root = path.join(dir, "workspace");
+        const parent = path.join(root, "parent");
+        const movedParent = path.join(root, "original-parent");
+        const outside = path.join(dir, "outside");
+        await fs.mkdir(parent, { recursive: true });
+        await fs.mkdir(outside);
+        await fs.writeFile(path.join(parent, "victim.txt"), "inside\n");
+        await fs.writeFile(path.join(outside, "victim.txt"), "outside\n");
+        const clearAfterDelete = vi.fn();
+        const tool = createApplyPatchTool({
+          cwd: root,
+          containmentSource: "config",
+          memoryWriteProvenance: {
+            classifies: async () => {
+              await fs.rename(parent, movedParent);
+              await fs.symlink(outside, parent, "dir");
+              return operation === "provenance read";
+            },
+            write: vi.fn(),
+            clearAfterDelete,
+          },
+        });
+        const error = await captureFailure(
+          tool,
+          operation === "delete"
+            ? "*** Begin Patch\n*** Delete File: parent/victim.txt\n*** End Patch"
+            : "*** Begin Patch\n*** Update File: parent/victim.txt\n@@\n-inside\n+changed\n*** End Patch",
+        );
+
+        expect(error).toMatchObject({
+          message:
+            operation === "delete"
+              ? `Path escapes sandbox root (${root}): ${path.join(outside, "victim.txt")}`
+              : `Failed boundary read for ${path.join(parent, "victim.txt")} (unsafe path)`,
+        });
+        expect(readToolOperatorHint(error)).toContain("workspace-contained by configuration");
+        expect(clearAfterDelete).not.toHaveBeenCalled();
+        await expect(fs.readFile(path.join(outside, "victim.txt"), "utf8")).resolves.toBe(
+          "outside\n",
+        );
+        await expect(fs.readFile(path.join(movedParent, "victim.txt"), "utf8")).resolves.toBe(
+          "inside\n",
+        );
+      });
+    },
+  );
 
   it("never masks a failure that cannot carry a hint", () => {
     const frozen = Object.freeze(new Error("Path escapes sandbox root (/w): /outside/note.md"));
