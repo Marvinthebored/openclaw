@@ -1038,8 +1038,8 @@ describe("forkSessionFromParentTranscript", () => {
         sessionId: parentSessionId,
         updatedAt: 1,
         cliSessionBindings: {
-          "claude-cli": { sessionId: "native-parent" },
-          "codex-cli": { sessionId: "codex-parent" },
+          "claude-cli": { sessionId: "native-parent", resumeCheckpointId: "parent-checkpoint" },
+          "codex-cli": { sessionId: "codex-parent", resumeCheckpointId: "codex-checkpoint" },
         },
       },
     );
@@ -1074,10 +1074,14 @@ describe("forkSessionFromParentTranscript", () => {
     expect(result.status).toBe("forked");
     // Backends without a fork flag would share the parent thread, so they start fresh.
     expect(loadSessionEntry({ sessionKey: childKey, storePath })?.cliSessionBindings).toEqual({
-      "claude-cli": { sessionId: "native-parent", forceReuse: true, forkNextResume: true },
+      "claude-cli": {
+        sessionId: "native-parent",
+        resumeCheckpointId: "parent-checkpoint",
+        forkNextResume: true,
+      },
     });
     expect(
       loadSessionEntry({ sessionKey: parentKey, storePath })?.cliSessionBindings?.["claude-cli"],
-    ).toEqual({ sessionId: "native-parent" });
+    ).toEqual({ sessionId: "native-parent", resumeCheckpointId: "parent-checkpoint" });
   });
 });

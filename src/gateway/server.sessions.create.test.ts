@@ -6599,7 +6599,9 @@ test("sessions.create forks the parent transcript into the new session", async (
         totalTokens: 123,
         totalTokensFresh: true,
         totalTokensVersion: 1,
-        cliSessionBindings: { "claude-cli": { sessionId: "native-parent" } },
+        cliSessionBindings: {
+          "claude-cli": { sessionId: "native-parent", resumeCheckpointId: "parent-checkpoint" },
+        },
       }),
     },
   });
@@ -6685,7 +6687,11 @@ test("sessions.create forks the parent transcript into the new session", async (
     },
     // The native CLI context branches once alongside the transcript.
     cliSessionBindings: {
-      "claude-cli": { sessionId: "native-parent", forceReuse: true, forkNextResume: true },
+      "claude-cli": {
+        sessionId: "native-parent",
+        resumeCheckpointId: "parent-checkpoint",
+        forkNextResume: true,
+      },
     },
   });
   expect(loadSessionEntry({ sessionKey: key, storePath })).not.toHaveProperty("forkedFromParent");

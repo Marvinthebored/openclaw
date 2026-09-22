@@ -102,7 +102,11 @@ export function getCliSessionBinding(
 /**
  * Carry a parent's native CLI sessions into a forked child. The child resumes
  * each backend session once with its fork flag, so the native context branches
- * instead of starting empty; `forceReuse` trusts the copied fingerprints.
+ * instead of starting empty. The copied fingerprints are still validated on the
+ * child's first turn, so an account or environment change starts fresh instead
+ * of resuming under the wrong credential. Only bindings with a recorded
+ * checkpoint are copied: the runner pins the fork resume to it, so the branch
+ * point stays the parent's last committed turn even if the parent keeps going.
  * Backends without a fork flag are skipped: resuming them would share the
  * parent's native thread, so the child starts a fresh one as before. The
  * parent's reseed receipt names the parent's local session, so it is dropped.
@@ -118,13 +122,9 @@ export function forkCliSessionBindings(
   const forked: Record<string, CliSessionBinding> = {};
   for (const provider of providers) {
     const binding = getCliSessionBinding(parent, provider);
-    if (binding && supportsFork(provider)) {
-      const { reseedReceipt: _reseedReceipt, ...inherited } = binding;
-      forked[normalizeProviderId(provider)] = {
-        ...inherited,
-        forceReuse: true,
-        forkNextResume: true,
-      };
+    if (binding?.resumeCheckpointId && supportsFork(provider)) {
+      const { reseedReceipt: _reseedReceipt, forceReuse: _forceReuse, ...inherited } = binding;
+      forked[normalizeProviderId(provider)] = { ...inherited, forkNextResume: true };
     }
   }
   return Object.keys(forked).length > 0 ? forked : undefined;

@@ -67,6 +67,8 @@ describe("buildForkedGatewaySessionEntry", () => {
         "claude-cli": {
           sessionId: "native-parent",
           cwdHash: "cwd",
+          resumeCheckpointId: "parent-checkpoint",
+          forceReuse: true,
           reseedReceipt: {
             version: 1,
             promptHash: "a".repeat(64),
@@ -98,12 +100,33 @@ describe("buildForkedGatewaySessionEntry", () => {
       "claude-cli": {
         sessionId: "native-parent",
         cwdHash: "cwd",
-        forceReuse: true,
+        resumeCheckpointId: "parent-checkpoint",
         forkNextResume: true,
       },
     });
     expect(forked.cliSessionIds).toBeUndefined();
     expect(forked.claudeCliSessionId).toBeUndefined();
     expect(parent.cliSessionBindings?.["claude-cli"]?.forkNextResume).toBeUndefined();
+  });
+
+  it("starts the child fresh when the parent native session has no checkpoint", () => {
+    cliBackendsTesting.setDepsForTest({
+      resolveRuntimeCliBackends: () => [forkableClaudeCliBackend],
+      resolvePluginSetupCliBackend: () => undefined,
+    });
+    const forked = buildForkedGatewaySessionEntry(
+      { sessionId: "provisional", updatedAt: 1 },
+      { sessionId: "forked", sessionFile: "/tmp/forked.jsonl" },
+      { sessionKey: "agent:main:parent", sessionId: "parent-generation" },
+      undefined,
+      {
+        sessionId: "parent-generation",
+        updatedAt: 1,
+        cliSessionBindings: { "claude-cli": { sessionId: "native-parent", cwdHash: "cwd" } },
+      },
+    );
+
+    // Without a checkpoint the fork has no stable cutoff, so the child starts a fresh session.
+    expect(forked.cliSessionBindings).toBeUndefined();
   });
 });

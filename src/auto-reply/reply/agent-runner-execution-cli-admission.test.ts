@@ -179,7 +179,7 @@ describe("executeAgentTurn: CLI admission", () => {
     const storePath = makeTestSessionStorePath();
     const parentBinding = {
       sessionId: "parent-native-session",
-      forceReuse: true,
+      resumeCheckpointId: "parent-checkpoint",
       forkNextResume: true,
     };
     const successorBinding = { sessionId: "child-native-session" };
