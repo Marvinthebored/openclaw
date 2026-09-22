@@ -77,9 +77,16 @@ export class ChatSessionVirtualizerHost implements ReactiveControllerHost, ChatT
   private headerHeight = 0;
   private appliedHeaderHeight = 0;
   private implicitEndAnchorPending: boolean;
-  private readonly endAnchor = new TranscriptEndAnchor();
-  private readonly followEnd = () => this.scrollToEnd({ source: "auto", behavior: "auto" });
-  private endAnchorFrame: number | null = null;
+  private readonly endAnchor = new TranscriptEndAnchor({
+    element: () => this.scrollElement,
+    canFollow: () => this.canAutoFollow(),
+    suspended: () =>
+      this.offsetState.pendingScrollOffset !== null ||
+      this.offsetState.touching ||
+      this.offsetState.touchScrolling,
+    follow: () => this.scrollToEnd({ source: "auto", behavior: "auto" }),
+    resumeFollow: () => this.callbacks.onReaderScroll?.(true),
+  });
   private pendingScrollFrame: number | null = null;
   private readonly scrollRestoreHost: TranscriptScrollRestoreHost;
   private readonly messageReveal = new ChatMessageReveal();
@@ -251,6 +258,7 @@ export class ChatSessionVirtualizerHost implements ReactiveControllerHost, ChatT
           if (instance.scrollElement !== this.scrollElement || !rect.width || !rect.height) {
             return;
           }
+          this.endAnchor.commitComposerResize(true);
           const previousHeight = this.observedHeight;
           const widthChanged = this.observedWidth !== null && this.observedWidth !== rect.width;
           const heightChanged = previousHeight !== null && previousHeight !== rect.height;
@@ -283,12 +291,15 @@ export class ChatSessionVirtualizerHost implements ReactiveControllerHost, ChatT
             isProgrammaticScroll: () => this.isProgrammaticScroll,
             cancelScroll: () => this.cancelScroll(),
             requestUpdate: () => this.host.requestUpdate(),
+            onComposerInput: () => this.endAnchor.invalidateComposerResize(this.canAutoFollow()),
+            onComposerLayout: (changed) => this.endAnchor.commitComposerResize(changed),
+            cancelComposerResize: () => this.endAnchor.cancelComposerResize(),
             onReaderScroll: (towardEnd) => {
               this.callbacks.onReaderScroll?.(towardEnd);
               // Downward input at the physical end may not emit a scroll event.
               // Remember that edge before late content measurement can move it.
               if (towardEnd && this.canAutoFollow()) {
-                this.endAnchor.capture(this.scrollElement);
+                this.endAnchor.capture();
               }
             },
           },
@@ -392,31 +403,22 @@ export class ChatSessionVirtualizerHost implements ReactiveControllerHost, ChatT
     }
     applyPendingScrollOffset(this.scrollRestoreHost);
     // Disclosure measurement owns this commit; its sizer lands on the next update.
-    if (interactionResizePending && this.endAnchorFrame !== null) {
-      cancelAnimationFrame(this.endAnchorFrame);
-      this.endAnchorFrame = null;
+    if (interactionResizePending) {
+      this.endAnchor.cancelScheduled();
     }
-    if (!interactionResizePending && this.connected && this.endAnchorFrame === null) {
-      // Nested Lit children still change layout after the pane's commit.
-      // Coalesce end-follow after those commits using the current reader's anchor.
-      this.endAnchorFrame = requestAnimationFrame(() => {
-        this.endAnchorFrame = null;
+    if (!interactionResizePending && this.connected) {
+      this.endAnchor.schedule(() => {
         if (this.connected && !this.offsetState.pendingInteractionAnchor) {
+          this.endAnchor.commitComposerResize(true);
           this.reconcileImplicitEndAnchor();
-          this.endAnchor.reconcile(
-            this.scrollElement,
-            this.canAutoFollow(),
-            this.offsetState.pendingScrollOffset !== null ||
-              this.offsetState.touching ||
-              this.offsetState.touchScrolling,
-            this.followEnd,
-          );
+          this.endAnchor.reconcile();
         }
       });
     }
   }
 
   disconnect(): void {
+    this.endAnchor.cancelComposerResize();
     this.entryAnimations.disconnect();
     // Clear retires bodies and pending loads; replacement invalidates guarded
     // rows when this presentation reconnects with the same source messages.
@@ -429,10 +431,7 @@ export class ChatSessionVirtualizerHost implements ReactiveControllerHost, ChatT
     this.offsetState.touchScrolling = false;
     this.renderPreviousRows = null;
     this.messageReveal.clear();
-    if (this.endAnchorFrame !== null) {
-      cancelAnimationFrame(this.endAnchorFrame);
-      this.endAnchorFrame = null;
-    }
+    this.endAnchor.cancelScheduled();
     if (this.pendingRowMeasureFrame !== null) {
       cancelAnimationFrame(this.pendingRowMeasureFrame);
       this.pendingRowMeasureFrame = null;
@@ -618,7 +617,7 @@ export class ChatSessionVirtualizerHost implements ReactiveControllerHost, ChatT
       () => this.cancelScroll(),
     );
     if (behavior !== "smooth") {
-      this.endAnchor.capture(this.scrollElement);
+      this.endAnchor.capture();
     }
     return true;
   }
