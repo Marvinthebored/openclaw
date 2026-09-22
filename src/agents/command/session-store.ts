@@ -378,7 +378,12 @@ export function buildCliSessionForkRunParams(
   };
 }
 
-/** Rebinds a claimed fork to its successor before the rest of the CLI turn can fail. */
+/**
+ * Rebinds a claimed fork to its successor before the rest of the CLI turn can fail.
+ * The source binding's fingerprints (and any existing `forceReuse`, as set by
+ * catalog adoption) carry over unchanged, so a later turn still validates the
+ * successor against the current auth profile, epoch, cwd, and MCP config.
+ */
 export async function persistCliSessionForkSuccessorInStore(
   params: CliSessionForkStoreParams & {
     successorCliSessionId: string;
@@ -390,7 +395,7 @@ export async function persistCliSessionForkSuccessorInStore(
   return await patchCliSessionForkBinding(params, (binding) =>
     binding.forkNextResume === true
       ? undefined
-      : { ...binding, sessionId: params.successorCliSessionId, forceReuse: true },
+      : { ...binding, sessionId: params.successorCliSessionId },
   );
 }
 

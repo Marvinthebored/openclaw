@@ -224,7 +224,10 @@ describe("executeAgentTurn: CLI admission", () => {
       expect(await params.claimCliSessionFork?.()).toBe(true);
       expect(readBinding()?.forkNextResume).toBeUndefined();
       await params.persistCliSessionForkSuccessor?.(successorBinding.sessionId);
-      expect(readBinding()?.sessionId).toBe(successorBinding.sessionId);
+      expect(readBinding()).toEqual({
+        sessionId: successorBinding.sessionId,
+        resumeCheckpointId: parentBinding.resumeCheckpointId,
+      });
       return {
         payloads: [{ text: "done" }],
         meta: {

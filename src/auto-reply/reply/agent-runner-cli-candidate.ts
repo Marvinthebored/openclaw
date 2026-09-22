@@ -212,6 +212,7 @@ export async function runCliFallbackCandidate(
         const forkRunParams =
           supportsCliSessionFork &&
           cliSessionBinding?.sessionId &&
+          sessionKey &&
           turn.activeSessionStore &&
           turn.storePath
             ? buildCliSessionForkRunParams(
@@ -219,7 +220,7 @@ export async function runCliFallbackCandidate(
                   agentId: turn.followupRun.run.agentId,
                   provider: params.cliExecutionProvider,
                   expectedCliSessionId: cliSessionBinding.sessionId,
-                  sessionKey: turn.sessionKey,
+                  sessionKey,
                   sessionStore: turn.activeSessionStore,
                   storePath: turn.storePath,
                   assertCommitAllowed: assertSettlementCurrent,
