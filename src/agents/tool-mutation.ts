@@ -120,46 +120,19 @@ function readShellCommand(record: Record<string, unknown> | undefined): string |
   return trimmed || undefined;
 }
 
-function tokenizeReadOnlyShellCommands(command: string): string[][] | undefined {
-  const commands: string[][] = [];
-  let tokens: string[] = [];
-  let current = "";
-  let quote: "'" | '"' | undefined;
-  let tokenStarted = false;
-  const flushToken = () => {
-    if (tokenStarted) {
-      tokens.push(current);
-      current = "";
-      tokenStarted = false;
-    }
-  };
-  for (let index = 0; index < command.length; index++) {
-    const char = command[index]!;
-    if (!quote && (char === "|" || char === "&")) {
-      if (char === "&" && command[index + 1] === "&") {
-        index++;
-      } else if (char !== "|" || command[index + 1] === "|") {
-        return undefined;
-      }
-      flushToken();
-      if (!tokens.length) {
-        return undefined;
-      }
-      commands.push(tokens);
-      tokens = [];
-      continue;
-    }
-    // Quoted regex syntax is literal, not a shell pipeline or glob. Double quotes
-    // still expand substitutions; keep those and all escape syntax unclassified.
-    if (
-      char === "\\" ||
-      char === "\n" ||
-      char === "\r" ||
-      (quote === '"' && (char === "$" || char === "`")) ||
-      (!quote && (/[;&|<>`()]/.test(char) || SHELL_EXPANSION_CHARS.has(char)))
-    ) {
+function tokenizeSimpleShellCommand(command: string): string[] | undefined {
+  if (/[;&|<>\n\r`]/.test(command) || command.includes("\\")) {
+    return undefined;
+  }
+  for (const char of SHELL_EXPANSION_CHARS) {
+    if (command.includes(char)) {
       return undefined;
     }
+  }
+  const tokens: string[] = [];
+  let current = "";
+  let quote: "'" | '"' | undefined;
+  for (const char of command) {
     if (quote) {
       if (char === quote) {
         quote = undefined;
@@ -170,54 +143,57 @@ function tokenizeReadOnlyShellCommands(command: string): string[][] | undefined 
     }
     if (char === "'" || char === '"') {
       quote = char;
-      tokenStarted = true;
       continue;
     }
     if (/\s/.test(char)) {
-      flushToken();
+      if (current) {
+        tokens.push(current);
+        current = "";
+      }
       continue;
     }
     current += char;
-    tokenStarted = true;
   }
   if (quote) {
     return undefined;
   }
-  flushToken();
-  if (!tokens.length) {
-    return undefined;
+  if (current) {
+    tokens.push(current);
   }
-  commands.push(tokens);
-  return commands;
+  return tokens.length > 0 ? tokens : undefined;
 }
 
 function isReadOnlySedCommand(tokens: readonly string[]): boolean {
   const args = tokens.slice(1);
-  // `sed -e 'w /tmp/out'`, attached scripts such as `-e$w /tmp/out`, and
-  // mixed option forms are easy to misclassify. Only allow the exact
-  // suppress-auto-print flags plus the simple line-print shape agents use for
-  // file inspection.
-  if (
-    args.some(
-      (token) =>
-        token.startsWith("-") &&
-        token !== "-" &&
-        token !== "-n" &&
-        token !== "--quiet" &&
-        token !== "--silent",
-    )
-  ) {
+  if (args.some((token) => token === "--in-place" || token.startsWith("--in-place="))) {
+    return false;
+  }
+  if (args.some((token) => token.startsWith("-") && token !== "-" && token.includes("i"))) {
+    return false;
+  }
+  // `sed -e 'w /tmp/out'` and mixed scripts are easy to misclassify. Only
+  // allow the simple line-print shape that agents use for file inspection.
+  if (args.some((token) => token === "-e" || token === "--expression")) {
     return false;
   }
   let sawSuppressAutoPrint = false;
   let expression: string | undefined;
   for (const token of args) {
-    if (token === "-n" || token === "--quiet" || token === "--silent") {
+    if (token === "--in-place" || token.startsWith("--in-place=")) {
+      return false;
+    }
+    if (token === "--quiet" || token === "--silent") {
       sawSuppressAutoPrint = true;
       continue;
     }
     if (token.startsWith("-") && token !== "-") {
-      return false;
+      if (token.includes("i")) {
+        return false;
+      }
+      if (token.includes("n")) {
+        sawSuppressAutoPrint = true;
+      }
+      continue;
     }
     expression ??= token;
     break;
@@ -262,54 +238,20 @@ function isReadOnlyGhCommand(tokens: readonly string[]): boolean {
   return false;
 }
 
-function isReadOnlyFindCommand(tokens: readonly string[]): boolean {
-  // Only known inspection predicates. Never admit -exec, -delete, -fprint,
-  // platform extensions, or an unknown action by assuming it is harmless.
-  let index = 1;
-  while (index < tokens.length && !tokens[index]!.startsWith("-")) {
-    index++;
-  }
-  for (; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token === "-print" || token === "-print0" || token === "!" || token === "-not") {
-      continue;
-    }
-    const value = tokens[++index];
-    if (value === undefined) {
-      return false;
-    }
-    if (token === "-type" && /^[bcdflps]$/.test(value)) {
-      continue;
-    }
-    if ((token === "-maxdepth" || token === "-mindepth") && /^\d+$/.test(value)) {
-      continue;
-    }
-    if (token === "-name" || token === "-iname" || token === "-path" || token === "-ipath") {
-      continue;
-    }
-    return false;
-  }
-  return true;
-}
-
 function isPlainReadOnlyShellCommand(command: string | undefined): boolean {
   if (!command) {
     return false;
   }
-  const commands = tokenizeReadOnlyShellCommands(command);
-  return commands !== undefined && commands.every(isReadOnlyShellTokens);
-}
-
-function isReadOnlyShellTokens(tokens: readonly string[]): boolean {
+  const tokens = tokenizeSimpleShellCommand(command);
+  if (!tokens) {
+    return false;
+  }
   const executable = normalizeLowercaseStringOrEmpty(tokens[0]);
   if (executable === "rg" && hasUnsafeRipgrepFlag(tokens)) {
     return false;
   }
   if (READ_ONLY_SHELL_COMMANDS.has(executable)) {
     return true;
-  }
-  if (executable === "find") {
-    return isReadOnlyFindCommand(tokens);
   }
   if (executable === "sed") {
     return isReadOnlySedCommand(tokens);
