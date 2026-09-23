@@ -228,11 +228,11 @@ export class GatewayRelayRealtimeTalkTransport implements RealtimeTalkTransport 
       }
       const abortController = this.audioAppendAbortController;
       const frameMs = (samples.length / this.session.audio.inputSampleRateHz) * 1000;
-      // Drop stale frames past the budget without ending the call, but make the loss
-      // visible so the user repeats it. The append timeout still fails a dead relay.
       if (!abortController || abortController.signal.aborted || this.pendingOutputCancellations) {
         return;
       }
+      // Drop stale frames past the budget without ending the call, but make the loss
+      // visible so the user repeats it. The append timeout still fails a dead relay.
       if (!this.audioInputBudget.reserve(frameMs)) {
         return;
       }
@@ -251,11 +251,8 @@ export class GatewayRelayRealtimeTalkTransport implements RealtimeTalkTransport 
           },
         )
         .catch((error: unknown) => this.failAudioAppend(error))
-        .finally(() => {
-          if (!this.closed) {
-            this.audioInputBudget.settle(frameMs);
-          }
-        });
+        // Close resets the budget first, so late settlements cannot report recovery.
+        .finally(() => this.audioInputBudget.settle(frameMs));
     });
   }
 
