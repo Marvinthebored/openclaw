@@ -13,7 +13,6 @@ import {
   listTaskRecords,
   markTaskTerminalById,
 } from "../tasks/task-registry.js";
-import { getTaskRegistryProcessState } from "../tasks/task-registry.process-state.js";
 import {
   configureTaskRegistryRuntime,
   getTaskRegistryStore,
@@ -223,26 +222,6 @@ describe("tasks.list Gateway performance", () => {
         return Reflect.apply(originalToSorted, this, [compareFn]) as T[];
       });
       let pendingMutation: ReturnType<typeof setImmediate> | undefined;
-      // Temporary CI attribution: identify the first writer that removes the workload.
-      const resident = getTaskRegistryProcessState().tasks;
-      const removals: string[] = [];
-      const clear = resident.clear.bind(resident);
-      const remove = resident.delete.bind(resident);
-      const recordRemoval = (operation: string) => {
-        if (resident.size >= TASK_COUNT - 1 && removals.length < 3) {
-          removals.push(new Error(operation).stack ?? operation);
-        }
-      };
-      const clearSpy = vi.spyOn(resident, "clear").mockImplementation(() => {
-        recordRemoval("task population cleared");
-        clear();
-      });
-      const deleteSpy = vi.spyOn(resident, "delete").mockImplementation((id) => {
-        if (id !== deletedTaskId) {
-          recordRemoval("unexpected task deletion");
-        }
-        return remove(id);
-      });
       try {
         let mutationsApplied = false;
         // Mutate once at the scan's first yield, not on every persistence read.
@@ -278,12 +257,6 @@ describe("tasks.list Gateway performance", () => {
 
         const listMaxSortedInput = Math.max(0, ...sortedInputLengths);
         const currentTasks = listTaskRecords();
-        console.log("task pagination population", {
-          residentCount: currentTasks.length,
-          storedCount: getTaskRegistryStore().loadSnapshot().tasks.size,
-          survivors: currentTasks.slice(0, 7).map((task) => task.taskId),
-          removals,
-        });
         expect(currentTasks).toHaveLength(TASK_COUNT);
         const adminExpected = expectedTaskIds(currentTasks, 0, 7);
         expect(mutationsApplied).toBe(true);
@@ -684,8 +657,6 @@ describe("tasks.list Gateway performance", () => {
         );
       } finally {
         clearImmediate(pendingMutation);
-        clearSpy.mockRestore();
-        deleteSpy.mockRestore();
         sortSpy.mockRestore();
         accessWork.mockRestore();
         workClock.mockRestore();
