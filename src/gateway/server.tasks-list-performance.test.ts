@@ -311,7 +311,9 @@ describe("tasks.list Gateway performance", () => {
           { limit: 1, sessionKey: OWNED_SESSION_KEY },
         );
         expect(sessionPage.ok, JSON.stringify(sessionPage.error)).toBe(true);
-        expect(sessionPage.payload?.tasks.map((task) => task.id)).toEqual(viewerExpected.slice(0, 1));
+        expect(sessionPage.payload?.tasks.map((task) => task.id)).toEqual(
+          viewerExpected.slice(0, 1),
+        );
         const sessionCursor = sessionPage.payload?.nextCursor;
         if (!sessionCursor) {
           throw new Error("expected a session task cursor");
