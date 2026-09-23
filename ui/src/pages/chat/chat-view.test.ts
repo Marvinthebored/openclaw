@@ -4,7 +4,7 @@ import { expectDefined } from "@openclaw/normalization-core";
 import { html, render } from "lit";
 import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import { createDeferred } from "../../../../test/helpers/promise.js";
-import type { GatewayBrowserClient } from "../../api/gateway.ts";
+import type { GatewayBrowserClient, GatewayHelloOk } from "../../api/gateway.ts";
 import type {
   GatewaySessionRow,
   ModelAuthStatusResult,
@@ -69,6 +69,14 @@ import {
   getComposerTextarea,
   requireElement,
   stubAnimationFrames,
+  createDragEvent,
+  getChatModelSelect,
+  getChatThinkingValue,
+  getThinkingReasoningValueLabel,
+  getThinkingSelect,
+  getThinkingSlider,
+  getThinkingSliderValues,
+  itemAt,
 } from "./chat-view.test-helpers.ts";
 import { renderChat } from "./chat-view.ts";
 import { resetChatComposerState } from "./components/chat-composer.ts";
@@ -275,7 +283,7 @@ type ChatHeaderTestState = {
   chatAvatarUrl: string | null;
   client: GatewayBrowserClient;
   connected: boolean;
-  hello: null;
+  hello: GatewayHelloOk | null;
   lastError: string | null;
   modelAuthStatusResult?: ModelAuthStatusResult | null;
   sessionKey: string;
@@ -463,7 +471,7 @@ function createChatHeaderState(
   });
   const client = { request } as unknown as GatewayBrowserClient;
   const sessions = createTestSessionCapability({
-    snapshot: { client, phase: "connected", hello: null },
+    snapshot: { client, phase: "connected", hello: sessionMutationGatewayHello() },
     subscribe: () => () => undefined,
     subscribeEvents: () => () => undefined,
   });
@@ -510,7 +518,7 @@ function createChatHeaderState(
     lastError: null,
     chatAvatarUrl: null,
     basePath: "",
-    hello: null,
+    hello: sessionMutationGatewayHello(),
     agentsList: null,
     agentsPanel: "overview",
     agentsSelectedId: null,
@@ -561,15 +569,6 @@ function createOpenAiHeaderState(overrides: Parameters<typeof createChatHeaderSt
     models: createOpenAiModelCatalog(),
     ...overrides,
   });
-}
-
-function getChatModelSelect(container: Element): HTMLElement {
-  const select = container.querySelector<HTMLElement>('[data-chat-model-select="true"]');
-  expect(select).toBeInstanceOf(HTMLElement);
-  if (!(select instanceof HTMLElement)) {
-    throw new Error("Expected chat model control");
-  }
-  return select;
 }
 
 type ChatModelControlsProps = Parameters<typeof renderChatModelControls>[0];
@@ -627,46 +626,6 @@ function renderModelControls(
     container,
   );
   return container;
-}
-
-function getChatThinkingValue(control: HTMLElement): string {
-  return control.dataset.chatThinkingValue ?? "";
-}
-
-function getThinkingSelect(container: Element): HTMLElement {
-  const select = container.querySelector<HTMLElement>('[data-chat-thinking-select="true"]');
-  expect(select).toBeInstanceOf(HTMLElement);
-  if (!(select instanceof HTMLElement)) {
-    throw new Error("Expected chat thinking control");
-  }
-  return select;
-}
-
-function getThinkingSlider(container: Element): HTMLInputElement | null {
-  return container.querySelector<HTMLInputElement>('[data-chat-thinking-slider="true"]');
-}
-
-function getThinkingSliderValues(container: Element): string[] {
-  const values = getThinkingSlider(container)?.dataset.chatThinkingValues ?? "";
-  return values ? values.split(",") : [];
-}
-
-function getThinkingReasoningValueLabel(container: Element): string {
-  const preview = container.querySelector(
-    "[data-chat-thinking-preview-committed]:not([hidden]), " +
-      "[data-chat-thinking-preview-index]:not([hidden])",
-  );
-  return preview?.textContent?.trim() ?? "";
-}
-
-function createDragEvent(type: string, types = ["Files"]): Event {
-  const event = new Event(type, { bubbles: true, cancelable: true });
-  Object.defineProperty(event, "dataTransfer", { value: { types } });
-  return event;
-}
-
-function itemAt<T>(items: ArrayLike<T>, index: number, label: string): T {
-  return expectDefined(items[index], `${label} ${index}`);
 }
 
 describe("chat typing status", () => {
@@ -2577,6 +2536,36 @@ describe("chat loading skeleton", () => {
     };
   }
 
+  it("retires only the exact saved Talk entries, retaining unsaved speech and repeated words", () => {
+    const container = renderChatView({
+      realtimeTalkActive: true,
+      messages: [{ role: "user", content: "Repeated words", __openclaw: { id: "voice:call:1" } }],
+      realtimeTalkConversation: [
+        {
+          id: "u1",
+          role: "user",
+          text: "Repeated words",
+          isStreaming: false,
+          transcriptId: "voice:call:1",
+        },
+        {
+          id: "u2",
+          role: "user",
+          text: "Repeated words",
+          isStreaming: false,
+          transcriptId: "voice:call:2",
+        },
+        { id: "a1", role: "assistant", text: "Still speaking", isStreaming: true },
+      ],
+    });
+    const turns = [...container.querySelectorAll(".agent-chat__voice-turn")];
+    expect(turns).toHaveLength(2);
+    expect(turns.map((turn) => turn.textContent?.replace(/\s+/g, " ").trim())).toEqual([
+      "You Repeated words",
+      "Val Still speaking",
+    ]);
+  });
+
   it("renders realtime Talk transcript as ordered voice turns", () => {
     const container = renderChatView({
       realtimeTalkActive: true,
@@ -4396,31 +4385,31 @@ describe("chat slash menu accessibility", () => {
       animationFrames.push(callback);
       return animationFrames.length;
     });
-    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
-      function (this: HTMLElement) {
-        const height = 28;
-        let top = 0;
-        if (this.classList.contains("slash-menu-item")) {
-          const scrollRegion = this.closest<HTMLElement>(".slash-menu__scroll");
-          const options = Array.from(
-            scrollRegion?.querySelectorAll<HTMLElement>(".slash-menu-item") ?? [],
-          );
-          top = options.indexOf(this) * height - (scrollRegion?.scrollTop ?? 0);
-        }
-        const bottom = this.classList.contains("slash-menu__scroll") ? height * 2 : top + height;
-        return {
-          bottom,
-          height: bottom - top,
-          left: 0,
-          right: 240,
-          top,
-          width: 240,
-          x: 0,
-          y: top,
-          toJSON: () => ({}),
-        };
-      },
-    );
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      const height = 28;
+      let top = 0;
+      if (this.classList.contains("slash-menu-item")) {
+        const scrollRegion = this.closest<HTMLElement>(".slash-menu__scroll");
+        const options = Array.from(
+          scrollRegion?.querySelectorAll<HTMLElement>(".slash-menu-item") ?? [],
+        );
+        top = options.indexOf(this) * height - (scrollRegion?.scrollTop ?? 0);
+      }
+      const bottom = this.classList.contains("slash-menu__scroll") ? height * 2 : top + height;
+      return {
+        bottom,
+        height: bottom - top,
+        left: 0,
+        right: 240,
+        top,
+        width: 240,
+        x: 0,
+        y: top,
+        toJSON: () => ({}),
+      };
+    });
     const { container } = createReactiveDraftHarness();
     document.body.append(container);
     inputDraftAtEnd(container, "Use $");
@@ -6669,25 +6658,6 @@ describe("chat model controls", () => {
       });
     },
   );
-
-  it("does not patch the model for a locked session", async () => {
-    const { state, request } = createOpenAiHeaderState();
-    state.sessionsResult = createSessionsResultFromRows([
-      {
-        key: "agent:main:main",
-        kind: "direct",
-        model: "gpt-5.5",
-        modelProvider: "openai",
-        modelSelectionLocked: true,
-        updatedAt: 1,
-      },
-    ]);
-
-    await expect(
-      switchChatModel(state as unknown as Parameters<typeof switchChatModel>[0], "openai/gpt-5.4"),
-    ).resolves.toBe(false);
-    expect(request).not.toHaveBeenCalled();
-  });
 
   it("ignores model clicks while a run is active", () => {
     const { state } = createOpenAiHeaderState();

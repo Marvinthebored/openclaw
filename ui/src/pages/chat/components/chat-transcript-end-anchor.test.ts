@@ -2,6 +2,7 @@
 
 import { describe, expect, it, vi } from "vitest";
 import { TranscriptEndAnchor } from "./chat-transcript-end-anchor.ts";
+import { subscribeTranscriptScroll } from "./chat-transcript-scroll-events.ts";
 
 describe("native composer end anchoring", () => {
   function fixture(offset = 600) {
@@ -14,19 +15,10 @@ describe("native composer end anchoring", () => {
       scrollHeight: { get: readContent },
     });
     element.scrollTop = offset;
-    let following = false;
-    const anchor = new TranscriptEndAnchor({
-      element: () => element,
-      canFollow: () => following,
-      suspended: () => false,
-      follow: vi.fn(),
-      resumeFollow: vi.fn(),
-    });
-    anchor.reconcile();
-    const commit = (changed: boolean, canFollow: boolean) => {
-      following = canFollow;
-      return anchor.commitComposerResize(changed);
-    };
+    const anchor = new TranscriptEndAnchor();
+    anchor.reconcile(element, false, false, vi.fn());
+    const commit = (changed: boolean, canFollow: boolean) =>
+      anchor.commitComposerResize(element, changed, canFollow, false);
     readHeight.mockClear();
     readContent.mockClear();
     return {
@@ -48,6 +40,19 @@ describe("native composer end anchoring", () => {
     expect(readHeight).not.toHaveBeenCalled();
     expect(readContent).not.toHaveBeenCalled();
     expect(element.scrollTop).toBe(600);
+  });
+
+  it("does not publish an unchanged viewport when a structural commit settles a native edit", () => {
+    const { element, anchor, commit } = fixture();
+    const resized = vi.fn();
+    const unsubscribe = subscribeTranscriptScroll(element, resized);
+    try {
+      anchor.invalidateComposerResize(true);
+      expect(commit(true, true)).toEqual({ before: 600, after: 600, resumeFollow: false });
+      expect(resized).not.toHaveBeenCalled();
+    } finally {
+      unsubscribe();
+    }
   });
 
   it.each([600, 594, 200])("preserves end versus reader position at %ipx", (offset) => {
@@ -104,7 +109,7 @@ describe("native composer end anchoring", () => {
       after: 500,
       resumeFollow: false,
     });
-    anchor.reconcile();
+    anchor.reconcile(element, false, false, vi.fn());
     anchor.invalidateComposerResize(false);
     resize(400);
     expect(commit(true, false)).toEqual({

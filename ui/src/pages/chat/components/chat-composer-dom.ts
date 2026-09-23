@@ -42,7 +42,6 @@ const composerPopoverAnchorObservers = new WeakMap<
   ComposerPopoverAnchorObserverState
 >();
 
-const COMPOSER_POPOVER_GAP_PX = 6;
 // max-height constrains the menu's scrollable box before its border/padding;
 // include that chrome so the outer panel retains a viewport gutter.
 const COMPOSER_POPOVER_VIEWPORT_INSET_PX = 28;
@@ -58,11 +57,8 @@ function hasNativeTextareaContentSizing(el: HTMLTextAreaElement) {
 function updateComposerPopoverAnchor(el: HTMLElement) {
   const viewport = window.visualViewport;
   const viewportTop = viewport?.offsetTop ?? 0;
-  const layoutViewportHeight = document.documentElement.clientHeight || window.innerHeight;
   const composerTop = el.getBoundingClientRect().top;
-  const bottom = layoutViewportHeight - composerTop + COMPOSER_POPOVER_GAP_PX;
   const maxHeight = composerTop - viewportTop - COMPOSER_POPOVER_VIEWPORT_INSET_PX;
-  el.style.setProperty("--chat-composer-popover-bottom", `${Math.max(0, bottom)}px`);
   el.style.setProperty("--chat-composer-popover-max-height", `${Math.max(0, maxHeight)}px`);
 }
 
@@ -163,7 +159,11 @@ function scheduleNativeTextareaOverflow(el: HTMLTextAreaElement) {
   });
 }
 
-function updateTextareaOverflow(el: HTMLTextAreaElement, deferNativeEditing = true) {
+function updateTextareaOverflow(
+  el: HTMLTextAreaElement,
+  deferNativeEditing = true,
+  measured?: { scrollHeight: number; clientHeight: number },
+) {
   if (
     deferNativeEditing &&
     composerTextareaResizeObservers.get(el)?.editing &&
@@ -174,21 +174,25 @@ function updateTextareaOverflow(el: HTMLTextAreaElement, deferNativeEditing = tr
     scheduleNativeTextareaOverflow(el);
     return;
   }
-  const height = el.clientHeight;
-  const scrollable = el.scrollHeight > height + 1;
+  const clientHeight = measured?.clientHeight ?? el.clientHeight;
+  const scrollHeight = measured?.scrollHeight ?? el.scrollHeight;
+  const scrollable = scrollHeight > clientHeight + 1;
   // Two 16px fades need enough vertical runway not to overlap into a narrow
   // opaque strip on short drafts. Small overflows still scroll, just unfaded.
   const canFade =
-    scrollable && el.clientHeight >= 64 && !composerTextareaResizeObservers.get(el)?.editing;
+    scrollable && clientHeight >= 64 && !composerTextareaResizeObservers.get(el)?.editing;
   const fadeTop = canFade && el.scrollTop > 1;
-  const fadeBottom = canFade && el.scrollTop + el.clientHeight < el.scrollHeight - 1;
-  el.style.overflowY = scrollable ? "auto" : "hidden";
+  const fadeBottom = canFade && el.scrollTop + clientHeight < scrollHeight - 1;
+  const overflow = scrollable ? "auto" : "hidden";
+  if (el.style.overflowY !== overflow) {
+    el.style.overflowY = overflow;
+  }
   el.toggleAttribute("data-scroll-fade-top", fadeTop);
   el.toggleAttribute("data-scroll-fade-bottom", fadeBottom);
   const state = composerTextareaResizeObservers.get(el);
   if (state) {
-    const changed = state.height !== height;
-    state.height = height;
+    const changed = state.height !== clientHeight;
+    state.height = clientHeight;
     if (state.nativeInputPending) {
       state.nativeInputPending = false;
       const thread = el.closest(".chat")?.querySelector<HTMLElement>(".chat-thread");
@@ -221,7 +225,9 @@ export function adjustTextareaHeight(
   const state = composerTextareaResizeObservers.get(el);
   if (options.nativeInput && state && hasNativeTextareaContentSizing(el)) {
     invalidateNativeTextareaLayout(el, state);
-    el.style.height = "";
+    if (el.style.height !== "") {
+      el.style.height = "";
+    }
     scheduleNativeTextareaOverflow(el);
     return;
   }
@@ -230,17 +236,55 @@ export function adjustTextareaHeight(
     // observer fires. Commit that geometry through the transcript owner first.
     publishTranscriptScroll(thread, { type: "before-resize" });
   }
+  const threadHeight = thread?.clientHeight;
   const scrollPosition = thread ? captureChatSessionScrollPosition(thread) : null;
-  // Hide the browser's scrollbar while measuring; restore it only when the
-  // final CSS-constrained height actually clips the draft.
-  el.style.overflowY = "hidden";
-  el.style.height = "auto";
   // The owning surface declares its cap in CSS. Retain the historical fallback
   // for detached/test controls whose computed max-height is not a pixel value.
   const style = getComputedStyle(el);
   const computedMaxHeight = style.maxHeight.trim();
   const pixelMaxHeight = /^(\d+(?:\.\d+)?)px$/u.exec(computedMaxHeight);
   const maxHeight = pixelMaxHeight ? Number(pixelMaxHeight[1]) : 150;
+  const borderBox = style.boxSizing === "border-box";
+  const naturalHeight =
+    Number.parseFloat(style.lineHeight) * el.rows +
+    (borderBox ? Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom) : 0);
+  const minHeight = Math.max(
+    Number.parseFloat(style.minHeight),
+    Math.round(naturalHeight) +
+      (borderBox
+        ? Number.parseFloat(style.borderTopWidth) + Number.parseFloat(style.borderBottomWidth)
+        : 0),
+  );
+  const assignedHeight = /^(\d+(?:\.\d+)?)px$/u.exec(el.style.height);
+  // Intermediate drafts still need the normal shrink measurement. The previous
+  // assignment only selects candidates; actual layout must prove either bound.
+  if (
+    !assignedHeight ||
+    Number(assignedHeight[1]) <= minHeight ||
+    (pixelMaxHeight && Number(assignedHeight[1]) >= maxHeight)
+  ) {
+    const height = Number.parseFloat(style.height);
+    const scrollHeight = el.scrollHeight;
+    const clientHeight = el.clientHeight;
+    const overflows = scrollHeight > clientHeight + 1;
+    // Rows and padding can exceed the CSS minimum. At the cap, a classic
+    // scrollbar may itself cause overflow by narrowing text; measure it hidden.
+    const atMinimum = !overflows && height === minHeight;
+    const atMaximum =
+      overflows &&
+      pixelMaxHeight &&
+      height >= maxHeight &&
+      el.offsetWidth - el.clientWidth <=
+        Number.parseFloat(style.borderLeftWidth) + Number.parseFloat(style.borderRightWidth);
+    if (atMinimum || atMaximum) {
+      updateTextareaOverflow(el, false, { scrollHeight, clientHeight });
+      return;
+    }
+  }
+  // Hide the browser's scrollbar while measuring; restore it only when the
+  // final CSS-constrained height actually clips the draft.
+  el.style.overflowY = "hidden";
+  el.style.height = "auto";
   // scrollHeight includes padding but not borders. Bordered answer fields share
   // this owner with the borderless composer and must not scroll on a single line.
   const borderHeight = style.boxSizing === "border-box" ? el.offsetHeight - el.clientHeight : 0;
@@ -252,8 +296,11 @@ export function adjustTextareaHeight(
     if (scrollPosition?.anchorToEnd) {
       thread.scrollTop = thread.scrollHeight;
     }
-    // A following composer commit can hide this viewport from browser observers.
     const after = thread.scrollTop;
+    if (thread.clientHeight === threadHeight && after === scrollPosition?.scrollTop) {
+      return;
+    }
+    // A following composer commit can hide this viewport from browser observers.
     publishTranscriptScroll(thread, {
       type: "resize",
       ...(scrollPosition?.anchorToEnd && scrollPosition.scrollTop !== after

@@ -1,19 +1,23 @@
 /* @vitest-environment jsdom */
 
+import { expectDefined } from "@openclaw/normalization-core";
 import { html, render } from "lit";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import { resetChatViewState } from "./chat-view-state.ts";
 import {
   getComposerTextarea,
+  inputDraft,
   renderChatView,
   stubAnimationFrames,
 } from "./chat-view.test-helpers.ts";
+import { subscribeTranscriptScroll } from "./components/chat-transcript-scroll-events.ts";
 import {
   installTranscriptDomMocks,
   resetTranscriptTestDom,
 } from "./components/chat-transcript.test-support.ts";
 
 beforeEach(installTranscriptDomMocks);
+
 afterEach(() => {
   resetChatViewState();
   resetTranscriptTestDom();
@@ -72,6 +76,88 @@ describe("chat composer sizing", () => {
     render(html``, container);
     container.remove();
   });
+
+  it.each(["end", "history"] as const)(
+    "only publishes composer viewport changes while reading at %s",
+    (position) => {
+      const container = renderChatView({ draft: "Short draft" });
+      const textarea = getComposerTextarea(container);
+      const thread = expectDefined(
+        container.querySelector<HTMLElement>(".chat-thread"),
+        "composer transcript",
+      );
+      let draftHeight = 42;
+      let scrollTop = position === "end" ? 642 : 100;
+      textarea.style.height = "42px";
+      Object.defineProperties(textarea, {
+        scrollHeight: { configurable: true, get: () => draftHeight },
+        clientHeight: { configurable: true, get: () => Math.min(draftHeight, 150) },
+        offsetHeight: { configurable: true, get: () => Math.min(draftHeight, 150) },
+      });
+      Object.defineProperties(thread, {
+        scrollHeight: { configurable: true, value: 1200 },
+        clientHeight: {
+          configurable: true,
+          get: () => 600 - (Number.parseFloat(textarea.style.height) || 42),
+        },
+        scrollTop: {
+          configurable: true,
+          get: () => Math.min(scrollTop, thread.scrollHeight - thread.clientHeight),
+          set: (value: number) => {
+            scrollTop = Math.max(0, Math.min(value, thread.scrollHeight - thread.clientHeight));
+          },
+        },
+      });
+      const onTranscriptScroll = vi.fn();
+      const unsubscribe = subscribeTranscriptScroll(thread, (observation) => {
+        if (observation.type === "resize") {
+          onTranscriptScroll(observation);
+        }
+      });
+      onTestFinished(() => {
+        unsubscribe();
+        render(html``, container);
+      });
+
+      inputDraft(container, "Short draft edited");
+      expect(onTranscriptScroll).not.toHaveBeenCalled();
+
+      draftHeight = 180;
+      inputDraft(container, "A long draft\n".repeat(10));
+      expect(thread.clientHeight).toBe(450);
+      expect(thread.scrollTop).toBe(position === "end" ? 750 : 100);
+      expect(onTranscriptScroll).toHaveBeenCalledExactlyOnceWith({
+        type: "resize",
+        ...(position === "end" ? { scrollCorrection: { before: 642, after: 750 } } : {}),
+      });
+      onTranscriptScroll.mockClear();
+
+      draftHeight = 220;
+      inputDraft(container, "A longer capped draft\n".repeat(12));
+      expect(onTranscriptScroll).not.toHaveBeenCalled();
+
+      if (position === "end") {
+        thread.scrollTop -= 4;
+        inputDraft(container, "Another capped draft\n".repeat(12));
+        expect(thread.clientHeight).toBe(450);
+        expect(thread.scrollTop).toBe(750);
+        expect(onTranscriptScroll).toHaveBeenCalledExactlyOnceWith({
+          type: "resize",
+          scrollCorrection: { before: 746, after: 750 },
+        });
+        onTranscriptScroll.mockClear();
+      }
+
+      draftHeight = 42;
+      inputDraft(container, "Short again");
+      expect(thread.clientHeight).toBe(558);
+      expect(thread.scrollTop).toBe(position === "end" ? 642 : 100);
+      expect(onTranscriptScroll).toHaveBeenCalledExactlyOnceWith({
+        type: "resize",
+        ...(position === "end" ? { scrollCorrection: { before: 750, after: 642 } } : {}),
+      });
+    },
+  );
 
   it("sizes restored drafts after the rendered value is committed", async () => {
     const container = renderChatView({ draft: "A restored long draft" });
