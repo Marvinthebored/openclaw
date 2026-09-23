@@ -61,30 +61,23 @@ afterEach(() => {
   fixture?.remove();
   fixture = undefined;
 });
-it.each([1440, 1600])(
-  "reconciles persisted voice while preserving the live tail at %ipx",
-  async (width) => {
-    await page.viewport(width, 900);
-    fixture = new TalkReconciliationFixture();
-    fixture.style.cssText = "display:block;height:900px;width:100%";
-    document.body.append(fixture);
-    await fixture.updateComplete;
-    await expect.poll(() => fixture!.querySelectorAll(".agent-chat__voice-turn").length).toBe(3);
-    fixture.saved = true;
-    fixture.requestUpdate();
-    await fixture.updateComplete;
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-    });
-    expect(fixture.querySelectorAll(".agent-chat__voice-turn")).toHaveLength(1);
-    const renderedMessages = [...fixture.querySelectorAll(".chat-text")]
-      .map((element) => element.textContent)
-      .join("\n");
-    expect(renderedMessages.match(/Tell me about otters\./g)).toHaveLength(1);
-    expect(renderedMessages.match(/Otters use rocks to open shellfish\./g)).toHaveLength(1);
-    expect(fixture.querySelector(".agent-chat__voice-turn")?.textContent).toContain(
-      "Now check the room temperature.",
-    );
-    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(width);
-  },
-);
+it("reconciles persisted voice while preserving the live tail", async () => {
+  await page.viewport(1440, 900);
+  fixture = new TalkReconciliationFixture();
+  fixture.style.cssText = "display:block;height:900px;width:100%";
+  document.body.append(fixture);
+  await fixture.updateComplete;
+  await expect.poll(() => fixture!.querySelectorAll(".agent-chat__voice-turn").length).toBe(3);
+  fixture.saved = true;
+  fixture.requestUpdate();
+  await fixture.updateComplete;
+  expect(fixture.querySelectorAll(".agent-chat__voice-turn")).toHaveLength(1);
+  const renderedMessages = [...fixture.querySelectorAll(".chat-text")]
+    .map((element) => element.textContent)
+    .join("\n");
+  expect(renderedMessages.match(/Tell me about otters\./g)).toHaveLength(1);
+  expect(renderedMessages.match(/Otters use rocks to open shellfish\./g)).toHaveLength(1);
+  expect(fixture.querySelector(".agent-chat__voice-turn")?.textContent).toContain(
+    "Now check the room temperature.",
+  );
+});

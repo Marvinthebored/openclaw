@@ -335,12 +335,12 @@ export class ChatStateController<TState extends ChatPageHost> implements Reactiv
       // Retain receipt identity through custody-to-history gaps and replay;
       // retire this presentation cache with its pane or physical conversation.
       this.seenInputKeys.add(key);
-      const localVoiceSessionId = state.realtimeTalkSession?.getVoiceSessionId();
-      const isLocalVoice =
-        (localVoiceSessionId && identity.id?.startsWith(`voice:${localVoiceSessionId}:`)) ||
-        (identity.id &&
-          state.realtimeTalkConversation.some((entry) => entry.transcriptId === identity.id));
-      if (isLocalVoice) {
+      // Persisted rows for this browser's own speech keep the live caption's identity.
+      const entryId = identity.id;
+      if (
+        entryId &&
+        state.realtimeTalkConversation.some((entry) => entry.transcriptId === entryId)
+      ) {
         return;
       }
       remoteInputArrived ||= !changedScope && state.chatHasAutoScrolled;

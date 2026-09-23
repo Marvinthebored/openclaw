@@ -225,6 +225,10 @@ export function createOrResumeClientVoiceSession(params: {
   );
   return voiceSessionId;
 }
+/** Transcript row identity shared by persistence and live relay captions. */
+export function clientVoiceTranscriptEventId(voiceSessionId: string, entryId: string): string {
+  return `voice:${voiceSessionId}:${entryId}`;
+}
 
 /** Read the canonical agent-session id without creating state during provider startup. */
 export function resolveClientVoiceAgentSessionId(params: {
@@ -529,7 +533,7 @@ function appendVoiceTranscript(params: {
         { ...sessionTarget, sessionId: sessionEntry.sessionId },
         {
           ...(normalized.config ? { config: normalized.config } : {}),
-          eventId: `voice:${normalized.voiceSessionId}:${normalized.entryId}`,
+          eventId: clientVoiceTranscriptEventId(normalized.voiceSessionId, normalized.entryId),
           message: buildPersistedVoiceMessage({
             role: normalized.role,
             text: normalized.text,

@@ -3607,7 +3607,7 @@ describe("talk realtime gateway relay", () => {
     expect(relaySessions.has(session.relaySessionId)).toBe(true);
   });
 
-  it("splits large provider audio into ordered 200 ms relay frames", () => {
+  it("splits large provider audio into ordered 20 ms relay frames", () => {
     let bridgeRequest: RealtimeVoiceBridgeCreateRequest | undefined;
     const provider: RealtimeVoiceProviderPlugin = {
       id: "relay-test",
@@ -3636,7 +3636,7 @@ describe("talk realtime gateway relay", () => {
       connId: "conn-1",
       audioBase64: Buffer.from("audio").toString("base64"),
     });
-    const audio = Buffer.alloc(9_600 * 33 + 137);
+    const audio = Buffer.alloc(960 * 33 + 137);
     for (let index = 0; index < audio.length; index += 1) {
       audio[index] = index % 251;
     }
@@ -3660,7 +3660,7 @@ describe("talk realtime gateway relay", () => {
       Buffer.from(String(payload.audioBase64), "base64"),
     );
     expect(frames).toHaveLength(34);
-    expect(frames.every((frame) => frame.byteLength <= 9_600)).toBe(true);
+    expect(frames.every((frame) => frame.byteLength <= 960)).toBe(true);
     expect(frames.at(-1)?.byteLength).toBe(137);
     expect(Buffer.concat(frames)).toEqual(audio);
     for (const [index, payload] of audioPayloads.entries()) {

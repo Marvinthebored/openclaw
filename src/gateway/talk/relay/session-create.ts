@@ -3,6 +3,7 @@ import { resolveExpiresAtMsFromDurationMs } from "@openclaw/normalization-core/n
 import { REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME } from "../../../talk/agent-consult-tool.js";
 import { buildRealtimeVoiceAgentCancelProviderResult } from "../../../talk/agent-run-control-shared.js";
 import { createClientVoiceConfirmationReadiness } from "../../../talk/client-voice-confirmation-readiness.js";
+import { clientVoiceTranscriptEventId } from "../../../talk/client-voice-session.js";
 import {
   REALTIME_VOICE_AUDIO_FORMAT_PCM16_24KHZ,
   type RealtimeVoiceAudioClearReason,
@@ -58,9 +59,8 @@ import {
 } from "./tool-call-ledger.js";
 import { enqueueRelayVoiceTranscript } from "./voice.js";
 
-// Bound browser source count without waiting to fill a frame. Small provider packets
-// still pass through immediately; large packets use at most 200 ms of 24 kHz PCM16.
-const RELAY_OUTPUT_AUDIO_FRAME_BYTES = 9_600;
+// The relay contract is 20 ms of 24 kHz mono PCM16 per browser event.
+const RELAY_OUTPUT_AUDIO_FRAME_BYTES = 960;
 
 /** Creates a realtime voice relay session and returns the browser audio contract. */
 export function createTalkRealtimeRelaySession(
@@ -422,7 +422,12 @@ export function createTalkRealtimeRelaySession(
       }
       const transcriptIdentity =
         relay.voiceTranscriptSeq > previousTranscriptSeq
-          ? { transcriptId: `voice:${relay.id}:${relay.voiceTranscriptSeq}` }
+          ? {
+              transcriptId: clientVoiceTranscriptEventId(
+                relay.id,
+                String(relay.voiceTranscriptSeq),
+              ),
+            }
           : {};
       const transcriptEvent = {
         relaySessionId,
