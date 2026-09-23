@@ -21,6 +21,7 @@ type ComposerTextareaResizeObserverState = {
   overflowFrame: number | null;
   height: number;
   nativeInputPending: boolean;
+  hasScrollbarGutter: boolean;
   editing: boolean;
   events: AbortController;
 };
@@ -142,6 +143,11 @@ function invalidateNativeTextareaLayout(
   if (thread) {
     publishTranscriptScroll(thread, { type: "composer-input" });
   }
+  // A classic scrollbar can keep the intrinsic height capped by narrowing the
+  // draft. Use the last settled gutter, not an input-time layout measurement.
+  if (state.hasScrollbarGutter && el.style.overflowY !== "hidden") {
+    el.style.overflowY = "hidden";
+  }
 }
 
 function scheduleNativeTextareaOverflow(el: HTMLTextAreaElement) {
@@ -191,6 +197,13 @@ function updateTextareaOverflow(
   el.toggleAttribute("data-scroll-fade-bottom", fadeBottom);
   const state = composerTextareaResizeObservers.get(el);
   if (state) {
+    state.hasScrollbarGutter = false;
+    if (scrollable && hasNativeTextareaContentSizing(el)) {
+      const style = getComputedStyle(el);
+      state.hasScrollbarGutter =
+        el.offsetWidth - el.clientWidth >
+        Number.parseFloat(style.borderLeftWidth) + Number.parseFloat(style.borderRightWidth);
+    }
     const changed = state.height !== clientHeight;
     state.height = clientHeight;
     if (state.nativeInputPending) {
@@ -320,6 +333,7 @@ export function observeTextareaOverflow(el: HTMLTextAreaElement) {
     overflowFrame: null,
     height: el.clientHeight,
     nativeInputPending: false,
+    hasScrollbarGutter: false,
     editing: false,
     events: new AbortController(),
   };
