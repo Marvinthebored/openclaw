@@ -3,7 +3,6 @@ import { resolveExpiresAtMsFromDurationMs } from "@openclaw/normalization-core/n
 import { REALTIME_VOICE_AGENT_CONSULT_TOOL_NAME } from "../../../talk/agent-consult-tool.js";
 import { buildRealtimeVoiceAgentCancelProviderResult } from "../../../talk/agent-run-control-shared.js";
 import { createClientVoiceConfirmationReadiness } from "../../../talk/client-voice-confirmation-readiness.js";
-import { clientVoiceTranscriptEventId } from "../../../talk/client-voice-session.js";
 import {
   REALTIME_VOICE_AUDIO_FORMAT_PCM16_24KHZ,
   type RealtimeVoiceAudioClearReason,
@@ -11,7 +10,10 @@ import {
 } from "../../../talk/provider-types.js";
 import { createRealtimeVoiceSessionHarness } from "../../../talk/realtime-session-harness.js";
 import type { TalkEventInput } from "../../../talk/talk-session-controller.js";
-import { VOICE_TRANSCRIPT_QUEUE_POLICY } from "../../../talk/voice-transcript.js";
+import {
+  VOICE_TRANSCRIPT_QUEUE_POLICY,
+  voiceTranscriptEventId,
+} from "../../../talk/voice-transcript.js";
 import { createTalkClientAgentConsultRunner } from "../client-agent-consult.js";
 import { createTalkRealtimeRunControlOwner } from "../realtime-run-control.js";
 import { closeExpiredTalkRelaySessions } from "../relay-session-lifecycle.js";
@@ -423,10 +425,7 @@ export function createTalkRealtimeRelaySession(
       const transcriptIdentity =
         relay.voiceTranscriptSeq > previousTranscriptSeq
           ? {
-              transcriptId: clientVoiceTranscriptEventId(
-                relay.id,
-                String(relay.voiceTranscriptSeq),
-              ),
+              transcriptId: voiceTranscriptEventId(relay.id, String(relay.voiceTranscriptSeq)),
             }
           : {};
       const transcriptEvent = {
