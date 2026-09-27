@@ -10,6 +10,7 @@ import {
   isBunRuntime,
   isNodeRuntime,
   resolveRuntimeScriptPosition,
+  RUNTIME_VALUE_OPTIONS,
 } from "../daemon/runtime-binary.js";
 import { isLegacyPluginSourceCaptureName } from "../plugins/plugin-source-capture-path.js";
 import { getRootOptionAwareCommandPath } from "./cli-root-options.js";
@@ -74,6 +75,48 @@ function readProcessWorkingDirectory(pid: number): string | undefined {
   return undefined;
 }
 
+/** Bun runs a declared package.json script ahead of a same-named file; that package is the identity. */
+function classifyBunPackageScript(
+  args: string[],
+  script: string,
+  scriptPath: string,
+  entryIndex: number,
+): OpenClawArgvClassification | undefined {
+  if (!isBunRuntime(args[0] ?? "") || /[/\\]/.test(script)) {
+    return undefined;
+  }
+  // `bun --cwd <dir>` reads the script from <dir>. Bun has already moved into a relative <dir>,
+  // so neither the package nor a same-named file can be named safely; leave that unknown.
+  let packageDir = path.dirname(scriptPath);
+  for (let index = 1; index < entryIndex; index++) {
+    const arg = args[index]!;
+    const dir =
+      arg === "--cwd" ? args[++index] : arg.startsWith("--cwd=") ? arg.slice(6) : undefined;
+    if (dir !== undefined) {
+      if (!path.isAbsolute(dir)) {
+        return { kind: "unclassified", reason: `relative --cwd ${dir} for ${script}` };
+      }
+      packageDir = dir;
+    } else if (RUNTIME_VALUE_OPTIONS.has(arg)) {
+      index++;
+    }
+  }
+  let manifest: unknown;
+  try {
+    manifest = JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8"));
+  } catch {
+    return undefined;
+  }
+  if (
+    !isRecord(manifest) ||
+    !isRecord(manifest.scripts) ||
+    !Object.hasOwn(manifest.scripts, script)
+  ) {
+    return undefined;
+  }
+  return manifest.name === "openclaw" ? { kind: "openclaw", entryIndex } : { kind: "other" };
+}
+
 /** Generic script names identify OpenClaw only inside a verified package root. */
 function classifyEntrypoint(
   args: string[],
@@ -101,6 +144,11 @@ function classifyEntrypoint(
       return { kind: "unclassified", reason: `working directory is unavailable for ${script}` };
     }
     scriptPath = path.resolve(cwd, script);
+  }
+  const packageScript = classifyBunPackageScript(args, script, scriptPath, entryIndex);
+  // Bun runs an existing file with an extension ahead of a same-named script.
+  if (packageScript && !(path.extname(script) && fs.existsSync(scriptPath))) {
+    return packageScript;
   }
   let resolved: string;
   try {

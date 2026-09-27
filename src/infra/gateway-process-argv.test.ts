@@ -135,6 +135,103 @@ describe("classifyOpenClawArgv", () => {
     });
   });
 
+  it("accepts Bun boolean options only under Bun", () => {
+    const owned = scriptFixture("dist/index.js");
+    expect(classifyOpenClawArgv(["bun", "run", "--silent", "--smol", owned.script])).toEqual({
+      kind: "openclaw",
+      entryIndex: 4,
+    });
+    expect(classifyOpenClawArgv(["node", "--silent", owned.script])).toEqual({
+      kind: "unclassified",
+      reason: "unsupported runtime option --silent",
+    });
+  });
+
+  it("identifies a Bun package script by the package that declares it", () => {
+    const owned = scriptFixture("dist/index.js");
+    const other = scriptFixture("server.ts", "unrelated-service");
+    for (const { root } of [owned, other]) {
+      const manifest = path.join(root, "package.json");
+      const name = JSON.parse(fs.readFileSync(manifest, "utf8")).name;
+      fs.writeFileSync(manifest, JSON.stringify({ name, scripts: { start: "bun server.ts" } }));
+    }
+    const argv = (root: string) => [
+      "bun",
+      "run",
+      "--cwd",
+      root,
+      "--shell=bun",
+      "--silent",
+      "start",
+    ];
+    expect(classifyOpenClawArgv(argv(other.root), { cwd: other.root })).toEqual({ kind: "other" });
+    expect(classifyOpenClawArgv(argv(owned.root), { cwd: owned.root })).toEqual({
+      kind: "openclaw",
+      entryIndex: 6,
+    });
+    // The package named by --cwd decides, not the process cwd.
+    expect(classifyOpenClawArgv(argv(owned.root), { cwd: other.root })).toEqual({
+      kind: "openclaw",
+      entryIndex: 6,
+    });
+    expect(
+      classifyOpenClawArgv(["bun", `--cwd=${other.root}`, "start"], { cwd: owned.root }),
+    ).toEqual({ kind: "other" });
+    // The last --cwd wins; a --cwd= consumed as another option's value is not one.
+    expect(
+      classifyOpenClawArgv(["bun", "--cwd", other.root, `--cwd=${owned.root}`, "start"], {
+        cwd: other.root,
+      }),
+    ).toEqual({ kind: "openclaw", entryIndex: 4 });
+    expect(
+      classifyOpenClawArgv(["bun", "-r", `--cwd=${other.root}`, "start"], { cwd: owned.root }),
+    ).toEqual({ kind: "openclaw", entryIndex: 3 });
+    // A declared script outranks a same-named file in the process cwd.
+    fs.writeFileSync(path.join(other.root, "start"), "");
+    expect(classifyOpenClawArgv(argv(owned.root), { cwd: other.root })).toEqual({
+      kind: "openclaw",
+      entryIndex: 6,
+    });
+    // Bun has already moved into a relative --cwd, so its package cannot be named safely.
+    fs.mkdirSync(path.join(owned.root, "app"));
+    fs.writeFileSync(
+      path.join(owned.root, "app", "package.json"),
+      JSON.stringify({ name: "unrelated-service", scripts: { start: "x" } }),
+    );
+    // A same-named file in the directory Bun moved into must not decide it either.
+    fs.writeFileSync(path.join(owned.root, "start"), "");
+    expect(classifyOpenClawArgv(["bun", "--cwd=app", "run", "start"], { cwd: owned.root })).toEqual(
+      {
+        kind: "unclassified",
+        reason: expect.stringContaining("relative --cwd"),
+      },
+    );
+    fs.unlinkSync(path.join(owned.root, "start"));
+    // An existing file with an extension runs ahead of a same-named script.
+    fs.symlinkSync(owned.script, path.join(other.root, "index.js"));
+    fs.writeFileSync(
+      path.join(other.root, "package.json"),
+      JSON.stringify({ name: "unrelated-service", scripts: { start: "x", "index.js": "x" } }),
+    );
+    expect(classifyOpenClawArgv(["bun", "index.js"], { cwd: other.root })).toEqual({
+      kind: "openclaw",
+      entryIndex: 1,
+    });
+    // A Bun built-in is not a declared script, even inside an OpenClaw checkout.
+    expect(classifyOpenClawArgv(["bun", "install"], { cwd: owned.root })).toEqual({
+      kind: "unclassified",
+      reason: expect.stringContaining("resolve script"),
+    });
+    expect(classifyOpenClawArgv(["bun", "run", "missing"], { cwd: other.root })).toEqual({
+      kind: "unclassified",
+      reason: expect.stringContaining("resolve script"),
+    });
+    expect(classifyOpenClawArgv(["node", "start"], { cwd: owned.root })).toEqual({
+      kind: "unclassified",
+      reason: expect.stringContaining("resolve script"),
+    });
+  });
+
   it.each([
     "dist/index.js",
     "dist/entry.js",

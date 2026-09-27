@@ -26,7 +26,7 @@ export function isBunRuntime(execPath: string): boolean {
   return base === "bun" || base === "bun.exe";
 }
 
-const RUNTIME_VALUE_OPTIONS = new Set([
+export const RUNTIME_VALUE_OPTIONS = new Set([
   "-r",
   "-C",
   "--env-file",
@@ -56,6 +56,29 @@ const RUNTIME_BOOLEAN_OPTIONS = new Set([
   "--no-opt",
   "--experimental-strip-types",
   "--bun",
+]);
+// Boolean flags from `bun run --help`; accepted only when the runtime is Bun.
+const BUN_BOOLEAN_OPTIONS = new Set([
+  "-b",
+  "-i",
+  "--silent",
+  "--no-orphans",
+  "--workspaces",
+  "--parallel",
+  "--sequential",
+  "--no-exit-on-error",
+  "--watch",
+  "--hot",
+  "--no-clear-screen",
+  "--smol",
+  "--cpu-prof",
+  "--cpu-prof-md",
+  "--heap-prof",
+  "--heap-prof-md",
+  "--if-present",
+  "--no-install",
+  "--prefer-offline",
+  "--prefer-latest",
 ]);
 
 export function resolveRuntimeScriptPosition(
@@ -91,6 +114,7 @@ export function resolveRuntimeScriptPosition(
       const negated = `--no-${arg.replace(/^--(?:no-)?/, "")}`;
       if (
         RUNTIME_BOOLEAN_OPTIONS.has(arg) ||
+        (bun && BUN_BOOLEAN_OPTIONS.has(arg)) ||
         /^--[^=]+=/.test(arg) ||
         (process.allowedNodeEnvironmentFlags.has(arg) &&
           process.allowedNodeEnvironmentFlags.has(negated))
