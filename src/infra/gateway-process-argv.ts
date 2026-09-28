@@ -87,20 +87,21 @@ function classifyBunPackageScript(
   }
   // `bun --cwd <dir>` reads the script from <dir>. Bun has already moved into a relative <dir>,
   // so neither the package nor a same-named file can be named safely; leave that unknown.
-  let packageDir = path.dirname(scriptPath);
+  let cwdArg: string | undefined;
   for (let index = 1; index < entryIndex; index++) {
     const arg = args[index]!;
     const dir =
       arg === "--cwd" ? args[++index] : arg.startsWith("--cwd=") ? arg.slice(6) : undefined;
     if (dir !== undefined) {
-      if (!path.isAbsolute(dir)) {
-        return { kind: "unclassified", reason: `relative --cwd ${dir} for ${script}` };
-      }
-      packageDir = dir;
+      cwdArg = dir;
     } else if (RUNTIME_VALUE_OPTIONS.has(arg)) {
       index++;
     }
   }
+  if (cwdArg !== undefined && !path.isAbsolute(cwdArg)) {
+    return { kind: "unclassified", reason: `relative --cwd ${cwdArg} for ${script}` };
+  }
+  const packageDir = cwdArg ?? path.dirname(scriptPath);
   let manifest: unknown;
   try {
     manifest = JSON.parse(fs.readFileSync(path.join(packageDir, "package.json"), "utf8"));

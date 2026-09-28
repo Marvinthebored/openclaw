@@ -207,6 +207,17 @@ describe("classifyOpenClawArgv", () => {
       },
     );
     fs.unlinkSync(path.join(owned.root, "start"));
+    // Only the last --cwd counts: a later absolute one names the package, a later relative one does not.
+    expect(
+      classifyOpenClawArgv(["bun", "run", "--cwd=app", `--cwd=${other.root}`, "start"], {
+        cwd: owned.root,
+      }),
+    ).toEqual({ kind: "other" });
+    expect(
+      classifyOpenClawArgv(["bun", "run", `--cwd=${other.root}`, "--cwd=app", "start"], {
+        cwd: owned.root,
+      }),
+    ).toEqual({ kind: "unclassified", reason: expect.stringContaining("relative --cwd") });
     // An existing file with an extension runs ahead of a same-named script.
     fs.symlinkSync(owned.script, path.join(other.root, "index.js"));
     fs.writeFileSync(
