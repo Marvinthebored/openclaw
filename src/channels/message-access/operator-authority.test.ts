@@ -34,6 +34,7 @@ import {
 import type { MsgContext } from "../../auto-reply/templating.js";
 import { installDiscordRegistryHooks } from "../../auto-reply/test-helpers/command-auth-registry-fixture.js";
 import { prepareChannelOperatorAdmin } from "../../gateway/channel-operator-authority.js";
+import { mergeImportedChatHistoryMessages } from "../../gateway/cli-session-history.merge.js";
 import { captureGatewayOperatorRunAuthority } from "../../gateway/operator-run-authority.js";
 import { createOperatorClient } from "../../gateway/server-plugin-in-process-dispatch.test-support.js";
 import { resolveGatewayScopedTools } from "../../gateway/tool-resolution.js";
@@ -219,6 +220,21 @@ it("exposes a verified linked requester in trusted metadata without widening own
       expect(stripLeadingInboundMetadata(`${prompt}\n\nassign this to me`)).toBe(
         "assign this to me",
       );
+      // Claude CLI stores the full prompt; history merge must fold it into the local turn.
+      const sentAt = Date.parse("2026-09-29T03:28:00.915Z");
+      expect(
+        mergeImportedChatHistoryMessages({
+          localMessages: [{ role: "user", content: "assign this to me", timestamp: sentAt }],
+          importedMessages: [
+            {
+              role: "user",
+              content: `${prompt}\n\nassign this to me`,
+              timestamp: sentAt + 435,
+              __openclaw: { importedFrom: "claude-cli", externalId: "u1", cliSessionId: "s1" },
+            },
+          ],
+        }),
+      ).toHaveLength(1);
       const { senderIsOwner } = resolveCommandAuthorization({ cfg, ctx, commandAuthorized: true });
       expect(senderIsOwner).toBe(scenario.owner);
       const tools = resolveGatewayScopedTools({
