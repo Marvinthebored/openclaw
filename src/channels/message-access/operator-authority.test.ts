@@ -27,6 +27,10 @@ import {
   prepareReplyToolAuthority,
   resolveInboundReplyToolAuthorityOverlay,
 } from "../../auto-reply/reply/reply-tool-authority.js";
+import {
+  stripInboundMetadata,
+  stripLeadingInboundMetadata,
+} from "../../auto-reply/reply/strip-inbound-meta.js";
 import type { MsgContext } from "../../auto-reply/templating.js";
 import { installDiscordRegistryHooks } from "../../auto-reply/test-helpers/command-auth-registry-fixture.js";
 import { prepareChannelOperatorAdmin } from "../../gateway/channel-operator-authority.js";
@@ -206,6 +210,14 @@ it("exposes a verified linked requester in trusted metadata without widening own
       const metadata = JSON.parse(prompt.match(/```json\n([\s\S]*?)\n```/)![1]!);
       expect(metadata.requester_profile).toEqual(
         scenario.linked ? { id: admin.profile.id, display_name: "Ada Lovelace" } : undefined,
+      );
+      // The requester hint is model-only context; display and CLI-history dedupe strip it.
+      expect(prompt.includes("requester_profile is the verified linked requester")).toBe(
+        scenario.linked,
+      );
+      expect(stripInboundMetadata(`${prompt}\n\nassign this to me`)).toBe("assign this to me");
+      expect(stripLeadingInboundMetadata(`${prompt}\n\nassign this to me`)).toBe(
+        "assign this to me",
       );
       const { senderIsOwner } = resolveCommandAuthorization({ cfg, ctx, commandAuthorized: true });
       expect(senderIsOwner).toBe(scenario.owner);
