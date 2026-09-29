@@ -1,0 +1,170 @@
+{
+  "main": "c374040735c9c4fa6e9dd21efe55b136db782693",
+  "fixtureHash": "0b887ef8df072111af6d00b70d1a6a79c63d5e3e2f501ac7a780f5d22d8b3c3c",
+  "messages": 624,
+  "browser": "153.0.8010.12",
+  "results": [
+    {
+      "run": 0,
+      "mode": "stock",
+      "parserServed": 1,
+      "historyServed": 1,
+      "scans": [
+        {
+          "messages": 0,
+          "ms": 0,
+          "questions": 0,
+          "resolved": []
+        },
+        {
+          "messages": 624,
+          "ms": 797.6999998092651,
+          "questions": 22,
+          "resolved": [
+            "quoted-check",
+            "plain-check"
+          ]
+        }
+      ],
+      "resizeRescans": 0,
+      "quotedAnswerVisible": true,
+      "canonicalPlainAnswerVisible": true,
+      "errors": []
+    },
+    {
+      "run": 1,
+      "mode": "guard",
+      "parserServed": 1,
+      "historyServed": 1,
+      "scans": [
+        {
+          "messages": 0,
+          "ms": 0,
+          "questions": 0,
+          "resolved": []
+        },
+        {
+          "messages": 624,
+          "ms": 2.8000001907348633,
+          "questions": 22,
+          "resolved": [
+            "quoted-check",
+            "plain-check"
+          ]
+        }
+      ],
+      "resizeRescans": 0,
+      "quotedAnswerVisible": true,
+      "canonicalPlainAnswerVisible": true,
+      "errors": []
+    },
+    {
+      "run": 2,
+      "mode": "guard",
+      "parserServed": 1,
+      "historyServed": 1,
+      "scans": [
+        {
+          "messages": 0,
+          "ms": 0,
+          "questions": 0,
+          "resolved": []
+        },
+        {
+          "messages": 624,
+          "ms": 3,
+          "questions": 22,
+          "resolved": [
+            "quoted-check",
+            "plain-check"
+          ]
+        }
+      ],
+      "resizeRescans": 0,
+      "quotedAnswerVisible": true,
+      "canonicalPlainAnswerVisible": true,
+      "errors": []
+    },
+    {
+      "run": 3,
+      "mode": "stock",
+      "parserServed": 1,
+      "historyServed": 1,
+      "scans": [
+        {
+          "messages": 0,
+          "ms": 0,
+          "questions": 0,
+          "resolved": []
+        },
+        {
+          "messages": 624,
+          "ms": 777.0999999046326,
+          "questions": 22,
+          "resolved": [
+            "quoted-check",
+            "plain-check"
+          ]
+        }
+      ],
+      "resizeRescans": 0,
+      "quotedAnswerVisible": true,
+      "canonicalPlainAnswerVisible": true,
+      "errors": []
+    },
+    {
+      "run": 4,
+      "mode": "stock",
+      "parserServed": 1,
+      "historyServed": 1,
+      "scans": [
+        {
+          "messages": 0,
+          "ms": 0,
+          "questions": 0,
+          "resolved": []
+        },
+        {
+          "messages": 624,
+          "ms": 758.8000001907349,
+          "questions": 22,
+          "resolved": [
+            "quoted-check",
+            "plain-check"
+          ]
+        }
+      ],
+      "resizeRescans": 0,
+      "quotedAnswerVisible": true,
+      "canonicalPlainAnswerVisible": true,
+      "errors": []
+    },
+    {
+      "run": 5,
+      "mode": "guard",
+      "parserServed": 1,
+      "historyServed": 1,
+      "scans": [
+        {
+          "messages": 0,
+          "ms": 0,
+          "questions": 0,
+          "resolved": []
+        },
+        {
+          "messages": 624,
+          "ms": 3,
+          "questions": 22,
+          "resolved": [
+            "quoted-check",
+            "plain-check"
+          ]
+        }
+      ],
+      "resizeRescans": 0,
+      "quotedAnswerVisible": true,
+      "canonicalPlainAnswerVisible": true,
+      "errors": []
+    }
+  ]
+}

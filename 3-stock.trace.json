@@ -1,0 +1,22 @@
+{
+  "traceEvents": [
+    {
+      "name": "readQuestionHistory",
+      "cat": "blink.user_timing",
+      "ph": "X",
+      "pid": 1,
+      "tid": 1,
+      "ts": 790300.0001907349,
+      "dur": 0
+    },
+    {
+      "name": "readQuestionHistory",
+      "cat": "blink.user_timing",
+      "ph": "X",
+      "pid": 1,
+      "tid": 1,
+      "ts": 873000,
+      "dur": 777099.9999046326
+    }
+  ]
+}
