@@ -613,6 +613,11 @@ export async function prepareHeartbeatRunStage(wake: ReadyHeartbeatWake) {
         (wake.wakeSource === undefined ||
           wake.wakeSource === "interval" ||
           wake.wakeSource === "manual")),
+    // Session publication owns restart custody through commit, not prompt admission.
+    deferredGenericEvents:
+      internalProjection && delivery.channel === "none"
+        ? heartbeatRunPrompt.genericEvents.filter(isRestartContinuationEvent)
+        : [],
   } as const;
 }
 

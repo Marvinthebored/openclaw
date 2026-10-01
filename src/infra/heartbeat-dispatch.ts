@@ -38,10 +38,7 @@ import { resolveCronJobsStorePathFromConfig } from "../cron/store.js";
 import { resolveAgentIdFromSessionKey } from "../routing/session-key.js";
 import { formatErrorMessage } from "./errors.js";
 import { classifyHeartbeatAgentOutcome } from "./heartbeat-delivery-normalization.js";
-import {
-  HEARTBEAT_DELIVERY_CONTEXT_KEY_PREFIX,
-  isRestartContinuationEvent,
-} from "./heartbeat-events-filter.js";
+import { HEARTBEAT_DELIVERY_CONTEXT_KEY_PREFIX } from "./heartbeat-events-filter.js";
 import { emitHeartbeatEvent, resolveIndicatorType } from "./heartbeat-events.js";
 import { heartbeatLog as log } from "./heartbeat-log.js";
 import { persistHeartbeatOutcome } from "./heartbeat-outcome-store.js";
@@ -278,10 +275,10 @@ async function prepareHeartbeatDispatchReply(
       accountId: delivery.accountId,
     });
     if (consume && preflight.shouldInspectPendingEvents) {
-      consumeSelectedSystemEventEntries(
-        resolveSystemEventQueueKey(sessionKey, agentId),
-        prepared.inspectedSystemEventsToConsume,
-      );
+      consumeSelectedSystemEventEntries(resolveSystemEventQueueKey(sessionKey, agentId), [
+        ...prepared.inspectedSystemEventsToConsume,
+        ...prepared.deferredGenericEvents,
+      ]);
       if (prepared.hasExecCompletion && prepared.hasCronEvents) {
         // Coalesced waiters share this turn, but exec and cron retain separate prompt/delivery policy.
         requestHeartbeat({
@@ -586,7 +583,7 @@ export async function deliverHeartbeatDispatch(
       // identities join the publication key alongside inspected completions.
       const occurrenceIds = [
         ...policy.prepared.inspectedSystemEventsToConsume,
-        ...policy.prepared.genericEvents.filter(isRestartContinuationEvent),
+        ...policy.prepared.deferredGenericEvents,
       ].map((event) => event.id);
       if (!occurrenceIds.every((id): id is string => typeof id === "string" && id.length > 0)) {
         policy.deliveryReason = "exec completion occurrence identity unavailable";

@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHeartbeatToolResponsePayload } from "../auto-reply/heartbeat-tool-response.js";
+import { drainFormattedSystemEvents } from "../auto-reply/reply/session-system-events.js";
+import { getReplySystemEventContext } from "../auto-reply/reply/system-event-session-key.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadTranscriptEvents } from "../config/sessions/session-accessor.js";
 import { readTranscriptEventMessage } from "../config/sessions/session-accessor.sqlite-read.js";
@@ -12,7 +14,12 @@ import {
   setupTelegramHeartbeatPluginRuntimeForTests,
   withTempHeartbeatSandbox,
 } from "./heartbeat-runner.test-utils.js";
-import { enqueueSystemEvent, resetSystemEventsForTest } from "./system-events.js";
+import * as sessionPublication from "./heartbeat-session-publication.js";
+import {
+  enqueueSystemEvent,
+  peekSystemEventEntries,
+  resetSystemEventsForTest,
+} from "./system-events.js";
 
 // A command started from an internal (WebChat) session belongs to that session. An
 // explicit heartbeat target (a channel for heartbeat chatter, cadence disabled) must
@@ -220,6 +227,96 @@ describe("exec completion from a WebChat session with an explicit heartbeat targ
       expect(await publishedAssistantTexts(storePath, sessionKey, marker)).toHaveLength(1);
     });
   });
+
+  it.each(["rejected write", "thrown write", "failed model"] as const)(
+    "retains a restart occurrence after %s and settles only the successful retry",
+    async (failure) => {
+      await withTempHeartbeatSandbox(async ({ tmpDir, storePath }) => {
+        setTestEnvValue("OPENCLAW_STATE_DIR", tmpDir);
+        const marker = "RESTART_RETRY_COMMITTED";
+        const cfg: OpenClawConfig = {
+          agents: {
+            defaults: {
+              workspace: tmpDir,
+              heartbeat: { every: "0m", target: "telegram", to: "-100999000111" },
+            },
+          },
+          channels: { telegram: { allowFrom: ["*"] } },
+          session: { store: storePath },
+        };
+        const sessionKey = await seedMainSessionStore(storePath, cfg, {
+          lastChannel: "webchat",
+          lastProvider: "",
+          lastTo: "",
+          sessionId: "restart-retry-session",
+          lifecycleRevision: "restart-retry-generation",
+          createdVia: "operator",
+        });
+        const continuation = "Gateway restarted. Continue the interrupted turn.";
+        enqueueSystemEvent(continuation, {
+          sessionKey,
+          contextKey: "task:restart-sentinel:retry-1",
+        });
+        const captured = peekSystemEventEntries(sessionKey);
+        const sendTelegram = vi
+          .fn()
+          .mockResolvedValue({ messageId: "leaked", chatId: "-100999000111" });
+        const publish = vi.spyOn(sessionPublication, "publishHeartbeatSessionReply");
+        if (failure === "rejected write") {
+          publish.mockResolvedValueOnce({ ok: false, reason: "injected write rejection" });
+        } else if (failure === "thrown write") {
+          publish.mockRejectedValueOnce(new Error("injected write failure"));
+        }
+        const reply = vi.fn().mockImplementation(async (_ctx, options) => {
+          const context = getReplySystemEventContext(options);
+          // Exercise real admission: previous tests injected a reply without formatting
+          // generic events, which hid the pre-publication drain.
+          const block = await drainFormattedSystemEvents({
+            cfg,
+            agentId: "main",
+            sessionKey,
+            isMainSession: false,
+            isNewSession: false,
+            events: context?.events ?? [],
+            deferredEventIds: context?.deferredEventIds,
+          });
+          expect(block).toContain(continuation);
+          if (failure === "failed model" && reply.mock.calls.length === 1) {
+            throw new Error("injected model failure after admission");
+          }
+          return createHeartbeatToolResponsePayload({
+            outcome: "done",
+            notify: true,
+            summary: "private",
+            notificationText: marker,
+          });
+        });
+        const run = () =>
+          runHeartbeatOnce({
+            cfg,
+            agentId: "main",
+            sessionKey,
+            source: "restart-sentinel",
+            intent: "immediate",
+            reason: "wake",
+            deps: { getReplyFromConfig: reply, telegram: sendTelegram },
+          });
+        await run();
+        expect(publish).toHaveBeenCalledTimes(failure === "failed model" ? 0 : 1);
+        expect(peekSystemEventEntries(sessionKey).map((event) => event.id)).toEqual(
+          captured.map((event) => event.id),
+        );
+        expect(await publishedAssistantTexts(storePath, sessionKey, marker)).toHaveLength(0);
+        expect(sendTelegram).not.toHaveBeenCalled();
+        await run();
+        expect(reply).toHaveBeenCalledTimes(2);
+        expect(publish).toHaveBeenCalledTimes(failure === "failed model" ? 1 : 2);
+        expect(await publishedAssistantTexts(storePath, sessionKey, marker)).toHaveLength(1);
+        expect(peekSystemEventEntries(sessionKey)).toEqual([]);
+        expect(sendTelegram).not.toHaveBeenCalled();
+      });
+    },
+  );
 
   it("keeps the explicit target when a restart wake carries an untagged event", async () => {
     await withTempHeartbeatSandbox(async ({ tmpDir, storePath }) => {

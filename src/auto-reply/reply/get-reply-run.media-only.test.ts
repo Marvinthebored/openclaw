@@ -2883,6 +2883,40 @@ describe("runPreparedReply media-only handling", () => {
     expect(call.followupRun.run.skillWorkshopProposalRevision).not.toBe(proposalRevision);
   });
 
+  it("keeps delivery-owned restart occurrences queued through production reply admission", async () => {
+    const actualSystemEvents = await vi.importActual<typeof import("./session-system-events.js")>(
+      "./session-system-events.js",
+    );
+    vi.mocked(drainFormattedSystemEvents).mockImplementationOnce(
+      actualSystemEvents.drainFormattedSystemEvents,
+    );
+    const sessionKey = "agent:main:restart-admission-proof";
+    enqueueSystemEvent("Restart continuation retained for delivery", {
+      sessionKey,
+      contextKey: "task:restart-sentinel:admission-proof",
+    });
+    const captured = peekSystemEventEntries(sessionKey);
+    const deferredEventIds = captured.map((event) => event.id!).filter(Boolean);
+    await runPreparedReply(
+      baseParams({
+        agentId: "main",
+        sessionKey,
+        opts: withReplySystemEventContext(
+          { isHeartbeat: true },
+          {
+            sessionKey,
+            events: captured,
+            deferredEventIds,
+          },
+        ),
+      }),
+    );
+    expect(requireRunReplyAgentCall().followupRun.currentInboundContext?.text).toContain(
+      "Restart continuation retained for delivery",
+    );
+    expect(peekSystemEventEntries(sessionKey).map((event) => event.id)).toEqual(deferredEventIds);
+  });
+
   it("admits only system events visible to the prepared agent", async () => {
     const actualSystemEvents = await vi.importActual<typeof import("./session-system-events.js")>(
       "./session-system-events.js",
