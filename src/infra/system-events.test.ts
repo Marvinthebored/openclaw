@@ -42,7 +42,7 @@ describe("delivery-owned system event selection", () => {
     enqueueSystemEvent("Restart first", { sessionKey, contextKey: "task:restart-sentinel:first" });
     enqueueSystemEvent("Newer instruction second", { sessionKey });
     const captured = peekSystemEventEntries(sessionKey);
-    const retainedId = expectDefined(captured[0]?.id);
+    const retainedId = expectDefined(captured[0]?.id, "captured restart occurrence ID");
     enqueueSystemEvent("Late arrival third", { sessionKey });
     const text = await drainFormattedSystemEvents({
       cfg: {},
@@ -67,7 +67,7 @@ describe("delivery-owned system event selection", () => {
       contextKey: "task:restart-sentinel:handled",
     });
     const captured = peekSystemEventEntries(sessionKey);
-    const retainedId = expectDefined(captured[0]?.id);
+    const retainedId = expectDefined(captured[0]?.id, "captured restart occurrence ID");
     consumeSelectedSystemEventEntries(sessionKey, captured);
     enqueueSystemEvent("Replacement arrival", { sessionKey });
     const text = await drainFormattedSystemEvents({
