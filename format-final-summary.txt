@@ -1,0 +1,2 @@
+SwiftFormat completed in 0.17s.
+0/5 files require formatting.

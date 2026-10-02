@@ -1,0 +1,8 @@
+◇ Test "new reply reaches audio device while main actor is stalled" started.
+◇ Test "transcript callback carries typed partial and final values" started.
+✘ Test "transcript callback carries typed partial and final values" recorded an issue at RealtimeTalkRelaySessionTests.swift:181:9: Expectation failed: (transcripts → [OpenClawKit.RealtimeTalkTranscript(role: "user", text: "hel", isFinal: false, transcriptID: nil, relaySessionID: nil, textMode: nil), OpenClawKit.RealtimeTalkTranscript(role: "user", text: "hello", isFinal: true, transcriptID: nil, relaySessionID: nil, textMode: nil)]) == ([
+✘ Test "transcript callback carries typed partial and final values" failed after 0.003 seconds with 1 issue.
+✘ Test "new reply reaches audio device while main actor is stalled" recorded an issue at RealtimeTalkRelaySessionOffMainTests.swift:81:9: Expectation failed: (duringStall.frames.count → 0) == 81
+✘ Test "new reply reaches audio device while main actor is stalled" recorded an issue at RealtimeTalkRelaySessionOffMainTests.swift:84:9: Expectation failed: (duringStall.frames.first → nil) == (Data(repeating: 1, count: 960) → 960 bytes)
+✘ Test "new reply reaches audio device while main actor is stalled" failed after 1.511 seconds with 2 issues.
+✘ Test run with 17 tests in 2 suites failed after 1.514 seconds with 3 issues.

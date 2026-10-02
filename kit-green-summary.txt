@@ -1,0 +1,5 @@
+◇ Test "transcript callback carries typed partial and final values" started.
+◇ Test "new reply reaches audio device while main actor is stalled" started.
+✔ Test "transcript callback carries typed partial and final values" passed after 0.141 seconds.
+✔ Test "new reply reaches audio device while main actor is stalled" passed after 1.667 seconds.
+✔ Test run with 163 tests in 11 suites passed after 31.433 seconds.

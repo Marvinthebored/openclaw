@@ -1,0 +1,6 @@
+SwiftFormat completed in 6.71s.
+0/452 files require formatting.
+◇ Test "every spoken fragment reaches chat before its final history row" started.
+✔ Test "every spoken fragment reaches chat before its final history row" passed after 0.054 seconds.
+✔ Test run with 1 test in 1 suite passed after 0.056 seconds.
+** TEST SUCCEEDED **

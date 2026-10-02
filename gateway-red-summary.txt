@@ -1,0 +1,16 @@
+ × |gateway-core| src/gateway/talk/handlers/index.test.ts > talk.client.toolCall handler > records a chat-backed CLI veto for the server-owned voice result 21ms
+ × |gateway-core| src/gateway/talk/handlers/index.test.ts > talk.client.toolCall handler > resumes one exact CLI action after persisted spoken confirmation without a model-supplied id 6ms
+ ✓ |gateway-core| src/gateway/talk/handlers/index.test.ts > talk.client.toolCall handler > does not trust a model's confirm question without persisted approval (undefined) 4ms
+ ✓ |gateway-core| src/gateway/talk/handlers/index.test.ts > talk.client.toolCall handler > does not trust a model's confirm question without persisted approval (no) 3ms
+ ✓ |gateway-core| src/gateway/talk/handlers/index.test.ts > talk.client.toolCall handler > does not trust a model's confirm question without persisted approval (which room is coolest?) 3ms
+ × |gateway-server (gateway-server) (gateway-server-parallel)| src/gateway/server-chat.agent-events.test.ts > agent event handler > projects the current voice challenge into Claude CLI's final chat result 24ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |gateway-server (gateway-server) (gateway-server-parallel)| src/gateway/server-chat.agent-events.test.ts > agent event handler > projects the current voice challenge into Claude CLI's final chat result
+AssertionError: expected { runId: 'run-voice-consult', …(4) } to match object { state: 'final', message: { …(1) } }
+ FAIL  |gateway-core| src/gateway/talk/handlers/index.test.ts > talk.client.toolCall handler > records a chat-backed CLI veto for the server-owned voice result
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+ FAIL  |gateway-core| src/gateway/talk/handlers/index.test.ts > talk.client.toolCall handler > resumes one exact CLI action after persisted spoken confirmation without a model-supplied id
+AssertionError: expected { allowed: false, …(1) } to deeply equal { allowed: true }
+ Test Files  2 failed (2)
+      Tests  3 failed | 3 passed | 199 skipped (205)
+   Duration  40.00s (transform 88%, import 9%, worker 1%, setup 1%)
