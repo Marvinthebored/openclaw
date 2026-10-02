@@ -939,6 +939,10 @@ extension OpenClawChatViewModel {
             field: .pinned,
             update: { $0.pinned = pinned
                 $0.pinnedAt = pinnedAt
+                if pinned {
+                    $0.snoozedUntil = nil
+                    $0.snoozedAt = nil
+                }
             },
             mutation: { routeLease in
                 try await routeLease.patchSession(
@@ -964,7 +968,12 @@ extension OpenClawChatViewModel {
             target: target,
             field: .archived,
             incarnation: session.sessionId,
-            update: { $0.archived = true },
+            update: { $0.archived = true
+                $0.pinned = false
+                $0.pinnedAt = nil
+                $0.snoozedUntil = nil
+                $0.snoozedAt = nil
+            },
             mutation: { routeLease in
                 let receipt = try await routeLease.patchSession(
                     key: key,
