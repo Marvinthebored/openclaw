@@ -107,28 +107,6 @@ struct IOSGatewayChatTransport: OpenClawChatGatewayTransport {
             })
     }
 
-    func acquireSessionGroupsRouteLease() async -> OpenClawChatSessionGroupsRouteLease? {
-        guard let route = await self.currentSessionMutationRoute() else { return nil }
-        let transport = self
-        let request: @Sendable (OpenClawChatGatewayRequest) async throws -> Data = { request in
-            try await transport.requestSessionMutation(request, ifCurrentRoute: route)
-        }
-        return OpenClawChatSessionGroupsRouteLease(
-            listGroups: {
-                let data = try await request(OpenClawChatGatewayRequests.sessionGroupsList())
-                return try JSONDecoder().decode(OpenClawChatSessionGroupsResponse.self, from: data)
-            }, putGroups: { names in
-                let data = try await request(OpenClawChatGatewayRequests.sessionGroupsPut(names: names))
-                return try JSONDecoder().decode(OpenClawChatSessionGroupsMutationResponse.self, from: data)
-            }, renameGroup: { name, next in
-                let data = try await request(OpenClawChatGatewayRequests.sessionGroupsRename(name: name, to: next))
-                return try JSONDecoder().decode(OpenClawChatSessionGroupsMutationResponse.self, from: data)
-            }, deleteGroup: { name in
-                let data = try await request(OpenClawChatGatewayRequests.sessionGroupsDelete(name: name))
-                return try JSONDecoder().decode(OpenClawChatSessionGroupsMutationResponse.self, from: data)
-            })
-    }
-
     func acquireSessionSettingsRouteLease() async -> OpenClawChatSessionSettingsRouteLease? {
         let route = await currentSessionMutationRoute()
         guard let route else { return nil }

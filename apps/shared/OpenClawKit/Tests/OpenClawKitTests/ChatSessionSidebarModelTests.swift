@@ -865,72 +865,13 @@ struct ChatSessionSidebarModelTests {
         #expect(keys(nodes) == ["a", "b"])
     }
 
-    @Test func `parent metadata nests children without a redundant parent roster`() {
+    @Test func `omitted gateway child roster excludes stale persisted parent metadata`() {
         let nodes = ChatSessionSidebarModel.tree(from: [
             self.entry(key: "parent"),
-            self.entry(key: "child", parentSessionKey: "parent"),
+            self.entry(key: "stale-child", parentSessionKey: "parent"),
         ])
 
-        #expect(nodes.map(\.id) == ["parent"])
-        #expect(nodes.first?.children.map(\.id) == ["child"])
-        #expect(ChatSessionSidebarModel.rows(nodes).map(\.depth) == [0, 1])
-    }
-
-    @Test func `manual sidebar order preserves descendant structure and unlisted arrival order`() {
-        let sections = ChatSessionSidebarModel.sections(
-            sessions: [
-                self.entry(key: "a", updatedAt: 30, category: "Work"),
-                self.entry(key: "b", updatedAt: 20, category: "Work"),
-                self.entry(key: "child", parentSessionKey: "b"),
-                self.entry(key: "arrival", updatedAt: 10, category: "Work"),
-            ], currentSessionKey: "a", groups: [.init(name: "Work", position: 0)], query: "",
-            orderedSessionKeys: ["b", "b", "a", "missing"])
-        #expect(sections.first?.nodes.map(\.id) == ["b", "a", "arrival"])
-        #expect(sections.first?.nodes.first?.children.map(\.id) == ["child"])
-    }
-
-    @Test func `empty gateway groups remain available for new sessions in catalog order`() {
-        let sections = ChatSessionSidebarModel.sections(
-            sessions: [], currentSessionKey: "", groups: [
-                .init(name: "Work", position: 1), .init(name: "Personal", position: 0),
-            ], query: "")
-        #expect(sections.map(\.id) == ["group:Personal", "group:Work"])
-        #expect(sections.flatMap(\.nodes).isEmpty)
-    }
-
-    @Test func `uncategorized children inherit their grouped parents placement`() {
-        let sections = ChatSessionSidebarModel.sections(
-            sessions: [
-                self.entry(key: "parent", category: "Projects"),
-                self.entry(key: "child", parentSessionKey: "parent"),
-                self.entry(key: "grandchild", parentSessionKey: "child"),
-            ], currentSessionKey: "parent", groups: [.init(name: "Projects", position: 0)], query: "")
-        #expect(sections.map(\.id) == ["group:Projects"])
-        #expect(sections.first?.nodes.map(\.id) == ["parent"])
-        #expect(sections.first?.nodes.first?.children.first?.children.map(\.id) == ["grandchild"])
-    }
-
-    @Test func `child ancestry overrides a stale parent roster`() {
-        let nodes = ChatSessionSidebarModel.tree(from: [
-            self.entry(key: "old", childSessions: ["child"]),
-            self.entry(key: "new"),
-            self.entry(key: "child", parentSessionKey: "new", spawnedBy: "old"),
-        ])
-        #expect(nodes.map(\.id) == ["old", "new"])
-        #expect(nodes.first?.children.isEmpty == true)
-        #expect(nodes.last?.children.map(\.id) == ["child"])
-    }
-
-    @Test func `archived parents do not hide or adopt live children`() {
-        for current in ["parent", "child"] {
-            let sections = ChatSessionSidebarModel.sections(
-                sessions: [
-                    self.entry(key: "parent", archived: true, category: "Projects", childSessions: ["child"]),
-                    self.entry(key: "child", parentSessionKey: "parent"),
-                ], currentSessionKey: current, groups: [.init(name: "Projects", position: 0)], query: "")
-            #expect(sections.last?.nodes.map(\.id) == ["child"])
-            #expect(sections.flatMap(\.nodes).flatMap(\.children).isEmpty)
-        }
+        #expect(nodes.map(\.id) == ["parent", "stale-child"])
     }
 
     @Test func `orphaned parents remain visible as roots`() {

@@ -5,17 +5,6 @@ import UIKit
 @testable import OpenClaw
 
 struct RootSidebarTypographyTests {
-    @Test func `sidebar organizer uses branded typography`() throws {
-        let source = try String(
-            contentsOf: URL(fileURLWithPath: #filePath)
-                .deletingLastPathComponent().deletingLastPathComponent()
-                .appendingPathComponent("Sources/RootSidebarOrganizer.swift"),
-            encoding: .utf8)
-        #expect(source.contains(".font(OpenClawType.body)"))
-        #expect(source.contains(".font(OpenClawType.captionSemiBold)"))
-        #expect(!source.contains(".font(."))
-    }
-
     @Test func `root sidebar uses branded typography`() throws {
         let sidebar = try String(
             contentsOf: URL(fileURLWithPath: #filePath)

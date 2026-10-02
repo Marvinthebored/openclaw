@@ -53,8 +53,7 @@ extension ChatTranscriptRow {
         let role = first.role.lowercased()
         guard next.turnBoundary != true,
               role == next.role.lowercased(),
-              first.footerSourceIdentity == next.footerSourceIdentity,
-              first.isRealtimeVoiceTranscript == next.isRealtimeVoiceTranscript
+              first.footerSourceIdentity == next.footerSourceIdentity
         else { return false }
         if role == "user" {
             return (first.steerTargetRunID ?? first.workRunID) == (next.steerTargetRunID ?? next.workRunID)

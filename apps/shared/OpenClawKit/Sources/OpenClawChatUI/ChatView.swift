@@ -357,7 +357,7 @@ extension OpenClawChatView {
         let groups = ChatAssistantRunGroup.build(
             transcript.rows,
             tools: self.displayOptions.contains(.toolActivity) ? self.viewModel.toolActivities : [],
-            liveRunID: self.viewModel.streamingAssistantRunID ?? (liveRunIDs.count == 1 ? liveRunIDs.first : nil),
+            liveRunID: liveRunIDs.count == 1 ? liveRunIDs.first : nil,
             hasLiveContent: self.showsWorkingIndicator || self.hasVisibleStreamingAssistantText,
             searchActive: self.isSearchPresented)
         let eagerStartIndex = ChatAssistantRunGroup.eagerHistoryStart(groups, warming: Layout.eagerHistoryGroups)

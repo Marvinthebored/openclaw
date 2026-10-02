@@ -137,8 +137,8 @@ struct ChatAssistantRunGroup: Identifiable {
         if hasLiveContent {
             // Unknown ownership must never make unrelated runs look like one reply.
             if !searchActive, let liveRunID, let boundary = boundaries[liveRunID] {
-                if let index = groups.lastIndex(where: { $0.runID == liveRunID }) {
-                    groups[index].includesLive = true
+                if groups.last?.runID == liveRunID {
+                    groups[groups.count - 1].includesLive = true
                 } else {
                     groups.append(Self(
                         id: .run(liveRunID, boundary, segments[liveRunID, default: 0]),

@@ -158,17 +158,12 @@ public final class OpenClawChatViewModel {
 
     public internal(set) var sessionId: String?
     public private(set) var streamingAssistantText: String?
-    /// The run that owns `streamingAssistantText`, so the live bubble renders inside that run's turn.
-    private(set) var streamingAssistantRunID: String?
 
     public private(set) var toolActivities: [OpenClawChatPendingToolCall] = []
     private(set) var timelineRevision: UInt64 = 0
     // Reader motion follows live user admission, never cache/history/narration hydration.
     private(set) var liveUserTurnRevision: UInt64 = 0
     private(set) var liveUserTurnID: UUID?
-    @ObservationIgnored var realtimeVoiceCaptions = ChatRealtimeVoiceCaptions()
-    @ObservationIgnored var pendingRealtimeVoiceTranscriptIDs: Set<String> = []
-    @ObservationIgnored var admittedRealtimeVoiceTranscriptIDs: Set<String> = []
 
     var legacySessions: [OpenClawChatSessionEntry] = []
 
@@ -800,9 +795,7 @@ extension OpenClawChatViewModel {
         self.updateStreamingAssistantText(nil)
     }
 
-    func updateStreamingAssistantText(_ text: String?, runID: String? = nil) {
-        let owner = text == nil ? nil : runID
-        if self.streamingAssistantRunID != owner { self.streamingAssistantRunID = owner }
+    func updateStreamingAssistantText(_ text: String?) {
         guard self.streamingAssistantText != text else { return }
         self.streamingAssistantText = text
         self.markTimelineChanged()
@@ -1263,9 +1256,6 @@ extension OpenClawChatViewModel {
         self.invalidateModelChoices()
         self.modelSelectionPolicy = nil
         self.modelCatalogMessage = nil
-        self.realtimeVoiceCaptions = ChatRealtimeVoiceCaptions()
-        self.pendingRealtimeVoiceTranscriptIDs.removeAll()
-        self.admittedRealtimeVoiceTranscriptIDs.removeAll()
         replaceMessages([])
         self.narration = ChatNarration()
         self.isShowingCachedTranscript = false
@@ -1287,8 +1277,7 @@ extension OpenClawChatViewModel {
         clearPendingRuns(reason: nil)
     }
 
-    @discardableResult
-    func performReset() async -> Bool {
+    func performReset() async {
         let session = self.currentSessionSnapshot()
         self.isLoading = true
         self.errorText = nil
@@ -1296,34 +1285,32 @@ extension OpenClawChatViewModel {
         do {
             try await self.transport.resetSession(sessionKey: session.key)
         } catch {
-            guard self.isCurrentSession(session) else { return false }
+            guard self.isCurrentSession(session) else { return }
             self.isLoading = false
             self.errorText = error.localizedDescription
             chatUILogger.error("session reset failed \(error.localizedDescription, privacy: .public)")
-            return false
+            return
         }
 
-        guard self.isCurrentSession(session) else { return false }
+        guard self.isCurrentSession(session) else { return }
         self.replyTarget = nil
         self.runMessageScopesByRunID.removeAll()
         self.provisionalFinalMessagesByID.removeAll()
         self.narration = ChatNarration()
         self.startBootstrap()
-        return true
     }
 
-    @discardableResult
-    func performCompact() async -> Bool {
-        guard !self.isCompacting else { return false }
+    func performCompact() async {
+        guard !self.isCompacting else { return }
         guard !self.isSending, !hasBlockingRunActivity, !self.isAborting else {
             self.errorText = "Wait for the current response before compacting the thread."
-            return false
+            return
         }
         if let lastCompactAt,
            Date().timeIntervalSince(lastCompactAt) < compactCooldown
         {
             self.errorText = "Please wait before compacting this thread again."
-            return false
+            return
         }
 
         let session = self.currentSessionSnapshot()
@@ -1337,20 +1324,19 @@ extension OpenClawChatViewModel {
         do {
             try await self.transport.compactSession(sessionKey: session.key)
         } catch {
-            guard self.isCurrentSession(session) else { return false }
+            guard self.isCurrentSession(session) else { return }
             self.isLoading = false
             self.errorText = "Unable to compact the thread. Please try again."
             let nsError = error as NSError
             chatUILogger.error(
                 "compact failed domain=\(nsError.domain, privacy: .public) code=\(nsError.code, privacy: .public)")
             chatUILogger.error("compact details=\(String(describing: error), privacy: .private)")
-            return false
+            return
         }
 
-        guard self.isCurrentSession(session) else { return false }
+        guard self.isCurrentSession(session) else { return }
         lastCompactAt = Date()
         self.startBootstrap()
-        return true
     }
 
     private func reserveModelSelection(_ selectionID: String) -> ModelSelectionRequest? {

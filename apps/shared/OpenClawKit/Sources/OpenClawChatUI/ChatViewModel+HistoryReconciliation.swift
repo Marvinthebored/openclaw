@@ -281,25 +281,6 @@ extension OpenClawChatViewModel {
         }).map { messages.index(after: $0) } ?? messages.startIndex
     }
 
-    /// Server rows precede the optimistic echoes of LATER runs the server hasn't confirmed yet: a
-    /// reply to turn 1 that lands after the user already sent turn 2 belongs above turn 2's echo.
-    static func appending(
-        _ message: OpenClawChatMessage,
-        runID: String?,
-        beforeEchoesOf pendingEchoIDsByRunID: [String: UUID],
-        to messages: [OpenClawChatMessage]) -> [OpenClawChatMessage]
-    {
-        guard let runID else { return messages + [message] }
-        let laterEchoIDs = Set(pendingEchoIDsByRunID.filter { $0.key != runID }.values)
-        var index = messages.endIndex
-        while index > messages.startIndex, laterEchoIDs.contains(messages[index - 1].id) {
-            index -= 1
-        }
-        var result = messages
-        result.insert(message, at: index)
-        return result
-    }
-
     static func messageRange(
         after latestUserTurn: LatestUserTurn?,
         in messages: [OpenClawChatMessage]) -> Range<[OpenClawChatMessage].Index>
@@ -517,11 +498,7 @@ extension OpenClawChatViewModel {
         // The durable session.message arrives at its transcript position. A
         // steering row may have been delivered after chat.final, so append the
         // adopted row here while retaining the provisional UUID.
-        updated = Self.appending(
-            Self.adoptingCanonicalMessage(incoming, over: existing),
-            runID: provisional?.runId ?? ChatPayloadDecoding.trimmedNonEmptyString(incoming.transcriptRunID),
-            beforeEchoesOf: self.pendingLocalUserEchoMessageIDsByRunID,
-            to: updated)
+        updated.append(Self.adoptingCanonicalMessage(incoming, over: existing))
         self.provisionalFinalMessagesByID.removeValue(forKey: existing.id)
         if let runId = provisional?.runId {
             self.runMessageScopesByRunID.removeValue(forKey: runId)

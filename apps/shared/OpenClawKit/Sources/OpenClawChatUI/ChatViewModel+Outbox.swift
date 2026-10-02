@@ -727,7 +727,7 @@ extension OpenClawChatViewModel {
     /// exactly on the unhealthy -> healthy transition.
     func applyTransportHealth(_ ok: Bool, refreshSessionsOnReconnect: Bool = true) {
         let wasHealthy = self.healthOK
-        if wasHealthy != ok { self.healthOK = ok }
+        self.healthOK = ok
         if !ok {
             self.resetSessionReactions()
         } else if !wasHealthy {

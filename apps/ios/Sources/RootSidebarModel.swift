@@ -189,8 +189,6 @@ final class RootSidebarModel {
     }
 
     private(set) var now: Date = .now
-    private(set) var groups: [OpenClawChatSessionGroup] = []
-    private var groupScope: String?
     private(set) var usage: CostUsageSummaryLite?
     private(set) var cronJobs: [CronJob] = []
     private(set) var isRefreshing = false
@@ -222,8 +220,7 @@ final class RootSidebarModel {
         mainSessionKey: String,
         activeAgentID: String?,
         groups: [OpenClawChatSessionGroup],
-        sessionRoutingContract: String? = nil,
-        orderedSessionKeys: [String] = []) -> [ChatSessionSidebarModel.Section]
+        sessionRoutingContract: String? = nil) -> [ChatSessionSidebarModel.Section]
     {
         Self.sections(
             sessions: self.sessions,
@@ -233,7 +230,6 @@ final class RootSidebarModel {
             activeAgentID: activeAgentID,
             groups: groups,
             sessionRoutingContract: sessionRoutingContract,
-            orderedSessionKeys: orderedSessionKeys,
             now: self.now)
     }
 
@@ -245,7 +241,6 @@ final class RootSidebarModel {
         activeAgentID: String?,
         groups: [OpenClawChatSessionGroup],
         sessionRoutingContract: String? = nil,
-        orderedSessionKeys: [String] = [],
         now: Date = .now) -> [ChatSessionSidebarModel.Section]
     {
         let selectedSessionKey = ChatSessionSidebarModel.selectedSessionKey(
@@ -266,8 +261,7 @@ final class RootSidebarModel {
             groups: groups,
             excludesMainSession: true,
             query: query,
-            sessionRoutingContract: sessionRoutingContract,
-            orderedSessionKeys: orderedSessionKeys)
+            sessionRoutingContract: sessionRoutingContract)
     }
 
     func setSnoozeWakeUpdatesActive(_ active: Bool) {
@@ -525,8 +519,7 @@ final class RootSidebarModel {
     private func handleSessionEvent(_ frame: EventFrame, appModel: NodeAppModel) async -> Bool {
         guard let event = OpenClawChatGatewayPayloadCodec.event(from: frame) else { return false }
         switch event {
-        case let .sessionsChanged(change):
-            if change.reason == "groups" { await self.refreshGroups(appModel: appModel) }
+        case .sessionsChanged:
             await self.refreshSessions(appModel: appModel)
         case let .sessionObserver(digest):
             self.sessions = ChatSessionSidebarModel.applying(
@@ -540,77 +533,6 @@ final class RootSidebarModel {
             return false
         }
         return false
-    }
-
-    static func organizerScope(_ appModel: NodeAppModel) -> String {
-        "\(appModel.chatTranscriptCacheGatewayID ?? appModel.connectedGatewayID ?? "offline"):\(appModel.chatAgentId)"
-    }
-
-    func refreshGroups(appModel: NodeAppModel) async {
-        let scope = Self.organizerScope(appModel)
-        if self.groupScope != scope {
-            self.groups = []
-            self.groupScope = scope
-        }
-        do {
-            guard let lease = await appModel.makeChatTransport().acquireSessionGroupsRouteLease() else { return }
-            let response = try await lease.listGroups()
-            guard scope == Self.organizerScope(appModel) else { return }
-            self.groups = response?.groups ?? []
-        } catch {
-            // Offline/older gateways retain the roster's category fallback.
-        }
-    }
-
-    func mutateGroups(
-        appModel: NodeAppModel,
-        operation: (OpenClawChatSessionGroupsRouteLease) async throws
-            -> OpenClawChatSessionGroupsMutationResponse) async -> Bool
-    {
-        let scope = Self.organizerScope(appModel)
-        do {
-            guard let lease = await appModel.makeChatTransport().acquireSessionGroupsRouteLease() else {
-                throw OpenClawChatTransportSendError.notDispatched
-            }
-            guard scope == Self.organizerScope(appModel) else { return false }
-            let response = try await operation(lease)
-            guard scope == Self.organizerScope(appModel) else { return false }
-            self.groups = response.groups
-            self.groupScope = scope
-            await self.refreshSessions(appModel: appModel)
-            return true
-        } catch {
-            if scope == Self.organizerScope(appModel) { self.reportSessionError(error) }
-            return false
-        }
-    }
-
-    func createSession(in group: String, appModel: NodeAppModel) async -> String? {
-        let scope = Self.organizerScope(appModel)
-        let agentID = appModel.chatAgentId
-        do {
-            guard let route = await appModel.operatorSession.currentRoute(),
-                  scope == Self.organizerScope(appModel)
-            else {
-                throw OpenClawChatTransportSendError.notDispatched
-            }
-            let key = "agent:\(agentID):ios-\(UUID().uuidString.lowercased())"
-            let request = OpenClawChatGatewayRequests.createSession(
-                key: key,
-                agentID: agentID,
-                label: nil,
-                parentSessionKey: nil,
-                worktree: nil,
-                category: group)
-            let data = try await appModel.operatorSession.request(request, ifCurrentRoute: route)
-            let response = try JSONDecoder().decode(OpenClawChatCreateSessionResponse.self, from: data)
-            guard scope == Self.organizerScope(appModel) else { return nil }
-            await self.refreshSessions(appModel: appModel)
-            return response.key
-        } catch {
-            if scope == Self.organizerScope(appModel) { self.reportSessionError(error) }
-            return nil
-        }
     }
 
     func reportSessionError(_ error: any Error) {

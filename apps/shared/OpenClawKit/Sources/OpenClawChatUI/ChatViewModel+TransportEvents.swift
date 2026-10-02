@@ -186,7 +186,6 @@ extension OpenClawChatViewModel {
                       current: self.sessionKey)
             else { return }
             self.replyTarget = nil
-            self.realtimeVoiceCaptions = ChatRealtimeVoiceCaptions()
             self.narration = ChatNarration()
             self.runMessageScopesByRunID.removeAll()
             self.provisionalFinalMessagesByID.removeAll()
@@ -476,7 +475,6 @@ extension OpenClawChatViewModel {
         // still retire its durable row before this handler returns early.
         confirmOutboxCommands(in: [sanitized])
         guard isCurrentSession else { return }
-        self.persistCanonicalMessageToCache(sanitized, session: self.currentSessionSnapshot())
         self.observeOutboxTranscriptTip(sanitized, session: self.currentSessionSnapshot())
 
         self.invalidateHistorySnapshots()
@@ -497,12 +495,7 @@ extension OpenClawChatViewModel {
             return
         }
 
-        let incoming = Self.appending(
-            sanitized,
-            runID: ChatPayloadDecoding.trimmedNonEmptyString(sanitized.transcriptRunID),
-            beforeEchoesOf: self.pendingLocalUserEchoMessageIDsByRunID,
-            to: self.messages)
-        let reconciled = Self.reconcileMessageIDs(previous: self.messages, incoming: incoming)
+        let reconciled = Self.reconcileMessageIDs(previous: self.messages, incoming: self.messages + [sanitized])
         let deduped = Self.dedupeMessages(reconciled)
         if sanitized.role.lowercased() == "user",
            let newUser = deduped.last(where: { $0.role.lowercased() == "user" }),
@@ -644,9 +637,7 @@ extension OpenClawChatViewModel {
             return
         }
 
-        let incoming = Self.appending(
-            message, runID: runId, beforeEchoesOf: self.pendingLocalUserEchoMessageIDsByRunID, to: self.messages)
-        let reconciled = Self.reconcileMessageIDs(previous: self.messages, incoming: incoming)
+        let reconciled = Self.reconcileMessageIDs(previous: self.messages, incoming: self.messages + [message])
         replaceMessages(Self.dedupeMessages(reconciled))
         if self.messages.contains(where: { $0.id == message.id }) {
             self.provisionalFinalMessagesByID[message.id] = ProvisionalFinalMessage(
@@ -703,11 +694,9 @@ extension OpenClawChatViewModel {
         switch evt.stream {
         case "assistant":
             if let text = evt.data["text"]?.value as? String {
-                if self.liveRunStateByRunID[evt.runId]?.hasAgentAssistantText != true {
-                    self.liveRunStateByRunID[evt.runId, default: ChatLiveRunState()].hasAgentAssistantText = true
-                }
+                self.liveRunStateByRunID[evt.runId, default: ChatLiveRunState()].hasAgentAssistantText = true
                 self.updateActiveSessionRunWithoutChatSnapshot(false)
-                self.updateStreamingAssistantText(text, runID: evt.runId)
+                self.updateStreamingAssistantText(text)
             }
         case "plan":
             // Released Gateways through v2026.8.x lack progressCard.get and only emit stream:"plan".

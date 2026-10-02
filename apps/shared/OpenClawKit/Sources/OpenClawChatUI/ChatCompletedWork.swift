@@ -195,7 +195,7 @@ extension OpenClawChatMessage {
     }
 
     fileprivate var isCollapsibleWork: Bool {
-        !self.hasWorkMedia && !self.isForwardedTurnBoundary && !self.isRealtimeVoiceTranscript &&
+        !self.hasWorkMedia && !self.isForwardedTurnBoundary &&
             (["tool", "toolresult", "tool_result"].contains(self.role.lowercased()) ||
                 (self.role.lowercased() == "assistant" && self.workPhase != "final_answer"))
     }

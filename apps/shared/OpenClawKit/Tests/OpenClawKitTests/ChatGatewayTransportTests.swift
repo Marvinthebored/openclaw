@@ -108,28 +108,6 @@ struct ChatGatewayTransportTests {
         #expect(requests[1].params["agentId"]?.value as? String == "other")
     }
 
-    @Test func `group operations dispatch canonical RPCs through the platform authority hook`() async throws {
-        let recorder = RequestRecorder()
-        let transport: any OpenClawChatTransport = Transport(
-            request: { _ in throw Failure.unexpectedRequest },
-            actionRequest: { request in
-                await recorder.append(request)
-                return Data(#"{"ok":true,"groups":[{"name":"Work","position":0}]}"#.utf8)
-            })
-        #expect(try await transport.listSessionGroups()?.groups.map(\.name) == ["Work"])
-        _ = try await transport.putSessionGroups(names: ["Work", "Personal"])
-        _ = try await transport.renameSessionGroup(name: "Work", to: "Projects")
-        _ = try await transport.deleteSessionGroup(name: "Personal")
-        let requests = await recorder.requests
-        #expect(requests.map(\.method) == [
-            "sessions.groups.list", "sessions.groups.put", "sessions.groups.rename", "sessions.groups.delete",
-        ])
-        #expect(requests[1].params["names"]?.value as? [String] == ["Work", "Personal"])
-        #expect(requests[2].params["to"]?.value as? String == "Projects")
-        let retired: any OpenClawChatTransport = Transport(request: { _ in throw Failure.retiredRoute })
-        await #expect(throws: Failure.retiredRoute) { try await retired.putSessionGroups(names: ["Work"]) }
-    }
-
     private enum Failure: Error { case unexpectedRequest, retiredRoute }
 
     private actor RequestRecorder {

@@ -154,41 +154,69 @@ struct CommandSessionActionsModifier: ViewModifier {
     let canArchive: Bool
     let canDelete: Bool
     let actions: CommandSessionActions
-    let showsMenuButton: Bool
-    let presentEditor: ((CommandSessionEditorRequest) -> Void)?
 
     @State private var editor: Editor?
     @State private var draftText = ""
     @State private var confirmsDelete = false
 
     func body(content: Content) -> some View {
-        if self.showsMenuButton {
-            self.managedContent(HStack(spacing: 0) {
-                content
-                self.actionsMenu
-            })
-        } else {
+        if self.isEnabled {
             self.managedContent(content)
+        } else {
+            content
         }
     }
 
-    private var actionsMenu: some View {
-        Menu { self.menuContent } label: {
-            Image(systemName: "ellipsis")
-                .font(OpenClawType.subheadSemiBold)
-                .frame(width: 40, height: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .disabled(!self.isEnabled)
-        .accessibilityLabel(String(localized: "Session actions"))
-        .accessibilityIdentifier("RootTabs.Sidebar.SessionMenu.\(self.session.key)")
-    }
-
-    private func managedContent(_ content: some View) -> some View {
+    private func managedContent(_ content: Content) -> some View {
         content
-            .contextMenu { if self.isEnabled { self.menuContent } }
-            .alert(self.editorTitle, isPresented: self.showsMenuButton ? .constant(false) : self.editorBinding) {
+            .contextMenu {
+                OpenClawSessionColorMenu(color: self.session.color, onSelect: self.actions.setColor)
+                if !self.isArchived {
+                    self.actionButton(
+                        self.session.pinned == true
+                            ? OpenClawTextValue.localized("Unpin")
+                            : OpenClawTextValue.localized("Pin"),
+                        systemImage: self.session.pinned == true ? "pin.slash" : "pin")
+                    {
+                        self.actions.togglePinned()
+                    }
+                    if self.canSnooze {
+                        self.snoozeMenu
+                    }
+                    self.actionButton(
+                        self.session.unread == true
+                            ? OpenClawTextValue.localized("Mark as Read")
+                            : OpenClawTextValue.localized("Mark as Unread"),
+                        systemImage: self.session.unread == true ? "envelope.open" : "envelope.badge")
+                    {
+                        self.actions.toggleUnread()
+                    }
+                    self.actionButton("Rename…", systemImage: "pencil") {
+                        self.beginRename()
+                    }
+                    self.actionButton(
+                        self.session.hasActiveRun == true
+                            ? OpenClawTextValue.localized("Fork from last completed message")
+                            : OpenClawTextValue.localized("Fork"),
+                        systemImage: "arrow.triangle.branch")
+                    {
+                        self.actions.fork()
+                    }
+                    self.groupMenu
+                }
+                if self.canArchive {
+                    self.actionButton(
+                        self.isArchived ? .localized("Unarchive") : .localized("Archive"),
+                        systemImage: "archivebox")
+                    {
+                        self.actions.toggleArchived()
+                    }
+                }
+                if self.canDelete {
+                    self.deleteButton
+                }
+            }
+            .alert(self.editorTitle, isPresented: self.editorBinding) {
                 TextField(self.editorPlaceholder, text: self.$draftText)
                     .font(OpenClawType.body)
                 Button {
@@ -279,53 +307,6 @@ struct CommandSessionActionsModifier: ViewModifier {
         }
     }
 
-    @ViewBuilder
-    private var menuContent: some View {
-        OpenClawSessionColorMenu(color: self.session.color, onSelect: self.actions.setColor)
-        if !self.isArchived {
-            self.actionButton(
-                self.session.pinned == true
-                    ? OpenClawTextValue.localized("Unpin")
-                    : OpenClawTextValue.localized("Pin"),
-                systemImage: self.session.pinned == true ? "pin.slash" : "pin")
-            {
-                self.actions.togglePinned()
-            }
-            if self.canSnooze { self.snoozeMenu }
-            self.actionButton(
-                self.session.unread == true
-                    ? OpenClawTextValue.localized("Mark as Read")
-                    : OpenClawTextValue.localized("Mark as Unread"),
-                systemImage: self.session.unread == true ? "envelope.open" : "envelope.badge")
-            {
-                self.actions.toggleUnread()
-            }
-            self.actionButton("Rename…", systemImage: "pencil") {
-                self.beginRename()
-            }
-            self.actionButton(
-                self.session.hasActiveRun == true
-                    ? OpenClawTextValue.localized("Fork from last completed message")
-                    : OpenClawTextValue.localized("Fork"),
-                systemImage: "arrow.triangle.branch")
-            {
-                self.actions.fork()
-            }
-            self.groupMenu
-        }
-        if self.canArchive {
-            self.actionButton(
-                self.isArchived ? .localized("Unarchive") : .localized("Archive"),
-                systemImage: "archivebox")
-            {
-                self.actions.toggleArchived()
-            }
-        }
-        if self.canDelete {
-            self.deleteButton
-        }
-    }
-
     private var groupMenu: some View {
         Menu {
             ForEach(self.categories, id: \.self) { category in
@@ -334,7 +315,8 @@ struct CommandSessionActionsModifier: ViewModifier {
                 }
             }
             self.actionButton("New Group…", systemImage: "folder.badge.plus") {
-                self.beginEditor(.newGroup, text: "")
+                self.draftText = ""
+                self.editor = .newGroup
             }
             if self.normalized(self.session.category) != nil {
                 self.actionButton("Remove from Group", systemImage: "folder.badge.minus") {
@@ -390,31 +372,10 @@ struct CommandSessionActionsModifier: ViewModifier {
     }
 
     private func beginRename() {
-        self.beginEditor(
-            .rename,
-            text: self.normalized(self.session.label)
-                ?? self.normalized(self.session.displayName) ?? "")
-    }
-
-    private func beginEditor(_ kind: Editor, text: String) {
-        guard let presentEditor = self.presentEditor else {
-            self.draftText = text
-            self.editor = kind
-            return
-        }
-        presentEditor(CommandSessionEditorRequest(
-            title: kind == .rename ? String(localized: "Rename Session") : String(localized: "New Group"),
-            placeholder: kind == .rename ? String(localized: "Session name") : String(localized: "Group name"),
-            text: text,
-            saveTitle: kind == .rename ? String(localized: "Save") : String(localized: "Create"),
-            onSave: { value in
-                if kind == .rename {
-                    self.actions.rename(self.normalized(value))
-                } else if let name = self.normalized(value) {
-                    SessionGroupStore.remember(name)
-                    self.actions.moveToGroup(name)
-                }
-            }))
+        self.draftText = self.normalized(self.session.label)
+            ?? self.normalized(self.session.displayName)
+            ?? ""
+        self.editor = .rename
     }
 
     private func commitEditor() {
@@ -451,8 +412,6 @@ extension View {
         isEnabled: Bool = true,
         canArchive: Bool = true,
         canDelete: Bool = true,
-        showsMenuButton: Bool = false,
-        presentEditor: ((CommandSessionEditorRequest) -> Void)? = nil,
         actions: CommandSessionActions) -> some View
     {
         self.modifier(CommandSessionActionsModifier(
@@ -463,57 +422,7 @@ extension View {
             isEnabled: isEnabled,
             canArchive: canArchive,
             canDelete: canDelete,
-            actions: actions,
-            showsMenuButton: showsMenuButton,
-            presentEditor: presentEditor))
-    }
-}
-
-/// The sidebar owns presentation; transient row/menu hosts only request it.
-struct CommandSessionEditorRequest: Identifiable {
-    let id = UUID()
-    let title: String
-    let placeholder: String
-    let text: String
-    let saveTitle: String
-    let onSave: (String) -> Void
-}
-
-/// Explicit native editor surface shared by session and group overflow menus.
-struct CommandSessionTextEditor: View {
-    let title: String
-    let placeholder: String
-    @Binding var text: String
-    let saveTitle: String
-    let onSave: () -> Void
-    let onCancel: () -> Void
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                TextField(text: self.$text, prompt: Text(verbatim: self.placeholder).font(OpenClawType.body)) {
-                    Text(verbatim: self.placeholder).font(OpenClawType.body)
-                }
-                .font(OpenClawType.body)
-                .accessibilityIdentifier("CommandSessionActions.Editor")
-            }
-            .navigationTitle(self.title)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(action: self.onCancel) { Text("Cancel").font(OpenClawType.subheadSemiBold) }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button {
-                        self.onSave()
-                    } label: {
-                        Text(verbatim: self.saveTitle).font(OpenClawType.subheadSemiBold)
-                    }
-                    .disabled(self.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-        }
-        .presentationDetents([.large])
+            actions: actions))
     }
 }
 

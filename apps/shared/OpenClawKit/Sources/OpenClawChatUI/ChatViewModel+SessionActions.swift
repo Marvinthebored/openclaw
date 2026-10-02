@@ -193,7 +193,8 @@ extension OpenClawChatViewModel {
                 }
                 guard self.canCreateSessionForImmediateSwitch() else { return false }
                 chatUILogger.info("sessions.create unsupported; falling back to sessions.reset")
-                return await self.performReset()
+                await self.performReset()
+                return self.isCurrentSession(initiatingSession)
             }
             chatUILogger.error("sessions.create failed \(error.localizedDescription, privacy: .public)")
             self.errorText = error.localizedDescription

@@ -282,8 +282,7 @@ public enum OpenClawChatGatewayRequests {
         label: String?,
         parentSessionKey: String?,
         worktree: Bool?,
-        worktreeBaseRef: String? = nil,
-        category: String? = nil) -> OpenClawChatGatewayRequest
+        worktreeBaseRef: String? = nil) -> OpenClawChatGatewayRequest
     {
         var params = ["key": AnyCodable(key)]
         self.add(agentID, to: &params, key: "agentId")
@@ -291,7 +290,6 @@ public enum OpenClawChatGatewayRequests {
         self.add(parentSessionKey, to: &params, key: "parentSessionKey", trim: false)
         params["worktree"] = worktree.map(AnyCodable.init)
         self.add(worktreeBaseRef, to: &params, key: "worktreeBaseRef")
-        self.add(category, to: &params, key: "category", trim: false)
         return OpenClawChatGatewayRequest(
             method: "sessions.create",
             params: params,

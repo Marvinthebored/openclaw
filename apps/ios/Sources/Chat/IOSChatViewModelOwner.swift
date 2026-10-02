@@ -100,12 +100,8 @@ final class IOSChatViewModelOwner {
             },
             transcriptCache: offlineStore,
             outbox: offlineStore,
-            onSessionChanged: { [weak self, weak appModel] sessionKey in
-                guard let self, let appModel,
-                      self.isCurrent(appModel: appModel),
-                      self.viewModel?.sessionKey == sessionKey
-                else { return }
-                appModel.focusChatSession(sessionKey)
+            onSessionChanged: { [weak appModel] sessionKey in
+                appModel?.focusChatSession(sessionKey)
             },
             onToolActivity: { id, name, isActive, toolSessionKey in
                 if isActive {

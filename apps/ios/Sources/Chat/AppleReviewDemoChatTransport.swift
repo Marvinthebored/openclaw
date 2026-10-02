@@ -1,6 +1,5 @@
 import Foundation
 import OpenClawChatUI
-import OpenClawKit
 import OpenClawProtocol
 
 enum AppleReviewDemoMode {
@@ -207,16 +206,9 @@ struct LocalFixtureChatTransport: OpenClawChatTransport {
     private let store: LocalFixtureChatStore
     private let reactionsRouteID = UUID()
 
-    init(
-        fixture: LocalChatFixture,
-        onRealtimeVoiceTurn: (@MainActor @Sendable (String, String) -> Void)? = nil,
-        onRealtimeVoiceTranscript: (@MainActor @Sendable (String, RealtimeTalkTranscript) -> Void)? = nil)
-    {
+    init(fixture: LocalChatFixture) {
         self.fixture = fixture
-        self.store = LocalFixtureChatStore(
-            fixture: fixture,
-            onRealtimeVoiceTurn: onRealtimeVoiceTurn,
-            onRealtimeVoiceTranscript: onRealtimeVoiceTranscript)
+        self.store = LocalFixtureChatStore(fixture: fixture)
     }
 
     func createSession(
@@ -464,11 +456,6 @@ struct LocalFixtureChatTransport: OpenClawChatTransport {
             continuation.yield(.health(ok: true))
             Task {
                 await self.store.setEventContinuation(continuation)
-                if ProcessInfo.processInfo.arguments.contains("--openclaw-realtime-caption-fixture") {
-                    await self.store.emitRealtimeVoiceCaptions()
-                } else if ProcessInfo.processInfo.arguments.contains("--openclaw-realtime-voice-history-fixture") {
-                    await self.store.emitRealtimeVoiceHistory()
-                }
             }
         }
     }
@@ -498,106 +485,10 @@ private actor LocalFixtureChatStore {
     private var toolOverrides: OpenClawChatSessionToolOverrides?
     private var reactionOverrides: [String: [OpenClawChatReactionSummary]] = [:]
 
-    private let onRealtimeVoiceTurn: (@MainActor @Sendable (String, String) -> Void)?
-
-    private let onRealtimeVoiceTranscript: (@MainActor @Sendable (String, RealtimeTalkTranscript) -> Void)?
-
-    init(
-        fixture: LocalChatFixture,
-        onRealtimeVoiceTurn: (@MainActor @Sendable (String, String) -> Void)?,
-        onRealtimeVoiceTranscript: (@MainActor @Sendable (String, RealtimeTalkTranscript) -> Void)?)
-    {
+    init(fixture: LocalChatFixture) {
         self.fixture = fixture
         self.messages = Self.seedMessages(fixture: fixture)
         self.modelID = fixture.modelID
-        self.onRealtimeVoiceTurn = onRealtimeVoiceTurn
-        self.onRealtimeVoiceTranscript = onRealtimeVoiceTranscript
-    }
-
-    func emitRealtimeVoiceCaptions() async {
-        // Explicit local UI-test fixture; no microphone, provider or operator Gateway is used.
-        try? await Task.sleep(for: .seconds(5))
-        let now = Date().timeIntervalSince1970 * 1000
-        let user = Self.message(role: "user", text: "Which build is installed?", timestamp: now)
-        let consult = OpenClawChatMessage(
-            role: "assistant",
-            content: [.init(
-                type: "text",
-                text: "The build went on at about 14:15.",
-                mimeType: nil,
-                fileName: nil,
-                content: nil)],
-            timestamp: now + 1,
-            transcriptMessageID: "consult:fixture",
-            model: "consult-model",
-            phase: "final_answer")
-        self.messages += [user, consult]
-        for message in [user, consult] {
-            self.eventContinuation?.yield(.sessionMessage(OpenClawSessionMessageEventPayload(
-                sessionKey: self.fixture.sessionKey,
-                message: message,
-                messageId: message.transcriptMessageID,
-                messageSeq: nil)))
-        }
-        for fragment in ["Chat", "GPT", " version 1.2", " is installed."] {
-            await self.onRealtimeVoiceTranscript?(
-                self.fixture.sessionKey,
-                RealtimeTalkTranscript(
-                    role: "assistant",
-                    text: fragment,
-                    isFinal: false,
-                    relaySessionID: "caption-fixture"))
-            try? await Task.sleep(for: .seconds(2))
-        }
-        let text = "ChatGPT version 1.2 is installed."
-        let id = "voice:caption-fixture:2"
-        await self.onRealtimeVoiceTranscript?(
-            self.fixture.sessionKey,
-            RealtimeTalkTranscript(
-                role: "assistant",
-                text: text,
-                isFinal: true,
-                transcriptID: id,
-                relaySessionID: "caption-fixture"))
-        try? await Task.sleep(for: .seconds(2))
-        let spoken = OpenClawChatMessage(
-            role: "assistant",
-            content: [.init(type: "text", text: text, mimeType: nil, fileName: nil, content: nil)],
-            timestamp: now + 2,
-            transcriptMessageID: id,
-            model: "realtime-voice",
-            provenance: .init(kind: "realtime_voice", sourceChannel: "talk"))
-        self.messages.append(spoken)
-        self.eventContinuation?.yield(.sessionMessage(OpenClawSessionMessageEventPayload(
-            sessionKey: self.fixture.sessionKey,
-            message: spoken,
-            messageId: id,
-            messageSeq: 2)))
-    }
-
-    func emitRealtimeVoiceHistory() async {
-        let coalesced = ProcessInfo.processInfo.arguments.contains("--openclaw-coalesced-voice-fixture")
-        try? await Task.sleep(for: .seconds(coalesced ? 6 : 2))
-        let now = Date().timeIntervalSince1970 * 1000
-        let id = "voice:fixture:1"
-        var user = Self.message(role: "user", text: "REALTIME_VOICE_QUESTION", timestamp: now)
-        user.transcriptMessageID = id
-        self.messages.append(user)
-        if !coalesced { await self.onRealtimeVoiceTurn?(self.fixture.sessionKey, id) }
-        guard let event = try? Self.decode(
-            ["sessionKey": self.fixture.sessionKey, "reason": "message", "phase": "message"],
-            as: OpenClawChatSessionsChangedEvent.self) else { return }
-        if !coalesced {
-            self.eventContinuation?.yield(.sessionsChanged(event))
-            try? await Task.sleep(for: .seconds(1))
-        }
-        self.messages.append(Self.message(
-            role: "assistant",
-            text: String(repeating: "Completed realtime voice answer paragraph.\n\n", count: 40) +
-                "REALTIME_VOICE_REPLY_TAIL",
-            timestamp: now + 1))
-        if coalesced { await self.onRealtimeVoiceTurn?(self.fixture.sessionKey, id) }
-        self.eventContinuation?.yield(.sessionsChanged(event))
     }
 
     func createSession(key: String) throws -> OpenClawChatCreateSessionResponse {
@@ -606,15 +497,8 @@ private actor LocalFixtureChatStore {
             as: OpenClawChatCreateSessionResponse.self)
     }
 
-    private var reentryHistoryCount = 0
-
     func history(sessionKey: String, offset: Int = 0) async throws -> OpenClawChatHistoryPayload {
         let normalizedSessionKey = Self.normalizedSessionKey(sessionKey, fallback: self.fixture.sessionKey)
-        let reentry = ProcessInfo.processInfo.arguments.contains("--openclaw-voice-reentry-fixture")
-        if reentry, normalizedSessionKey == self.fixture.sessionKey {
-            self.reentryHistoryCount += 1
-            if self.reentryHistoryCount > 2 { try? await Task.sleep(for: .seconds(3)) }
-        }
         let longAnchorFixture = ProcessInfo.processInfo.arguments.contains("--openclaw-long-history-anchor-fixture")
         let anchorFixture = longAnchorFixture ||
             ProcessInfo.processInfo.arguments.contains("--openclaw-history-anchor-fixture")
@@ -628,8 +512,7 @@ private actor LocalFixtureChatStore {
                 timestamp: Double(index + 1),
                 transcriptMessageID: longAnchorFixture ? "long-history-\(index)" : nil,
                 transcriptRunID: longAnchorFixture ? "long-history-run-\(index / 2)" : nil)
-        } : reentry && normalizedSessionKey != self.fixture.sessionKey
-            ? [Self.message(role: "assistant", text: "OTHER_CHAT_FIXTURE", timestamp: 1)] : self.messages
+        } : self.messages
         let shortPage = ProcessInfo.processInfo.arguments.contains("--openclaw-paged-history-short-fixture")
         let isPaged = anchorFixture || shortPage ||
             ProcessInfo.processInfo.arguments.contains("--openclaw-paged-history-fixture")

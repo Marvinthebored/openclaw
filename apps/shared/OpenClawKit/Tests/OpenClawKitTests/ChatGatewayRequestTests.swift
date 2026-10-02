@@ -488,15 +488,6 @@ struct ChatGatewayRequestTests {
         #expect(switchBranch.params["key"] == nil)
     }
 
-    @Test func `create in group persists category atomically without adopting a parent`() {
-        let request = OpenClawChatGatewayRequests.createSession(
-            key: "agent:main:new", agentID: "main", label: nil, parentSessionKey: nil, worktree: nil,
-            category: "Work")
-        #expect(request.method == "sessions.create")
-        #expect(request.params["category"]?.value as? String == "Work")
-        #expect(request.params["parentSessionKey"] == nil)
-    }
-
     @Test func `session group requests encode exact gateway contracts`() {
         let list = OpenClawChatGatewayRequests.sessionGroupsList()
         let put = OpenClawChatGatewayRequests.sessionGroupsPut(names: ["Work", "Personal"])

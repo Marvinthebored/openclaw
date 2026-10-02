@@ -697,16 +697,7 @@ final class NodeAppModel {
 
     func makeChatTransport(outboxGatewayID: String? = nil) -> any OpenClawChatTransport {
         if let fixture = self.localChatFixture {
-            return LocalFixtureChatTransport(
-                fixture: fixture,
-                onRealtimeVoiceTurn: { [weak self] key, id in
-                    self?.chatPresentation.viewModel?.admitRealtimeVoiceTurn(sessionKey: key, transcriptID: id)
-                },
-                onRealtimeVoiceTranscript: { [weak self] key, transcript in
-                    #if DEBUG
-                    self?.talkMode._test_receiveRealtimeVoiceTranscript(transcript, sessionKey: key)
-                    #endif
-                })
+            return LocalFixtureChatTransport(fixture: fixture)
         }
         let connectionProvider: IOSMediaArtifactLoader.ConnectionProvider = { [weak self] in
             guard let config = self?.activeGatewayConnectConfig else { return nil }
@@ -1099,10 +1090,6 @@ final class NodeAppModel {
         self.talkMode.setPushToTalkAudioOwnershipEndHandler { [weak self] captureId in
             self?.releasePttVoiceWakeLease(for: captureId)
         }
-        self.talkMode.setRealtimeVoiceTranscriptHandler { [weak self] sessionKey, transcript in
-            self?.chatPresentation.viewModel?.receiveRealtimeVoiceTranscript(
-                sessionKey: sessionKey, transcript: transcript)
-        }
         self.voiceNoteRecorder.setCaptureAdmissionHandler { [weak self] in
             self?.isBackgrounded == false &&
                 self?.isTalkCaptureActive == false &&
@@ -1167,10 +1154,9 @@ final class NodeAppModel {
             }
         }
 
-        self.synchronizeTalkSessionKey()
         self.voiceWake.configure { [weak self] cmd in
             guard let self else { return }
-            try await self.sendVoiceTranscript(text: cmd, sessionKey: self.chatSessionKey)
+            try await self.sendVoiceTranscript(text: cmd, sessionKey: self.mainSessionKey)
         }
         self.voiceNoteRecorder.onRecordingActiveChanged = { [weak self] isActive in
             self?.voiceWake.setSuppressedByVoiceNote(isActive)
@@ -1235,7 +1221,6 @@ final class NodeAppModel {
             // through this phase before active; keep microphone gates closed.
             break
         case .active:
-            self.synchronizeTalkSessionKey()
             self.isBackgrounded = false
             if self.clientDatabases == nil {
                 // Recovery must run even after forgetting the final gateway;
@@ -1439,7 +1424,6 @@ final class NodeAppModel {
         }
         UserDefaults.standard.set(enabled, forKey: "talk.enabled")
         if enabled {
-            self.synchronizeTalkSessionKey()
             if self.voiceNoteRecorder.isRecording || self.voiceNoteRecorder.isRequestingPermission {
                 self.voiceNoteRecorder.cancel()
             }
@@ -3395,8 +3379,8 @@ extension NodeAppModel {
 
     /// Session changes invalidate queued PTT admission before Talk cancels any
     /// active owner. Otherwise a waiter can wake and retarget to the new chat.
-    func synchronizeTalkSessionKey() {
-        let effectiveSessionKey = self.chatSessionKey
+    func synchronizeTalkSessionKey(_ sessionKey: String? = nil) {
+        let effectiveSessionKey = sessionKey ?? self.chatSessionKey
         guard !self.talkMode.isUsingMainSessionKey(effectiveSessionKey) else { return }
         self.talkPttCommandEpoch &+= 1
         self.voiceWake.invalidatePendingCommand()
@@ -6406,7 +6390,7 @@ extension NodeAppModel {
             return
         case .startTalk:
             guard !self.isAppleReviewDemoModeEnabled else { break }
-            // A Watch snapshot can lag behind the phone's visible conversation.
+            self.synchronizeTalkSessionKey(event.sessionKey ?? self.chatSessionKey)
             self.setTalkEnabled(true)
         case .stopTalk:
             self.setTalkEnabled(false)
@@ -9531,7 +9515,7 @@ extension NodeAppModel {
                   generation: routeGeneration,
                   stableID: gatewayStableID)
         else { throw CancellationError() }
-        if let sessionKey, sessionKey != self.chatSessionKey {
+        if let sessionKey, sessionKey != self.mainSessionKey {
             throw CancellationError()
         }
         try Task.checkCancellation()
@@ -9797,10 +9781,6 @@ extension NodeAppModel {
 
 #if DEBUG
 extension NodeAppModel {
-    func _test_nodeGateway() -> GatewayNodeSession {
-        self.nodeGateway
-    }
-
     func _test_pttVoiceWakeLeaseCaptureIds() -> Set<String> {
         self.pttVoiceWakeLeaseCaptureId.map { [$0] } ?? []
     }

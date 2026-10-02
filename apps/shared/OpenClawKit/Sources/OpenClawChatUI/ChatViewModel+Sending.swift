@@ -264,15 +264,19 @@ extension OpenClawChatViewModel {
         return nil
     }
 
-    private func handleLocalSlashCommandIfNeeded(_ command: String) async -> Bool? {
-        guard Self.isLiveOnlyLocalSlashCommand(command) else { return nil }
-        if command == "/new" {
-            return await performStartNewSession(worktree: false)
-        } else if Self.resetTriggers.contains(command) {
-            return await performReset()
-        } else {
-            return await performCompact()
+    private func handleLocalSlashCommandIfNeeded(_ command: String, draftInput: String) async -> Bool {
+        guard Self.isLiveOnlyLocalSlashCommand(command) else { return false }
+        if input == draftInput {
+            input = ""
         }
+        if command == "/new" {
+            await performStartNewSession(worktree: false)
+        } else if Self.resetTriggers.contains(command) {
+            await performReset()
+        } else {
+            await performCompact()
+        }
+        return true
     }
 
     private static func isLiveOnlyLocalSlashCommand(_ command: String) -> Bool {
@@ -394,19 +398,11 @@ extension OpenClawChatViewModel {
             let canRunCommand = await prepareLiveOnlyLocalSlashCommand(session: draft.session)
             guard canRunCommand else { return false }
         }
-        if let accepted = await self.handleLocalSlashCommandIfNeeded(command) {
-            if accepted {
-                self.recordSuccessfulInput(
-                    draft.trimmed,
-                    submittedRevision: draft.composerRevision,
-                    sessionKey: draft.composerSessionKey)
-                if self.composerSessionKey(for: self.sessionKey) == draft.composerSessionKey,
-                   self.composerRevision(for: self.sessionKey) == draft.composerRevision,
-                   self.input == draft.input
-                {
-                    self.input = ""
-                }
-            }
+        if await self.handleLocalSlashCommandIfNeeded(command, draftInput: draft.input) {
+            self.recordSuccessfulInput(
+                draft.trimmed,
+                submittedRevision: draft.composerRevision,
+                sessionKey: draft.composerSessionKey)
             return false
         }
         return await self.validateSlashCommandDraftForSend(
