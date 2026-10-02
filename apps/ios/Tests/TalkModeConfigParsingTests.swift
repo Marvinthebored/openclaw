@@ -1027,3 +1027,27 @@ struct TalkModeManagerTests {
         #expect(!manager._test_hasIncrementalSpeechOwnership())
     }
 }
+
+@MainActor
+struct TalkRealtimeTranscriptDeliveryTests {
+    @Test func `every spoken fragment reaches chat before its final history row`() {
+        let manager = TalkModeManager()
+        var received: [RealtimeTalkTranscript] = []
+        manager.setRealtimeVoiceTranscriptHandler { sessionKey, transcript in
+            #expect(sessionKey == "main")
+            received.append(transcript)
+        }
+        let partial = RealtimeTalkTranscript(role: "assistant", text: "Chat", isFinal: false)
+        let next = RealtimeTalkTranscript(role: "assistant", text: "GPT", isFinal: false)
+        let final = RealtimeTalkTranscript(
+            role: "assistant", text: "ChatGPT", isFinal: true, transcriptID: "voice:relay:2")
+        manager._test_receiveRealtimeVoiceTranscript(partial)
+        #expect(received == [partial])
+        manager._test_receiveRealtimeVoiceTranscript(next)
+        #expect(received == [partial, next])
+        manager._test_receiveRealtimeVoiceTranscript(final)
+        #expect(received == [partial, next, final])
+        manager._test_receiveRealtimeVoiceTranscript(partial, generation: .max)
+        #expect(received.count == 3)
+    }
+}
