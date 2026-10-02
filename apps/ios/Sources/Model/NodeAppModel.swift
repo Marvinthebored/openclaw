@@ -1154,9 +1154,10 @@ final class NodeAppModel {
             }
         }
 
+        self.synchronizeTalkSessionKey()
         self.voiceWake.configure { [weak self] cmd in
             guard let self else { return }
-            try await self.sendVoiceTranscript(text: cmd, sessionKey: self.mainSessionKey)
+            try await self.sendVoiceTranscript(text: cmd, sessionKey: self.chatSessionKey)
         }
         self.voiceNoteRecorder.onRecordingActiveChanged = { [weak self] isActive in
             self?.voiceWake.setSuppressedByVoiceNote(isActive)
@@ -1221,6 +1222,7 @@ final class NodeAppModel {
             // through this phase before active; keep microphone gates closed.
             break
         case .active:
+            self.synchronizeTalkSessionKey()
             self.isBackgrounded = false
             if self.clientDatabases == nil {
                 // Recovery must run even after forgetting the final gateway;
@@ -1424,6 +1426,7 @@ final class NodeAppModel {
         }
         UserDefaults.standard.set(enabled, forKey: "talk.enabled")
         if enabled {
+            self.synchronizeTalkSessionKey()
             if self.voiceNoteRecorder.isRecording || self.voiceNoteRecorder.isRequestingPermission {
                 self.voiceNoteRecorder.cancel()
             }
@@ -1762,6 +1765,10 @@ final class NodeAppModel {
         }
         if selectedAgentChanged {
             self.focusedChatSessionKey = nil
+            // The saved chat belongs to the previous agent; relaunch must not restore it over this selection.
+            if let stableID = self.connectedGatewayID {
+                GatewaySettingsStore.saveGatewayFocusedChatSessionKey(stableID: stableID, sessionKey: nil)
+            }
             self.shareDeliveryChannel = nil
             self.shareDeliveryTo = nil
         }
@@ -3379,8 +3386,8 @@ extension NodeAppModel {
 
     /// Session changes invalidate queued PTT admission before Talk cancels any
     /// active owner. Otherwise a waiter can wake and retarget to the new chat.
-    func synchronizeTalkSessionKey(_ sessionKey: String? = nil) {
-        let effectiveSessionKey = sessionKey ?? self.chatSessionKey
+    func synchronizeTalkSessionKey() {
+        let effectiveSessionKey = self.chatSessionKey
         guard !self.talkMode.isUsingMainSessionKey(effectiveSessionKey) else { return }
         self.talkPttCommandEpoch &+= 1
         self.voiceWake.invalidatePendingCommand()
@@ -6390,7 +6397,7 @@ extension NodeAppModel {
             return
         case .startTalk:
             guard !self.isAppleReviewDemoModeEnabled else { break }
-            self.synchronizeTalkSessionKey(event.sessionKey ?? self.chatSessionKey)
+            // A Watch snapshot can lag behind the phone's visible conversation.
             self.setTalkEnabled(true)
         case .stopTalk:
             self.setTalkEnabled(false)
@@ -9515,7 +9522,7 @@ extension NodeAppModel {
                   generation: routeGeneration,
                   stableID: gatewayStableID)
         else { throw CancellationError() }
-        if let sessionKey, sessionKey != self.mainSessionKey {
+        if let sessionKey, sessionKey != self.chatSessionKey {
             throw CancellationError()
         }
         try Task.checkCancellation()
@@ -9781,6 +9788,10 @@ extension NodeAppModel {
 
 #if DEBUG
 extension NodeAppModel {
+    func _test_nodeGateway() -> GatewayNodeSession {
+        self.nodeGateway
+    }
+
     func _test_pttVoiceWakeLeaseCaptureIds() -> Set<String> {
         self.pttVoiceWakeLeaseCaptureId.map { [$0] } ?? []
     }

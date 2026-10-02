@@ -1277,7 +1277,8 @@ extension OpenClawChatViewModel {
         clearPendingRuns(reason: nil)
     }
 
-    func performReset() async {
+    @discardableResult
+    func performReset() async -> Bool {
         let session = self.currentSessionSnapshot()
         self.isLoading = true
         self.errorText = nil
@@ -1285,32 +1286,34 @@ extension OpenClawChatViewModel {
         do {
             try await self.transport.resetSession(sessionKey: session.key)
         } catch {
-            guard self.isCurrentSession(session) else { return }
+            guard self.isCurrentSession(session) else { return false }
             self.isLoading = false
             self.errorText = error.localizedDescription
             chatUILogger.error("session reset failed \(error.localizedDescription, privacy: .public)")
-            return
+            return false
         }
 
-        guard self.isCurrentSession(session) else { return }
+        guard self.isCurrentSession(session) else { return false }
         self.replyTarget = nil
         self.runMessageScopesByRunID.removeAll()
         self.provisionalFinalMessagesByID.removeAll()
         self.narration = ChatNarration()
         self.startBootstrap()
+        return true
     }
 
-    func performCompact() async {
-        guard !self.isCompacting else { return }
+    @discardableResult
+    func performCompact() async -> Bool {
+        guard !self.isCompacting else { return false }
         guard !self.isSending, !hasBlockingRunActivity, !self.isAborting else {
             self.errorText = "Wait for the current response before compacting the thread."
-            return
+            return false
         }
         if let lastCompactAt,
            Date().timeIntervalSince(lastCompactAt) < compactCooldown
         {
             self.errorText = "Please wait before compacting this thread again."
-            return
+            return false
         }
 
         let session = self.currentSessionSnapshot()
@@ -1324,19 +1327,20 @@ extension OpenClawChatViewModel {
         do {
             try await self.transport.compactSession(sessionKey: session.key)
         } catch {
-            guard self.isCurrentSession(session) else { return }
+            guard self.isCurrentSession(session) else { return false }
             self.isLoading = false
             self.errorText = "Unable to compact the thread. Please try again."
             let nsError = error as NSError
             chatUILogger.error(
                 "compact failed domain=\(nsError.domain, privacy: .public) code=\(nsError.code, privacy: .public)")
             chatUILogger.error("compact details=\(String(describing: error), privacy: .private)")
-            return
+            return false
         }
 
-        guard self.isCurrentSession(session) else { return }
+        guard self.isCurrentSession(session) else { return false }
         lastCompactAt = Date()
         self.startBootstrap()
+        return true
     }
 
     private func reserveModelSelection(_ selectionID: String) -> ModelSelectionRequest? {
