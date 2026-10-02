@@ -458,6 +458,9 @@ extension OpenClawChatViewModel {
         self.attachments.removeAll { capturedAttachmentIDs.contains($0.id) }
         self.errorText = nil
         self.presentOutboxCommands([command])
+        if let messageID = self.outboxMessageIDsByCommandID[command.id] {
+            self.markLiveUserTurn(id: messageID)
+        }
         // Health can recover between the send-gate check and the enqueue;
         // flushing here closes that gap instead of waiting for the next event.
         if self.healthOK {
@@ -724,7 +727,7 @@ extension OpenClawChatViewModel {
     /// exactly on the unhealthy -> healthy transition.
     func applyTransportHealth(_ ok: Bool, refreshSessionsOnReconnect: Bool = true) {
         let wasHealthy = self.healthOK
-        self.healthOK = ok
+        if wasHealthy != ok { self.healthOK = ok }
         if !ok {
             self.resetSessionReactions()
         } else if !wasHealthy {

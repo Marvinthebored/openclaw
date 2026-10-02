@@ -352,6 +352,7 @@ private func makeViewModel(
     thinkingPatchResults: [OpenClawChatModelPatchResult?] = [],
     commandResponses: [[OpenClawChatCommandChoice]] = [],
     requestHistoryHook: (@Sendable (String) async throws -> Void)? = nil,
+    requestHistoryPageHook: (@Sendable (String, Int) async throws -> OpenClawChatHistoryPayload)? = nil,
     fetchProgressCardHook: (@Sendable (String, String?) async throws -> ProgressCard?)? = nil,
     progressCardStoreAvailable: Bool? = nil,
     advertisedMethodHook: (@Sendable (String) async -> Bool?)? = nil,
@@ -411,6 +412,7 @@ private func makeViewModel(
         thinkingPatchResults: thinkingPatchResults,
         commandResponses: commandResponses,
         requestHistoryHook: requestHistoryHook,
+        requestHistoryPageHook: requestHistoryPageHook,
         fetchProgressCardHook: fetchProgressCardHook,
         advertisedMethodHook: advertisedMethodHook ?? progressCardStoreAvailable
             .map { available in { @Sendable method in method == "progressCard.get" ? available : nil } },
@@ -756,6 +758,7 @@ private final class TestChatTransport: @unchecked Sendable, OpenClawChatTranspor
     private let thinkingPatchResults: [OpenClawChatModelPatchResult?]
     private let commandResponses: [[OpenClawChatCommandChoice]]
     private let requestHistoryHook: (@Sendable (String) async throws -> Void)?
+    private let requestHistoryPageHook: (@Sendable (String, Int) async throws -> OpenClawChatHistoryPayload)?
     private let fetchProgressCardHook: (@Sendable (String, String?) async throws -> ProgressCard?)?
     private let advertisedMethodHook: (@Sendable (String) async -> Bool?)?
     private let historyResponseHook:
@@ -803,6 +806,7 @@ private final class TestChatTransport: @unchecked Sendable, OpenClawChatTranspor
         thinkingPatchResults: [OpenClawChatModelPatchResult?] = [],
         commandResponses: [[OpenClawChatCommandChoice]] = [],
         requestHistoryHook: (@Sendable (String) async throws -> Void)? = nil,
+        requestHistoryPageHook: (@Sendable (String, Int) async throws -> OpenClawChatHistoryPayload)? = nil,
         fetchProgressCardHook: (@Sendable (String, String?) async throws -> ProgressCard?)? = nil,
         advertisedMethodHook: (@Sendable (String) async -> Bool?)? = nil,
         historyResponseHook: (@Sendable (String, Int, [String]) async throws -> OpenClawChatHistoryPayload?)? = nil,
@@ -843,6 +847,7 @@ private final class TestChatTransport: @unchecked Sendable, OpenClawChatTranspor
         self.thinkingPatchResults = thinkingPatchResults
         self.commandResponses = commandResponses
         self.requestHistoryHook = requestHistoryHook
+        self.requestHistoryPageHook = requestHistoryPageHook
         self.fetchProgressCardHook = fetchProgressCardHook
         self.advertisedMethodHook = advertisedMethodHook
         self.historyResponseHook = historyResponseHook
@@ -900,6 +905,11 @@ private final class TestChatTransport: @unchecked Sendable, OpenClawChatTranspor
         await self.state.createdSessionKeysAppend(key)
         await self.state.createdParentSessionKeysAppend(parentSessionKey)
         return OpenClawChatCreateSessionResponse(ok: true, key: key, sessionId: "created-\(key)")
+    }
+
+    func requestHistoryPage(sessionKey: String, offset: Int) async throws -> OpenClawChatHistoryPayload {
+        guard let requestHistoryPageHook else { throw CancellationError() }
+        return try await requestHistoryPageHook(sessionKey, offset)
     }
 
     func requestHistory(sessionKey: String) async throws -> OpenClawChatHistoryPayload {
@@ -14503,5 +14513,627 @@ struct ChatViewModelSessionManagementTests {
         // Archived rows only exist server-side; offline archived mode is empty.
         let archivedRows = await vm.fetchSessionList(search: nil, archived: true)
         #expect(archivedRows.isEmpty)
+    }
+}
+
+struct ChatTranscriptRevisionTests {
+    private static func readerMessage(role: String, timestamp: Double? = nil) -> OpenClawChatMessage {
+        OpenClawChatMessage(
+            role: role,
+            content: [.init(type: "text", text: role, mimeType: nil, fileName: nil, content: nil)],
+            timestamp: timestamp)
+    }
+
+    @Test @MainActor func `history replacement never creates a live reader turn`() {
+        let model = OpenClawChatViewModel(
+            sessionKey: "main", transport: TestChatTransport(historyResponses: []))
+        for timestamp in [nil, 1, 1_000_000_000_000_000] as [Double?] {
+            model.replaceMessages([Self.readerMessage(role: "user", timestamp: timestamp)])
+            #expect(model.liveUserTurnRevision == 0)
+            #expect(model.liveUserTurnID == nil)
+        }
+    }
+
+    @Test @MainActor func `live undated voice user echo admits a reader turn only once`() {
+        let model = OpenClawChatViewModel(
+            sessionKey: "main", transport: TestChatTransport(historyResponses: []))
+        let user = Self.readerMessage(role: "user")
+        let event = OpenClawChatTransportEvent.sessionMessage(OpenClawSessionMessageEventPayload(
+            sessionKey: "main", message: user, messageId: "voice-turn", messageSeq: 1))
+        model.handleTransportEvent(event)
+        #expect(model.liveUserTurnRevision == 1)
+        #expect(model.liveUserTurnID == model.messages.last?.id)
+        model.handleTransportEvent(event)
+        #expect(model.liveUserTurnRevision == 1)
+    }
+
+    @Test @MainActor func `locally spoken voice turn admits its exact history row only once`() {
+        let model = OpenClawChatViewModel(
+            sessionKey: "main", transport: TestChatTransport(historyResponses: []))
+        var voice = Self.readerMessage(role: "user")
+        voice.transcriptMessageID = "voice:relay:1"
+        model.admitRealtimeVoiceTurn(sessionKey: "main", transcriptID: "voice:relay:1")
+        model.replaceMessages([voice])
+        #expect(model.liveUserTurnRevision == 1)
+        #expect(model.liveUserTurnID == voice.id)
+        #expect(chatReaderUserTransition(
+            previousID: nil,
+            visibleIDs: [voice.id],
+            liveTurnID: model.liveUserTurnID) == .added(voice.id))
+        model.admitRealtimeVoiceTurn(sessionKey: "main", transcriptID: "voice:relay:1")
+        model.replaceMessages([voice])
+        #expect(model.liveUserTurnRevision == 1)
+    }
+
+    @Test @MainActor func `local voice caption arriving after history still admits the new turn`() {
+        let model = OpenClawChatViewModel(
+            sessionKey: "main", transport: TestChatTransport(historyResponses: []))
+        var voice = Self.readerMessage(role: "user")
+        voice.transcriptMessageID = "voice:relay:2"
+        model.replaceMessages([voice])
+        #expect(model.liveUserTurnRevision == 0)
+        let revision = model.timelineRevision
+        model.admitRealtimeVoiceTurn(sessionKey: "main", transcriptID: "voice:relay:2")
+        #expect(model.liveUserTurnRevision == 1)
+        #expect(model.liveUserTurnID == voice.id)
+        #expect(model.timelineRevision > revision)
+    }
+
+    @Test @MainActor func `foreign and unadmitted restored voice history cannot start a turn`() {
+        let model = OpenClawChatViewModel(
+            sessionKey: "main", transport: TestChatTransport(historyResponses: []))
+        var voice = Self.readerMessage(role: "user")
+        voice.transcriptMessageID = "voice:relay:3"
+        model.admitRealtimeVoiceTurn(sessionKey: "other", transcriptID: "voice:relay:3")
+        model.replaceMessages([voice])
+        #expect(model.liveUserTurnRevision == 0)
+    }
+
+    @Test @MainActor func `local sends admit a reader turn but assistant rows do not`() {
+        let model = OpenClawChatViewModel(
+            sessionKey: "main", transport: TestChatTransport(historyResponses: []))
+        let user = Self.readerMessage(role: "user")
+        model.appendMessage(user)
+        #expect(model.liveUserTurnRevision == 1)
+        #expect(model.liveUserTurnID == user.id)
+        model.appendMessage(Self.readerMessage(role: "assistant"))
+        #expect(model.liveUserTurnRevision == 1)
+    }
+
+    /// The chat view caches its transcript layout on `transcriptRevision`. Streaming deltas must not
+    /// bump it (that re-derived the whole transcript per word), but any transcript change must.
+    @Test @MainActor func `streaming text leaves the transcript revision alone but messages bump it`() {
+        let viewModel = OpenClawChatViewModel(
+            sessionKey: "main",
+            transport: TestChatTransport(historyResponses: []))
+        let start = viewModel.transcriptRevision
+        viewModel.updateStreamingAssistantText("Paris")
+        viewModel.updateStreamingAssistantText("Paris, Rome")
+        #expect(viewModel.transcriptRevision == start)
+
+        viewModel.appendMessage(OpenClawChatMessage(
+            role: "assistant",
+            content: [.init(type: "text", text: "Paris, Rome", mimeType: nil, fileName: nil, content: nil)],
+            timestamp: 1))
+        #expect(viewModel.transcriptRevision != start)
+    }
+}
+
+struct ChatLateReplyOrderingTests {
+    private static func row(_ role: String, run: String?) -> OpenClawChatMessage {
+        OpenClawChatMessage(
+            role: role,
+            content: [.init(type: "text", text: role, mimeType: nil, fileName: nil, content: nil)],
+            timestamp: 1, transcriptRunID: run)
+    }
+
+    @Test @MainActor func `a late reply lands above a later run's pending echo but below its own`() {
+        let user1 = Self.row("user", run: "r1")
+        let echo2 = Self.row("user", run: "r2")
+        let reply1 = Self.row("assistant", run: "r1")
+        let late = OpenClawChatViewModel.appending(
+            reply1, runID: "r1", beforeEchoesOf: ["r2": echo2.id], to: [user1, echo2])
+        #expect(late.map(\.id) == [user1.id, reply1.id, echo2.id])
+
+        let own = OpenClawChatViewModel.appending(
+            reply1, runID: "r1", beforeEchoesOf: ["r1": user1.id], to: [user1])
+        #expect(own.map(\.id) == [user1.id, reply1.id])
+
+        let unknown = OpenClawChatViewModel.appending(
+            reply1, runID: nil, beforeEchoesOf: ["r2": echo2.id], to: [user1, echo2])
+        #expect(unknown.map(\.id) == [user1.id, echo2.id, reply1.id])
+    }
+}
+
+extension ChatViewModelTests {
+    @Test(arguments: ["/new", "/reset", "/compact"])
+    func `failed local command keeps its draft`(command: String) async throws {
+        let failure = NSError(
+            domain: "AuditCommand",
+            code: 1,
+            userInfo: [NSLocalizedDescriptionKey: "Fixture denied command"])
+        let (_, vm) = await makeViewModel(
+            historyResponses: [historyPayload()],
+            createSessionHook: { _, _ in throw failure },
+            resetSessionHook: { _ in throw failure },
+            compactSessionHook: { _ in throw failure })
+        try await loadAndWaitBootstrap(vm: vm)
+        await MainActor.run {
+            vm.input = command
+            vm.send()
+        }
+        try await waitUntil("failed command settled") {
+            await MainActor.run { !vm.isSubmittingDraft && vm.errorText != nil }
+        }
+        #expect(await MainActor.run { vm.input } == command)
+        #expect(await MainActor.run { vm.sessionKey } == "main")
+    }
+
+    @Test(arguments: [false, true])
+    func `compact completion does not mutate replacement session`(fails: Bool) async throws {
+        let gate = AsyncGate()
+        let requests = AsyncStringRecorder()
+        let (transport, vm) = await makeViewModel(
+            historyResponses: [historyPayload(), historyPayload(sessionKey: "other")],
+            requestHistoryHook: { key in await requests.append(key) },
+            compactSessionHook: { _ in
+                await gate.wait()
+                if fails { throw NSError(domain: "AuditCompact", code: 1) }
+            })
+        try await loadAndWaitBootstrap(vm: vm)
+        await MainActor.run { vm.requestSessionCompact() }
+        try await waitUntil("compact RPC suspended") { await transport.compactSessionKeys() == ["main"] }
+        await MainActor.run { vm.switchSession(to: "other") }
+        try await waitUntil("replacement session loaded") {
+            await MainActor.run { vm.sessionId == "sess-main" && !vm.isLoading }
+        }
+        await MainActor.run { vm.errorText = "Replacement session notice" }
+        let before = await requests.current()
+        await gate.open()
+        try await waitUntil("old compact settled") { await MainActor.run { !vm.isCompacting } }
+        #expect(await MainActor.run { vm.errorText } == "Replacement session notice")
+        #expect(await requests.current() == before)
+        #expect(await MainActor.run { vm.sessionKey } == "other")
+    }
+
+    @Test(arguments: ["/new", "/reset", "/compact"])
+    func `successful local command preserves newer draft`(command: String) async throws {
+        let gate = AsyncGate()
+        let (transport, vm) = await makeViewModel(
+            historyResponses: [historyPayload(), historyPayload()],
+            createSessionHook: { _, _ in await gate.wait() },
+            resetSessionHook: { _ in await gate.wait() },
+            compactSessionHook: { _ in await gate.wait() })
+        try await loadAndWaitBootstrap(vm: vm)
+        await MainActor.run {
+            vm.input = command
+            vm.send()
+        }
+        try await waitUntil("command suspended") {
+            let reset = await transport.resetSessionKeys()
+            let compact = await transport.compactSessionKeys()
+            return await MainActor.run { vm.isCreatingSession || !reset.isEmpty || !compact.isEmpty }
+        }
+        await MainActor.run { vm.input = "Newer draft" }
+        await gate.open()
+        try await waitUntil("command accepted") { await MainActor.run { !vm.isSubmittingDraft } }
+        if command == "/new" {
+            await MainActor.run { vm.switchSession(to: "main") }
+        }
+        #expect(await MainActor.run { vm.input } == "Newer draft")
+    }
+}
+
+extension ChatViewModelTests {
+    @Test(arguments: ["/new", "/reset", "/compact"])
+    func `successful local command consumes accepted draft`(command: String) async throws {
+        let (_, vm) = await makeViewModel(historyResponses: [historyPayload(), historyPayload()])
+        try await loadAndWaitBootstrap(vm: vm)
+        await MainActor.run { vm.input = command
+            vm.send()
+        }
+        try await waitUntil("local command completed") {
+            await MainActor.run { !vm.isSubmittingDraft }
+        }
+        #expect(await MainActor.run { vm.input } == "")
+        if command == "/new" {
+            await MainActor.run { vm.switchSession(to: "main") }
+            #expect(await MainActor.run { vm.input } == "")
+        }
+    }
+
+    @Test func `failed reset fallback keeps new command draft`() async throws {
+        let unsupported = NSError(
+            domain: "OpenClawChatTransport",
+            code: 0,
+            userInfo: [NSLocalizedDescriptionKey: "sessions.create not supported by this transport"])
+        let (_, vm) = await makeViewModel(
+            historyResponses: [historyPayload()],
+            createSessionHook: { _, _ in throw unsupported },
+            resetSessionHook: { _ in throw NSError(domain: "AuditReset", code: 1) })
+        try await loadAndWaitBootstrap(vm: vm)
+        await MainActor.run { vm.input = "/new"
+            vm.send()
+        }
+        try await waitUntil("fallback failed") {
+            await MainActor.run { !vm.isSubmittingDraft && vm.errorText != nil }
+        }
+        #expect(await MainActor.run { vm.input } == "/new")
+    }
+}
+
+@MainActor
+struct ChatRealtimeVoiceCaptionTests {
+    private func model() -> OpenClawChatViewModel {
+        OpenClawChatViewModel(sessionKey: "main", transport: TestChatTransport(historyResponses: []))
+    }
+
+    private func receive(
+        _ model: OpenClawChatViewModel, _ text: String, final: Bool = false,
+        id: String? = nil, relay: String = "relay-1", mode: String? = nil, session: String = "main")
+    {
+        model.receiveRealtimeVoiceTranscript(
+            sessionKey: session,
+            transcript: RealtimeTalkTranscript(
+                role: "assistant", text: text, isFinal: final, transcriptID: id,
+                relaySessionID: relay, textMode: mode))
+    }
+
+    private func canonical(_ text: String, id: String, model: String = "realtime-voice") -> OpenClawChatMessage {
+        OpenClawChatMessage(
+            role: "assistant",
+            content: [.init(type: "text", text: text, mimeType: nil, fileName: nil, content: nil)], timestamp: 10,
+            transcriptMessageID: id, model: model)
+    }
+
+    @Test func `spoken subword fragments repaint immediately and final replaces without duplication`() throws {
+        let model = self.model()
+        let revision = model.timelineRevision
+        let memoRevision = model.transcriptRevision
+        self.receive(model, "Chat")
+        let first = try #require(model.transcriptMessages.last)
+        #expect(first.content.first?.text == "Chat")
+        #expect(first.model == "realtime-voice")
+        #expect(model.messages.isEmpty)
+        #expect(model.timelineRevision > revision)
+        #expect(model.transcriptRevision > memoRevision)
+        for fragment in ["G", "PT", " version 1", ".", "2"] {
+            let previousRevision = model.transcriptRevision
+            self.receive(model, fragment)
+            #expect(model.transcriptRevision > previousRevision)
+        }
+        #expect(model.transcriptMessages.last?.content.first?.text == "ChatGPT version 1.2")
+        #expect(model.transcriptMessages.last?.id == first.id)
+        self.receive(model, "ChatGPT version 1.2.", final: true, id: "voice:relay-1:2")
+        #expect(model.transcriptMessages.count == 1)
+        #expect(model.transcriptMessages.last?.content.first?.text == "ChatGPT version 1.2.")
+        let canonical = self.canonical("ChatGPT version 1.2.", id: "voice:relay-1:2")
+        model.handleTransportEvent(.sessionMessage(OpenClawSessionMessageEventPayload(
+            sessionKey: "main", message: canonical, messageId: "voice:relay-1:2", messageSeq: 2)))
+        #expect(model.transcriptMessages.count == 1)
+        #expect(model.messages.last?.id == first.id)
+        #expect(model.messages.last?.content.first?.text == "ChatGPT version 1.2.")
+        self.receive(model, "ChatGPT version 1.2.", final: true, id: "voice:relay-1:2")
+        #expect(model.transcriptMessages.count == 1)
+        #expect(model.messages.last?.id == first.id)
+    }
+
+    @Test func `snapshot transcripts replace partial text and final can correct it`() {
+        let model = self.model()
+        self.receive(model, "The release", mode: "snapshot")
+        self.receive(model, "The release passed", mode: "snapshot")
+        #expect(model.transcriptMessages.last?.content.first?.text == "The release passed")
+        self.receive(model, "The build passed.", final: true, id: "voice:relay-1:2")
+        #expect(model.transcriptMessages.last?.content.first?.text == "The build passed.")
+    }
+
+    @Test func `consult text and spoken rendition retain independent text identities in either final arrival order`() {
+        for historyFirst in [false, true] {
+            let model = self.model()
+            let consult = self.canonical(
+                "Yes. The build went on at about 14:15.", id: "consult:reply", model: "consult-model")
+            let spoken = self.canonical("The latest build is on your phone.", id: "voice:relay-1:2")
+            model.replaceMessages([consult])
+            self.receive(model, "The latest build")
+            let liveID = model.transcriptMessages.last?.id
+            if historyFirst { model.replaceMessages([consult, spoken]) }
+            self.receive(model, "The latest build is on your phone.", final: true, id: "voice:relay-1:2")
+            if !historyFirst { model.replaceMessages([consult, spoken]) }
+            #expect(model.transcriptMessages.map { $0.content.first?.text } == [
+                "Yes. The build went on at about 14:15.", "The latest build is on your phone.",
+            ])
+            #expect(model.transcriptMessages.map(\.model) == ["consult-model", "realtime-voice"])
+            #expect(model.transcriptMessages.last?.id == liveID)
+        }
+    }
+
+    @Test func `lagging history and idle narration retirement cannot erase a voice caption`() {
+        let model = self.model()
+        self.receive(model, "Still speaking")
+        model.replaceMessages([], narrationSettled: true)
+        #expect(model.transcriptMessages.last?.content.first?.text == "Still speaking")
+        self.receive(model, "Still speaking.", final: true, id: "voice:relay-1:2")
+        model.replaceMessages([], narrationSettled: true)
+        #expect(model.transcriptMessages.count == 1)
+        self.receive(model, "Still speaking.", final: true, id: "voice:relay-1:2")
+        #expect(model.transcriptMessages.count == 1)
+    }
+
+    @Test func `a replacement relay cannot concatenate into the previous relay caption`() {
+        let model = self.model()
+        self.receive(model, "Old", relay: "relay-old")
+        self.receive(model, "New", relay: "relay-new")
+        #expect(model.transcriptMessages.map { $0.content.first?.text } == ["Old", "New"])
+    }
+
+    @Test func `a new user utterance seals the interrupted assistant caption`() {
+        let model = self.model()
+        self.receive(model, "Interrupted")
+        model.receiveRealtimeVoiceTranscript(
+            sessionKey: "main", transcript: RealtimeTalkTranscript(
+                role: "user", text: "Another question", isFinal: true,
+                transcriptID: "voice:relay-1:3", relaySessionID: "relay-1"))
+        self.receive(model, "New answer")
+        #expect(model.transcriptMessages.map { $0.content.first?.text } == [
+            "Interrupted", "Another question", "New answer",
+        ])
+    }
+
+    @Test func `caption retention matches the web UTF16 budget without corrupting emoji boundaries`() throws {
+        let model = self.model()
+        self.receive(model, String(repeating: "😀", count: 5000))
+        let text = try #require(model.transcriptMessages.last?.content.first?.text)
+        #expect(text.utf16.count <= 8000)
+        #expect(text.hasPrefix(String(repeating: "😀", count: 128)))
+        #expect(text.contains("\n…\n"))
+        #expect(!text.contains("�"))
+        for index in 0..<70 {
+            self.receive(model, "\(index)", final: true, id: "voice:relay:entry-\(index)")
+        }
+        #expect(model.transcriptMessages.count == 60)
+    }
+
+    @Test func `foreign captions and session reset cannot leak into another chat`() {
+        let model = self.model()
+        self.receive(model, "Foreign", session: "other")
+        #expect(model.transcriptMessages.isEmpty)
+        self.receive(model, "Current")
+        model.clearSessionOwnedState()
+        #expect(model.transcriptMessages.isEmpty)
+    }
+}
+
+private func pagedHistory(
+    _ range: ClosedRange<Int>, total: Int, offset: Int? = nil,
+    nextOffset: Int? = nil, hasMore: Bool = false, sessionID: String = "sess-main") -> OpenClawChatHistoryPayload
+{
+    OpenClawChatHistoryPayload(
+        sessionKey: "main", sessionId: sessionID,
+        messages: range.map { index in
+            AnyCodable([
+                "role": "assistant", "timestamp": Double(index),
+                "content": [["type": "text", "text": "History row \(index)"]],
+                "__openclaw": ["id": "row-\(index)"],
+            ])
+        }, thinkingLevel: "off", offset: offset, nextOffset: nextOffset,
+        hasMore: hasMore, totalMessages: total)
+}
+
+extension ChatViewModelTests {
+    @MainActor
+    @Test func `history paging loads earlier rows without fetching them at bootstrap`() async {
+        let page = pagedHistory(1...200, total: 400, offset: 200)
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, offset in
+            #expect(offset == 200)
+            return page
+        })
+        #expect(vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false))
+        #expect(vm.messages.count == 200)
+        #expect(vm.hasEarlierHistory)
+        #expect(await vm.loadEarlierHistory())
+        #expect(vm.messages.count == 400)
+        #expect(vm.messages.first?.transcriptMessageID == "row-1")
+        #expect(vm.messages.last?.transcriptMessageID == "row-400")
+        #expect(!vm.hasEarlierHistory)
+    }
+
+    @MainActor
+    @Test func `history paging preserves loaded prefix across appended latest refresh`() async {
+        let page = pagedHistory(1...200, total: 400, offset: 200)
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, _ in page })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(await vm.loadEarlierHistory())
+        let oldestID = vm.messages.first?.id
+        _ = vm.applyHistoryPayload(
+            pagedHistory(204...403, total: 403, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(vm.messages.count == 403)
+        #expect(vm.messages.first?.id == oldestID)
+        #expect(vm.messages.last?.transcriptMessageID == "row-403")
+        #expect(!vm.hasEarlierHistory)
+    }
+
+    @MainActor
+    @Test func `history paging rebases numeric offset when append races request`() async {
+        let requests = AsyncStringRecorder()
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, offset in
+            await requests.append(String(offset))
+            if offset == 200 { return pagedHistory(4...203, total: 403, offset: 200, nextOffset: 400, hasMore: true) }
+            return pagedHistory(1...200, total: 403, offset: 203)
+        })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(await vm.loadEarlierHistory())
+        #expect(await requests.current() == ["200", "203"])
+        #expect(vm.messages.count == 400)
+        #expect(vm.messages.first?.transcriptMessageID == "row-1")
+    }
+
+    @MainActor
+    @Test func `history paging rejects response after session switch`() async {
+        let gate = SessionSubscribeGate()
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, _ in
+            await gate.wait()
+            return pagedHistory(1...200, total: 400, offset: 200)
+        })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        let request = Task { await vm.loadEarlierHistory() }
+        await gate.waitUntilBlocked()
+        vm.switchSession(to: "other")
+        await gate.release()
+        #expect(await request.value == false)
+        #expect(!vm.hasEarlierHistory)
+        #expect(!vm.isLoadingEarlierHistory)
+        #expect(!vm.messages.contains { $0.transcriptMessageID == "row-1" })
+    }
+
+    @MainActor
+    @Test func `history paging rejects response after latest page replaces its cursor`() async {
+        let gate = SessionSubscribeGate()
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, _ in
+            await gate.wait()
+            return pagedHistory(1...200, total: 400, offset: 200)
+        })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        let request = Task { await vm.loadEarlierHistory() }
+        await gate.waitUntilBlocked()
+        _ = vm.applyHistoryPayload(
+            pagedHistory(202...401, total: 401, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        await gate.release()
+        #expect(await request.value == false)
+        #expect(vm.messages.count == 200)
+        #expect(!vm.isLoadingEarlierHistory)
+    }
+
+    @MainActor
+    @Test func `history paging does not retain different physical session or branch`() async {
+        let page = pagedHistory(1...200, total: 400, offset: 200)
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, _ in page })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(await vm.loadEarlierHistory())
+        _ = vm.applyHistoryPayload(
+            pagedHistory(501...700, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(vm.messages.count == 200)
+        #expect(vm.messages.first?.transcriptMessageID == "row-501")
+        _ = vm.applyHistoryPayload(
+            pagedHistory(601...800, total: 400, nextOffset: 200, hasMore: true, sessionID: "new-session"),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(vm.messages.count == 200)
+        #expect(vm.sessionId == "new-session")
+    }
+}
+
+extension ChatViewModelTests {
+    @MainActor
+    @Test func `history paging consumes an empty projected page without stranding its offset`() async {
+        let page = OpenClawChatHistoryPayload(
+            sessionKey: "main", sessionId: "sess-main", messages: [], thinkingLevel: "off",
+            offset: 200, nextOffset: 400, hasMore: true, totalMessages: 600)
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, _ in page })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(401...600, total: 600, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(await vm.loadEarlierHistory())
+        #expect(vm.earlierHistoryNextOffset == 400)
+        #expect(vm.messages.count == 200)
+        #expect(vm.hasEarlierHistory)
+    }
+
+    @MainActor
+    @Test func `history paging rejects a response while a branch mutation is in progress`() async {
+        let gate = SessionSubscribeGate()
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, _ in
+            await gate.wait()
+            return pagedHistory(1...200, total: 400, offset: 200)
+        })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        let request = Task { await vm.loadEarlierHistory() }
+        await gate.waitUntilBlocked()
+        let mutation = vm.beginSessionBranchSwitchActivity(for: vm.currentSessionSnapshot())
+        await gate.release()
+        #expect(await request.value == false)
+        #expect(vm.messages.count == 200)
+        #expect(!vm.isLoadingEarlierHistory)
+        vm.endSessionBranchSwitchActivity(mutation)
+    }
+}
+
+extension ChatViewModelTests {
+    @MainActor
+    @Test func `history paging does not promote retained provisional prefix into canonical evidence`() async throws {
+        let page = pagedHistory(1...200, total: 400, offset: 200)
+        let (_, vm) = await makeViewModel(historyResponses: [], requestHistoryPageHook: { _, _ in page })
+        _ = vm.applyHistoryPayload(
+            pagedHistory(201...400, total: 400, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(await vm.loadEarlierHistory())
+        let local = try #require(OpenClawChatViewModel.decodeMessages([chatTextMessage(
+            role: "assistant", text: "Local final awaiting persistence", timestamp: 0,
+            idempotencyKey: "not-yet-durable")]).first)
+        vm.replaceMessages([local] + vm.messages)
+        vm.provisionalFinalMessagesByID[local.id] = OpenClawChatViewModel.ProvisionalFinalMessage(
+            reconciliationKey: "local-awaiting-persistence", runId: "not-yet-durable",
+            scope: vm.currentRunMessageScope())
+        _ = vm.applyHistoryPayload(
+            pagedHistory(204...403, total: 403, nextOffset: 200, hasMore: true),
+            for: vm.beginHistoryRequest(), preservingOptimisticLocalMessages: false)
+        #expect(vm.messages.contains { $0.id == local.id })
+        #expect(vm.provisionalFinalMessagesByID[local.id] != nil)
+        #expect(vm.messages.last?.transcriptMessageID == "row-403")
+    }
+}
+
+extension ChatViewModelTests {
+    @Test @MainActor func `cold bootstrap cannot erase newer unanswered foreground history`() async throws {
+        let bootstrapGate = SessionSubscribeGate()
+        let historyCalls = AsyncCounter()
+        let releasedCalls = AsyncCounter()
+        let newest = "Latest user marker 599"
+        let (_, vm) = await makeViewModel(
+            historyResponses: [
+                historyPayload(
+                    sessionId: "sess-main",
+                    messages: [chatTextMessage(role: "assistant", text: "Old diagnostic tail", timestamp: 1)]),
+                historyPayload(
+                    sessionId: "sess-main",
+                    messages: [
+                        chatTextMessage(role: "assistant", text: "Old diagnostic tail", timestamp: 1),
+                        chatTextMessage(role: "user", text: newest, timestamp: 2),
+                    ]),
+            ],
+            requestHistoryHook: { _ in
+                if await historyCalls.increment() == 1 {
+                    await bootstrapGate.wait()
+                    _ = await releasedCalls.increment()
+                }
+            })
+        vm.pendingRunRefreshDelaysMs = []
+        vm.load()
+        try await waitUntil("bootstrap history admitted") { await historyCalls.current() == 1 }
+        vm.resumeFromForeground()
+        try await waitUntil("newer foreground latest row applied") {
+            await MainActor.run { vm.messages.containsUserText(newest) }
+        }
+        await bootstrapGate.release()
+        try await waitUntil("old bootstrap history returned") { await releasedCalls.current() == 1 }
+        try await waitUntil("old bootstrap finished") { await MainActor.run { !vm.isLoading } }
+        #expect(vm.messages.containsUserText(newest))
+        #expect(vm.messages.last?.content.first?.text == newest)
+        vm.detachTransport()
     }
 }

@@ -46,6 +46,28 @@ extension OpenClawChatGatewayTransport {
         try await self.requestChatGateway(request)
     }
 
+    public func listSessionGroups() async throws -> OpenClawChatSessionGroupsResponse? {
+        let data = try await self.requestChatSessionAction(OpenClawChatGatewayRequests.sessionGroupsList())
+        return try JSONDecoder().decode(OpenClawChatSessionGroupsResponse.self, from: data)
+    }
+
+    public func putSessionGroups(names: [String]) async throws -> OpenClawChatSessionGroupsMutationResponse {
+        let data = try await self.requestChatSessionAction(OpenClawChatGatewayRequests.sessionGroupsPut(names: names))
+        return try JSONDecoder().decode(OpenClawChatSessionGroupsMutationResponse.self, from: data)
+    }
+
+    public func renameSessionGroup(name: String, to: String) async throws -> OpenClawChatSessionGroupsMutationResponse {
+        let data = try await self.requestChatSessionAction(OpenClawChatGatewayRequests.sessionGroupsRename(
+            name: name,
+            to: to))
+        return try JSONDecoder().decode(OpenClawChatSessionGroupsMutationResponse.self, from: data)
+    }
+
+    public func deleteSessionGroup(name: String) async throws -> OpenClawChatSessionGroupsMutationResponse {
+        let data = try await self.requestChatSessionAction(OpenClawChatGatewayRequests.sessionGroupsDelete(name: name))
+        return try JSONDecoder().decode(OpenClawChatSessionGroupsMutationResponse.self, from: data)
+    }
+
     public func abortRun(sessionKey: String, runId: String) async throws {
         let target = self.sessionTarget(for: sessionKey, overrideAgentID: nil)
         let request = OpenClawChatGatewayRequests.abortRun(

@@ -179,6 +179,45 @@ private func makeViewModel(
 }
 
 struct ChatViewModelTranscriptCacheTests {
+    @Test func `canonical voice event rows survive switching away and back before history refresh`() async throws {
+        let cache = TestTranscriptCache()
+        let gate = AsyncStream<Void>.makeStream()
+        let transport = GatedHistoryChatTransport { key, number in
+            if number > 1 {
+                var iterator = gate.stream.makeAsyncIterator()
+                _ = await iterator.next()
+            }
+            return historyPayload(
+                sessionKey: key,
+                messages: [liveHistoryMessage(role: "assistant", text: "seed", timestamp: 1)])
+        }
+        let vm = await makeViewModel(transport: transport, cache: cache)
+        try await waitUntil("initial live history") {
+            await MainActor.run { vm.hasAppliedLiveHistory && !vm.isLoading }
+        }
+        await MainActor.run {
+            var user = cacheMessage(role: "user", text: "voice question", timestamp: 2)
+            user.transcriptMessageID = "voice-user"
+            var answer = cacheMessage(role: "assistant", text: "voice answer", timestamp: 3)
+            answer.transcriptMessageID = "voice-answer"
+            for message in [user, answer, answer] {
+                vm.handleTransportEvent(.sessionMessage(OpenClawSessionMessageEventPayload(
+                    sessionKey: "main", message: message, messageId: message.transcriptMessageID, messageSeq: 1)))
+            }
+        }
+        await vm.pendingCacheWriteTask?.value
+        await MainActor.run {
+            vm.switchSession(to: "other")
+            vm.switchSession(to: "main")
+        }
+        try await waitUntil("return cache painted while live history is gated") {
+            await MainActor.run { vm.isShowingCachedTranscript && !vm.messages.isEmpty }
+        }
+        #expect(await visibleTexts(vm) == ["seed", "voice question", "voice answer"])
+        gate.continuation.finish()
+        await MainActor.run { vm.detachTransport() }
+    }
+
     @Test func `cold open paints cached transcript then live history replaces it`() async throws {
         let cache = TestTranscriptCache(
             transcripts: [

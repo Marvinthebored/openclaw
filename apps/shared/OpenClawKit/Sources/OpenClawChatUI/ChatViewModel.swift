@@ -14,7 +14,10 @@ public final class OpenClawChatViewModel {
     static let sessionListFetchLimit = 200
 
     public internal(set) var messages: [OpenClawChatMessage] = [] {
-        didSet { self.sourcePreviewState.update(self.messages) }
+        didSet {
+            self.sourcePreviewState.update(self.messages)
+            self.transcriptRevision &+= 1
+        }
     }
 
     let sourcePreviewState = ChatSourcePreviewState()
@@ -85,6 +88,13 @@ public final class OpenClawChatViewModel {
     }
 
     public internal(set) var isLoading = false
+    public internal(set) var hasEarlierHistory = false
+    public internal(set) var isLoadingEarlierHistory = false
+    var earlierHistorySessionID: String?
+    var earlierHistoryNextOffset: Int?
+    var earlierHistoryTotalMessages: Int?
+    var earlierHistoryGeneration: UInt64 = 0
+    var hasLoadedEarlierHistory = false
     public internal(set) var isSending = false
     public internal(set) var isSendingAttachmentDraft = false
     public internal(set) var isSubmittingDraft = false
@@ -122,7 +132,12 @@ public final class OpenClawChatViewModel {
     var hasActiveSessionRunWithoutChatSnapshot = false
     var activeSessionRunIDs: [String] = []
     var liveRunStateByRunID: [String: ChatLiveRunState] = [:]
-    var narration = ChatNarration()
+    var narration = ChatNarration() {
+        didSet { self.transcriptRevision &+= 1 }
+    }
+
+    /// Bumped on every `messages` or `narration` mutation; keys the view's transcript layout cache.
+    private(set) var transcriptRevision: UInt64 = 0
     public internal(set) var progressCard: ProgressCard?
     var progressCardStoreAvailable: Bool?
     @ObservationIgnored
@@ -142,17 +157,19 @@ public final class OpenClawChatViewModel {
     }
 
     public internal(set) var sessionId: String?
-    public var currentSessionTarget: OpenClawChatSessionTarget {
-        OpenClawChatSessionTarget(
-            sessionKey: self.sessionKey,
-            agentID: OpenClawChatSessionKey.agentID(from: self.sessionKey) == nil
-                ? self.explicitSessionAgentID ?? self.activeAgentId : nil)
-    }
-
     public private(set) var streamingAssistantText: String?
+    /// The run that owns `streamingAssistantText`, so the live bubble renders inside that run's turn.
+    private(set) var streamingAssistantRunID: String?
 
     public private(set) var toolActivities: [OpenClawChatPendingToolCall] = []
     private(set) var timelineRevision: UInt64 = 0
+    // Reader motion follows live user admission, never cache/history/narration hydration.
+    private(set) var liveUserTurnRevision: UInt64 = 0
+    private(set) var liveUserTurnID: UUID?
+    @ObservationIgnored var realtimeVoiceCaptions = ChatRealtimeVoiceCaptions()
+    @ObservationIgnored var pendingRealtimeVoiceTranscriptIDs: Set<String> = []
+    @ObservationIgnored var admittedRealtimeVoiceTranscriptIDs: Set<String> = []
+
     var legacySessions: [OpenClawChatSessionEntry] = []
 
     public internal(set) var sidebarData: OpenClawChatSessionSidebarData?
@@ -215,10 +232,6 @@ public final class OpenClawChatViewModel {
     @ObservationIgnored
     var scopedSessionTransport: (any OpenClawChatTransport)?
     var explicitSessionAgentID: String?
-    var transport: any OpenClawChatTransport {
-        self.scopedSessionTransport ?? self.defaultTransport
-    }
-
     let haptics: OpenClawChatHaptics
     let transcriptCache: (any OpenClawChatTranscriptCache)?
     let outbox: (any OpenClawChatCommandOutbox)?
@@ -763,7 +776,13 @@ extension OpenClawChatViewModel {
         self.timelineRevision &+= 1
     }
 
+    func markLiveUserTurn(id: UUID) {
+        self.liveUserTurnID = id
+        self.liveUserTurnRevision &+= 1
+    }
+
     func appendMessage(_ message: OpenClawChatMessage) {
+        if message.role == "user" { self.markLiveUserTurn(id: message.id) }
         self.messages.append(message)
         self.markTimelineChanged()
     }
@@ -781,7 +800,9 @@ extension OpenClawChatViewModel {
         self.updateStreamingAssistantText(nil)
     }
 
-    func updateStreamingAssistantText(_ text: String?) {
+    func updateStreamingAssistantText(_ text: String?, runID: String? = nil) {
+        let owner = text == nil ? nil : runID
+        if self.streamingAssistantRunID != owner { self.streamingAssistantRunID = owner }
         guard self.streamingAssistantText != text else { return }
         self.streamingAssistantText = text
         self.markTimelineChanged()
@@ -789,16 +810,6 @@ extension OpenClawChatViewModel {
 
     func logDiagnostic(_ message: String) {
         self.diagnosticsLog?(message)
-    }
-
-    func currentSessionSnapshot() -> SessionSnapshot {
-        SessionSnapshot(
-            key: self.sessionKey,
-            generation: self.sessionGeneration,
-            agentID: self.activeAgentId,
-            deliveryAgentID: self.explicitSessionAgentID ??
-                OpenClawChatSessionKey.agentID(from: self.sessionKey) ?? self.activeAgentId,
-            sessionRoutingContract: self.sessionRoutingContract)
     }
 
     func isCurrentSession(_ snapshot: SessionSnapshot) -> Bool {
@@ -830,6 +841,7 @@ extension OpenClawChatViewModel {
         }
         guard self.isCurrentSessionBranchSwitchActivity(activity) else { return }
         if stateApplied {
+            self.resetEarlierHistory()
             for _ in 0..<2 {
                 stateApplied = await self.refreshHistoryAfterRun(
                     historyRequest: self.beginHistoryRequest(for: activity.session)).applied
@@ -1244,12 +1256,16 @@ extension OpenClawChatViewModel {
     /// Clears state owned by the current session/agent before a new identity can consume events.
     func clearSessionOwnedState() {
         self.resetSessionReactions()
+        self.resetEarlierHistory()
         self.invalidateComposerCapabilities()
         self.modelSelectionID = Self.defaultModelSelectionID
         self.modelAvailabilityIsSessionScoped = false
         self.invalidateModelChoices()
         self.modelSelectionPolicy = nil
         self.modelCatalogMessage = nil
+        self.realtimeVoiceCaptions = ChatRealtimeVoiceCaptions()
+        self.pendingRealtimeVoiceTranscriptIDs.removeAll()
+        self.admittedRealtimeVoiceTranscriptIDs.removeAll()
         replaceMessages([])
         self.narration = ChatNarration()
         self.isShowingCachedTranscript = false
@@ -1271,7 +1287,8 @@ extension OpenClawChatViewModel {
         clearPendingRuns(reason: nil)
     }
 
-    func performReset() async {
+    @discardableResult
+    func performReset() async -> Bool {
         let session = self.currentSessionSnapshot()
         self.isLoading = true
         self.errorText = nil
@@ -1279,32 +1296,34 @@ extension OpenClawChatViewModel {
         do {
             try await self.transport.resetSession(sessionKey: session.key)
         } catch {
-            guard self.isCurrentSession(session) else { return }
+            guard self.isCurrentSession(session) else { return false }
             self.isLoading = false
             self.errorText = error.localizedDescription
             chatUILogger.error("session reset failed \(error.localizedDescription, privacy: .public)")
-            return
+            return false
         }
 
-        guard self.isCurrentSession(session) else { return }
+        guard self.isCurrentSession(session) else { return false }
         self.replyTarget = nil
         self.runMessageScopesByRunID.removeAll()
         self.provisionalFinalMessagesByID.removeAll()
         self.narration = ChatNarration()
         self.startBootstrap()
+        return true
     }
 
-    func performCompact() async {
-        guard !self.isCompacting else { return }
+    @discardableResult
+    func performCompact() async -> Bool {
+        guard !self.isCompacting else { return false }
         guard !self.isSending, !hasBlockingRunActivity, !self.isAborting else {
             self.errorText = "Wait for the current response before compacting the thread."
-            return
+            return false
         }
         if let lastCompactAt,
            Date().timeIntervalSince(lastCompactAt) < compactCooldown
         {
             self.errorText = "Please wait before compacting this thread again."
-            return
+            return false
         }
 
         let session = self.currentSessionSnapshot()
@@ -1318,19 +1337,20 @@ extension OpenClawChatViewModel {
         do {
             try await self.transport.compactSession(sessionKey: session.key)
         } catch {
-            guard self.isCurrentSession(session) else { return }
+            guard self.isCurrentSession(session) else { return false }
             self.isLoading = false
             self.errorText = "Unable to compact the thread. Please try again."
             let nsError = error as NSError
             chatUILogger.error(
                 "compact failed domain=\(nsError.domain, privacy: .public) code=\(nsError.code, privacy: .public)")
             chatUILogger.error("compact details=\(String(describing: error), privacy: .private)")
-            return
+            return false
         }
 
-        guard self.isCurrentSession(session) else { return }
+        guard self.isCurrentSession(session) else { return false }
         lastCompactAt = Date()
         self.startBootstrap()
+        return true
     }
 
     private func reserveModelSelection(_ selectionID: String) -> ModelSelectionRequest? {

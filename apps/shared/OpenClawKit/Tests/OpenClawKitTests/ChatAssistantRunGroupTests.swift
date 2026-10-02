@@ -200,6 +200,19 @@ struct ChatAssistantRunGroupTests {
         if scope != "adjacent-unknown" { #expect(rows[2].id == narration.id) }
     }
 
+    @Test
+    func `live output stays inside its own run when a newer turn follows`() {
+        let user1 = Self.message("user", at: 1, run: "r1")
+        let reply1 = Self.message("assistant", at: 2, run: "r1", phase: "commentary")
+        let user2 = Self.message("user", at: 3, run: "r2")
+        let reply2 = Self.message("assistant", at: 4, run: "r2", phase: "commentary")
+        let groups = ChatAssistantRunGroup.build(
+            ChatTranscriptRow.build(from: [user1, reply1, user2, reply2]),
+            liveRunID: "r1", hasLiveContent: true, searchActive: false)
+        #expect(groups.filter(\.includesLive).map(\.runID) == ["r1"])
+        #expect(groups.last?.includesLive == false)
+    }
+
     private static func message(
         _ role: String,
         at timestamp: Double,

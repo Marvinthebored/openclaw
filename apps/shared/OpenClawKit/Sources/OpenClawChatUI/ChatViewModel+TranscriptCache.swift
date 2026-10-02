@@ -5,6 +5,62 @@ import Foundation
 // of truth and replace cached rows wholesale.
 
 extension OpenClawChatViewModel {
+    /// A finalized local relay caption identifies the canonical row, even when history wins its arrival race.
+    public func admitRealtimeVoiceTurn(sessionKey: String, transcriptID: String) {
+        let id = transcriptID.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !self.isTransportDetached, !id.isEmpty,
+              self.matchesCurrentSessionKey(
+                  incoming: sessionKey,
+                  agentId: self.currentSessionSnapshot().deliveryAgentID,
+                  current: self.sessionKey),
+              !self.admittedRealtimeVoiceTranscriptIDs.contains(id)
+        else { return }
+        self.pendingRealtimeVoiceTranscriptIDs.insert(id)
+        if self.reconcileRealtimeVoiceTurns() { self.markTimelineChanged() }
+    }
+
+    @discardableResult
+    func reconcileRealtimeVoiceTurns() -> Bool {
+        guard !self.pendingRealtimeVoiceTranscriptIDs.isEmpty else { return false }
+        var changed = false
+        for message in self.messages where message.role == "user" {
+            guard let id = message.transcriptMessageID,
+                  self.pendingRealtimeVoiceTranscriptIDs.remove(id) != nil else { continue }
+            self.admittedRealtimeVoiceTranscriptIDs.insert(id)
+            self.markLiveUserTurn(id: message.id)
+            changed = true
+        }
+        return changed
+    }
+
+    func persistCanonicalMessageToCache(_ message: OpenClawChatMessage, session: SessionSnapshot) {
+        guard let transcriptCache else { return }
+        let agentID = Self.transcriptCacheAgentID(sessionKey: session.key, agentID: session.deliveryAgentID)
+        let previous = self.pendingCacheWriteTask
+        self.pendingCacheWriteTask = Task.detached {
+            await previous?.value
+            if let key = message.idempotencyKey, !key.isEmpty,
+               let mergingCache = transcriptCache as? any OpenClawChatCanonicalTranscriptMerging
+            {
+                await mergingCache.mergeCanonicalTranscriptMessage(
+                    sessionKey: session.key,
+                    agentID: agentID,
+                    message: message,
+                    canonicalMessageIdempotencyKey: key)
+            } else {
+                let cached = await transcriptCache.loadTranscript(sessionKey: session.key, agentID: agentID)
+                let messages = await MainActor.run {
+                    Self.dedupeMessages(Self.reconcileMessageIDs(previous: cached, incoming: cached + [message]))
+                }
+                await transcriptCache.storeCanonicalTranscript(
+                    sessionKey: session.key,
+                    agentID: agentID,
+                    messages: messages,
+                    canonicalMessageIdempotencyKeys: Set(messages.compactMap(\.idempotencyKey)))
+            }
+        }
+    }
+
     struct SessionSnapshot: Equatable {
         var key: String
         var generation: UInt64
@@ -14,9 +70,11 @@ extension OpenClawChatViewModel {
     }
 
     func replaceMessages(_ messages: [OpenClawChatMessage], narrationSettled: Bool = false) {
-        let reconciled = self.narration.reconcile(messages, settled: narrationSettled)
-        guard self.messages != reconciled.messages || reconciled.changed else { return }
+        let voiceReconciled = self.realtimeVoiceCaptions.reconcile(messages)
+        let reconciled = self.narration.reconcile(voiceReconciled.messages, settled: narrationSettled)
+        guard self.messages != reconciled.messages || reconciled.changed || voiceReconciled.changed else { return }
         self.messages = reconciled.messages
+        self.reconcileRealtimeVoiceTurns()
         self.seedInputHistory(from: reconciled.messages)
         markTimelineChanged()
     }
@@ -135,7 +193,9 @@ extension OpenClawChatViewModel {
             }
         }
         guard messages.isEmpty, !hasAppliedLiveHistory else { return }
+        let pendingWrite = self.pendingCacheWriteTask
         Task { [weak self] in
+            await pendingWrite?.value
             let cached = await transcriptCache.loadTranscript(
                 sessionKey: session.key,
                 agentID: Self.transcriptCacheAgentID(sessionKey: session.key, agentID: session.deliveryAgentID))

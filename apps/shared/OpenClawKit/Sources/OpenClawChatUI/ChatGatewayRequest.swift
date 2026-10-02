@@ -282,7 +282,8 @@ public enum OpenClawChatGatewayRequests {
         label: String?,
         parentSessionKey: String?,
         worktree: Bool?,
-        worktreeBaseRef: String? = nil) -> OpenClawChatGatewayRequest
+        worktreeBaseRef: String? = nil,
+        category: String? = nil) -> OpenClawChatGatewayRequest
     {
         var params = ["key": AnyCodable(key)]
         self.add(agentID, to: &params, key: "agentId")
@@ -290,6 +291,7 @@ public enum OpenClawChatGatewayRequests {
         self.add(parentSessionKey, to: &params, key: "parentSessionKey", trim: false)
         params["worktree"] = worktree.map(AnyCodable.init)
         self.add(worktreeBaseRef, to: &params, key: "worktreeBaseRef")
+        self.add(category, to: &params, key: "category", trim: false)
         return OpenClawChatGatewayRequest(
             method: "sessions.create",
             params: params,
@@ -626,11 +628,13 @@ public enum OpenClawChatGatewayRequests {
         limit: Int? = nil,
         maxChars: Int? = nil,
         inputRunIDs: [String]? = nil,
+        offset: Int? = nil,
         timeoutMs: Int? = nil) -> OpenClawChatGatewayRequest
     {
         var params = self.sessionParams(sessionKey: sessionKey, agentID: agentID, key: "sessionKey")
         params["limit"] = limit.map(AnyCodable.init)
         params["maxChars"] = maxChars.map(AnyCodable.init)
+        params["offset"] = offset.map(AnyCodable.init)
         if let inputRunIDs, !inputRunIDs.isEmpty {
             params["inputRunIds"] = AnyCodable(inputRunIDs)
         }

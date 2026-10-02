@@ -10,6 +10,12 @@ struct RootSidebar: View {
     @State private var searchText = ""
     @State private var isSearchActive = false
     @State private var showsPagesEditor = false
+    @State private var showsSessionOrganizer = false
+    @State private var textEditor: CommandSessionEditorRequest?
+    @State private var groupBeingDeleted: String?
+    @State private var editorText = ""
+    @State private var isCreatingSession = false
+    @AppStorage("sidebar.sessionOrder") private var sessionOrderStorage = Data()
     @State private var presentedAttention: OpenClawChatAttentionPresentation?
     @FocusState private var isSearchFocused: Bool
     @AppStorage("sidebar.pinnedPages") private var pinnedPagesStorage: String = ""
@@ -50,6 +56,43 @@ struct RootSidebar: View {
                 self.presentedAttention = nil
                 self.isSearchFocused = false
             }
+        }
+        .onChange(of: self.organizerScope) { _, _ in
+            self.textEditor = nil
+            self.groupBeingDeleted = nil
+            self.showsSessionOrganizer = false
+        }
+        .task(id: "\(self.organizerScope):\(self.appModel.isOperatorGatewayConnected)") {
+            await self.model.refreshGroups(appModel: self.appModel)
+        }
+        .sheet(item: self.$textEditor) { request in
+            CommandSessionTextEditor(
+                title: request.title,
+                placeholder: request.placeholder,
+                text: self.$editorText,
+                saveTitle: request.saveTitle,
+                onSave: {
+                    let value = self.editorText
+                    self.textEditor = nil
+                    request.onSave(value)
+                },
+                onCancel: { self.textEditor = nil })
+        }
+        .sheet(isPresented: self.$showsSessionOrganizer) {
+            let scope = self.organizerScope
+            RootSidebarOrganizer(
+                groups: self.sessionGroups,
+                sections: self.visibleSessionSections,
+                onReorderGroups: { names in
+                    guard scope == self.organizerScope else { return false }
+                    return await self.model
+                        .mutateGroups(appModel: self.appModel) { try await $0.putGroups(names: names) }
+                },
+                onReorderSessions: { keys in
+                    guard scope == self.organizerScope else { return }
+                    self.saveSessionOrder(keys)
+                })
+                .id(scope)
         }
         .sheet(isPresented: self.$showsPagesEditor) {
             RootSidebarPagesEditor(
@@ -101,6 +144,12 @@ struct RootSidebar: View {
             .padding(.leading, 6)
 
             Spacer(minLength: 4)
+
+            self.headerIconButton(systemName: "line.3.horizontal", label: String(localized: "Reorder sessions")) {
+                self.showsSessionOrganizer = true
+            }
+            .accessibilityIdentifier("RootTabs.Sidebar.Organizer")
+            .disabled(!self.appModel.isOperatorGatewayConnected)
 
             self.headerIconButton(
                 systemName: "magnifyingglass",
@@ -398,9 +447,12 @@ struct RootSidebar: View {
                         Spacer(minLength: 0)
                         self.attentionBadges(
                             for: Self.flattened(section.nodes).map(\.session), targetID: "section:\(section.id)")
+                        if section.id.hasPrefix("group:"), let name = section.title {
+                            self.groupControls(name)
+                        }
                     }
-                    ForEach(self.sessionNodes(for: section)) { node in
-                        self.sessionButton(node, selectedSessionKey: selectedSessionKey)
+                    ForEach(self.sessionRows(for: section)) { row in
+                        self.sessionButton(row.node, selectedSessionKey: selectedSessionKey, depth: row.depth)
                     }
                 }
             }
@@ -442,8 +494,8 @@ struct RootSidebar: View {
                 .accessibilityLabel(String(localized: "Edit Pages"))
             }
             self.homeRow
-            ForEach(pinnedSessionNodes) { node in
-                self.sessionButton(node, selectedSessionKey: self.resolvedSelectedSessionKey)
+            ForEach(ChatSessionSidebarModel.rows(pinnedSessionNodes)) { row in
+                self.sessionButton(row.node, selectedSessionKey: self.resolvedSelectedSessionKey, depth: row.depth)
             }
             ForEach(self.pinnedPages) { destination in
                 self.destinationButton(destination)
@@ -557,7 +609,8 @@ struct RootSidebar: View {
             mainSessionKey: self.appModel.defaultChatSessionKey,
             activeAgentID: self.appModel.chatAgentId,
             groups: self.sessionGroups,
-            sessionRoutingContract: self.appModel.chatSessionRoutingContract)
+            sessionRoutingContract: self.appModel.chatSessionRoutingContract,
+            orderedSessionKeys: self.sessionOrder)
     }
 
     struct SessionLayout: Equatable {
@@ -572,30 +625,48 @@ struct RootSidebar: View {
         var remainingSections = sections
         let pinnedSection = remainingSections.remove(at: pinnedIndex)
         return SessionLayout(
-            pinnedNodes: self.flattened(pinnedSection.nodes),
+            pinnedNodes: pinnedSection.nodes,
             sections: remainingSections)
     }
 
+    private var organizerScope: String {
+        RootSidebarModel.organizerScope(self.appModel)
+    }
+
+    private var sessionOrder: [String] {
+        (try? JSONDecoder().decode([String: [String]].self, from: self.sessionOrderStorage))?[self.organizerScope] ?? []
+    }
+
+    private func saveSessionOrder(_ keys: [String]) {
+        var orders = (try? JSONDecoder().decode([String: [String]].self, from: self.sessionOrderStorage)) ?? [:]
+        orders[self.organizerScope] = keys
+        if let data = try? JSONEncoder().encode(orders) { self.sessionOrderStorage = data }
+    }
+
     private var sessionCategories: [String] {
-        CommandSessionGrouping.categories(from: self.model.sessions, knownGroups: SessionGroupStore.load())
+        self.sessionGroups.map(\.name)
     }
 
     private var sessionGroups: [OpenClawChatSessionGroup] {
-        self.sessionCategories.enumerated().map { offset, name in
-            OpenClawChatSessionGroup(name: name, position: offset)
-        }
+        let known = self.model.groups.sorted { $0.position < $1.position }
+        let names = Set(known.map(\.name))
+        let fallback = CommandSessionGrouping.categories(
+            from: self.model.sessions,
+            knownGroups: SessionGroupStore.load())
+            .filter { !names.contains($0) }
+        return known + fallback.enumerated().map { .init(name: $0.element, position: known.count + $0.offset) }
     }
 
     private static func flattened(_ nodes: [ChatSessionSidebarModel.Node]) -> [ChatSessionSidebarModel.Node] {
         nodes.flatMap { [$0] + self.flattened($0.children) }
     }
 
-    private func sessionNodes(for section: ChatSessionSidebarModel.Section) -> [ChatSessionSidebarModel.Node] {
-        let nodes = Self.flattened(section.nodes)
+    private func sessionRows(for section: ChatSessionSidebarModel.Section) -> [ChatSessionSidebarModel.Row] {
+        let nodes = section.nodes
         guard section.id == "recent", let limit = Self.recentSessionCap(searchText: self.searchText) else {
-            return nodes
+            return ChatSessionSidebarModel.rows(nodes)
         }
-        return Array(nodes.prefix(limit))
+        return ChatSessionSidebarModel.rows(Array(nodes.prefix(limit)))
     }
 
     static func recentSessionCap(searchText: String) -> Int? {
@@ -604,7 +675,8 @@ struct RootSidebar: View {
 
     private func sessionButton(
         _ node: ChatSessionSidebarModel.Node,
-        selectedSessionKey: String) -> some View
+        selectedSessionKey: String,
+        depth: Int = 0) -> some View
     {
         let session = node.session
         let isSelected = session.key == selectedSessionKey
@@ -677,6 +749,7 @@ struct RootSidebar: View {
             .overlay(alignment: .leading) {
                 OpenClawSessionColorStripe(color: session.color)
             }
+            .accessibilityIdentifier("RootTabs.Sidebar.Session.\(session.key)")
             .commandSessionActions(
                 session: session,
                 mainSessionKey: self.resolvedMainSessionKey,
@@ -688,6 +761,8 @@ struct RootSidebar: View {
                 canDelete: ChatSessionSidebarModel.canDeleteSession(
                     key: session.key,
                     mainSessionKey: self.resolvedMainSessionKey),
+                showsMenuButton: true,
+                presentEditor: self.presentTextEditor,
                 actions: .gateway(
                     session: session,
                     performMutation: self.performSessionMutation,
@@ -697,6 +772,7 @@ struct RootSidebar: View {
                 isUnread: session.unread == true))
             self.attentionBadges(for: Self.flattened([node]).map(\.session), targetID: "session:\(session.key)")
         }
+        .padding(.leading, CGFloat(min(depth, 6)) * 16)
     }
 
     private func attentionBadges(for sessions: [OpenClawChatSessionEntry], targetID: String) -> some View {
@@ -921,6 +997,91 @@ struct RootSidebarPagesEditor: View {
                 isPinned
                     ? String(localized: "Pinned")
                     : String(localized: "Not pinned"))
+        }
+    }
+}
+
+extension RootSidebar {
+    private func presentTextEditor(_ request: CommandSessionEditorRequest) {
+        self.editorText = request.text
+        self.textEditor = request
+    }
+
+    private func groupControls(_ name: String) -> some View {
+        HStack(spacing: 0) {
+            Button {
+                guard !self.isCreatingSession else { return }
+                self.isCreatingSession = true
+                Task {
+                    defer { self.isCreatingSession = false }
+                    if let key = await self.model.createSession(in: name, appModel: self.appModel) {
+                        self.appModel.openChat(sessionKey: key)
+                        self.selectSidebarDestination(.chat)
+                    }
+                }
+            } label: {
+                Image(systemName: "plus")
+                    .font(OpenClawType.captionSemiBold)
+                    .frame(width: 40, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(self.isCreatingSession)
+            .accessibilityLabel(String(format: String(localized: "New session in %@"), name))
+            .accessibilityIdentifier("RootTabs.Sidebar.NewSession.\(name)")
+            Menu {
+                Button {
+                    self.presentTextEditor(CommandSessionEditorRequest(
+                        title: String(localized: "Rename Group"),
+                        placeholder: String(localized: "Group name"),
+                        text: name,
+                        saveTitle: String(localized: "Rename"),
+                        onSave: { next in
+                            Task {
+                                _ = await self.model.mutateGroups(appModel: self.appModel) {
+                                    try await $0.renameGroup(name: name, to: next)
+                                }
+                            }
+                        }))
+                } label: { Label("Rename Group…", systemImage: "pencil").font(OpenClawType.subhead) }
+                Button { self.showsSessionOrganizer = true } label: {
+                    Label("Reorder…", systemImage: "line.3.horizontal").font(OpenClawType.subhead)
+                }
+                Button(role: .destructive) { self.groupBeingDeleted = name } label: {
+                    Label("Delete Group…", systemImage: "folder.badge.minus").font(OpenClawType.subhead)
+                }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(OpenClawType.captionSemiBold)
+                    .frame(width: 40, height: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(String(format: String(localized: "%@ group actions"), name))
+            .accessibilityIdentifier("RootTabs.Sidebar.GroupMenu.\(name)")
+        }
+        .foregroundStyle(OpenClawSidebarPalette.muted)
+        .disabled(!self.appModel.isOperatorGatewayConnected)
+        .confirmationDialog(
+            String(localized: "Delete Group?"),
+            isPresented: Binding(
+                get: { self.groupBeingDeleted == name },
+                set: { if !$0, self.groupBeingDeleted == name { self.groupBeingDeleted = nil } }),
+            titleVisibility: .visible)
+        {
+            Button(role: .destructive) {
+                guard let name = self.groupBeingDeleted else { return }
+                self.groupBeingDeleted = nil
+                Task {
+                    _ = await self.model.mutateGroups(appModel: self.appModel) { try await $0.deleteGroup(name: name) }
+                }
+            } label: { Text("Delete Group").font(OpenClawType.subheadSemiBold) }
+            Button(role: .cancel) { self.groupBeingDeleted = nil } label: {
+                Text("Cancel").font(OpenClawType.subheadSemiBold)
+            }
+        } message: {
+            Text("Sessions in this group will become ungrouped. No transcripts are deleted.")
+                .font(OpenClawType.body)
         }
     }
 }

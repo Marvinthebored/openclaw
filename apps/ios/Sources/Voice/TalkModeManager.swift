@@ -216,6 +216,8 @@ final class TalkModeManager: NSObject {
     private var transcriptProcessingGeneration: UInt64 = 0
     private var continuousTranscriptProcessingGeneration: UInt64?
     private var pttAudioOwnershipEndHandler: (@MainActor (String) -> Void)?
+    @ObservationIgnored private var realtimeVoiceTranscriptHandler: (@MainActor (String, RealtimeTalkTranscript)
+        -> Void)?
     private var pttAutoStopEnabled: Bool = false
     private var pttOnceOperations: [String: TalkPushToTalkOnceOperation] = [:]
     private var pttTimeoutTask: Task<Void, Never>?
@@ -1276,6 +1278,10 @@ final class TalkModeManager: NSObject {
         ])
     }
 
+    func setRealtimeVoiceTranscriptHandler(_ handler: @escaping @MainActor (String, RealtimeTalkTranscript) -> Void) {
+        self.realtimeVoiceTranscriptHandler = handler
+    }
+
     func setPushToTalkAudioOwnershipEndHandler(_ handler: (@MainActor (String) -> Void)?) {
         self.pttAudioOwnershipEndHandler = handler
     }
@@ -2242,6 +2248,13 @@ final class TalkModeManager: NSObject {
         return true
     }
 
+    private func handleRealtimeVoiceTranscript(
+        _ transcript: RealtimeTalkTranscript, sessionKey: String, generation: UInt64)
+    {
+        guard self.realtimeRelayGeneration == generation else { return }
+        self.realtimeVoiceTranscriptHandler?(sessionKey, transcript)
+    }
+
     private func startRealtimeRelayIfAvailable(
         attemptID: Int,
         voiceChange: TalkVoiceChangeEvent? = nil) async -> RealtimeStartResult
@@ -2333,6 +2346,10 @@ final class TalkModeManager: NSObject {
             onOutputLevel: { [weak self] level in
                 guard let self, self.realtimeRelayGeneration == relayGeneration else { return }
                 self.playbackLevel = level
+            },
+            onTranscript: { [weak self] transcript in
+                self?.handleRealtimeVoiceTranscript(
+                    transcript, sessionKey: sessionKey, generation: relayGeneration)
             })
         self.realtimeRelaySession = relaySession
         do {
@@ -4728,6 +4745,17 @@ extension TalkModeManager: TalkRealtimeWebRTCSessionDelegate {
 
 #if DEBUG
 extension TalkModeManager {
+    func _test_receiveRealtimeVoiceTranscript(
+        _ transcript: RealtimeTalkTranscript,
+        sessionKey: String = "main",
+        generation: UInt64? = nil)
+    {
+        self.handleRealtimeVoiceTranscript(
+            transcript,
+            sessionKey: sessionKey,
+            generation: generation ?? self.realtimeRelayGeneration)
+    }
+
     func _test_preparePrefetchedRealtimeVoiceSession(
         _ voiceSessionId: String,
         gateway: GatewayNodeSession,

@@ -281,6 +281,25 @@ extension OpenClawChatViewModel {
         }).map { messages.index(after: $0) } ?? messages.startIndex
     }
 
+    /// Server rows precede the optimistic echoes of LATER runs the server hasn't confirmed yet: a
+    /// reply to turn 1 that lands after the user already sent turn 2 belongs above turn 2's echo.
+    static func appending(
+        _ message: OpenClawChatMessage,
+        runID: String?,
+        beforeEchoesOf pendingEchoIDsByRunID: [String: UUID],
+        to messages: [OpenClawChatMessage]) -> [OpenClawChatMessage]
+    {
+        guard let runID else { return messages + [message] }
+        let laterEchoIDs = Set(pendingEchoIDsByRunID.filter { $0.key != runID }.values)
+        var index = messages.endIndex
+        while index > messages.startIndex, laterEchoIDs.contains(messages[index - 1].id) {
+            index -= 1
+        }
+        var result = messages
+        result.insert(message, at: index)
+        return result
+    }
+
     static func messageRange(
         after latestUserTurn: LatestUserTurn?,
         in messages: [OpenClawChatMessage]) -> Range<[OpenClawChatMessage].Index>
@@ -498,7 +517,11 @@ extension OpenClawChatViewModel {
         // The durable session.message arrives at its transcript position. A
         // steering row may have been delivered after chat.final, so append the
         // adopted row here while retaining the provisional UUID.
-        updated.append(Self.adoptingCanonicalMessage(incoming, over: existing))
+        updated = Self.appending(
+            Self.adoptingCanonicalMessage(incoming, over: existing),
+            runID: provisional?.runId ?? ChatPayloadDecoding.trimmedNonEmptyString(incoming.transcriptRunID),
+            beforeEchoesOf: self.pendingLocalUserEchoMessageIDsByRunID,
+            to: updated)
         self.provisionalFinalMessagesByID.removeValue(forKey: existing.id)
         if let runId = provisional?.runId {
             self.runMessageScopesByRunID.removeValue(forKey: runId)
@@ -716,6 +739,7 @@ extension OpenClawChatViewModel {
         guard self.canApplyHistory(request) else { return false }
         let incoming = self.adoptingProvisionalFinalMessageIDs(
             in: Self.decodeMessages(payload.messages ?? [], activity: payload.activity))
+        let earlierPrefix = self.retainedEarlierHistoryPrefix(payload, incoming: incoming)
         let unmatchedProvisionalFinalIDs = Set(provisionalFinalMessagesMissing(from: incoming).map(\.id))
         var retainedMessageIDs = unmatchedProvisionalFinalIDs
         if request.historyMutationGeneration != self.historyMutationGeneration {
@@ -743,7 +767,7 @@ extension OpenClawChatViewModel {
         nextMessages.append(contentsOf: self.messages.filter { message in
             retainedMessageIDs.contains(message.id) && !reconciledMessageIDs.contains(message.id)
         })
-        nextMessages = Self.dedupeMessages(nextMessages)
+        nextMessages = Self.dedupeMessages(earlierPrefix + nextMessages)
         // Explicit idle includes terminal persistence. Only a current, complete
         // snapshot may retire narration absent from canonical history.
         let narrationSettled = payload.sessionInfo?.hasActiveRun == false &&
@@ -753,6 +777,8 @@ extension OpenClawChatViewModel {
             unmatchedProvisionalFinalIDs.isEmpty &&
             (!preservingOptimisticLocalMessages || !incoming.isEmpty)
         replaceMessages(nextMessages, narrationSettled: narrationSettled)
+        // Accepted history can admit rows while an older bootstrap is still in flight.
+        self.invalidateHistorySnapshots()
         confirmOutboxCommands(in: incoming)
         self.prunePendingLocalUserEchoMessageIDs()
         self.clearProvisionalFinalMarkersAdoptedByHistory(incoming)

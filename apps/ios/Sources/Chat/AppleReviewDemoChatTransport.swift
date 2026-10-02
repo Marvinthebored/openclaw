@@ -1,5 +1,6 @@
 import Foundation
 import OpenClawChatUI
+import OpenClawKit
 import OpenClawProtocol
 
 enum AppleReviewDemoMode {
@@ -129,6 +130,22 @@ struct LocalChatFixture {
 }
 
 struct LocalFixtureChatTransport: OpenClawChatTransport {
+    func loadMediaArtifact(
+        sessionKey _: String,
+        artifactId _: String,
+        kind: OpenClawChatMediaKind,
+        playback _: OpenClawChatPlaybackMode?) async throws -> OpenClawChatLoadedMedia?
+    {
+        guard ProcessInfo.processInfo.arguments.contains("--openclaw-audit-fixture") else { return nil }
+        // swiftlint:disable line_length
+        let encoded = kind == .image ?
+            "iVBORw0KGgoAAAANSUhEUgAAAoAAAADwCAIAAAAfEkKcAAAGtElEQVR4nO3VQQ2AQAADQbSgA00YwefpwEM/TZNJRsPudX8HGHXeBxh11QsCxOoFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiP2e5OyS3rtABAAAAAElFTkSuQmCC" :
+            "UklGRqQMAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YYAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+        // swiftlint:enable line_length
+        guard let data = Data(base64Encoded: encoded) else { return nil }
+        return .data(OpenClawChatMediaData(data: data, mimeType: kind == .image ? "image/png" : "audio/wav"))
+    }
+
     var supportsComposerCapabilities: Bool {
         true
     }
@@ -190,9 +207,16 @@ struct LocalFixtureChatTransport: OpenClawChatTransport {
     private let store: LocalFixtureChatStore
     private let reactionsRouteID = UUID()
 
-    init(fixture: LocalChatFixture) {
+    init(
+        fixture: LocalChatFixture,
+        onRealtimeVoiceTurn: (@MainActor @Sendable (String, String) -> Void)? = nil,
+        onRealtimeVoiceTranscript: (@MainActor @Sendable (String, RealtimeTalkTranscript) -> Void)? = nil)
+    {
         self.fixture = fixture
-        self.store = LocalFixtureChatStore(fixture: fixture)
+        self.store = LocalFixtureChatStore(
+            fixture: fixture,
+            onRealtimeVoiceTurn: onRealtimeVoiceTurn,
+            onRealtimeVoiceTranscript: onRealtimeVoiceTranscript)
     }
 
     func createSession(
@@ -258,7 +282,14 @@ struct LocalFixtureChatTransport: OpenClawChatTransport {
             })
     }
 
+    func requestHistoryPage(sessionKey: String, offset: Int) async throws -> OpenClawChatHistoryPayload {
+        try await self.store.history(sessionKey: sessionKey, offset: offset)
+    }
+
     func listModels(agentID _: String?) async throws -> [OpenClawChatModelChoice] {
+        if ProcessInfo.processInfo.arguments.contains("--openclaw-delayed-metadata-fixture") {
+            try await Task.sleep(for: .seconds(20))
+        }
         if ProcessInfo.processInfo.arguments.contains("--openclaw-unavailable-model-fixture") {
             return try OpenClawChatGatewayPayloadCodec.decodeModelChoices(Data(#"""
             {"models":[
@@ -433,6 +464,11 @@ struct LocalFixtureChatTransport: OpenClawChatTransport {
             continuation.yield(.health(ok: true))
             Task {
                 await self.store.setEventContinuation(continuation)
+                if ProcessInfo.processInfo.arguments.contains("--openclaw-realtime-caption-fixture") {
+                    await self.store.emitRealtimeVoiceCaptions()
+                } else if ProcessInfo.processInfo.arguments.contains("--openclaw-realtime-voice-history-fixture") {
+                    await self.store.emitRealtimeVoiceHistory()
+                }
             }
         }
     }
@@ -462,10 +498,106 @@ private actor LocalFixtureChatStore {
     private var toolOverrides: OpenClawChatSessionToolOverrides?
     private var reactionOverrides: [String: [OpenClawChatReactionSummary]] = [:]
 
-    init(fixture: LocalChatFixture) {
+    private let onRealtimeVoiceTurn: (@MainActor @Sendable (String, String) -> Void)?
+
+    private let onRealtimeVoiceTranscript: (@MainActor @Sendable (String, RealtimeTalkTranscript) -> Void)?
+
+    init(
+        fixture: LocalChatFixture,
+        onRealtimeVoiceTurn: (@MainActor @Sendable (String, String) -> Void)?,
+        onRealtimeVoiceTranscript: (@MainActor @Sendable (String, RealtimeTalkTranscript) -> Void)?)
+    {
         self.fixture = fixture
         self.messages = Self.seedMessages(fixture: fixture)
         self.modelID = fixture.modelID
+        self.onRealtimeVoiceTurn = onRealtimeVoiceTurn
+        self.onRealtimeVoiceTranscript = onRealtimeVoiceTranscript
+    }
+
+    func emitRealtimeVoiceCaptions() async {
+        // Explicit local UI-test fixture; no microphone, provider or operator Gateway is used.
+        try? await Task.sleep(for: .seconds(5))
+        let now = Date().timeIntervalSince1970 * 1000
+        let user = Self.message(role: "user", text: "Which build is installed?", timestamp: now)
+        let consult = OpenClawChatMessage(
+            role: "assistant",
+            content: [.init(
+                type: "text",
+                text: "The build went on at about 14:15.",
+                mimeType: nil,
+                fileName: nil,
+                content: nil)],
+            timestamp: now + 1,
+            transcriptMessageID: "consult:fixture",
+            model: "consult-model",
+            phase: "final_answer")
+        self.messages += [user, consult]
+        for message in [user, consult] {
+            self.eventContinuation?.yield(.sessionMessage(OpenClawSessionMessageEventPayload(
+                sessionKey: self.fixture.sessionKey,
+                message: message,
+                messageId: message.transcriptMessageID,
+                messageSeq: nil)))
+        }
+        for fragment in ["Chat", "GPT", " version 1.2", " is installed."] {
+            await self.onRealtimeVoiceTranscript?(
+                self.fixture.sessionKey,
+                RealtimeTalkTranscript(
+                    role: "assistant",
+                    text: fragment,
+                    isFinal: false,
+                    relaySessionID: "caption-fixture"))
+            try? await Task.sleep(for: .seconds(2))
+        }
+        let text = "ChatGPT version 1.2 is installed."
+        let id = "voice:caption-fixture:2"
+        await self.onRealtimeVoiceTranscript?(
+            self.fixture.sessionKey,
+            RealtimeTalkTranscript(
+                role: "assistant",
+                text: text,
+                isFinal: true,
+                transcriptID: id,
+                relaySessionID: "caption-fixture"))
+        try? await Task.sleep(for: .seconds(2))
+        let spoken = OpenClawChatMessage(
+            role: "assistant",
+            content: [.init(type: "text", text: text, mimeType: nil, fileName: nil, content: nil)],
+            timestamp: now + 2,
+            transcriptMessageID: id,
+            model: "realtime-voice",
+            provenance: .init(kind: "realtime_voice", sourceChannel: "talk"))
+        self.messages.append(spoken)
+        self.eventContinuation?.yield(.sessionMessage(OpenClawSessionMessageEventPayload(
+            sessionKey: self.fixture.sessionKey,
+            message: spoken,
+            messageId: id,
+            messageSeq: 2)))
+    }
+
+    func emitRealtimeVoiceHistory() async {
+        let coalesced = ProcessInfo.processInfo.arguments.contains("--openclaw-coalesced-voice-fixture")
+        try? await Task.sleep(for: .seconds(coalesced ? 6 : 2))
+        let now = Date().timeIntervalSince1970 * 1000
+        let id = "voice:fixture:1"
+        var user = Self.message(role: "user", text: "REALTIME_VOICE_QUESTION", timestamp: now)
+        user.transcriptMessageID = id
+        self.messages.append(user)
+        if !coalesced { await self.onRealtimeVoiceTurn?(self.fixture.sessionKey, id) }
+        guard let event = try? Self.decode(
+            ["sessionKey": self.fixture.sessionKey, "reason": "message", "phase": "message"],
+            as: OpenClawChatSessionsChangedEvent.self) else { return }
+        if !coalesced {
+            self.eventContinuation?.yield(.sessionsChanged(event))
+            try? await Task.sleep(for: .seconds(1))
+        }
+        self.messages.append(Self.message(
+            role: "assistant",
+            text: String(repeating: "Completed realtime voice answer paragraph.\n\n", count: 40) +
+                "REALTIME_VOICE_REPLY_TAIL",
+            timestamp: now + 1))
+        if coalesced { await self.onRealtimeVoiceTurn?(self.fixture.sessionKey, id) }
+        self.eventContinuation?.yield(.sessionsChanged(event))
     }
 
     func createSession(key: String) throws -> OpenClawChatCreateSessionResponse {
@@ -474,23 +606,56 @@ private actor LocalFixtureChatStore {
             as: OpenClawChatCreateSessionResponse.self)
     }
 
-    func history(sessionKey: String) throws -> OpenClawChatHistoryPayload {
+    private var reentryHistoryCount = 0
+
+    func history(sessionKey: String, offset: Int = 0) async throws -> OpenClawChatHistoryPayload {
         let normalizedSessionKey = Self.normalizedSessionKey(sessionKey, fallback: self.fixture.sessionKey)
+        let reentry = ProcessInfo.processInfo.arguments.contains("--openclaw-voice-reentry-fixture")
+        if reentry, normalizedSessionKey == self.fixture.sessionKey {
+            self.reentryHistoryCount += 1
+            if self.reentryHistoryCount > 2 { try? await Task.sleep(for: .seconds(3)) }
+        }
+        let longAnchorFixture = ProcessInfo.processInfo.arguments.contains("--openclaw-long-history-anchor-fixture")
+        let anchorFixture = longAnchorFixture ||
+            ProcessInfo.processInfo.arguments.contains("--openclaw-history-anchor-fixture")
+        if anchorFixture, offset > 0 { try await Task.sleep(for: .seconds(2)) }
+        let messages = anchorFixture ? (0..<(longAnchorFixture ? 600 : 18)).map { index in
+            Self.message(
+                role: index.isMultiple(of: 2) ? "user" : "assistant",
+                text: "HISTORY_ANCHOR_\(index): " + String(
+                    repeating: "A readable history paragraph.\n\n",
+                    count: longAnchorFixture ? 1 + index % 4 : 4),
+                timestamp: Double(index + 1),
+                transcriptMessageID: longAnchorFixture ? "long-history-\(index)" : nil,
+                transcriptRunID: longAnchorFixture ? "long-history-run-\(index / 2)" : nil)
+        } : reentry && normalizedSessionKey != self.fixture.sessionKey
+            ? [Self.message(role: "assistant", text: "OTHER_CHAT_FIXTURE", timestamp: 1)] : self.messages
+        let shortPage = ProcessInfo.processInfo.arguments.contains("--openclaw-paged-history-short-fixture")
+        let isPaged = anchorFixture || shortPage ||
+            ProcessInfo.processInfo.arguments.contains("--openclaw-paged-history-fixture")
+        let end = max(0, messages.count - offset)
+        let pageSize = anchorFixture ? (longAnchorFixture ? 101 : 6) : (shortPage && offset == 0 ? 1 : 49)
+        let start = isPaged ? max(0, end - pageSize) : 0
         return try Self.decode(
             HistoryPayload(
                 sessionKey: normalizedSessionKey,
                 sessionId: "\(self.fixture.sessionIDPrefix)-\(normalizedSessionKey)",
-                messages: self.messages,
+                messages: isPaged ? Array(messages[start..<end]) : messages,
                 thinkingLevel: self.thinkingLevel,
-                inFlightRun: ProcessInfo.processInfo.arguments.contains("--openclaw-streaming-layout-fixture")
+                inFlightRun: (ProcessInfo.processInfo.arguments.contains("--openclaw-streaming-layout-fixture") ||
+                    ProcessInfo.processInfo.arguments.contains("--openclaw-reader-tool-churn-fixture"))
                     ? self.activeRunID.map {
                         OpenClawChatInFlightRun(
                             runId: $0,
-                            text: String(repeating: "Streaming layout response. ", count: 12))
+                            text: self.layoutStreamingText)
                     } : nil,
                 sessionInfo: OpenClawChatSessionInfo(
                     hasActiveRun: self.activeRunID != nil,
-                    activeRunIds: self.activeRunID.map { [$0] })),
+                    activeRunIds: self.activeRunID.map { [$0] }),
+                hasMore: isPaged ? start > 0 : nil,
+                nextOffset: isPaged && start > 0 ? offset + end - start : nil,
+                totalMessages: isPaged ? messages.count : nil,
+                offset: isPaged ? offset : nil),
             as: OpenClawChatHistoryPayload.self)
     }
 
@@ -516,6 +681,13 @@ private actor LocalFixtureChatStore {
         {
             self.heldInitialRun = true
             self.activeRunID = runId
+            if ProcessInfo.processInfo.arguments.contains("--openclaw-reader-tool-churn-fixture") {
+                self.layoutStreamingText = ""
+                Task { await self.emitReaderToolChurn(runId: runId) }
+            } else if ProcessInfo.processInfo.arguments.contains("--openclaw-growing-stream-fixture") {
+                self.layoutStreamingText = ""
+                Task { await self.emitGrowingLayoutReply(runId: runId) }
+            }
             return try Self.decode(
                 SendPayload(runId: runId, status: "started"),
                 as: OpenClawChatSendResponse.self)
@@ -533,6 +705,62 @@ private actor LocalFixtureChatStore {
         return try Self.decode(
             SendPayload(runId: runId, status: "ok"),
             as: OpenClawChatSendResponse.self)
+    }
+
+    private var layoutStreamingText = String(repeating: "Streaming layout response. ", count: 12)
+
+    private func emitGrowingLayoutReply(runId: String) async {
+        for chunk in 1...12 {
+            try? await Task.sleep(for: .milliseconds(350))
+            guard self.activeRunID == runId else { return }
+            self.layoutStreamingText = String(repeating: "Streaming layout response.\n\n", count: chunk * 8) +
+                "GROWING_LIVE_TAIL_\(chunk)"
+            let message: [String: Any] = [
+                "role": "assistant", "content": [["type": "text", "text": self.layoutStreamingText]],
+            ]
+            self.eventContinuation?.yield(.chat(OpenClawChatEventPayload(
+                runId: runId, sessionKey: nil, state: "delta", message: AnyCodable(message), errorMessage: nil)))
+        }
+    }
+
+    private func emitReaderToolChurn(runId: String) async {
+        try? await Task.sleep(for: .seconds(10))
+        for tick in 1...20 {
+            guard self.activeRunID == runId else { return }
+            self.emitReaderEvent(
+                runId: runId,
+                seq: tick * 2 - 1,
+                stream: "tool",
+                data: [
+                    "phase": AnyCodable("start"),
+                    "name": AnyCodable("read"),
+                    "toolCallId": AnyCodable("reader-tool-\(tick)"),
+                    "args": AnyCodable(["file_path": "reader-step-\(tick).md"]),
+                ])
+            self.layoutStreamingText = String(repeating: "Tool stream output paragraph.\n\n", count: tick * 2) +
+                "TOOL_CHURN_STEP_\(tick)"
+            self.emitReaderEvent(
+                runId: runId,
+                seq: tick * 2,
+                stream: "assistant",
+                data: ["text": AnyCodable(self.layoutStreamingText)])
+            try? await Task.sleep(for: .seconds(1))
+        }
+    }
+
+    private func emitReaderEvent(runId: String, seq: Int, stream: String, data: [String: AnyCodable]) {
+        let payload = ReaderEventPayload(
+            runId: runId,
+            seq: seq,
+            stream: stream,
+            ts: Int(Date().timeIntervalSince1970 * 1000),
+            data: data)
+        do {
+            let event = try Self.decode(payload, as: OpenClawAgentEventPayload.self)
+            self.eventContinuation?.yield(.agent(event))
+        } catch {
+            assertionFailure("Invalid reader fixture event: \(error)")
+        }
     }
 
     private var heldInitialRun = false
@@ -758,7 +986,87 @@ private actor LocalFixtureChatStore {
 
     private static func seedMessages(fixture: LocalChatFixture) -> [OpenClawChatMessage] {
         let now = Date().timeIntervalSince1970 * 1000
+        if ProcessInfo.processInfo.arguments.contains("--openclaw-audit-fixture") {
+            // swiftlint:disable line_length
+            let json = #"""
+            [{"role": "user", "timestamp": 1, "content": [{"type": "text", "text": "Audit this transcript: markdown, code, tools, image, voice and long output."}]}, {"role": "assistant", "timestamp": 2, "content": [{"type": "toolCall", "id": "audit-read", "name": "read", "arguments": {"path": "fixture.md"}}]}, {"role": "toolResult", "toolCallId": "audit-read", "toolName": "read", "timestamp": 3, "content": [{"type": "text", "text": "Audit fixture tool result. No network request was made."}]}, {"role": "assistant", "timestamp": 4, "content": [{"type": "text", "text": "# Audit Markdown\n\n**Bold**, *italic*, ~~strike~~ and [a link](https://example.com).\n\n- First task\n- Second task\n\n> A blockquote with enough words to wrap on an iPhone.\n\n```swift\nlet unusuallyLongIdentifier = \"a deliberately long code line to exercise horizontal scrolling without wrapping or truncating its copy contents\"\nprint(unusuallyLongIdentifier)\n```\n\n| Name | Result |\n| --- | --- |\n| Audit | Ready |\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\nLong review paragraph with inline **emphasis** and readable text.\n\n"}]}, {"role": "user", "timestamp": 5, "content": [{"type": "text", "text": "AUDIT_IMAGE_ROW"}, {"type": "image", "mimeType": "image/png", "fileName": "audit-chart.png", "content": "iVBORw0KGgoAAAANSUhEUgAAAoAAAADwCAIAAAAfEkKcAAAGtElEQVR4nO3VQQ2AQAADQbSgA00YwefpwEM/TZNJRsPudX8HGHXeBxh11QsCxOoFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiBgzD6gUBYgYMw+oFAWIGDMPqBQFiP2e5OyS3rtABAAAAAElFTkSuQmCC", "artifactId": "artifact_managed_image_11111111-1111-4111-8111-111111111111"}]}, {"role": "user", "timestamp": 6, "content": [{"type": "text", "text": "AUDIT_VOICE_QUESTION: can you repeat the result?"}, {"type": "audio", "mimeType": "audio/wav", "fileName": "audit-voice.wav", "durationSeconds": 0.1, "artifactId": "artifact_managed_media_22222222-2222-4222-8222-222222222222"}], "__openclaw": {"id": "voice:audit:1"}}, {"role": "assistant", "timestamp": 7, "content": [{"type": "text", "text": "AUDIT_FINAL: The fixture covers long text, markdown, code, tool activity, image and a persisted voice turn."}]}]
+            """#
+            // swiftlint:enable line_length
+            var data = Data(json.utf8)
+            if ProcessInfo.processInfo.arguments.contains("--openclaw-audit-long-fixture"),
+               let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+            {
+                var expanded: [[String: Any]] = []
+                for turn in 0..<30 {
+                    for (index, row) in rows.enumerated() {
+                        var row = row
+                        row["timestamp"] = Double(turn * 1000 + index + 1)
+                        if let id = row["toolCallId"] as? String { row["toolCallId"] = "\(id)-\(turn)" }
+                        if let metadata = row["__openclaw"] as? [String: Any], let id = metadata["id"] as? String {
+                            row["__openclaw"] = ["id": "\(id)-\(turn)"]
+                        }
+                        if let blocks = row["content"] as? [[String: Any]] {
+                            row["content"] = blocks.map { block in
+                                var block = block
+                                if let id = block["id"] as? String { block["id"] = "\(id)-\(turn)" }
+                                if var text = block["text"] as? String {
+                                    if turn == 0, index == 0 { text = "AUDIT_OLDEST_HISTORY_QUESTION: " + text }
+                                    if turn == 25 {
+                                        text = "AUDIT_LAZY_PREFIX: \n\n" + text.replacingOccurrences(
+                                            of: "Long review paragraph",
+                                            with: "AUDIT_LAZY_PREFIX: Long review paragraph")
+                                    }
+                                    if turn < 29 {
+                                        text = text.replacingOccurrences(
+                                            of: "AUDIT_FINAL:", with: "AUDIT_PREVIOUS_FINAL_\(turn):")
+                                    }
+                                    block["text"] = text
+                                }
+                                return block
+                            }
+                        }
+                        expanded.append(row)
+                    }
+                }
+                data = (try? JSONSerialization.data(withJSONObject: expanded)) ?? data
+            }
+            let messages = (try? JSONDecoder().decode([OpenClawChatMessage].self, from: data)) ?? []
+            if ProcessInfo.processInfo.arguments.contains("--openclaw-audit-code-page") {
+                return [self.message(
+                    role: "assistant",
+                    text: """
+                    # Markdown and code
+                    **Bold**, *italic*, ~~strike~~ and a list:
+                    - First
+                    - Second
+                    ```swift
+                    let unusuallyLongIdentifier = "a deliberately long code line to exercise horizontal scrolling"
+                    print(unusuallyLongIdentifier)
+                    ```
+                    | Name | Result |
+                    | --- | --- |
+                    | Audit | Ready |
+                    """,
+                    timestamp: now)]
+            }
+            return messages
+        }
+        if ProcessInfo.processInfo.arguments.contains("--openclaw-scroll-stress-fixture") {
+            let paragraph = "A measured response with **formatted text**, links and several readable paragraphs."
+            let replyBody = String(repeating: paragraph + "\n\n", count: 8)
+            var messages: [OpenClawChatMessage] = []
+            for turn in 0..<60 {
+                let timestamp = now + Double(turn * 2)
+                let replyText = "SCROLL_REPLY_\(turn)\n\n" + replyBody
+                messages.append(self.message(role: "user", text: "SCROLL_QUESTION_\(turn)", timestamp: timestamp))
+                messages.append(self.message(role: "assistant", text: replyText, timestamp: timestamp + 1))
+            }
+            return messages
+        }
         if ProcessInfo.processInfo.arguments.contains("--openclaw-long-chat-fixture") {
+            let latestText = ProcessInfo.processInfo.arguments.contains("--openclaw-tall-reply-fixture")
+                ? String(repeating: "Historical reply paragraph.\n\n", count: 40) + "OPENCLAW_LONG_CHAT_LATEST"
+                : "OPENCLAW_LONG_CHAT_LATEST"
             return [
                 self.message(
                     role: "user",
@@ -772,7 +1080,7 @@ private actor LocalFixtureChatStore {
                     transcriptMessageID: "fixture-long-answer"),
                 self.message(
                     role: "assistant",
-                    text: "OPENCLAW_LONG_CHAT_LATEST",
+                    text: latestText,
                     timestamp: now + 2,
                     transcriptMessageID: "fixture-long-latest"),
             ]
@@ -790,7 +1098,8 @@ private actor LocalFixtureChatStore {
         role: String,
         text: String,
         timestamp: Double,
-        transcriptMessageID: String,
+        transcriptMessageID: String? = nil,
+        transcriptRunID: String? = nil,
         idempotencyKey: String? = nil,
         details: AnyCodable? = nil) -> OpenClawChatMessage
     {
@@ -803,6 +1112,7 @@ private actor LocalFixtureChatStore {
             ],
             timestamp: timestamp,
             transcriptMessageID: transcriptMessageID,
+            transcriptRunID: transcriptRunID,
             idempotencyKey: idempotencyKey,
             stopReason: role == "assistant" ? "stop" : nil,
             details: details)
@@ -818,6 +1128,14 @@ private actor LocalFixtureChatStore {
         return try JSONDecoder().decode(type, from: data)
     }
 
+    private struct ReaderEventPayload: Encodable {
+        let runId: String
+        let seq: Int
+        let stream: String
+        let ts: Int
+        let data: [String: AnyCodable]
+    }
+
     private struct HistoryPayload: Encodable {
         var sessionKey: String
         var sessionId: String?
@@ -825,6 +1143,10 @@ private actor LocalFixtureChatStore {
         var thinkingLevel: String?
         var inFlightRun: OpenClawChatInFlightRun?
         var sessionInfo: OpenClawChatSessionInfo?
+        var hasMore: Bool?
+        var nextOffset: Int?
+        var totalMessages: Int?
+        var offset: Int?
     }
 
     private struct SendPayload: Encodable {

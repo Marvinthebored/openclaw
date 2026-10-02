@@ -105,7 +105,7 @@ struct ChatNarration {
 
 extension OpenClawChatViewModel {
     var transcriptMessages: [OpenClawChatMessage] {
-        self.narration.projecting(self.messages)
+        self.realtimeVoiceCaptions.projecting(self.narration.projecting(self.messages))
     }
 
     func handleAgentNarration(_ event: OpenClawAgentEventPayload) {
