@@ -5,34 +5,6 @@ import Foundation
 // of truth and replace cached rows wholesale.
 
 extension OpenClawChatViewModel {
-    func persistCanonicalMessageToCache(_ message: OpenClawChatMessage, session: SessionSnapshot) {
-        guard let transcriptCache else { return }
-        let agentID = Self.transcriptCacheAgentID(sessionKey: session.key, agentID: session.deliveryAgentID)
-        let previous = self.pendingCacheWriteTask
-        self.pendingCacheWriteTask = Task.detached {
-            await previous?.value
-            if let key = message.idempotencyKey, !key.isEmpty,
-               let mergingCache = transcriptCache as? any OpenClawChatCanonicalTranscriptMerging
-            {
-                await mergingCache.mergeCanonicalTranscriptMessage(
-                    sessionKey: session.key,
-                    agentID: agentID,
-                    message: message,
-                    canonicalMessageIdempotencyKey: key)
-            } else {
-                let cached = await transcriptCache.loadTranscript(sessionKey: session.key, agentID: agentID)
-                let messages = await MainActor.run {
-                    Self.dedupeMessages(Self.reconcileMessageIDs(previous: cached, incoming: cached + [message]))
-                }
-                await transcriptCache.storeCanonicalTranscript(
-                    sessionKey: session.key,
-                    agentID: agentID,
-                    messages: messages,
-                    canonicalMessageIdempotencyKeys: Set(messages.compactMap(\.idempotencyKey)))
-            }
-        }
-    }
-
     struct SessionSnapshot: Equatable {
         var key: String
         var generation: UInt64
@@ -163,9 +135,7 @@ extension OpenClawChatViewModel {
             }
         }
         guard messages.isEmpty, !hasAppliedLiveHistory else { return }
-        let pendingWrite = self.pendingCacheWriteTask
         Task { [weak self] in
-            await pendingWrite?.value
             let cached = await transcriptCache.loadTranscript(
                 sessionKey: session.key,
                 agentID: Self.transcriptCacheAgentID(sessionKey: session.key, agentID: session.deliveryAgentID))

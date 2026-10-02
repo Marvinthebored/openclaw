@@ -475,7 +475,6 @@ extension OpenClawChatViewModel {
         // still retire its durable row before this handler returns early.
         confirmOutboxCommands(in: [sanitized])
         guard isCurrentSession else { return }
-        self.persistCanonicalMessageToCache(sanitized, session: self.currentSessionSnapshot())
         self.observeOutboxTranscriptTip(sanitized, session: self.currentSessionSnapshot())
 
         self.invalidateHistorySnapshots()
