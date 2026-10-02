@@ -1,0 +1,25 @@
+[0/1] Planning build
+[1/1] Compiling plugin GenerateGatewayProtocol
+Building for debugging...
+[1/5] Write sources
+[2/5] Write swift-version--58304C5D6DBC2206.txt
+[4/7] Compiling OpenClawKitTests RealtimeTalkRealBackendProofTests.swift
+[5/7] Emitting module OpenClawKitTests
+[5/7] Write Objects.LinkFileList
+[6/7] Linking OpenClawKitPackageTests
+Build complete! (10.47s)
+Test Suite 'Selected tests' started at 2026-10-02 09:34:17.290.
+Test Suite 'OpenClawKitPackageTests.xctest' started at 2026-10-02 09:34:17.291.
+Test Suite 'OpenClawKitPackageTests.xctest' passed at 2026-10-02 09:34:17.291.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-10-02 09:34:17.291.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite RealtimeTalkRealBackendProofTests started.
+◇ Test "silent real OS playback completes during main actor contention" started.
+REAL_BACKEND_PROOF pcm16ZeroFrames=20 bytes=19200 mainActorStallSeconds=2 ackDuringStall=["real-backend-played"] ackOnMain=false
+✔ Test "silent real OS playback completes during main actor contention" passed after 2.014 seconds.
+✔ Suite RealtimeTalkRealBackendProofTests passed after 2.014 seconds.
+✔ Test run with 1 test in 1 suite passed after 2.015 seconds.

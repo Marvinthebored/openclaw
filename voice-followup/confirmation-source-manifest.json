@@ -1,0 +1,14 @@
+{
+  "sourceHead": "458f5345d53fdc5277aeaf2ee9a0bdf0586da886",
+  "files": {
+    "src/gateway/talk/handlers/client.ts": "5d75aacbad4788a8338e94b7c62de1db33d4ee62d8496a2b683ced52f2ac346c",
+    "src/gateway/talk/agent-consult.ts": "cedb63149c58bdd6724c73f7ca067e03845526edbf821d1094dbed6911260f7f",
+    "src/gateway/server-methods/chat-send-handler.ts": "476c5c84819c7c1cad9f88162da7563c4820c3601a7838dae9fed18ad6540f4a",
+    "src/gateway/server-methods/chat-send-agent-dispatch.ts": "047ba2f64de78c5bfb35630f366c565664f6225db63930ea45186ce9f68379b4",
+    "src/talk/client-voice-confirmation.ts": "ac1e3a3524ebd71cc826c56174f9d0cc1f5711bb76097a049cdf42736d1c34e5",
+    "src/talk/client-voice-session.ts": "dcecdfb1183dc62b8030411eea96f0e75018b69f82e880152a7ee7c9f7959587",
+    "src/agents/agent-tools.before-tool-call.policy.ts": "570ffa8d7847eb9aff79c9b877f0643018807d7b35c8f38eeda07d8ed1abbd74",
+    "src/agents/agent-tools.before-tool-call.wrapper.ts": "e5291b503723ba40ab621f2d079edbe974c987e6a2b9f121ac2db27fc2b0358c"
+  },
+  "productionTsDiff": ""
+}

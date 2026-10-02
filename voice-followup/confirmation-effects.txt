@@ -1,0 +1,36 @@
+Plugin "vitest:mocks:interceptor" defines Vite-specific hooks (configureServer) in a plugin returned from applyToEnvironment. These hooks will be ignored.
+
+ RUN  v5.0.1 <candidate>
+
+stdout | src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > exact-once
+{"scenario":"exact-once","recordedSpeech":"yes","transcriptRpcAck":true,"consultRpcAck":true,"omittedId":true,"enteredFinalIO":1,"finalFileRows":1,"actualSentinelBytes":"{\"task\":\"Create synthetic helper\",\"label\":\"exact\"}\n"}
+
+ ✓ |unit| src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > exact-once 1678ms
+stdout | src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > wrong-scope
+{"scenario":"wrong-scope","recordedSpeech":"yes","transcriptRpcAck":true,"consultRpcAck":true,"omittedId":true,"enteredFinalIO":0,"finalFileRows":0,"actualSentinelBytes":null}
+
+ ✓ |unit| src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > wrong-scope 1553ms
+stdout | src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > changed-action
+{"scenario":"changed-action","recordedSpeech":"yes","transcriptRpcAck":true,"consultRpcAck":true,"omittedId":true,"enteredFinalIO":0,"finalFileRows":0,"actualSentinelBytes":null}
+
+ ✓ |unit| src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > changed-action 1542ms
+stdout | src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > replay
+{"scenario":"replay","recordedSpeech":"yes","transcriptRpcAck":true,"consultRpcAck":true,"omittedId":true,"enteredFinalIO":1,"finalFileRows":1,"actualSentinelBytes":"{\"task\":\"Create synthetic helper\",\"label\":\"exact\"}\n"}
+
+ ✓ |unit| src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > replay 1502ms
+stdout | src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > pre-binding-invalidation
+{"scenario":"pre-binding-invalidation","recordedSpeech":"yes","transcriptRpcAck":true,"consultRpcAck":true,"omittedId":true,"enteredFinalIO":0,"finalFileRows":0,"actualSentinelBytes":null}
+
+stderr | retireSqliteTestSingleton (<candidate>/test/sqlite-test-lifecycle.ts:217:13)
+[sqlite-test-lifecycle] src/talk/confirmation-chat-effect.evidence.test.ts: retiring openclaw.stateDatabaseLifecycle
+[sqlite-test-lifecycle] src/talk/confirmation-chat-effect.evidence.test.ts: retiring openclaw.stateSnapshotOwners
+[sqlite-test-lifecycle] src/talk/confirmation-chat-effect.evidence.test.ts: retiring openclaw.agentDatabaseLifecycle
+[sqlite-test-lifecycle] src/talk/confirmation-chat-effect.evidence.test.ts: retiring openclaw.sessionGroupCatalog
+
+ ✓ |unit| src/talk/confirmation-chat-effect.evidence.test.ts > production chat-backed voice authority final-effect evidence > pre-binding-invalidation 1538ms
+
+ Test Files  1 passed (1)
+      Tests  5 passed (5)
+   Start at  09:33:29
+   Duration  13.06s (tests 61%, transform 21%, import 16%, worker 2%, setup 1%)
+

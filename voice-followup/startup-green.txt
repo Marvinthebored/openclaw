@@ -1,0 +1,209 @@
+[1/1] Compiling plugin GenerateGatewayProtocol
+Building for debugging...
+[1/4] Write sources
+[2/4] Write swift-version--58304C5D6DBC2206.txt
+[4/6] Emitting module OpenClawKit
+[5/6] Compiling OpenClawKit RealtimeTalkRelaySession.swift
+[5/7] Write Objects.LinkFileList
+[6/7] Linking OpenClawKitPackageTests
+Build complete! (3.66s)
+Test Suite 'Selected tests' started at 2026-10-02 09:35:55.594.
+Test Suite 'OpenClawKitPackageTests.xctest' started at 2026-10-02 09:35:55.595.
+Test Suite 'OpenClawKitPackageTests.xctest' passed at 2026-10-02 09:35:55.595.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-10-02 09:35:55.595.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite RealtimeTalkRelaySessionOffMainTests started.
+◇ Suite RealtimeTalkRelaySessionPlaybackTests started.
+◇ Suite RealtimeTalkRelaySessionTests started.
+◇ Suite RealtimePCMStreamingAudioPlayerTests started.
+◇ Suite RealtimeTalkRelaySessionInterruptionTests started.
+◇ Suite RealtimeTalkRelaySessionAudioInputTests started.
+◇ Suite RealtimeTalkRelaySessionCancellationTests started.
+◇ Suite RealtimeTalkRelaySessionReviewTests started.
+◇ Test "new reply reaches audio device while main actor is stalled" started.
+◇ Test "buffered startup clear acknowledges its playback mark" started.
+◇ Test "installed relay identity does not open startup routing" started.
+◇ Test "playback mark is acknowledged after output finishes" started.
+◇ Test "provider clear stops buffered keyed output after provider completion" started.
+◇ Test "elapsed microphone time cannot retire pending playback" started.
+◇ Test "provider failure revokes ready before the close event" started.
+◇ Test "schedule failure returns unfinished playback" started.
+◇ Test "stale relay session cannot clear successor playback" started.
+◇ Test "stop restart ignores stale buffer completions" started.
+◇ Test "stale player completion cannot finish replacement turn playback" started.
+◇ Test "playback starts after the prebuffer or at end of a short reply" started.
+◇ Test "withheld completions cap scheduling and one completion admits one frame" started.
+◇ Test "production identity switch ignores stale completion and acknowledges marks only after drain" started.
+◇ Test "large provider audio delta is rebuffered into bounded ordered frames" started.
+◇ Test "stop settles independently of tool acceptance and fences late results" started.
+◇ Test "prepare failure returns unfinished playback" started.
+◇ Test "stop during relay creation closes late session once" started.
+◇ Test "turn-scoped audio without a turn id terminates visibly" started.
+◇ Test "ready then close publishes one typed termination and releases capture" started.
+◇ Test "exact maximum output audio frame is accepted" started.
+◇ Test "a whole reply delivered in one burst does not overflow playback" started.
+◇ Test "cancelled playback task cannot start after its replacement" started.
+◇ Test "production provider owned interruption keeps mic open until clear and explicit stop" started.
+◇ Test "new turn supersedes a stalled prior playback drain" started.
+◇ Test "speaking is reported once per reply, not per audio chunk" started.
+◇ Test "close after classified error does not replace issue" started.
+◇ Test "stop resumes the active playback exactly once" started.
+◇ Test "playback finishes only after input and every scheduled frame complete" started.
+◇ Test "stop during event subscription prevents relay creation" started.
+◇ Test "gateway-owned model is omitted and pre-ready failure closes created session" started.
+◇ Test "output buffer cap plus one terminates visibly and requests recovery" started.
+◇ Test "voice selection is opt in and replacement carries its change id" started.
+◇ Test "transcript callback carries typed partial and final values" started.
+◇ Test "unfinished current playback terminates visibly and requests recovery" started.
+◇ Test "stop waiters share the pending server close and its result" started.
+◇ Test "gateway route lost during startup fails instead of reporting ready" started.
+◇ Test case passing 1 argument keyed → false to "provider clear stops buffered keyed output after provider completion" started.
+◇ Test case passing 1 argument cancelOutput → false to "elapsed microphone time cannot retire pending playback" started.
+◇ Test case passing 1 argument keyed → true to "provider clear stops buffered keyed output after provider completion" started.
+◇ Test "realtime recovery has a bounded retry budget that resets after a stable session" started.
+◇ Test case passing 1 argument cancelOutput → true to "elapsed microphone time cannot retire pending playback" started.
+◇ Test "closed relay does not wait for startup ready" started.
+◇ Test "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test "output playback finish is idempotent and clears barge in start time" started.
+◇ Test "ready then event stream end publishes typed termination" started.
+◇ Test case passing 1 argument turnId → nil to "stale relay session cannot clear successor playback" started.
+◇ Test case passing 1 argument turnId → "turn-a" to "stale relay session cannot clear successor playback" started.
+◇ Test case passing 1 argument toolAccepted → false to "stop settles independently of tool acceptance and fences late results" started.
+◇ Test case passing 1 argument suppressesInputDuringOutput → false to "production provider owned interruption keeps mic open until clear and explicit stop" started.
+◇ Test case passing 1 argument suppressesInputDuringOutput → true to "production provider owned interruption keeps mic open until clear and explicit stop" started.
+◇ Test "active audio request and response failures share the input failure owner" started.
+◇ Test "current cancellation failure terminates and rejects late audio" started.
+◇ Test "microphone failure terminates relay and reports typed issue" started.
+◇ Test case passing 1 argument toolAccepted → true to "stop settles independently of tool acceptance and fences late results" started.
+◇ Test "superseded cancellation failure leaves the active fence intact" started.
+◇ Test "a one second gateway stall does not saturate microphone input" started.
+◇ Test "event stream ending during relay creation closes the late relay" started.
+◇ Test "idle cancellation and pause retain the relay without false interruption" started.
+◇ Test "microphone saturation terminates once without sending the frame past the cap" started.
+◇ Test "pre-ready event stream end fails startup and closes created session once" started.
+◇ Test case passing 1 argument supportsVoiceSelection → false to "voice selection is opt in and replacement carries its change id" started.
+◇ Test "production cancellation fences late audio through response and clear" started.
+◇ Test "appended audio timestamps stay whole milliseconds" started.
+◇ Test "clear keeps microphone fenced until cancellation response" started.
+◇ Test "cancellation without active identified output is a no-op" started.
+◇ Test "output cancellation fences delayed audio and preserves exact identity" started.
+◇ Test "input pause and resume are idempotent and keep relay alive" started.
+◇ Test "accepted cancellation response keeps fence until matching clear" started.
+◇ Test "production overflow stops the device exactly once" started.
+◇ Test case passing 1 argument closeFails → true to "stop waiters share the pending server close and its result" started.
+◇ Test case passing 1 argument closeFails → false to "stop waiters share the pending server close and its result" started.
+◇ Test case passing 1 argument routeLostDuringCreate → false to "gateway route lost during startup fails instead of reporting ready" started.
+◇ Test "close retires in flight cancellation failure" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → false, catalogScenario → "provider" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → false, catalogScenario → "denied" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → false, catalogScenario → "denied-idle" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test case passing 1 argument routeLostDuringCreate → true to "gateway route lost during startup fails instead of reporting ready" started.
+◇ Test case passing 1 argument supportsVoiceSelection → true to "voice selection is opt in and replacement carries its change id" started.
+◇ Test "stop and pause retire buffered audio while resume admits a fresh frame" started.
+◇ Test case passing 1 argument processedBeforeRegistration → true to "pre-ready event stream end fails startup and closes created session once" started.
+◇ Test case passing 1 argument reason → "user" to "production cancellation fences late audio through response and clear" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → true, catalogScenario → "provider" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test "non applied cancellation retires the wait without reopening the old turn" started.
+◇ Test case passing 1 argument reason → "barge-in" to "production cancellation fences late audio through response and clear" started.
+◇ Test case passing 2 arguments response → "{"ok":true,"status":"applied","turnId":"turn-1"}", providerClearBeforeResponse → false to "accepted cancellation response keeps fence until matching clear" started.
+◇ Test case passing 1 argument status → "stale" to "non applied cancellation retires the wait without reopening the old turn" started.
+◇ Test case passing 2 arguments response → "{"ok":true,"status":"applied","turnId":"turn-1"}", providerClearBeforeResponse → true to "accepted cancellation response keeps fence until matching clear" started.
+◇ Test case passing 2 arguments response → "{"ok":true}", providerClearBeforeResponse → false to "accepted cancellation response keeps fence until matching clear" started.
+◇ Test case passing 2 arguments response → "{"ok":true}", providerClearBeforeResponse → true to "accepted cancellation response keeps fence until matching clear" started.
+◇ Test case passing 1 argument status → "idle" to "non applied cancellation retires the wait without reopening the old turn" started.
+◇ Test case passing 1 argument processedBeforeRegistration → false to "pre-ready event stream end fails startup and closes created session once" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → false, catalogScenario → "denied-applied" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → true, catalogScenario → "denied-applied" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → true, catalogScenario → "denied-idle" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test "active output pause cancels the exact turn" started.
+◇ Test case passing 2 arguments suppressesInputDuringOutput → true, catalogScenario → "denied" to "provider-owned interruptions keep microphone and playback open until explicit stop" started.
+◇ Test "accepted cancellation result with mismatched turn fails closed" started.
+◇ Test case passing 1 argument response → "{"ok":true,"turnId":"turn-2"}" to "accepted cancellation result with mismatched turn fails closed" started.
+◇ Test case passing 1 argument response → "{"ok":true,"status":"applied","turnId":"turn-2"}" to "accepted cancellation result with mismatched turn fails closed" started.
+✔ Test "turn-scoped audio without a turn id terminates visibly" passed after 0.005 seconds.
+✔ Test "stale relay session cannot clear successor playback" with 2 test cases passed after 0.005 seconds.
+✔ Test "speaking is reported once per reply, not per audio chunk" passed after 0.006 seconds.
+✔ Test "a whole reply delivered in one burst does not overflow playback" passed after 0.025 seconds.
+✔ Test "ready then close publishes one typed termination and releases capture" passed after 0.025 seconds.
+✔ Test "provider failure revokes ready before the close event" passed after 0.025 seconds.
+✔ Test "close after classified error does not replace issue" passed after 0.025 seconds.
+✔ Test "exact maximum output audio frame is accepted" passed after 0.026 seconds.
+✔ Test "closed relay does not wait for startup ready" passed after 0.025 seconds.
+✔ Test "transcript callback carries typed partial and final values" passed after 0.026 seconds.
+✔ Test "cancellation without active identified output is a no-op" passed after 0.143 seconds.
+✔ Test "ready then event stream end publishes typed termination" passed after 0.144 seconds.
+✔ Test "prepare failure returns unfinished playback" passed after 0.144 seconds.
+✔ Test "installed relay identity does not open startup routing" passed after 0.145 seconds.
+✔ Test "playback mark is acknowledged after output finishes" passed after 0.145 seconds.
+✔ Test "output playback finish is idempotent and clears barge in start time" passed after 0.145 seconds.
+✔ Test "output buffer cap plus one terminates visibly and requests recovery" passed after 0.146 seconds.
+✔ Test "idle cancellation and pause retain the relay without false interruption" passed after 0.145 seconds.
+✔ Test "input pause and resume are idempotent and keep relay alive" passed after 0.145 seconds.
+✔ Test "realtime recovery has a bounded retry budget that resets after a stable session" passed after 0.146 seconds.
+✔ Test "active output pause cancels the exact turn" passed after 0.146 seconds.
+✔ Test "new reply reaches audio device while main actor is stalled" passed after 1.647 seconds.
+✔ Test "provider clear stops buffered keyed output after provider completion" with 2 test cases passed after 1.648 seconds.
+✔ Test "schedule failure returns unfinished playback" passed after 1.648 seconds.
+✔ Test "stop resumes the active playback exactly once" passed after 1.648 seconds.
+✔ Test "playback finishes only after input and every scheduled frame complete" passed after 1.648 seconds.
+✔ Test "microphone failure terminates relay and reports typed issue" passed after 1.647 seconds.
+✔ Test "appended audio timestamps stay whole milliseconds" passed after 1.648 seconds.
+✔ Test "a one second gateway stall does not saturate microphone input" passed after 1.651 seconds.
+✔ Test "close retires in flight cancellation failure" passed after 1.651 seconds.
+✔ Test "stop during event subscription prevents relay creation" passed after 1.653 seconds.
+✔ Test "output cancellation fences delayed audio and preserves exact identity" passed after 1.760 seconds.
+✔ Test "large provider audio delta is rebuffered into bounded ordered frames" passed after 1.761 seconds.
+✔ Test "new turn supersedes a stalled prior playback drain" passed after 1.761 seconds.
+✔ Test "cancelled playback task cannot start after its replacement" passed after 1.761 seconds.
+✔ Test "superseded cancellation failure leaves the active fence intact" passed after 1.761 seconds.
+✔ Test "current cancellation failure terminates and rejects late audio" passed after 1.766 seconds.
+✔ Test "accepted cancellation result with mismatched turn fails closed" with 2 test cases passed after 1.766 seconds.
+✔ Test "gateway-owned model is omitted and pre-ready failure closes created session" passed after 1.766 seconds.
+✔ Test "buffered startup clear acknowledges its playback mark" passed after 1.767 seconds.
+✔ Suite RealtimeTalkRelaySessionOffMainTests passed after 1.767 seconds.
+✔ Test "unfinished current playback terminates visibly and requests recovery" passed after 1.766 seconds.
+✔ Test "voice selection is opt in and replacement carries its change id" with 2 test cases passed after 1.766 seconds.
+✔ Test "accepted cancellation response keeps fence until matching clear" with 4 test cases passed after 1.766 seconds.
+✔ Test "withheld completions cap scheduling and one completion admits one frame" passed after 1.767 seconds.
+✔ Test "clear keeps microphone fenced until cancellation response" passed after 1.767 seconds.
+✔ Test "production overflow stops the device exactly once" passed after 1.767 seconds.
+◇ Test "production stop mid-frame promptly fences remaining frames" started.
+✔ Test "stop during relay creation closes late session once" passed after 1.768 seconds.
+✔ Test "production cancellation fences late audio through response and clear" with 2 test cases passed after 1.767 seconds.
+✔ Test "gateway route lost during startup fails instead of reporting ready" with 2 test cases passed after 1.768 seconds.
+✔ Test "stale player completion cannot finish replacement turn playback" passed after 1.768 seconds.
+✔ Test "non applied cancellation retires the wait without reopening the old turn" with 2 test cases passed after 1.772 seconds.
+✔ Suite RealtimeTalkRelaySessionCancellationTests passed after 1.773 seconds.
+✔ Test "production identity switch ignores stale completion and acknowledges marks only after drain" passed after 1.773 seconds.
+✔ Test "stop waiters share the pending server close and its result" with 2 test cases passed after 1.773 seconds.
+✔ Test "microphone saturation terminates once without sending the frame past the cap" passed after 1.772 seconds.
+✔ Test "event stream ending during relay creation closes the late relay" passed after 1.772 seconds.
+✔ Test "stop restart ignores stale buffer completions" passed after 1.773 seconds.
+✔ Test "pre-ready event stream end fails startup and closes created session once" with 2 test cases passed after 1.772 seconds.
+✔ Test "production provider owned interruption keeps mic open until clear and explicit stop" with 2 test cases passed after 1.773 seconds.
+✔ Test "active audio request and response failures share the input failure owner" passed after 1.773 seconds.
+✔ Test "playback starts after the prebuffer or at end of a short reply" passed after 1.773 seconds.
+✔ Suite RealtimePCMStreamingAudioPlayerTests passed after 1.774 seconds.
+✔ Test "elapsed microphone time cannot retire pending playback" with 2 test cases passed after 1.774 seconds.
+✔ Test "stop settles independently of tool acceptance and fences late results" with 2 test cases passed after 1.774 seconds.
+✔ Suite RealtimeTalkRelaySessionPlaybackTests passed after 1.774 seconds.
+✔ Test "production stop mid-frame promptly fences remaining frames" passed after 0.006 seconds.
+✔ Suite RealtimeTalkRelaySessionTests passed after 1.774 seconds.
+◇ Test "production barge-in callbacks do not hold the output lock" started.
+✔ Test "stop and pause retire buffered audio while resume admits a fresh frame" passed after 1.774 seconds.
+✔ Suite RealtimeTalkRelaySessionAudioInputTests passed after 1.775 seconds.
+✔ Test "provider-owned interruptions keep microphone and playback open until explicit stop" with 8 test cases passed after 1.774 seconds.
+✔ Suite RealtimeTalkRelaySessionInterruptionTests passed after 1.775 seconds.
+✔ Test "production barge-in callbacks do not hold the output lock" passed after 0.001 seconds.
+◇ Test "blocked preparation cannot block synchronous relay controls or start retired audio" started.
+✔ Test "blocked preparation cannot block synchronous relay controls or start retired audio" passed after 0.001 seconds.
+◇ Test "output levels restart after a mid-reply gap" started.
+✔ Test "output levels restart after a mid-reply gap" passed after 0.712 seconds.
+◇ Test "deinit cancels transport event subscription" started.
+✔ Test "deinit cancels transport event subscription" passed after 0.001 seconds.
+✔ Suite RealtimeTalkRelaySessionReviewTests passed after 2.488 seconds.
+✔ Test run with 69 tests in 8 suites passed after 2.488 seconds.

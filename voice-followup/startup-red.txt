@@ -1,0 +1,1637 @@
+[0/1] Planning build
+[1/1] Compiling plugin GenerateGatewayProtocol
+Building for debugging...
+[1/6] Write sources
+[3/6] Write swift-version--58304C5D6DBC2206.txt
+[5/8] Compiling OpenClawKit RealtimeTalkRelaySession.swift
+[6/8] Emitting module OpenClawKit
+[7/33] Compiling OpenClawKitTests AnyCodableTests.swift
+[8/33] Compiling OpenClawKitTests ArtifactBuildInfoTests.swift
+[9/33] Compiling OpenClawKitTests AssistantTextParserTests.swift
+[10/33] Compiling OpenClawKitTests BonjourEscapesTests.swift
+[11/33] Compiling OpenClawKitTests BonjourServiceResolverTests.swift
+[12/33] Compiling OpenClawKitTests BridgeInvokeMetadataTests.swift
+[13/33] Compiling OpenClawKitTests CameraCapturePipelineSupportTests.swift
+[14/33] Compiling OpenClawKitTests CanvasCommandsTests.swift
+[15/33] Compiling OpenClawKitTests ChatAssistantRunGroupTests.swift
+[16/33] Compiling OpenClawKitTests ChatCatalogProjectionTests.swift
+[17/33] Compiling OpenClawKitTests ChatCodeHighlighterTests.swift
+[18/33] Compiling OpenClawKitTests ChatCommandPaletteTests.swift
+[19/33] Compiling OpenClawKitTests ChatCompletedWorkTests.swift
+[20/33] Compiling OpenClawKitTests ChatComposerParityTests.swift
+[21/33] Compiling OpenClawKitTests ChatComposerPasteSupportTests.swift
+[22/33] Compiling OpenClawKitTests ChatComposerTextViewIOSTests.swift
+[23/33] Compiling OpenClawKitTests ChatComposerTextViewTests.swift
+[24/33] Compiling OpenClawKitTests ChatContextUsageTests.swift
+[25/33] Compiling OpenClawKitTests ChatDownloadedFileTests.swift
+[26/33] Compiling OpenClawKitTests ChatDynamicTypeSourceGuardTests.swift
+[27/33] Compiling OpenClawKitTests ChatEventTextTests.swift
+[28/33] Compiling OpenClawKitTests ChatFileAdmissionTests.swift
+[29/33] Compiling OpenClawKitTests ChatFileAttachmentRequestTests.swift
+[30/33] Compiling OpenClawKitTests ChatGatewayAgentCatalogTests.swift
+[31/33] Emitting module OpenClawKitTests
+[32/81] Compiling OpenClawKitTests ChatPasteboardTests.swift
+[33/81] Compiling OpenClawKitTests ChatQuestionCardTests.swift
+[34/81] Compiling OpenClawKitTests ChatReaderScrollStateTests.swift
+[35/81] Compiling OpenClawKitTests ChatScrollCommandTests.swift
+[36/81] Compiling OpenClawKitTests ChatSelectableTextViewTests.swift
+[37/81] Compiling OpenClawKitTests ChatSendStatusTests.swift
+[38/81] Compiling OpenClawKitTests ChatSessionAttentionTests.swift
+[39/81] Compiling OpenClawKitTests ChatSessionCompletionOwnershipTests.swift
+[40/81] Compiling OpenClawKitTests ChatSessionKeyTests.swift
+[41/81] Compiling OpenClawKitTests ChatSessionSidebarCacheTests.swift
+[42/81] Compiling OpenClawKitTests ChatSessionSidebarDataTests.swift
+[43/81] Compiling OpenClawKitTests ChatSessionSidebarEligibilityTests.swift
+[44/81] Compiling OpenClawKitTests ChatSessionSidebarFieldsTests.swift
+[45/81] Compiling OpenClawKitTests ChatSessionSidebarMenuTests.swift
+[46/81] Compiling OpenClawKitTests ChatSessionSidebarModelTests.swift
+[47/81] Compiling OpenClawKitTests ChatSessionSidebarPeopleTests.swift
+[48/81] Compiling OpenClawKitTests ChatSessionSidebarPreviewsTests.swift
+[49/81] Compiling OpenClawKitTests ChatSessionSidebarRowTests.swift
+[50/81] Compiling OpenClawKitTests ChatSessionSnoozeTests.swift
+[51/81] Compiling OpenClawKitTests ChatSourcePreviewTests.swift
+[52/81] Compiling OpenClawKitTests ChatSourceResourceTests.swift
+[53/81] Compiling OpenClawKitTests ChatSpeechControllerTests.swift
+[54/81] Compiling OpenClawKitTests ChatStreamReplayTests.swift
+[55/81] Compiling OpenClawKitTests ChatStreamingRevealTests.swift
+[56/105] Compiling OpenClawKitTests ChatGatewayRequestTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[57/105] Compiling OpenClawKitTests ChatGatewayTransportTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[58/105] Compiling OpenClawKitTests ChatHapticsTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[59/105] Compiling OpenClawKitTests ChatImageProcessorTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[60/105] Compiling OpenClawKitTests ChatInlineMathTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[61/105] Compiling OpenClawKitTests ChatInlineWidgetTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[62/105] Compiling OpenClawKitTests ChatInputHistoryTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[63/105] Compiling OpenClawKitTests ChatLinkPreviewRenderingTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[64/105] Compiling OpenClawKitTests ChatLinkPreviewTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[65/105] Compiling OpenClawKitTests ChatMarkdownBlockSegmenterTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[66/105] Compiling OpenClawKitTests ChatMarkdownDisplayPreprocessorTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[67/105] Compiling OpenClawKitTests ChatMarkdownPreprocessorTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[68/105] Compiling OpenClawKitTests ChatMarkdownRendererTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[69/105] Compiling OpenClawKitTests ChatMathBlockViewTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[70/105] Compiling OpenClawKitTests ChatMediaPlaybackCoordinatorTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[71/105] Compiling OpenClawKitTests ChatMediaPlaybackLoaderTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[72/105] Compiling OpenClawKitTests ChatMediaURLTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[73/105] Compiling OpenClawKitTests ChatMermaidRenderModelTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[74/105] Compiling OpenClawKitTests ChatMessageDetailsPreservationTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[75/105] Compiling OpenClawKitTests ChatMessageMediaAttachmentTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[76/105] Compiling OpenClawKitTests ChatMessageMetadataTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[77/105] Compiling OpenClawKitTests ChatMessageVisibleTextTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[78/105] Compiling OpenClawKitTests ChatModelPickerStoreTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[79/105] Compiling OpenClawKitTests ChatModelSignInTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:98:17: warning: 'current' mutated after capture by sendable closure
+ 54 |         let started = AsyncStream<Void>.makeStream()
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+    |             `- note: variable defined here
+ 57 |         var admitted = false
+ 58 |         var statusReads = 0
+    :
+ 87 |                 }
+ 88 |             },
+ 89 |             isCurrent: { current })
+    |                        | `- note: capturing use
+    |                        `- note: variable captured by sendable closure
+ 90 |         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ 91 |         await model.refresh()
+    :
+ 96 |         let oldSessionID = try #require(model.sessionID)
+ 97 |         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ 98 |         current = false
+    |                 `- warning: 'current' mutated after capture by sendable closure
+ 99 |         await model.close()
+100 |         admitted = true
+
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatModelSignInTests.swift:100:18: warning: 'admitted' mutated after capture by sendable closure
+ 55 |         var pendingLogin: CheckedContinuation<Data, Never>?
+ 56 |         var current = true
+ 57 |         var admitted = false
+    |             `- note: variable defined here
+ 58 |         var statusReads = 0
+ 59 |         var newSessionCatalogRefreshes = 0
+    :
+ 61 |         let context = OpenClawChatModelSignInContext(
+ 62 |             agentID: "old-agent",
+ 63 |             request: { method, params in
+    |                      `- note: variable captured by sendable closure
+ 64 |                 switch method {
+ 65 |                 case "models.authStatus":
+    :
+ 76 |                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ 77 |                     #expect(params["closeInput"]?.value as? Bool == true)
+ 78 |                     if !admitted {
+    |                         `- note: capturing use
+ 79 |                         throw GatewayResponseError(
+ 80 |                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    :
+ 98 |         current = false
+ 99 |         await model.close()
+100 |         admitted = true
+    |                  `- warning: 'admitted' mutated after capture by sendable closure
+101 |         pendingLogin?.resume(returning: response)
+102 |         await login.value
+[80/129] Compiling OpenClawKitTests DashboardRouteMapTests.swift
+[81/129] Compiling OpenClawKitTests DeepLinksSecurityTests.swift
+[82/129] Compiling OpenClawKitTests DeviceAuthPayloadTests.swift
+[83/129] Compiling OpenClawKitTests DeviceAuthStoreTests.swift
+[84/129] Compiling OpenClawKitTests DeviceCommandsTests.swift
+[85/129] Compiling OpenClawKitTests DeviceIdentityStoreTests.swift
+[86/129] Compiling OpenClawKitTests DeviceSettingsContractTests.swift
+[87/129] Compiling OpenClawKitTests DeviceSettingsRequestQueueTests.swift
+[88/129] Compiling OpenClawKitTests ElevenLabsTTSValidationTests.swift
+[89/129] Compiling OpenClawKitTests ExecApprovalsSQLiteStoreTests.swift
+[90/129] Compiling OpenClawKitTests GatewayAttachmentLimitsTests.swift
+[91/129] Compiling OpenClawKitTests GatewayConnectChallengeSupportTests.swift
+[92/129] Compiling OpenClawKitTests GatewayCustomHeadersTests.swift
+[93/129] Compiling OpenClawKitTests GatewayDiscoveryStatusTextTests.swift
+[94/129] Compiling OpenClawKitTests GatewayErrorsTests.swift
+[95/129] Compiling OpenClawKitTests GatewayLiveTextProjectionTests.swift
+[96/129] Compiling OpenClawKitTests GatewayModelsCompatibilityTests.swift
+[97/129] Compiling OpenClawKitTests GatewayNativeTransportDeviceAuthTests.swift
+[98/129] Compiling OpenClawKitTests GatewayNodeSessionTests.swift
+[99/129] Compiling OpenClawKitTests GatewayProtocolGeneratedModelsTests.swift
+[100/129] Compiling OpenClawKitTests GatewayTLSPinningTests.swift
+[101/129] Compiling OpenClawKitTests GatewayTLSRequestTests.swift
+[102/129] Compiling OpenClawKitTests GatewayTLSStoreFixture.swift
+[103/129] Compiling OpenClawKitTests GatewayTLSStoreFixtureTests.swift
+[104/153] Compiling OpenClawKitTests GatewayUserPreferencesTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[105/153] Compiling OpenClawKitTests GenericPasswordKeychainStoreTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[106/153] Compiling OpenClawKitTests HealthCommandsTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[107/153] Compiling OpenClawKitTests InstanceIdentityTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[108/153] Compiling OpenClawKitTests JPEGTranscoderTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[109/153] Compiling OpenClawKitTests LocationCurrentRequestTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[110/153] Compiling OpenClawKitTests NativeConversationContractTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[111/153] Compiling OpenClawKitTests NativeConversationDraftTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[112/153] Compiling OpenClawKitTests NativeConversationOutboxTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[113/153] Compiling OpenClawKitTests NativeConversationOwnershipTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[114/153] Compiling OpenClawKitTests NativeConversationRouteTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[115/153] Compiling OpenClawKitTests NativeGatewayWebSocketFixture.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[116/153] Compiling OpenClawKitTests NativeStateBootstrapTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[117/153] Compiling OpenClawKitTests NoiseJPEGFixture.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[118/153] Compiling OpenClawKitTests OpenClawMascotAnimatorTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[119/153] Compiling OpenClawKitTests PluginReloadProtocolTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[120/153] Compiling OpenClawKitTests RealtimePCMStreamingAudioPlayerTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[121/153] Compiling OpenClawKitTests RealtimeTalkRelaySessionAudioInputTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[122/153] Compiling OpenClawKitTests RealtimeTalkRelaySessionCancellationTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[123/153] Compiling OpenClawKitTests RealtimeTalkRelaySessionInterruptionTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[124/153] Compiling OpenClawKitTests RealtimeTalkRelaySessionOffMainTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[125/153] Compiling OpenClawKitTests RealtimeTalkRelaySessionPlaybackTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[126/153] Compiling OpenClawKitTests RealtimeTalkRelaySessionProductionTests.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[127/153] Compiling OpenClawKitTests RealtimeTalkRelaySessionTestSupport.swift
+<candidate>/apps/shared/OpenClawKit/Tests/OpenClawKitTests/RealtimeTalkRelaySessionProductionTests.swift:341:18: warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+339 |         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+340 |         f.events.continuation.onTermination = { _ in ended.send(()) }
+341 |         weak var weakSession = f.session
+    |                  `- warning: weak variable 'weakSession' was never mutated; consider changing to 'let' constant [#WeakMutability]
+342 |         f.session = nil
+343 |         #expect(weakSession == nil)
+
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[128/176] Compiling OpenClawKitTests RealtimeTalkRelaySessionTests.swift
+[129/176] Compiling OpenClawKitTests RealtimeTalkVoiceSelectionTests.swift
+[130/176] Compiling OpenClawKitTests SessionMutationResponsesTests.swift
+[131/176] Compiling OpenClawKitTests ShareGatewayRelaySettingsTests.swift
+[132/176] Compiling OpenClawKitTests ShareImageProcessorTests.swift
+[133/176] Compiling OpenClawKitTests SkillManagementTests.swift
+[134/176] Compiling OpenClawKitTests StateDirectoryIsolationTrait.swift
+[135/176] Compiling OpenClawKitTests TalkConfigContractTests.swift
+[136/176] Compiling OpenClawKitTests TalkConfigParsingTests.swift
+[137/176] Compiling OpenClawKitTests TalkDirectiveTests.swift
+[138/176] Compiling OpenClawKitTests TalkHistoryTimestampTests.swift
+[139/176] Compiling OpenClawKitTests TalkPromptBuilderTests.swift
+[140/176] Compiling OpenClawKitTests TalkSystemSpeechSynthesizerTests.swift
+[141/176] Compiling OpenClawKitTests TalkWaveformTests.swift
+[142/176] Compiling OpenClawKitTests TestAsyncHelpers.swift
+[143/176] Compiling OpenClawKitTests TestAsyncHelpersTests.swift
+[144/176] Compiling OpenClawKitTests ToolDisplayRegistryTests.swift
+[145/176] Compiling OpenClawKitTests ToolResultTextFormatterTests.swift
+[146/176] Compiling OpenClawKitTests VoiceNoteRecorderTests.swift
+[147/176] Compiling OpenClawKitTests WatchChatDeliveryStoreTests.swift
+[148/176] Compiling OpenClawKitTests WatchCommandsTests.swift
+[149/176] Compiling OpenClawKitTests WebViewJavaScriptSupportTests.swift
+[150/176] Compiling OpenClawKitTests resource_bundle_accessor.swift
+[151/176] Compiling OpenClawKitTests ChatSwarmProgressTests.swift
+[152/176] Compiling OpenClawKitTests ChatTalkActivityTests.swift
+[153/176] Compiling OpenClawKitTests ChatThemeTests.swift
+[154/176] Compiling OpenClawKitTests ChatToolActivityTests.swift
+[155/176] Compiling OpenClawKitTests ChatToolDiffTests.swift
+[156/176] Compiling OpenClawKitTests ChatTranscriptCacheStoreTests.swift
+[157/176] Compiling OpenClawKitTests ChatTranscriptExporterTests.swift
+[158/176] Compiling OpenClawKitTests ChatTranscriptRowTests.swift
+[159/176] Compiling OpenClawKitTests ChatTranscriptSearchTests.swift
+[160/176] Compiling OpenClawKitTests ChatUserAccentInkTests.swift
+[161/176] Compiling OpenClawKitTests ChatUserMessageDisclosurePolicyTests.swift
+[162/176] Compiling OpenClawKitTests ChatViewModelAgentNavigationTests.swift
+[163/176] Compiling OpenClawKitTests ChatViewModelAttachmentTests.swift
+[164/176] Compiling OpenClawKitTests ChatViewModelOutboxSettingsTests.swift
+[165/176] Compiling OpenClawKitTests ChatViewModelOutboxTests.swift
+[166/176] Compiling OpenClawKitTests ChatViewModelReactionsTests.swift
+[167/176] Compiling OpenClawKitTests ChatViewModelSessionActionTests.swift
+[168/176] Compiling OpenClawKitTests ChatViewModelSessionDeletionTests.swift
+[169/176] Compiling OpenClawKitTests ChatViewModelTests.swift
+[170/176] Compiling OpenClawKitTests ChatViewModelTranscriptCacheTests.swift
+[171/176] Compiling OpenClawKitTests ChatViewModelUnreadTests.swift
+[172/176] Compiling OpenClawKitTests ChatWorkingProgressTests.swift
+[173/176] Compiling OpenClawKitTests ComputerCommandsWireDecodeTests.swift
+[174/176] Compiling OpenClawKitTests ComputerInputGeometryTests.swift
+[174/176] Write Objects.LinkFileList
+[175/176] Linking OpenClawKitPackageTests
+Build complete! (54.37s)
+Test Suite 'Selected tests' started at 2026-10-02 09:35:47.174.
+Test Suite 'OpenClawKitPackageTests.xctest' started at 2026-10-02 09:35:47.175.
+Test Suite 'OpenClawKitPackageTests.xctest' passed at 2026-10-02 09:35:47.175.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-10-02 09:35:47.175.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite RealtimeTalkRelaySessionOffMainTests started.
+◇ Test "new reply reaches audio device while main actor is stalled" started.
+◇ Test "installed relay identity does not open startup routing" started.
+◇ Test "buffered startup clear acknowledges its playback mark" started.
+✔ Test "installed relay identity does not open startup routing" passed after 0.001 seconds.
+✔ Test "new reply reaches audio device while main actor is stalled" passed after 1.502 seconds.
+✘ Test "buffered startup clear acknowledges its playback mark" recorded an issue at RealtimeTalkRelaySessionOffMainTests.swift:27:6: Caught error: timed out waiting for startup mark acknowledgment
+✘ Test "buffered startup clear acknowledges its playback mark" failed after 3.522 seconds with 1 issue.
+✘ Suite RealtimeTalkRelaySessionOffMainTests failed after 3.522 seconds with 1 issue.
+✘ Test run with 3 tests in 1 suite failed after 3.522 seconds with 1 issue.
