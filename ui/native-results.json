@@ -1,0 +1,23 @@
+{
+  "format": {
+    "rc": 0,
+    "wall_seconds": 0.43
+  },
+  "lint-ios": {
+    "rc": 0,
+    "wall_seconds": 0.248
+  },
+  "lint-mac": {
+    "rc": 0,
+    "wall_seconds": 0.151
+  },
+  "owners": {
+    "rc": 0,
+    "wall_seconds": 41.884
+  },
+  "mac": {
+    "rc": 0,
+    "wall_seconds": 34.352
+  },
+  "source_hashes_match": true
+}

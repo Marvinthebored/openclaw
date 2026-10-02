@@ -1,0 +1,3 @@
+native-app-i18n: entries=4379 changed=false
+android-app-i18n: appSourceKeys=21 thirdPartySourceKeys=4 wearSourceKeys=131
+apple-app-i18n: sourceMacosKeys=1466

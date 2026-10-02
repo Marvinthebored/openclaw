@@ -1,0 +1,15 @@
+✔ Test "Beta model patch and send do not wait for pending Alpha main patch" passed after 0.536 seconds.
+✔ Test "sessions refresh preserves consecutive patches that overlap its retry" passed after 0.534 seconds.
+✔ Test "fetchSessionList falls back to local filtering when the server is unreachable" passed after 0.011 seconds.
+✔ Suite ChatViewModelSessionManagementTests passed after 0.548 seconds.
+✔ Test "global chat delta adopts only selected agent run" passed after 0.580 seconds.
+✔ Test "reconnect retires queued settings from the previous connection" passed after 0.590 seconds.
+✔ Test "terminal event for another run preserves active streaming and tools" with 3 test cases passed after 0.594 seconds.
+✔ Test "send waiting for model patch does not send after session switch" passed after 0.595 seconds.
+✔ Test "thinking patches are serialized without replay" passed after 0.664 seconds.
+✔ Test "switching sessions ignores late model patch completion from previous session" passed after 0.680 seconds.
+✔ Test "message invalidation recovers selected transcript" with 4 test cases passed after 0.687 seconds.
+✔ Test "history invalidation survives a newer incremental message during retry" passed after 0.700 seconds.
+✔ Test "transient Swarm capability failure preserves state and retries until explicit false" passed after 1.402 seconds.
+✔ Suite ChatViewModelTests passed after 1.415 seconds.
+✔ Test run with 565 tests in 15 suites passed after 1.417 seconds.
