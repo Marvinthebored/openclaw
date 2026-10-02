@@ -103,7 +103,6 @@ type ChatRunRecord = {
   rawBuffer?: string;
   buffer?: string;
   bufferIsCurrent?: () => boolean;
-  readVoiceConfirmationReply?: () => string | undefined; // Survives CLI execution binding cleanup.
   /** Retire queued connection snapshots when this buffering generation is cleared. */
   liveTextGroup?: AbortController;
   liveTextEpoch?: object;
@@ -144,9 +143,10 @@ function createChatRunRecordStore(): ChatRunRecordStore {
   const releaseIfEmpty = (runId: string) => {
     const record = runs.get(runId);
     // Activity metadata alone does not retain a run.
-    if (record && Object.keys(record).length === 1) {
-      runs.delete(runId);
+    if (!record || Object.keys(record).length > 1) {
+      return;
     }
+    runs.delete(runId);
   };
   return { runs, getOrCreate, releaseIfEmpty };
 }
@@ -256,7 +256,6 @@ export function createChatRunState(): ChatRunState {
     delete record.rawBuffer;
     delete record.buffer;
     delete record.bufferIsCurrent;
-    delete record.readVoiceConfirmationReply;
     record.liveTextGroup?.abort();
     delete record.liveTextGroup;
     delete record.liveTextEpoch;

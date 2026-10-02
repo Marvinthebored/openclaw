@@ -170,20 +170,15 @@ struct RealtimeTalkRelaySessionTests {
                     "type": "transcript",
                     "role": "user",
                     "text": isFinal ? "hello" : "hel",
-                    "textMode": "snapshot",
                     "final": isFinal,
-                    "transcriptId": isFinal ? "voice:relay-1:1" : nil,
                 ]),
                 seq: nil,
                 stateversion: nil))
         }
 
         #expect(transcripts == [
-            RealtimeTalkTranscript(
-                role: "user", text: "hel", isFinal: false, relaySessionID: "relay-1", textMode: "snapshot"),
-            RealtimeTalkTranscript(
-                role: "user", text: "hello", isFinal: true, transcriptID: "voice:relay-1:1",
-                relaySessionID: "relay-1", textMode: "snapshot"),
+            RealtimeTalkTranscript(role: "user", text: "hel", isFinal: false),
+            RealtimeTalkTranscript(role: "user", text: "hello", isFinal: true),
         ])
     }
 

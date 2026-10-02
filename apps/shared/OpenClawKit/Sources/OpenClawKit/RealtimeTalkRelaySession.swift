@@ -120,24 +120,11 @@ public struct RealtimeTalkTranscript: Equatable, Sendable {
     public let role: String
     public let text: String
     public let isFinal: Bool
-    public let transcriptID: String?
-    public let relaySessionID: String?
-    public let textMode: String?
 
-    public init(
-        role: String,
-        text: String,
-        isFinal: Bool,
-        transcriptID: String? = nil,
-        relaySessionID: String? = nil,
-        textMode: String? = nil)
-    {
+    public init(role: String, text: String, isFinal: Bool) {
         self.role = role
         self.text = text
         self.isFinal = isFinal
-        self.transcriptID = transcriptID
-        self.relaySessionID = relaySessionID
-        self.textMode = textMode
     }
 }
 
@@ -417,8 +404,6 @@ public final class RealtimeTalkRelaySession {
                 ])
             }
             self.relaySessionId = relaySessionId
-            // Acknowledgments need identity during startup; routing stays gated until replay finishes.
-            self.output.withLock { $0.relaySessionId = relaySessionId }
             let supportsBargeIn = await resolveSupportsBargeIn(result)
             switch await lifecycleStatus(lifecycleGeneration) {
             case .current: break
@@ -433,7 +418,7 @@ public final class RealtimeTalkRelaySession {
             try startMicrophonePump(lifecycleGeneration: lifecycleGeneration)
             self.onStatus("Waiting for realtime…")
             await drainPendingPreRelayEvents(lifecycleGeneration: lifecycleGeneration)
-            self.output.withLock { $0.startupRoutingReady = true }
+            self.output.withLock { $0.relaySessionId = relaySessionId }
             switch await lifecycleStatus(lifecycleGeneration) {
             case .current: break
             case .cancelledLocally: return
@@ -881,13 +866,7 @@ extension RealtimeTalkRelaySession {
         let charCount = text.count
         self.logger.debug(
             "talk realtime transcript: role=\(role.isEmpty ? "unknown" : role) final=\(isFinal) chars=\(charCount)")
-        self.onTranscript(RealtimeTalkTranscript(
-            role: role,
-            text: text,
-            isFinal: isFinal,
-            transcriptID: payload["transcriptId"]?.stringValue,
-            relaySessionID: payload["relaySessionId"]?.stringValue,
-            textMode: payload["textMode"]?.stringValue))
+        self.onTranscript(RealtimeTalkTranscript(role: role, text: text, isFinal: isFinal))
         guard isFinal else { return }
         if role == "user" {
             self.onStatus("Thinking…")

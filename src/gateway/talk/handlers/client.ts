@@ -18,9 +18,7 @@ import {
 import { controlRealtimeVoiceAgentRun } from "../../../talk/agent-run-control.js";
 import {
   authorizeClientVoiceConfirmation,
-  authorizeObservedClientVoiceConfirmation,
   bindAuthorizedClientVoiceConfirmation,
-  observeClientVoiceConfirmationRun,
   type ClientVoiceConfirmationGrant,
 } from "../../../talk/client-voice-confirmation.js";
 import {
@@ -97,7 +95,6 @@ export const talkClientHandlers: GatewayRequestHandlers = {
         );
         return;
       }
-      let consultArgs: unknown = params.args ?? {};
       let confirmationGrant: ClientVoiceConfirmationGrant | undefined;
       let voiceSessionId: string;
       try {
@@ -144,16 +141,6 @@ export const talkClientHandlers: GatewayRequestHandlers = {
             voiceSessionId,
             confirmationId: parsedArgs.confirmationId,
           });
-        } else {
-          confirmationGrant = authorizeObservedClientVoiceConfirmation({ agentId, voiceSessionId });
-        }
-        if (confirmationGrant?.retryContext) {
-          consultArgs = {
-            ...parsedArgs,
-            context: [parsedArgs.context, confirmationGrant.retryContext]
-              .filter(Boolean)
-              .join("\n\n"),
-          };
         }
         // Only validated calls may replace the legacy client's connection binding.
         if (connId && !relaySessionId) {
@@ -167,7 +154,7 @@ export const talkClientHandlers: GatewayRequestHandlers = {
       const result = await startTalkRealtimeAgentConsult(request, {
         sessionTarget: target,
         callId: params.callId,
-        args: consultArgs,
+        args: params.args ?? {},
         relaySessionId: normalizeOptionalString(params.relaySessionId),
         connId,
         onRunStarted: (runId) => {
@@ -178,11 +165,6 @@ export const talkClientHandlers: GatewayRequestHandlers = {
             runId,
             config: request.context.getRuntimeConfig(),
           });
-          const observation = observeClientVoiceConfirmationRun({ agentId, voiceSessionId, runId });
-          // CLI diagnostics retire the binding before the outer lifecycle publishes chat.final.
-          // Chat run state retains only the veto reply, never execution authority.
-          request.context.chatRunState.getOrCreate(runId).readVoiceConfirmationReply = () =>
-            observation.readReply({ includeConfirmationId: true });
           if (confirmationGrant) {
             bindAuthorizedClientVoiceConfirmation({ grant: confirmationGrant, runId });
           }

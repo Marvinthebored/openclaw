@@ -14,7 +14,6 @@ final class RealtimeTalkOutput: @unchecked Sendable {
     private let logger = Logger(subsystem: "ai.openclawfoundation.app", category: "RealtimeTalkRelay")
     private var effects: [Effect] = []
     private var pendingStartupEvents = 0
-    var startupRoutingReady = false
     private var routingGeneration: UInt64 = 0
     var relaySessionId: String?
     var isClosed = false
@@ -84,13 +83,12 @@ final class RealtimeTalkOutput: @unchecked Sendable {
     func resetRouting(lifecycleGeneration: UInt64) {
         self.routingGeneration = lifecycleGeneration
         self.pendingStartupEvents = 0
-        self.startupRoutingReady = false
     }
 
     func route(_ event: EventFrame, lifecycleGeneration: UInt64) -> (handled: Bool, startup: Bool) {
         self.withLock { output in
             guard !output.isClosed, output.routingGeneration == lifecycleGeneration else { return (true, false) }
-            if !output.startupRoutingReady || output.pendingStartupEvents > 0 {
+            if output.relaySessionId == nil || output.pendingStartupEvents > 0 {
                 output.pendingStartupEvents += 1
                 return (false, true)
             }
