@@ -568,7 +568,9 @@ final class OpenClawSnapshotUITests: XCTestCase {
         XCTAssertTrue(paste.waitForExistence(timeout: 5), "PASTE_MENU_MISSING")
         paste.tap()
         // Staging transcodes to JPEG, so the chip shows the converted name.
-        let attachment = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "pasted-image-1")).firstMatch
+        let attachment = app.staticTexts
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "pasted-image-1"))
+            .firstMatch
         XCTAssertTrue(attachment.waitForExistence(timeout: 5), "PASTED_IMAGE_MISSING")
         self.attachScreenshot(named: "chat-composer-paste-image")
     }
@@ -626,6 +628,29 @@ final class OpenClawSnapshotUITests: XCTestCase {
             app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "I can help with"))
                 .firstMatch.waitForExistence(timeout: 8))
         self.attachScreenshot(named: "voice-note-sent-after-stopping-response")
+    }
+
+    func testVoiceRenditionsStayVisibleWithTheirOwnModelLabels() throws {
+        self.launchApp(
+            for: ScreenshotTarget(
+                initialTab: "chat",
+                initialDestination: "chat",
+                name: "voice-consult-rows"),
+            additionalArguments: ["--openclaw-voice-consult-rows-fixture"])
+        let app = try XCTUnwrap(self.app)
+        let latest = app.staticTexts
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "VOICE_SPOKEN_AFTER"))
+            .firstMatch
+        XCTAssertTrue(latest.waitForExistence(timeout: 8))
+        let question = app.staticTexts["Which build is on my phone?"]
+        for _ in 0..<6 where !question.isHittable {
+            app.swipeDown()
+        }
+        self.attachScreenshot(named: "voice-consult-rows")
+        let spokenFirst = app.staticTexts
+            .matching(NSPredicate(format: "label BEGINSWITH %@", "VOICE_SPOKEN_FIRST"))
+            .firstMatch
+        XCTAssertTrue(spokenFirst.exists, "SPOKEN_ROW_FOLDED_INTO_WORK")
     }
 
     func testKeyboardOpenPreservesTranscriptAndFollowsLiveEdgeAfterSend() throws {
