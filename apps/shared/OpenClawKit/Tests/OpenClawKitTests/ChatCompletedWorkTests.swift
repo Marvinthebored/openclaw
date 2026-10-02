@@ -5,6 +5,17 @@ import Testing
 
 @Suite("Completed transcript work")
 struct ChatCompletedWorkTests {
+    @Test func `spoken rendition stays visible when a consult answer is persisted later`() throws {
+        let voice = try Self.decode(#"""
+        {"role":"assistant","content":"The latest build is on your phone.","timestamp":1000,
+         "model":"realtime-voice","provenance":{"kind":"realtime_voice","sourceChannel":"talk"}}
+        """#)
+        let consult = Self.message("assistant", "The build went on at about 14:15.", at: 2000, phase: "final_answer")
+        let rows = Self.collapse([voice, consult])
+        #expect(Self.visibleIDs(rows) == [voice.id, consult.id])
+        #expect(Self.work(in: rows).isEmpty)
+    }
+
     @Test func `completed work folds around visible answers and leaves unresolved tails exposed`() throws {
         let user = Self.message("user", "Check the layout", at: 1000)
         let progress = Self.message("assistant", "Checking", at: 2000, phase: "commentary")
