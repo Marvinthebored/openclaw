@@ -265,10 +265,14 @@ struct RealtimePCMStreamingAudioPlayerTests {
         ] {
             let backend = RealtimePCMPlaybackBackend()
             let starts = RealtimePCMStartCounter()
+            let started = RealtimeRelayTestSignal<Void>(timeoutSeconds: 5)
             let player = RealtimePCMStreamingAudioPlayer(
                 preparePlayback: backend.prepare,
                 scheduleFrame: backend.schedule,
-                startPlayback: { starts.increment() },
+                startPlayback: {
+                    starts.increment()
+                    started.send(())
+                },
                 stopPlayback: backend.stop,
                 playbackTime: { nil })
             let (stream, continuation) = AsyncThrowingStream<Data, Error>.makeStream()
@@ -278,7 +282,12 @@ struct RealtimePCMStreamingAudioPlayerTests {
                 continuation.finish()
             }
             try await backend.waitForScheduledFrames(frames)
-            await Task.yield()
+            if expectedStarts > 0 {
+                // The prebuffer start and the end-of-input start both run after scheduling returns.
+                _ = try await started.next("playback start frames=\(frames) finish=\(finish)")
+            }
+            // Every start decision runs on the backend queue; drain it so no decision is still pending.
+            await player._test_waitForBackendOperations()
             #expect(starts.count == expectedStarts, "frames=\(frames) finish=\(finish)")
             _ = player.stop()
             continuation.finish()

@@ -404,6 +404,8 @@ public final class RealtimeTalkRelaySession {
                 ])
             }
             self.relaySessionId = relaySessionId
+            // Acknowledgments need identity during startup; routing stays gated until replay finishes.
+            self.output.withLock { $0.relaySessionId = relaySessionId }
             let supportsBargeIn = await resolveSupportsBargeIn(result)
             switch await lifecycleStatus(lifecycleGeneration) {
             case .current: break
@@ -418,7 +420,7 @@ public final class RealtimeTalkRelaySession {
             try startMicrophonePump(lifecycleGeneration: lifecycleGeneration)
             self.onStatus("Waiting for realtime…")
             await drainPendingPreRelayEvents(lifecycleGeneration: lifecycleGeneration)
-            self.output.withLock { $0.relaySessionId = relaySessionId }
+            self.output.withLock { $0.startupRoutingReady = true }
             switch await lifecycleStatus(lifecycleGeneration) {
             case .current: break
             case .cancelledLocally: return
