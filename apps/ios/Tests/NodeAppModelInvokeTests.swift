@@ -9434,6 +9434,35 @@ private final class TimingOutDeviceStatusService: DeviceStatusServicing {
         #expect(relaunched.chatSessionKey != agentAChat)
     }
 
+    @Test @MainActor func `roster removal of the selected agent forgets its saved chat`() {
+        let registry = GatewaySettingsStore.loadGatewayRegistry()
+        let stableID = "agent-roster-\(UUID().uuidString)"
+        let alphaChat = "agent:alpha:dashboard:last-used"
+        defer {
+            _ = GatewaySettingsStore.saveGatewayRegistry(registry)
+            GatewaySettingsStore.saveGatewayFocusedChatSessionKey(stableID: stableID, sessionKey: nil)
+            GatewaySettingsStore.saveGatewaySelectedAgentId(stableID: stableID, agentId: nil)
+        }
+        #expect(GatewaySettingsStore.upsertGatewayRegistryEntry(.init(
+            stableID: stableID, kind: .manual, name: "Agent roster test", host: "localhost", port: 443,
+            useTLS: true, contextPath: nil, lastConnectedAtMs: nil), activate: true))
+        GatewaySettingsStore.saveGatewaySelectedAgentId(stableID: stableID, agentId: "alpha")
+        let model = NodeAppModel()
+        defer { model.voiceWake.stop() }
+        model.focusChatSession(alphaChat)
+        #expect(model.chatSessionKey == alphaChat)
+        model.retireSelectedAgentIfRemoved(from: [AgentSummary(
+            id: "beta", name: "Beta", identity: nil, workspace: nil, workspacegit: nil,
+            model: nil, agentruntime: nil)])
+        #expect(model.selectedAgentId == nil)
+        #expect(model.chatSessionKey != alphaChat)
+        #expect(GatewaySettingsStore.loadGatewayFocusedChatSessionKey(stableID: stableID) == nil)
+        let relaunched = NodeAppModel()
+        defer { relaunched.voiceWake.stop() }
+        #expect(relaunched.selectedAgentId == nil)
+        #expect(relaunched.chatSessionKey != alphaChat)
+    }
+
     @Test @MainActor func `same gateway connect does not undo a preconnect chat selection`() {
         let registry = GatewaySettingsStore.loadGatewayRegistry()
         let stableID = "scroll-connect-\(UUID().uuidString)"

@@ -1722,13 +1722,7 @@ final class NodeAppModel {
                 self.gatewayAgents = decoded.agents
                 self.gatewaySessionScope = decoded.scope.value as? String
                 self.applyMainSessionKey(decoded.mainkey)
-
-                let selected = (self.selectedAgentId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-                if !selected.isEmpty,
-                   !decoded.agents.contains(where: { $0.id == selected && $0.isSelectableAgent })
-                {
-                    self.selectedAgentId = nil
-                }
+                self.retireSelectedAgentIfRemoved(from: decoded.agents)
                 self.synchronizeTalkSessionKey()
             }
             if let routingIdentity {
@@ -1749,6 +1743,16 @@ final class NodeAppModel {
         }
         await self.refreshBrandingFromGateway()
         await self.refreshAgentsFromGateway()
+    }
+
+    /// A roster refresh that drops the selected agent retires it through the normal selection
+    /// transition, so its active and saved chat focus cannot keep routing chat or Talk to it.
+    func retireSelectedAgentIfRemoved(from agents: [AgentSummary]) {
+        let selected = (self.selectedAgentId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !selected.isEmpty,
+              !agents.contains(where: { $0.id == selected && $0.isSelectableAgent })
+        else { return }
+        self.setSelectedAgentId(nil)
     }
 
     func setSelectedAgentId(_ agentId: String?) {
