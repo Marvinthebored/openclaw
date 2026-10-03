@@ -137,7 +137,12 @@ export const talkClientHandlers: GatewayRequestHandlers = {
             connId,
             sessionKey: params.sessionKey,
           });
-          await flushTalkRealtimeRelayVoiceWrites({ relaySessionId, connId });
+          await flushTalkRealtimeRelayVoiceWrites({
+            relaySessionId,
+            connId,
+            waitForConfirmation: true,
+          });
+          request.sessionMutationAuthorization?.assertCurrent();
         }
         request.sessionMutationAuthorization?.assertCurrent();
         const parsedArgs = parseRealtimeVoiceAgentConsultArgs(params.args ?? {});
