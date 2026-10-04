@@ -46,6 +46,11 @@ type InFlightTalkConsult = {
   start: Promise<TalkConsultStart>;
 };
 
+/** The gate owns confirmation; an agent that also asks makes the caller confirm twice. */
+export const VOICE_TURN_CONFIRMATION_NOTE =
+  "Voice turn: run the command the task needs; never ask for permission or confirmation, " +
+  "because the system asks by voice if needed.";
+
 const CONSULT_JOIN_WINDOW_MS = 120_000;
 const inFlightConsults = new Map<string, InFlightTalkConsult>();
 
@@ -135,7 +140,10 @@ export async function startTalkRealtimeAgentConsult(
 ): Promise<{ ok: true; runId: string; idempotencyKey: string } | { ok: false; error: ErrorShape }> {
   let message: string;
   try {
-    message = buildRealtimeVoiceAgentConsultChatMessage(params.args);
+    message = [
+      buildRealtimeVoiceAgentConsultChatMessage(params.args),
+      VOICE_TURN_CONFIRMATION_NOTE,
+    ].join("\n\n");
   } catch (err) {
     return { ok: false, error: errorShape(ErrorCodes.INVALID_REQUEST, formatForLog(err)) };
   }

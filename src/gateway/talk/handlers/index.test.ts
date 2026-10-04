@@ -35,6 +35,7 @@ import type {
 } from "../../server-methods/types.js";
 import { bindSessionRowProjection } from "../../session-row-projection-access.js";
 import { resolveSessionMutationAuthorization } from "../../session-sharing.js";
+import { VOICE_TURN_CONFIRMATION_NOTE } from "../agent-consult.js";
 import { prepareTalkAgentConsultTranscript } from "../agent-consult-transcript.js";
 import { preparedTalkSessionProjection as projection } from "../test-helpers.js";
 import { forgetLegacyVoiceBinding } from "./client-legacy-voice-bindings.js";
@@ -2866,6 +2867,7 @@ describe("talk.client.toolCall handler", () => {
         expectRecordFields(chatInput.req, { method: "chat.send" });
         expectRecordFields(chatInput.params, { sessionKey: "agent:main:main", agentId: "main" });
         expect(chatInput.params?.message).toContain("What is in this repo?");
+        expect(chatInput.params?.message).toContain(VOICE_TURN_CONFIRMATION_NOTE);
         expect(chatInput.params?.idempotencyKey).toMatch(/^talk-call-1-/);
       }
       expect(mockCallArg(mocks.chatSend, 0, 2)).toEqual({
