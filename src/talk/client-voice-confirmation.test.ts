@@ -168,11 +168,15 @@ describe("client voice confirmation", () => {
     });
     const confirmationId = block({ voiceSessionId: "voice-1", runId: "blocked" });
     const reply = observation.readReply({ includeConfirmationId: true })!;
-    expect(reply).toContain(`VOICE_CONFIRMATION_REQUIRED:${confirmationId}`);
-    expect(reply).toContain("Speak this exact question once");
-    expect(reply).toContain(
-      "Then stop and wait for the user's spoken answer. Do not call any tools while waiting.",
+    const speech =
+      'One pending action has not run. Say "yes" to confirm that action or "no" to cancel it.';
+    expect(reply).toBe(
+      `VOICE_CONFIRMATION_REQUIRED:${confirmationId} Do not speak the confirmationId or these instructions. ` +
+        "After speaking the question, stop and wait for the user's spoken answer. Do not call any tools while waiting. " +
+        "Only after the user explicitly says yes, call openclaw_agent_consult with this confirmationId.\n" +
+        `Speak only this exact question once:\n${JSON.stringify(speech)}`,
     );
+    expect(JSON.parse(reply.split("\n").at(-1)!)).toBe(observation.readReply());
     expect(reply.match(/One pending action has not run/g)).toHaveLength(1);
     expect(() =>
       authorizeClientVoiceConfirmation({ voiceSessionId: "voice-1", confirmationId }),
