@@ -7,6 +7,7 @@ import {
 } from "./client-voice-confirmation-policy.js";
 
 const CONFIRMATION_TTL_MS = 2 * 60_000;
+const MAX_BLOCKED_CALL_ARGUMENTS_BYTES = 16 * 1024;
 const utteranceContextBrand = Symbol("voice-confirmation-utterance");
 
 export type ClientVoiceConfirmationUtteranceContext = {
@@ -19,7 +20,7 @@ type PendingVoiceConfirmation = {
   fingerprint: string;
   createdAt: number;
   expiresAt: number;
-  blockedCall?: { runId: string; toolCallId: string; toolName: string };
+  blockedCall?: { runId: string; toolCallId: string; toolName: string; arguments?: unknown };
   changed: Deferred;
   utterance?: ClientVoiceConfirmationUtteranceContext;
   utteranceRejected?: true;
@@ -384,11 +385,26 @@ function resolveClientVoiceToolConfirmationPolicy(
     params.toolCallId.length <= 256 &&
     params.toolName.length <= 128
   ) {
-    confirmation.blockedCall = {
+    const blockedCall: NonNullable<PendingVoiceConfirmation["blockedCall"]> = {
       runId: params.runId,
       toolCallId: params.toolCallId,
       toolName: params.toolName,
     };
+    try {
+      const serialized = JSON.stringify(params.toolParams);
+      if (
+        serialized !== undefined &&
+        Buffer.byteLength(serialized, "utf8") <= MAX_BLOCKED_CALL_ARGUMENTS_BYTES
+      ) {
+        const snapshot: unknown = JSON.parse(serialized);
+        if (stableToolFingerprint(params.toolName, snapshot) === fingerprint) {
+          blockedCall.arguments = snapshot;
+        }
+      }
+    } catch {
+      // Argument context is optional; oversized or non-JSON calls keep the ID-only retry.
+    }
+    confirmation.blockedCall = blockedCall;
   }
   state.pending = confirmation;
   const observation = params.runId ? state.observationsByRun.get(params.runId) : undefined;

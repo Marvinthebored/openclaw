@@ -2963,6 +2963,7 @@ describe("talk.client.toolCall handler", () => {
     expect(policy).toEqual({ allowed: true });
     const message = mocks.chatSend.mock.calls[0]?.[0].params.message;
     expect(message).toContain("blocked-cli-tool");
+    expect(message).toContain(JSON.stringify({ arguments: { command } }).slice(1, -1));
     expect(message).toContain("Retry only that call with its unchanged arguments");
     expect(
       checkClientVoiceToolConfirmationPolicy({

@@ -723,6 +723,125 @@ describe("client voice confirmation", () => {
     expect(grant.expiresAt).toBe(120_100);
   });
 
+  it.each(["explicit", "observed"] as const)(
+    "carries immutable exact arguments into a %s retry without widening its one-shot grant",
+    (mode) => {
+      const toolParams = {
+        command: "ha area dining",
+        title: "Read room status",
+        options: { labels: ["dining", "餐厅"], nested: { enabled: true } },
+      };
+      const original = structuredClone(toolParams);
+      const blocked = checkClientVoiceToolConfirmationPolicy({
+        voiceSessionId: "voice-1",
+        runId: "run-original",
+        toolCallId: "blocked-exec",
+        toolName: "exec",
+        toolParams,
+        now: 100,
+      });
+      if (blocked.allowed) {
+        throw new Error("expected blocked action");
+      }
+      toolParams.command = "ha mode dining off";
+      toolParams.options.labels.push("changed");
+      noteClientVoiceConfirmationUtterance({
+        voiceSessionId: "voice-1",
+        text: "yes",
+        timestamp: 101,
+      });
+      const grant =
+        mode === "explicit"
+          ? authorizeClientVoiceConfirmation({
+              voiceSessionId: "voice-1",
+              confirmationId: confirmationIdFrom(blocked.reason),
+              now: 102,
+            })
+          : authorizeObservedClientVoiceConfirmation({
+              agentId: "main",
+              voiceSessionId: "voice-1",
+              now: 102,
+            })!;
+      const call = JSON.parse(grant.retryContext!.match(/tool call: (.*)\. Retry only/)![1]!);
+      expect(call).toEqual({
+        runId: "run-original",
+        toolCallId: "blocked-exec",
+        toolName: "exec",
+        arguments: original,
+      });
+      expect(bindAuthorizedClientVoiceConfirmation({ grant, runId: "retry", now: 103 })).toBe(true);
+      const retry = {
+        voiceSessionId: "voice-1",
+        runId: "retry",
+        toolName: call.toolName,
+        toolParams: call.arguments,
+        now: 104,
+      };
+      expect(checkClientVoiceToolConfirmationPolicy({ ...retry, toolName: "bash" }).allowed).toBe(
+        false,
+      );
+      expect(checkClientVoiceToolConfirmationPolicy({ ...retry, toolParams }).allowed).toBe(false);
+      expect(
+        consumeClientVoiceToolConfirmationPolicy({
+          ...retry,
+          toolParams: {
+            options: original.options,
+            title: original.title,
+            command: original.command,
+          },
+        }),
+      ).toEqual({ allowed: true });
+      expect(consumeClientVoiceToolConfirmationPolicy(retry).allowed).toBe(false);
+    },
+  );
+
+  it.each([0, 1])("caps stored retry arguments at 16 KiB of JSON (%s extra bytes)", (extra) => {
+    const overhead = Buffer.byteLength(JSON.stringify({ action: "send", message: "" }), "utf8");
+    const messageBytes = 16 * 1024 - overhead;
+    const toolParams = {
+      action: "send",
+      message: "界".repeat(Math.floor(messageBytes / 3)) + "a".repeat((messageBytes % 3) + extra),
+    };
+    const blocked = checkClientVoiceToolConfirmationPolicy({
+      voiceSessionId: "voice-1",
+      runId: "run-original",
+      toolCallId: "blocked-message",
+      toolName: "message",
+      toolParams,
+      now: 100,
+    });
+    if (blocked.allowed) {
+      throw new Error("expected blocked action");
+    }
+    noteClientVoiceConfirmationUtterance({
+      voiceSessionId: "voice-1",
+      text: "yes",
+      timestamp: 101,
+    });
+    const grant = authorizeClientVoiceConfirmation({
+      voiceSessionId: "voice-1",
+      confirmationId: confirmationIdFrom(blocked.reason),
+      now: 102,
+    });
+    const call = JSON.parse(grant.retryContext!.match(/tool call: (.*)\. Retry only/)![1]!);
+    expect(call.toolCallId).toBe("blocked-message");
+    if (extra === 0) {
+      expect(call.arguments).toEqual(toolParams);
+    } else {
+      expect(call).not.toHaveProperty("arguments");
+    }
+    expect(bindAuthorizedClientVoiceConfirmation({ grant, runId: "retry", now: 103 })).toBe(true);
+    expect(
+      consumeClientVoiceToolConfirmationPolicy({
+        voiceSessionId: "voice-1",
+        runId: "retry",
+        toolName: "message",
+        toolParams,
+        now: 104,
+      }),
+    ).toEqual({ allowed: true });
+  });
+
   it("binds an approved fingerprint to its follow-up run", () => {
     const toolParams = { action: "send", message: "same" };
     const confirmationId = block({
