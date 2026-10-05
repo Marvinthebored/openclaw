@@ -87,16 +87,21 @@ const PRESENCE_REPLAY_SAFE_ACTIONS = new Set(["list", "person", "device"]);
 const READ_ONLY_SHELL_COMMANDS = new Set([
   "basename",
   "cat",
+  "cd",
   "cut",
   "dirname",
+  "echo",
+  "false",
   "grep",
   "head",
   "ls",
   "pwd",
   "rg",
+  "sleep",
   "stat",
   "tail",
   "tr",
+  "true",
   "wc",
 ]);
 
@@ -136,10 +141,10 @@ function tokenizeReadOnlyShellCommands(command: string): string[][] | undefined 
   };
   for (let index = 0; index < command.length; index++) {
     const char = command[index]!;
-    if (!quote && (char === "|" || char === "&")) {
+    if (!quote && (char === "|" || char === "&" || char === ";")) {
       if (char === "&" && command[index + 1] === "&") {
         index++;
-      } else if (char !== "|" || command[index + 1] === "|") {
+      } else if (char === "&" || (char === "|" && command[index + 1] === "|")) {
         return undefined;
       }
       flushToken();
@@ -148,6 +153,13 @@ function tokenizeReadOnlyShellCommands(command: string): string[][] | undefined 
       }
       commands.push(tokens);
       tokens = [];
+      continue;
+    }
+    // An escaped parenthesis is a literal word, as in find's \( ... \) grouping.
+    if (!quote && char === "\\" && (command[index + 1] === "(" || command[index + 1] === ")")) {
+      current += char + command[index + 1];
+      tokenStarted = true;
+      index++;
       continue;
     }
     // Quoted regex syntax is literal, not a shell pipeline or glob. Double quotes
@@ -298,6 +310,8 @@ function isReadOnlyGhCommand(tokens: readonly string[]): boolean {
 
 const FIND_BARE_PRIMARIES = new Set([
   "!",
+  "\\(",
+  "\\)",
   "-a",
   "-and",
   "-empty",
@@ -375,6 +389,10 @@ function isReadOnlyShellTokens(tokens: readonly string[]): boolean {
   }
   if (READ_ONLY_SHELL_COMMANDS.has(executable)) {
     return true;
+  }
+  // `timeout DURATION command` only limits how long the command runs; the command decides.
+  if (executable === "timeout") {
+    return /^\d+(\.\d+)?[smhd]?$/.test(tokens[1] ?? "") && isReadOnlyShellTokens(tokens.slice(2));
   }
   if (executable === "find") {
     return isReadOnlyFindCommand(tokens);

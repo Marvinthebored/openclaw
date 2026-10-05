@@ -69,6 +69,14 @@ describe("tool mutation helpers", () => {
     ["exec", "rg -n '[$*?{}]' notes.md"],
     ["exec", "gh search prs --repo openclaw/openclaw tool-mutation --json number,title,state"],
     ["bash", "gh pr view 123 --repo openclaw/openclaw --json title,state"],
+    [
+      "exec",
+      "cd /tmp/ws && timeout 20 find . -type f \\( -name '*.txt' -o -name '*.md' \\) -not -path '*/node_modules/*' | wc -l",
+    ],
+    ["exec", "cd /tmp/ws && find . -type f | wc -l"],
+    ["exec", "sleep 7; echo waited"],
+    ["exec", "timeout 5 ls -l"],
+    ["exec", "echo hello"],
   ])("treats read-only shell command as non-mutating: %s %s", (toolName, command) => {
     expect(isMutatingToolCall(toolName, { command })).toBe(false);
     expect(buildToolMutationState(toolName, { command }).mutatingAction).toBe(false);
@@ -133,6 +141,17 @@ describe("tool mutation helpers", () => {
     ["bash", "find . -type f |"],
     ["bash", "find . -type f &&"],
     ["bash", "find . -type f | | wc -l"],
+    ["exec", "cd /tmp/ws && rm notes.txt"],
+    ["exec", "sleep 5; touch /tmp/out"],
+    ["exec", "sleep 5;"],
+    ["exec", "ls;; pwd"],
+    ["exec", "timeout 5 rm notes.txt"],
+    ["exec", "timeout -s KILL 5 ls"],
+    ["exec", "timeout ls"],
+    ["exec", "timeout 5"],
+    ["exec", "echo hi > /tmp/out"],
+    ["bash", "find . \\( -name a -o -name b \\) -delete"],
+    ["bash", "find . \\( -name a \\) -exec rm {} \\;"],
     ["exec", "zsh -lc 'rg TODO src'"],
     ["bash", "git status --short"],
     ["exec", "gh pr create --title fix --body body"],
