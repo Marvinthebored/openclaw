@@ -14,18 +14,28 @@ const consultRun = {
 function createChatEvents(expectedSubscribers = 1) {
   let listener: ((event: { event: string; payload?: unknown }) => void) | undefined;
   let subscribers = 0;
-  let markSubscribed!: () => void;
-  // Settles once every consult call is waiting for its result, so a test can cancel from a known state.
-  const allSubscribed = new Promise<void>((resolve) => {
-    markSubscribed = resolve;
-  });
+  const waiters: Array<{ count: number; resolve: () => void }> = [];
+  // Settles once `count` consult calls are waiting for their result, so a test can cancel from a known state.
+  const subscribed = (count: number) =>
+    new Promise<void>((resolve) => {
+      if (subscribers >= count) {
+        resolve();
+      } else {
+        waiters.push({ count, resolve });
+      }
+    });
   return {
-    allSubscribed,
+    subscribed,
+    get allSubscribed() {
+      return subscribed(expectedSubscribers);
+    },
     addEventListener: vi.fn((callback: typeof listener) => {
       listener = callback;
       subscribers += 1;
-      if (subscribers === expectedSubscribers) {
-        markSubscribed();
+      for (const waiter of waiters) {
+        if (subscribers >= waiter.count) {
+          waiter.resolve();
+        }
       }
       return () => {
         listener = undefined;
@@ -150,6 +160,110 @@ describe("RealtimeTalkSession consult handoff", () => {
     second.abort();
     await b;
     expect(aborts()).toHaveLength(1);
+  });
+
+  describe("a repeat that is still awaiting its acknowledgement", () => {
+    type Ack = { runId: string; agentId: string; agentSessionKey: string };
+    const ackFor = (runId: string): Ack => ({
+      runId,
+      agentId: "main",
+      agentSessionKey: "agent:main:main",
+    });
+    // Call 1 is acknowledged at once; call 2 stays unacknowledged until the test settles it.
+    function setup() {
+      const events = createChatEvents();
+      let resolveSecond!: (ack: Ack) => void;
+      let rejectSecond!: (error: Error) => void;
+      let toolCalls = 0;
+      const request = vi.fn(async (method: string) => {
+        if (method !== "talk.client.toolCall") {
+          return { ok: true };
+        }
+        toolCalls += 1;
+        if (toolCalls === 1) {
+          return ackFor("run-x");
+        }
+        return await new Promise<Ack>((resolve, reject) => {
+          resolveSecond = resolve;
+          rejectSecond = reject;
+        });
+      });
+      const ctx = {
+        client: { request, addEventListener: events.addEventListener },
+        sessionKey: "main",
+        callbacks: {},
+      } as never;
+      const first = new AbortController();
+      const second = new AbortController();
+      const start = (callId: string, signal: AbortSignal) =>
+        submitRealtimeTalkConsult({
+          ctx,
+          callId,
+          args: { question: "Check" },
+          submit: vi.fn(),
+          signal,
+        });
+      const aborts = () =>
+        request.mock.calls.filter(([m]) => m === "chat.abort").map(([, params]) => params);
+      return {
+        events,
+        first,
+        second,
+        start,
+        aborts,
+        resolveSecond: (ack: Ack) => resolveSecond(ack),
+        rejectSecond: (error: Error) => rejectSecond(error),
+        secondRequested: () => toolCalls >= 2,
+      };
+    }
+
+    it("keeps the run when the repeat then joins it", async () => {
+      const t = setup();
+      const a = t.start("call-a", t.first.signal);
+      await t.events.subscribed(1);
+      const b = t.start("call-b", t.second.signal);
+      await vi.waitFor(() => expect(t.secondRequested()).toBe(true));
+      t.first.abort();
+      await a;
+      expect(t.aborts()).toEqual([]);
+      t.resolveSecond(ackFor("run-x"));
+      await t.events.subscribed(2);
+      expect(t.aborts()).toEqual([]);
+      t.second.abort();
+      await b;
+      expect(t.aborts()).toEqual([expect.objectContaining({ runId: "run-x" })]);
+    });
+
+    it("aborts the held run when the repeat starts a different run", async () => {
+      const t = setup();
+      const a = t.start("call-a", t.first.signal);
+      await t.events.subscribed(1);
+      const b = t.start("call-b", t.second.signal);
+      await vi.waitFor(() => expect(t.secondRequested()).toBe(true));
+      t.first.abort();
+      await a;
+      expect(t.aborts()).toEqual([]);
+      t.resolveSecond(ackFor("run-y"));
+      await t.events.subscribed(2);
+      expect(t.aborts()).toEqual([expect.objectContaining({ runId: "run-x" })]);
+      t.second.abort();
+      await b;
+      expect(t.aborts().map((p) => (p as { runId: string }).runId)).toEqual(["run-x", "run-y"]);
+    });
+
+    it("aborts the held run when the repeat fails before it is acknowledged", async () => {
+      const t = setup();
+      const a = t.start("call-a", t.first.signal);
+      await t.events.subscribed(1);
+      const b = t.start("call-b", t.second.signal);
+      await vi.waitFor(() => expect(t.secondRequested()).toBe(true));
+      t.first.abort();
+      await a;
+      expect(t.aborts()).toEqual([]);
+      t.rejectSecond(new Error("gateway unavailable"));
+      await b;
+      expect(t.aborts()).toEqual([expect.objectContaining({ runId: "run-x" })]);
+    });
   });
 
   it("aborts a shared run once when every waiting consult call is cancelled in the same tick", async () => {
