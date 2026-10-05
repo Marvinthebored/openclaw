@@ -489,7 +489,7 @@ function describeBlockedCall(call: PendingVoiceConfirmation["blockedCall"]): str
     return undefined;
   }
   // Only calls that label themselves are named; other tools keep the generic question.
-  const { title, command } = args as Record<string, unknown>;
+  const { title, command }: { title?: unknown; command?: unknown } = args;
   const label = [title, command].find(
     (value): value is string => typeof value === "string" && value.trim().length > 0,
   );
