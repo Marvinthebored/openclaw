@@ -532,9 +532,25 @@ export async function submitRealtimeTalkConsult(params: {
       await submitOnce(buildRealtimeVoiceAgentCancelProviderResult());
     }
   };
+  let waiting = false;
+  // Returns how many consult calls still wait on this run after this one leaves.
+  const releaseWaiter = (): number => {
+    if (!run) {
+      return 0;
+    }
+    const waiters = (consultWaitersByRunId.get(run.runId) ?? 0) - (waiting ? 1 : 0);
+    waiting = false;
+    if (waiters > 0) {
+      consultWaitersByRunId.set(run.runId, waiters);
+    } else {
+      consultWaitersByRunId.delete(run.runId);
+    }
+    return Math.max(waiters, 0);
+  };
   const abortRun = () => {
     aborted = true;
-    if (run && (consultWaitersByRunId.get(run.runId) ?? 0) <= 1) {
+    // Release synchronously: joined calls cancelled in one tick must not each see the other.
+    if (run && releaseWaiter() === 0) {
       void ctx.client.request("chat.abort", {
         sessionKey: run.agentSessionKey,
         agentId: run.agentId,
@@ -566,6 +582,7 @@ export async function submitRealtimeTalkConsult(params: {
       ...(params.relaySessionId ? { relaySessionId: params.relaySessionId } : {}),
     });
     consultWaitersByRunId.set(run.runId, (consultWaitersByRunId.get(run.runId) ?? 0) + 1);
+    waiting = true;
     if (params.signal?.aborted) {
       abortRun();
       await submitAbortResult();
@@ -592,14 +609,7 @@ export async function submitRealtimeTalkConsult(params: {
     });
   } finally {
     params.signal?.removeEventListener("abort", abortRun);
-    if (run) {
-      const waiters = (consultWaitersByRunId.get(run.runId) ?? 1) - 1;
-      if (waiters > 0) {
-        consultWaitersByRunId.set(run.runId, waiters);
-      } else {
-        consultWaitersByRunId.delete(run.runId);
-      }
-    }
+    releaseWaiter();
     if (submissionCompleted && !aborted && !params.signal?.aborted) {
       ctx.callbacks.onStatus?.("listening");
     }

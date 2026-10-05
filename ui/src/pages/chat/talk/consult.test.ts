@@ -130,7 +130,9 @@ describe("RealtimeTalkSession consult handoff", () => {
     const toolCalls = () => request.mock.calls.filter(([m]) => m === "talk.client.toolCall");
     const aborts = () => request.mock.calls.filter(([m]) => m === "chat.abort");
     await vi.waitFor(() => expect(toolCalls()).toHaveLength(2));
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
 
     first.abort();
     await a;
@@ -139,6 +141,42 @@ describe("RealtimeTalkSession consult handoff", () => {
     second.abort();
     await b;
     expect(aborts()).toHaveLength(1);
+  });
+
+  it("aborts a shared run once when every waiting consult call is cancelled in the same tick", async () => {
+    const events = createChatEvents();
+    const request = vi.fn(async (method: string) => {
+      if (method === "talk.client.toolCall") {
+        return { runId: "shared-run-sync", agentId: "main", agentSessionKey: "agent:main:main" };
+      }
+      return { ok: true };
+    });
+    const ctx = {
+      client: { request, addEventListener: events.addEventListener },
+      sessionKey: "main",
+      callbacks: {},
+    } as never;
+    const controllers = [new AbortController(), new AbortController()];
+    const consults = controllers.map((controller, index) =>
+      submitRealtimeTalkConsult({
+        ctx,
+        callId: `call-${index}`,
+        args: { question: "Check" },
+        submit: vi.fn(),
+        signal: controller.signal,
+      }),
+    );
+    const count = (name: string) => request.mock.calls.filter(([m]) => m === name).length;
+    await vi.waitFor(() => expect(count("talk.client.toolCall")).toBe(2));
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+
+    for (const controller of controllers) {
+      controller.abort();
+    }
+    await Promise.all(consults);
+    expect(count("chat.abort")).toBe(1);
   });
 
   it.each(["agent:voice:home", "global"])(
