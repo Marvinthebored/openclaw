@@ -60,15 +60,11 @@ public struct OpenClawChatView: View {
     @State private var contentWidth: CGFloat = 0
     @State private var scrollerBottomID = UUID()
     @State private var scrollCommand = ChatScrollCommand()
-    @State private var scrollPosition = ScrollPosition(idType: UUID.self)
+    @State private var scroll = ChatScrollFollowState()
     @State private var historyScrollGeometry = ChatHistoryScrollGeometry()
     @State private var hasPerformedInitialScroll = false
     @State private var lastTurnStartID: UUID?
     @State private var lastLiveUserTurnRevision: UInt64 = 0
-    @State private var hasNewerContentBelow = false
-    @State private var followTarget: ScrollFollowTarget? = .latest
-    @State private var isAtLiveEdge = true
-    @State private var isUserScrolling = false
     @State private var isAtHistoryStart = false
     @State private var readerInteractionRevision: UInt64 = 0
     @State private var isKeyboardVisible = false
@@ -424,7 +420,7 @@ extension OpenClawChatView {
                 .background(ChatNativePrependProbe(geometry: self.historyScrollGeometry))
                 #endif
             }
-            .scrollPosition(self.$scrollPosition)
+            .modifier(ChatScrollPositionModifier(scroll: self.scroll))
             .accessibilityIdentifier("chat-transcript")
             #if !os(macOS)
             .scrollDismissesKeyboard(.interactively)
@@ -441,11 +437,9 @@ extension OpenClawChatView {
             .onScrollGeometryChange(for: Bool.self) { geometry in
                 geometry.contentSize.height - geometry.visibleRect.maxY <= Layout.liveEdgeThreshold
             } action: { _, isAtLiveEdge in
-                self.isAtLiveEdge = isAtLiveEdge
+                self.scroll.isAtLiveEdge = isAtLiveEdge
             }
-            .defaultScrollAnchor(
-                self.followTarget == .latest && !self.isUserScrolling ? .bottom : nil,
-                for: .sizeChanges)
+            .modifier(ChatScrollFollowAnchorModifier(scroll: self.scroll))
             .onScrollPhaseChange { _, phase, context in
                 self.handleScrollPhaseChange(phase, offset: context.geometry.contentOffset.y)
             }
@@ -464,16 +458,17 @@ extension OpenClawChatView {
 
             self.messageListOverlay(hasVisibleContent: hasVisibleContent)
 
-            if self.showsJumpToLatest(hasVisibleContent: hasVisibleContent) {
+            ChatJumpToLatestSlot(
+                scroll: self.scroll,
+                hasVisibleContent: hasVisibleContent,
+                isLoading: self.viewModel.isLoading)
+            {
                 self.jumpToLatestButton
-                    .padding(.bottom, 12)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .modifier(ChatScrollCommandModifier(
             command: self.$scrollCommand,
-            position: self.$scrollPosition,
+            scroll: self.scroll,
             bottomID: self.scrollerBottomID,
             geometry: self.historyScrollGeometry,
             historyRowGeometry: self.scrollCommand.historyGeometry,
@@ -486,8 +481,8 @@ extension OpenClawChatView {
                 self.dismissKeyboardIfNeeded()
             })
         .onChange(of: self.viewModel.isLoading, initial: true) { _, isLoading in
-            if !isLoading, self.hasPerformedInitialScroll, self.followTarget == .latest,
-               !self.isUserScrolling, self.searchMessageID == nil
+            if !isLoading, self.hasPerformedInitialScroll, self.scroll.followTarget == .latest,
+               !self.scroll.isUserScrolling, self.searchMessageID == nil
             {
                 self.moveScrollPosition(to: self.scrollerBottomID)
             } else {
@@ -517,7 +512,7 @@ extension OpenClawChatView {
         #if canImport(UIKit) && !os(macOS)
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)) { _ in
             self.restoresLiveEdgeAfterKeyboardTransition =
-                self.followTarget == .latest && !self.isUserScrolling && self.searchMessageID == nil
+                self.scroll.followTarget == .latest && !self.scroll.isUserScrolling && self.searchMessageID == nil
             self.isKeyboardVisible = true
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidShowNotification)) { _ in
@@ -525,8 +520,8 @@ extension OpenClawChatView {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)) { _ in
             self.restoresLiveEdgeAfterKeyboardTransition =
-                (self.followTarget == .latest || self.isAtLiveEdge) &&
-                !self.isUserScrolling && self.searchMessageID == nil
+                (self.scroll.followTarget == .latest || self.scroll.isAtLiveEdge) &&
+                !self.scroll.isUserScrolling && self.searchMessageID == nil
             self.isKeyboardVisible = false
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidHideNotification)) { _ in
@@ -541,12 +536,12 @@ extension OpenClawChatView {
         self.historyScrollGeometry.nativeViewport?.cancel()
         #endif
         self.scrollCommand.cancelSession(geometry: self.historyScrollGeometry)
-        self.scrollPosition = ScrollPosition(idType: UUID.self)
+        self.scroll.position = ScrollPosition(idType: UUID.self)
         self.hasPerformedInitialScroll = false
-        self.followTarget = .latest
-        self.isAtLiveEdge = true
-        self.isUserScrolling = false
-        self.hasNewerContentBelow = false
+        self.scroll.followTarget = .latest
+        self.scroll.isAtLiveEdge = true
+        self.scroll.isUserScrolling = false
+        self.scroll.hasNewerContentBelow = false
         self.lastTurnStartID = nil
         self.lastLiveUserTurnRevision = self.viewModel.liveUserTurnRevision
         self.restoreInitialScrollIfReady()
@@ -961,20 +956,12 @@ extension OpenClawChatView {
         self.transcriptPresentation.rows.last(where: \.startsTurn)?.id
     }
 
-    private func showsJumpToLatest(hasVisibleContent: Bool) -> Bool {
-        chatReaderShowsJumpToLatest(
-            hasNewerContentBelow: self.hasNewerContentBelow,
-            isAtLiveEdge: self.isAtLiveEdge,
-            hasVisibleContent: hasVisibleContent,
-            isLoading: self.viewModel.isLoading)
-    }
-
     private var jumpToLatestButton: some View {
         Button {
             self.isSearchPresented = false
             self.searchMessageID = nil
-            self.followTarget = .latest
-            self.hasNewerContentBelow = false
+            self.scroll.followTarget = .latest
+            self.scroll.hasNewerContentBelow = false
             self.moveScrollPosition(to: self.scrollerBottomID)
         } label: {
             Image(systemName: "arrow.down")
@@ -1160,16 +1147,16 @@ extension OpenClawChatView {
             #endif
             self.historyScrollGeometry.pagingRowID = nil
             self.scrollCommand.cancel()
-            self.scrollPosition = ScrollPosition(idType: UUID.self)
-            self.isUserScrolling = true
-            self.followTarget = nil
-        } else if phase == .idle, self.isUserScrolling {
-            self.isUserScrolling = false
-            if self.isAtLiveEdge {
-                self.followTarget = .latest
-                self.hasNewerContentBelow = false
+            self.scroll.position = ScrollPosition(idType: UUID.self)
+            self.scroll.isUserScrolling = true
+            self.scroll.followTarget = nil
+        } else if phase == .idle, self.scroll.isUserScrolling {
+            self.scroll.isUserScrolling = false
+            if self.scroll.isAtLiveEdge {
+                self.scroll.followTarget = .latest
+                self.scroll.hasNewerContentBelow = false
             } else {
-                self.hasNewerContentBelow = true
+                self.scroll.hasNewerContentBelow = true
             }
             self.loadEarlierHistoryIfNeeded()
         }
@@ -1177,7 +1164,7 @@ extension OpenClawChatView {
 
     private func loadEarlierHistoryIfNeeded() {
         guard self.hasPerformedInitialScroll, self.isAtHistoryStart,
-              !self.isUserScrolling, self.followTarget == nil, self.searchMessageID == nil
+              !self.scroll.isUserScrolling, self.scroll.followTarget == nil, self.searchMessageID == nil
         else { return }
         self.loadEarlierHistory()
     }
@@ -1191,9 +1178,9 @@ extension OpenClawChatView {
         else { return }
         if isExplicit {
             self.scrollCommand.cancel()
-            self.scrollPosition = ScrollPosition(idType: UUID.self)
-            self.followTarget = nil
-            self.hasNewerContentBelow = true
+            self.scroll.position = ScrollPosition(idType: UUID.self)
+            self.scroll.followTarget = nil
+            self.scroll.hasNewerContentBelow = true
         }
         let target = self.viewModel.currentSessionTarget
         let interactionRevision = self.readerInteractionRevision
@@ -1215,7 +1202,7 @@ extension OpenClawChatView {
                    // Finish this page's correction before capturing the next page's baseline.
                    guard self.viewModel.currentSessionTarget == target,
                          self.readerInteractionRevision == interactionRevision,
-                         !self.isUserScrolling, self.followTarget == nil, self.searchMessageID == nil,
+                         !self.scroll.isUserScrolling, self.scroll.followTarget == nil, self.searchMessageID == nil,
                          self.transcriptPresentation.historyAnchorID == historyAnchorID
                    else { return }
                    self.loadEarlierHistory()
@@ -1228,8 +1215,8 @@ extension OpenClawChatView {
             guard loaded,
                   self.viewModel.currentSessionTarget == target,
                   self.readerInteractionRevision == interactionRevision,
-                  !self.isUserScrolling,
-                  self.followTarget == nil, self.searchMessageID == nil,
+                  !self.scroll.isUserScrolling,
+                  self.scroll.followTarget == nil, self.searchMessageID == nil,
                   let firstRowID
             else { return }
             // The new page precedes this boundary. Keep the reader on the content they were reading.
@@ -1256,15 +1243,15 @@ extension OpenClawChatView {
         if chatReaderInitialRestorePolicy() == .latestTurn,
            let latestTurnStartID = self.latestVisibleTurnStartID
         {
-            self.followTarget = nil
-            self.hasNewerContentBelow = chatReaderHasNewerContent(
+            self.scroll.followTarget = nil
+            self.scroll.hasNewerContentBelow = chatReaderHasNewerContent(
                 after: latestTurnStartID,
                 visibleIDs: self.transcriptPresentation.rows.map(\.id),
                 hasTransientContent: self.hasVisibleTransientContent)
             self.moveScrollPosition(to: latestTurnStartID, anchor: Layout.newTurnAnchor)
         } else {
-            self.followTarget = .latest
-            self.hasNewerContentBelow = false
+            self.scroll.followTarget = .latest
+            self.scroll.hasNewerContentBelow = false
             self.moveScrollPosition(to: self.scrollerBottomID)
         }
     }
@@ -1283,8 +1270,8 @@ extension OpenClawChatView {
            self.viewModel.streamingAssistantText == nil
         {
             self.lastTurnStartID = nil
-            self.followTarget = .latest
-            self.hasNewerContentBelow = false
+            self.scroll.followTarget = .latest
+            self.scroll.hasNewerContentBelow = false
             self.moveScrollPosition(to: self.scrollerBottomID)
             return
         }
@@ -1300,29 +1287,29 @@ extension OpenClawChatView {
         case let .removed(latestRemainingID):
             self.scrollCommand.cancel(targetID: self.lastTurnStartID)
             self.lastTurnStartID = latestRemainingID
-            if case let .turn(messageID) = followTarget,
+            if case let .turn(messageID) = self.scroll.followTarget,
                !visibleTurnStartIDs.contains(messageID)
             {
-                self.followTarget = nil
-                self.hasNewerContentBelow = false
+                self.scroll.followTarget = nil
+                self.scroll.hasNewerContentBelow = false
             }
             return
         case let .added(latestTurnStartID):
             self.lastTurnStartID = latestTurnStartID
-            self.hasNewerContentBelow = false
-            if self.isUserScrolling {
-                self.followTarget = nil
-                self.hasNewerContentBelow = true
+            self.scroll.hasNewerContentBelow = false
+            if self.scroll.isUserScrolling {
+                self.scroll.followTarget = nil
+                self.scroll.hasNewerContentBelow = true
                 return
             }
             // The anchored-question layout assumes a viewport tall enough to read the turn
             // below the anchor. With the keyboard up that space is gone and the reply streams
             // straight past the fold (#108692), so follow the live edge instead.
             if self.isKeyboardVisible {
-                self.followTarget = .latest
+                self.scroll.followTarget = .latest
                 self.moveScrollPosition(to: self.scrollerBottomID)
             } else {
-                self.followTarget = .turn(latestTurnStartID)
+                self.scroll.followTarget = .turn(latestTurnStartID)
                 self.moveScrollPosition(to: latestTurnStartID, anchor: Layout.newTurnAnchor)
             }
             return
@@ -1330,20 +1317,20 @@ extension OpenClawChatView {
             self.lastTurnStartID = visibleTurnStartIDs.last
         }
 
-        switch self.followTarget {
+        switch self.scroll.followTarget {
         case .latest:
             // One correction per actual transcript update; lazy geometry must never trigger another scroll.
-            self.hasNewerContentBelow = false
+            self.scroll.hasNewerContentBelow = false
             self.moveScrollPosition(to: self.scrollerBottomID)
         case let .turn(messageID):
             // Reader policy stays on this turn after the one-shot scroll command completes. Reissuing
             // that target for every streaming delta can loop SwiftUI layout and starve interaction.
-            self.hasNewerContentBelow = chatReaderHasNewerContent(
+            self.scroll.hasNewerContentBelow = chatReaderHasNewerContent(
                 after: messageID,
                 visibleIDs: transcriptRows.map(\.id),
                 hasTransientContent: self.hasVisibleTransientContent)
         case nil:
-            self.hasNewerContentBelow = true
+            self.scroll.hasNewerContentBelow = true
         }
     }
 
@@ -1358,8 +1345,8 @@ extension OpenClawChatView {
     }
 
     private func revealSearchMessage(_ messageID: UUID) {
-        self.followTarget = nil
-        self.hasNewerContentBelow = true
+        self.scroll.followTarget = nil
+        self.scroll.hasNewerContentBelow = true
         self.expandedUserMessageIDs.insert(messageID)
         self.moveScrollPosition(to: messageID, anchor: .top)
     }
@@ -1368,9 +1355,9 @@ extension OpenClawChatView {
         guard self.restoresLiveEdgeAfterKeyboardTransition else { return }
         self.restoresLiveEdgeAfterKeyboardTransition = false
         guard self.searchMessageID == nil else { return }
-        self.isUserScrolling = false
-        self.followTarget = .latest
-        self.hasNewerContentBelow = false
+        self.scroll.isUserScrolling = false
+        self.scroll.followTarget = .latest
+        self.scroll.hasNewerContentBelow = false
         self.moveScrollPosition(to: self.scrollerBottomID)
     }
 
