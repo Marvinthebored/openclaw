@@ -131,9 +131,19 @@ describe("joinOrStartTalkConsult", () => {
     expect(starts).toBe(3);
   });
 
-  it("matches a repeat whatever its spacing or letter case, and nothing else", () => {
+  it("matches only an exact repeat", () => {
     const base = normalizeTalkConsultJoinRequest({ question: "How many files?" });
-    expect(normalizeTalkConsultJoinRequest({ question: "  how many   FILES? " })).toBe(base);
+    expect(normalizeTalkConsultJoinRequest({ question: "How many files?" })).toBe(base);
+    // Case and spacing can name different files, branches or quoted strings.
+    expect(normalizeTalkConsultJoinRequest({ question: "Delete README" })).not.toBe(
+      normalizeTalkConsultJoinRequest({ question: "Delete readme" }),
+    );
+    expect(normalizeTalkConsultJoinRequest({ question: "say 'a  b'" })).not.toBe(
+      normalizeTalkConsultJoinRequest({ question: "say 'a b'" }),
+    );
+    expect(normalizeTalkConsultJoinRequest({ question: "a", context: "b" })).not.toBe(
+      normalizeTalkConsultJoinRequest({ question: "a\nb" }),
+    );
     expect(normalizeTalkConsultJoinRequest({ question: "How many folders?" })).not.toBe(base);
     expect(
       normalizeTalkConsultJoinRequest({ question: "How many files?", context: "in docs" }),

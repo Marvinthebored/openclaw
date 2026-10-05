@@ -24,7 +24,11 @@ import { controlBridge, controlContext } from "../client-gateway-control.test-su
 import { talkClientHandlers } from "../handlers/client.js";
 import { prepareTalkSessionTarget } from "../session-target.js";
 import { createTalkRealtimeRelaySession, stopTalkRealtimeRelaySession } from "./index.js";
-import { closeRelaySession } from "./operations.js";
+import {
+  closeRelaySession,
+  HELD_CONFIRMATION_RETRY_MESSAGE,
+  HELD_CONFIRMATION_WAIT_MS,
+} from "./operations.js";
 import { relaySessions, type RelaySession } from "./state.js";
 
 const mocks = vi.hoisted(() => ({ run: vi.fn(), steer: vi.fn(), start: vi.fn() }));
@@ -228,6 +232,46 @@ describe("native relay confirmation transcript admission", () => {
       }
     },
   );
+
+  it("answers a held app consult before the client deadline and admits the retry", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    const h = createHarness();
+    const confirmationId = readClientVoiceConfirmationReadiness("main", h.relay.id)!.confirmationId;
+    const held = callAppConsult(h, confirmationId);
+    let retry: ReturnType<typeof callAppConsult> | undefined;
+    try {
+      await vi.advanceTimersByTimeAsync(HELD_CONFIRMATION_WAIT_MS - 1);
+      expect(held.respond).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(1);
+      await held.pending;
+      expect(held.respond).toHaveBeenCalledWith(
+        false,
+        undefined,
+        expect.objectContaining({
+          message: expect.stringContaining(HELD_CONFIRMATION_RETRY_MESSAGE),
+        }),
+      );
+      expect(mocks.start).not.toHaveBeenCalled();
+
+      // The challenge outlives the answered call: a later yes admits a fresh call.
+      h.request.onTranscript?.("user", "yes", true);
+      retry = callAppConsult(h, confirmationId);
+      await retry.pending;
+      expect(retry.respond).toHaveBeenCalledWith(
+        true,
+        expect.objectContaining({ runId: "confirmed-app-run" }),
+        undefined,
+      );
+      expect(mocks.start).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+      await stopTalkRealtimeRelaySession({ relaySessionId: h.relay.id, connId });
+      await held.pending;
+      await retry?.pending;
+      held.chatRunState.clear();
+      retry?.chatRunState.clear();
+    }
+  });
 
   it.each(["no", "close"] as const)(
     "does not admit an early app confirmation after %s",

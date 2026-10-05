@@ -479,6 +479,10 @@ export function cancelTalkRealtimeRelayProviderToolCall(
   return relayCallId;
 }
 
+export const HELD_CONFIRMATION_WAIT_MS = 20_000;
+export const HELD_CONFIRMATION_RETRY_MESSAGE =
+  "Still waiting for the user's spoken yes or no. Ask them to answer, then call this tool again.";
+
 /** Wait for server-owned speech before a relay consult is authorized. */
 export async function flushTalkRealtimeRelayVoiceWrites(params: {
   relaySessionId: string;
@@ -489,7 +493,17 @@ export async function flushTalkRealtimeRelayVoiceWrites(params: {
   if (params.waitForConfirmation) {
     // App-routed tool calls need the same future-speech barrier as native consults.
     // A queue flush alone snapshots existing writes and cannot wait for a later yes.
-    await session.confirmationReadiness.wait();
+    // Shipped clients give this start call 30 s. Answer first, leaving the challenge
+    // pending, so a later yes arrives on a fresh call instead of a run the client abandoned.
+    const deadline = new AbortController();
+    const timer = setTimeout(() => deadline.abort(), HELD_CONFIRMATION_WAIT_MS);
+    try {
+      await session.confirmationReadiness.wait(deadline.signal);
+    } catch (err) {
+      throw deadline.signal.aborted ? new Error(HELD_CONFIRMATION_RETRY_MESSAGE) : err;
+    } finally {
+      clearTimeout(timer);
+    }
   } else {
     await session.voiceTranscriptQueue.flush();
   }

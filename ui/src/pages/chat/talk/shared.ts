@@ -499,6 +499,10 @@ function maybeSpeakRealtimeTalkControlResult(
   }
 }
 
+// The Gateway joins a repeated consult to the run already in flight, so several
+// tool calls can wait on one run. Cancelling one of them must not abort the rest.
+const consultWaitersByRunId = new Map<string, number>();
+
 export async function submitRealtimeTalkConsult(params: {
   ctx: RealtimeTalkTransportContext;
   args: unknown;
@@ -530,7 +534,7 @@ export async function submitRealtimeTalkConsult(params: {
   };
   const abortRun = () => {
     aborted = true;
-    if (run) {
+    if (run && (consultWaitersByRunId.get(run.runId) ?? 0) <= 1) {
       void ctx.client.request("chat.abort", {
         sessionKey: run.agentSessionKey,
         agentId: run.agentId,
@@ -561,6 +565,7 @@ export async function submitRealtimeTalkConsult(params: {
       args,
       ...(params.relaySessionId ? { relaySessionId: params.relaySessionId } : {}),
     });
+    consultWaitersByRunId.set(run.runId, (consultWaitersByRunId.get(run.runId) ?? 0) + 1);
     if (params.signal?.aborted) {
       abortRun();
       await submitAbortResult();
@@ -587,6 +592,14 @@ export async function submitRealtimeTalkConsult(params: {
     });
   } finally {
     params.signal?.removeEventListener("abort", abortRun);
+    if (run) {
+      const waiters = (consultWaitersByRunId.get(run.runId) ?? 1) - 1;
+      if (waiters > 0) {
+        consultWaitersByRunId.set(run.runId, waiters);
+      } else {
+        consultWaitersByRunId.delete(run.runId);
+      }
+    }
     if (submissionCompleted && !aborted && !params.signal?.aborted) {
       ctx.callbacks.onStatus?.("listening");
     }

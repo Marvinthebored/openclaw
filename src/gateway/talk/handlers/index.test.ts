@@ -35,8 +35,8 @@ import type {
 } from "../../server-methods/types.js";
 import { bindSessionRowProjection } from "../../session-row-projection-access.js";
 import { resolveSessionMutationAuthorization } from "../../session-sharing.js";
-import { VOICE_TURN_CONFIRMATION_NOTE } from "../agent-consult.js";
 import { prepareTalkAgentConsultTranscript } from "../agent-consult-transcript.js";
+import { VOICE_TURN_CONFIRMATION_NOTE } from "../agent-consult.js";
 import { preparedTalkSessionProjection as projection } from "../test-helpers.js";
 import { forgetLegacyVoiceBinding } from "./client-legacy-voice-bindings.js";
 import { talkConfigAccentCases } from "./config-accent.test-support.js";

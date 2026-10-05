@@ -54,15 +54,13 @@ export const VOICE_TURN_CONFIRMATION_NOTE =
 const CONSULT_JOIN_WINDOW_MS = 120_000;
 const inFlightConsults = new Map<string, InFlightTalkConsult>();
 
-/** Comparison form of a consult request: a repeat matches whatever its spacing or letter case. */
+/** Identity of a consult request. Exact: letter case and spacing can name different things. */
 export function normalizeTalkConsultJoinRequest(args: {
   question: string;
   context?: string;
   responseStyle?: string;
 }): string {
-  return [args.question, args.context ?? "", args.responseStyle ?? ""]
-    .map((part) => part.trim().replace(/\s+/g, " ").toLowerCase())
-    .join("\n");
+  return JSON.stringify([args.question, args.context ?? "", args.responseStyle ?? ""]);
 }
 
 /**

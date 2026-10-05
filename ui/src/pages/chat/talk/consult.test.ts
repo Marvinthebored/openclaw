@@ -102,6 +102,45 @@ describe("RealtimeTalkSession consult handoff", () => {
     expect(submit).toHaveBeenCalledOnce();
   });
 
+  it("does not abort a run another consult call is still waiting on", async () => {
+    const events = createChatEvents();
+    const request = vi.fn(async (method: string) => {
+      if (method === "talk.client.toolCall") {
+        return { runId: "shared-run", agentId: "main", agentSessionKey: "agent:main:main" };
+      }
+      return { ok: true };
+    });
+    const ctx = {
+      client: { request, addEventListener: events.addEventListener },
+      sessionKey: "main",
+      callbacks: {},
+    } as never;
+    const first = new AbortController();
+    const second = new AbortController();
+    const start = (callId: string, signal: AbortSignal) =>
+      submitRealtimeTalkConsult({
+        ctx,
+        callId,
+        args: { question: "Check" },
+        submit: vi.fn(),
+        signal,
+      });
+    const a = start("call-a", first.signal);
+    const b = start("call-b", second.signal);
+    const toolCalls = () => request.mock.calls.filter(([m]) => m === "talk.client.toolCall");
+    const aborts = () => request.mock.calls.filter(([m]) => m === "chat.abort");
+    await vi.waitFor(() => expect(toolCalls()).toHaveLength(2));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    first.abort();
+    await a;
+    expect(aborts()).toHaveLength(0);
+
+    second.abort();
+    await b;
+    expect(aborts()).toHaveLength(1);
+  });
+
   it.each(["agent:voice:home", "global"])(
     "keeps the acknowledgement alive and cancels its exact %s target",
     async (agentSessionKey) => {
