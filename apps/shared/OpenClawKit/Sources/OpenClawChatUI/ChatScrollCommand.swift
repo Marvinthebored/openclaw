@@ -90,6 +90,57 @@ struct ChatScrollRowGeometry: Equatable {
     let contentMinY: CGFloat
 }
 
+/// Where the reader is and what the transcript follows. Held by reference and read only by the small views
+/// below, so the start of a swipe or a scroll tick does not re-evaluate the transcript and rebuild every row.
+@MainActor
+@Observable
+final class ChatScrollFollowState {
+    var position = ScrollPosition(idType: UUID.self)
+    var followTarget: ScrollFollowTarget? = .latest
+    var isAtLiveEdge = true
+    var isUserScrolling = false
+    var hasNewerContentBelow = false
+}
+
+struct ChatScrollPositionModifier: ViewModifier {
+    @Bindable var scroll: ChatScrollFollowState
+
+    func body(content: Content) -> some View {
+        content.scrollPosition(self.$scroll.position)
+    }
+}
+
+struct ChatScrollFollowAnchorModifier: ViewModifier {
+    let scroll: ChatScrollFollowState
+
+    func body(content: Content) -> some View {
+        content.defaultScrollAnchor(
+            self.scroll.followTarget == .latest && !self.scroll.isUserScrolling ? .bottom : nil,
+            for: .sizeChanges)
+    }
+}
+
+struct ChatJumpToLatestSlot<Content: View>: View {
+    let scroll: ChatScrollFollowState
+    let hasVisibleContent: Bool
+    let isLoading: Bool
+    @ViewBuilder let button: Content
+
+    var body: some View {
+        if chatReaderShowsJumpToLatest(
+            hasNewerContentBelow: self.scroll.hasNewerContentBelow,
+            isAtLiveEdge: self.scroll.isAtLiveEdge,
+            hasVisibleContent: self.hasVisibleContent,
+            isLoading: self.isLoading)
+        {
+            self.button
+                .padding(.bottom, 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+}
+
 /// Passive layout samples must not invalidate the transcript that produced them.
 final class ChatHistoryScrollGeometry {
     let contentSpace = UUID()
@@ -217,7 +268,7 @@ struct ChatScrollCommand {
 
 struct ChatScrollCommandModifier: ViewModifier {
     @Binding var command: ChatScrollCommand
-    @Binding var position: ScrollPosition
+    let scroll: ChatScrollFollowState
     let bottomID: UUID
     let geometry: ChatHistoryScrollGeometry
     let historyRowGeometry: ChatScrollRowGeometry?
@@ -237,7 +288,7 @@ struct ChatScrollCommandModifier: ViewModifier {
                     withTransaction(Transaction(animation: nil)) {
                         if command.targetID == self.bottomID {
                             // A lazy tail's estimated footer frame is not the content bottom.
-                            self.position.scrollTo(edge: .bottom)
+                            self.scroll.position.scrollTo(edge: .bottom)
                         } else {
                             if command.offsetFromRow != nil { self.command.beginPreservation(command) }
                             if command.offsetFromRow != nil, let row = self.geometry.row,
@@ -259,7 +310,7 @@ struct ChatScrollCommandModifier: ViewModifier {
                       let offset = self.command.preservedOffset(
                           for: geometry, sessionTarget: self.currentSessionTarget()) else { return }
                 withTransaction(Transaction(animation: nil)) {
-                    self.position.scrollTo(y: offset)
+                    self.scroll.position.scrollTo(y: offset)
                 }
             }
             .onChange(of: self.historyScrollTargets) { _, targets in
