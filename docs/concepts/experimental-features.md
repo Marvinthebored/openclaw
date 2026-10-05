@@ -61,7 +61,7 @@ that default.
 ## Decision assistance
 
 This opt-in enables experimental conversational tool filtering in the built-in
-OpenClaw runtime and voice shell-command classification at the shared tool hook.
+OpenClaw runtime. It does not enable voice shell-command classification.
 Before an eligible user turn, the configured Decision provider judges whether the request needs tools. A conversational result can omit optional
 tools for that turn. Other harnesses keep their normal tools and perform no
 automatic prefilter inference. The switch does not select a provider, provision
@@ -129,6 +129,12 @@ cancellation, deadlines, and provider/credential validity remain independently
 checked. This helper is not an authority token or a cancellation owner.
 
 ### Voice shell-command classification
+
+Set `talk.shellReadOnlyClassification: true` to opt in. The default is **off**;
+only explicit `true` enables it. The owning agent also needs an effective
+[Decision model](/concepts/decision-models). This setting is independent of
+`agents.defaults.experimental.decisionAssistance` and does not enable
+conversational tool filtering.
 
 For a confirmable voice session, commands that the fixed read-only rules do not
 recognize can be evaluated by the owning agent's selected Decision provider.

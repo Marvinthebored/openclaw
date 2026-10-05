@@ -1,6 +1,5 @@
 /** In-memory spoken confirmation binding for high-impact Talk actions. */
 import { randomUUID } from "node:crypto";
-import { isDecisionAssistanceEligible } from "../agents/decision-assistance.js";
 import { resolveDecisionModelSetting } from "../agents/decision-model-setting.js";
 import { createRuntimeConfigReader } from "../config/runtime-snapshot.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
@@ -444,7 +443,10 @@ export async function prepareClientVoiceToolConfirmationPolicy(
   }
   const readConfig = createRuntimeConfigReader(params.config);
   const config = readConfig();
-  if (!isDecisionAssistanceEligible(config, agentId)) {
+  if (
+    config.talk?.shellReadOnlyClassification !== true ||
+    resolveDecisionModelSetting(config, agentId) === undefined
+  ) {
     return;
   }
   const args = params.toolParams as Record<string, unknown> | null;
@@ -515,7 +517,13 @@ export async function prepareClientVoiceToolConfirmationPolicy(
           config,
           undefined,
           isCurrent,
-          () => isDecisionAssistanceEligible(readConfig(), agentId),
+          () => {
+            const currentConfig = readConfig();
+            return (
+              currentConfig.talk?.shellReadOnlyClassification === true &&
+              resolveDecisionModelSetting(currentConfig, agentId) !== undefined
+            );
+          },
         );
       })(),
       new Promise<null>((resolve) => {

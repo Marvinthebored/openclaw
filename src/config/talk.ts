@@ -179,6 +179,10 @@ export function normalizeTalkSection(value: TalkConfig | undefined): TalkConfig 
   if (typeof consultFastMode === "boolean") {
     normalized.consultFastMode = consultFastMode;
   }
+  const shellReadOnlyClassification = source.shellReadOnlyClassification;
+  if (typeof shellReadOnlyClassification === "boolean") {
+    normalized.shellReadOnlyClassification = shellReadOnlyClassification;
+  }
   const shellReadOnlyMinProbability = asFiniteNumberInRange(source.shellReadOnlyMinProbability, {
     min: 0,
     minExclusive: true,

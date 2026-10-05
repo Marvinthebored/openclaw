@@ -29,9 +29,8 @@ const ctx: HookContext = {
   runId: "run-classify",
   agentId: "main",
   config: {
-    agents: {
-      defaults: { decisionModel: "fixture/decision", experimental: { decisionAssistance: true } },
-    },
+    agents: { defaults: { decisionModel: "fixture/decision" } },
+    talk: { shellReadOnlyClassification: true },
   },
 };
 const shell = { command: "/test/bin/ha area dining", title: "Check dining room AC mode" };
@@ -99,6 +98,27 @@ describe("Decision shell classification before the voice confirmation gate", () 
     expect(config).toBe(ctx.config);
   });
 
+  it("does not classify with Decision assistance enabled but voice classification unset", async () => {
+    const config = {
+      agents: {
+        defaults: { decisionModel: "fixture/decision", experimental: { decisionAssistance: true } },
+      },
+    };
+    expectGated(await check(shell, "exec", { ...ctx, config }));
+    expect(evaluate).not.toHaveBeenCalled();
+    expect(consume().allowed).toBe(false);
+  });
+
+  it("classifies with voice classification enabled and Decision assistance unset", async () => {
+    const config = {
+      agents: { defaults: { decisionModel: "fixture/decision" } },
+      talk: { shellReadOnlyClassification: true },
+    };
+    expect(await check(shell, "exec", { ...ctx, config })).toMatchObject({ blocked: false });
+    expect(evaluate).toHaveBeenCalledOnce();
+    expect(consume().allowed).toBe(true);
+  });
+
   it.each([0.9, 1])("allows probability %s at or above the inclusive threshold", async (value) => {
     evaluate.mockResolvedValue(answer(value));
     await expectShellRead();
@@ -117,7 +137,7 @@ describe("Decision shell classification before the voice confirmation gate", () 
     "applies talk.shellReadOnlyMinProbability $shellReadOnlyMinProbability to probability $probability",
     async ({ probability, shellReadOnlyMinProbability, blocked }) => {
       evaluate.mockResolvedValue(answer(probability));
-      const config = { ...ctx.config, talk: { shellReadOnlyMinProbability } };
+      const config = { ...ctx.config, talk: { ...ctx.config?.talk, shellReadOnlyMinProbability } };
       expect(await check(shell, "exec", { ...ctx, config })).toMatchObject({ blocked });
       expect(evaluate).toHaveBeenCalledOnce();
       expect(consume().allowed).toBe(!blocked);
@@ -187,7 +207,8 @@ describe("Decision shell classification before the voice confirmation gate", () 
     "gates an agent without a Decision model (%j), without evaluation",
     async (decisionModel) => {
       const config = {
-        agents: { defaults: { decisionModel, experimental: { decisionAssistance: true } } },
+        agents: { defaults: { decisionModel } },
+        talk: { shellReadOnlyClassification: true },
       };
       expectGated(await check(shell, "exec", { ...ctx, config }));
       expect(evaluate).not.toHaveBeenCalled();
@@ -206,12 +227,11 @@ describe("Decision shell classification before the voice confirmation gate", () 
   });
 
   it.each([undefined, false])(
-    "requires explicit Decision assistance opt-in (%j)",
-    async (decisionAssistance) => {
+    "requires explicit voice shell classification opt-in (%j)",
+    async (shellReadOnlyClassification) => {
       const config = {
-        agents: {
-          defaults: { decisionModel: "fixture/decision", experimental: { decisionAssistance } },
-        },
+        agents: { defaults: { decisionModel: "fixture/decision" } },
+        talk: { shellReadOnlyClassification },
       };
       expectGated(await check(shell, "exec", { ...ctx, config }));
       expect(evaluate).not.toHaveBeenCalled();
@@ -225,7 +245,7 @@ describe("Decision shell classification before the voice confirmation gate", () 
       async (_batch, _options, _registry, _config, _consumer, isCurrent, canDispatch) => {
         expect(isCurrent?.()).toBe(true);
         expect(canDispatch?.()).toBe(true);
-        config.agents!.defaults!.experimental!.decisionAssistance = false;
+        config.talk!.shellReadOnlyClassification = false;
         expect(canDispatch?.()).toBe(false);
         expect(isCurrent?.()).toBe(true);
         return answer();
