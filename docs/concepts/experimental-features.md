@@ -61,8 +61,8 @@ that default.
 ## Decision assistance
 
 This opt-in enables experimental conversational tool filtering in the built-in
-OpenClaw runtime. Before an eligible user turn, the configured Decision provider
-judges whether the request needs tools. A conversational result can omit optional
+OpenClaw runtime and voice shell-command classification at the shared tool hook.
+Before an eligible user turn, the configured Decision provider judges whether the request needs tools. A conversational result can omit optional
 tools for that turn. Other harnesses keep their normal tools and perform no
 automatic prefilter inference. The switch does not select a provider, provision
 credentials, download models, or enable unrelated consumer modes.
@@ -127,6 +127,24 @@ already-dispatched evaluations may finish, including provider preparation and
 network I/O, and their results may still be used. Model selection, live authority,
 cancellation, deadlines, and provider/credential validity remain independently
 checked. This helper is not an authority token or a cancellation owner.
+
+### Voice shell-command classification
+
+For a confirmable voice session, commands that the fixed read-only rules do not
+recognize can be evaluated by the owning agent's selected Decision provider.
+Only `exec` and `bash` shell calls are evaluated; Code Mode script wrappers and
+other tools retain their existing behavior. The provider receives the exact
+command and tool-call title as data, not conversation history.
+
+A Boolean read-only probability of at least **0.9** skips spoken confirmation for
+that exact tool fingerprint in that run. This initial threshold needs validation
+on representative commands; it is not an accuracy guarantee. The verdict is
+consumed once at final execution. Unknown, lower-probability, unavailable, failed,
+or timed-out evaluations retain the existing confirmation gate. The budget is
+**3 seconds**, including preparation, with no chat or utility-model fallback.
+Hosted evaluations can send command text to the selected provider and incur
+charges. A wrong high-probability read-only verdict can let a side effect run
+without the spoken mishearing check; ordinary tool policy still applies.
 
 ### Conversational tool filtering
 
