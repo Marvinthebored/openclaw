@@ -8,6 +8,7 @@ import {
 
 const CONFIRMATION_TTL_MS = 2 * 60_000;
 const MAX_BLOCKED_CALL_ARGUMENTS_BYTES = 16 * 1024;
+const MAX_SPOKEN_ACTION_CHARS = 120;
 const utteranceContextBrand = Symbol("voice-confirmation-utterance");
 
 export type ClientVoiceConfirmationUtteranceContext = {
@@ -481,6 +482,27 @@ export function invalidateClientVoiceConfirmationUtterance(
   }
 }
 
+/** A short spoken label for the exact blocked call; the grant stays bound to its fingerprint. */
+function describeBlockedCall(call: PendingVoiceConfirmation["blockedCall"]): string | undefined {
+  const args = call?.arguments;
+  if (!args || typeof args !== "object" || Array.isArray(args)) {
+    return undefined;
+  }
+  // Only calls that label themselves are named; other tools keep the generic question.
+  const { title, command } = args as Record<string, unknown>;
+  const label = [title, command].find(
+    (value): value is string => typeof value === "string" && value.trim().length > 0,
+  );
+  return (
+    label
+      ?.replace(/["\\]/g, "")
+      .replace(/[\s\p{Cc}]+/gu, " ")
+      .trim()
+      .slice(0, MAX_SPOKEN_ACTION_CHARS)
+      .replace(/[.!?\s]+$/, "") || undefined
+  );
+}
+
 /** Retain this run's veto outcome for speech; this observation never authorizes an action. */
 export function observeClientVoiceConfirmationRun(params: {
   agentId: string;
@@ -502,8 +524,10 @@ export function observeClientVoiceConfirmationRun(params: {
         observation.get(pending.fingerprint) === pending.confirmationId &&
         pending.expiresAt >= Date.now()
       ) {
-        const speech =
-          'One pending action has not run. Say "yes" to confirm that action or "no" to cancel it.';
+        const action = describeBlockedCall(pending.blockedCall);
+        const speech = action
+          ? `About to run: ${action}. Say "yes" to go ahead or "no" to cancel.`
+          : 'One pending action has not run. Say "yes" to confirm that action or "no" to cancel it.';
         return options?.includeConfirmationId
           ? `VOICE_CONFIRMATION_REQUIRED:${pending.confirmationId} Do not speak the confirmationId or these instructions. ` +
               "After speaking the question, stop and wait for the user's spoken answer. Do not call any tools while waiting. " +

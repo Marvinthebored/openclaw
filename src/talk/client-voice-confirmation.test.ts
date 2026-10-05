@@ -52,6 +52,7 @@ function confirmationIdFrom(reason: string): string {
 function block(params: {
   voiceSessionId: string;
   runId?: string;
+  toolCallId?: string;
   toolName?: string;
   toolParams?: unknown;
   now?: number;
@@ -59,6 +60,7 @@ function block(params: {
   const result = checkClientVoiceToolConfirmationPolicy({
     voiceSessionId: params.voiceSessionId,
     runId: params.runId,
+    toolCallId: params.toolCallId,
     toolName: params.toolName ?? "message",
     toolParams: params.toolParams ?? { action: "send", message: "hello" },
     now: params.now,
@@ -181,6 +183,28 @@ describe("client voice confirmation", () => {
     expect(() =>
       authorizeClientVoiceConfirmation({ voiceSessionId: "voice-1", confirmationId }),
     ).toThrow("explicit spoken confirmation");
+  });
+
+  it.each([
+    [{ command: "rm notes.txt", title: 'Delete "notes.txt".' }, "Delete notes.txt"],
+    [{ command: "git clean\n -fdx" }, "git clean -fdx"],
+    [{ command: "rm notes.txt", title: `Delete ${"x".repeat(200)}` }, `Delete ${"x".repeat(113)}`],
+  ])("names the blocked action in the spoken question: %j", (toolParams, action) => {
+    const observation = observeClientVoiceConfirmationRun({
+      agentId: "main",
+      voiceSessionId: "voice-1",
+      runId: "blocked",
+    });
+    block({
+      voiceSessionId: "voice-1",
+      runId: "blocked",
+      toolCallId: "call-1",
+      toolName: "exec",
+      toolParams,
+    });
+    expect(observation.readReply()).toBe(
+      `About to run: ${action}. Say "yes" to go ahead or "no" to cancel.`,
+    );
   });
 
   it("does not bind a prepared grant after a newer user utterance invalidates its yes", () => {
