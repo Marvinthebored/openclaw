@@ -1,5 +1,6 @@
 /** In-memory spoken confirmation binding for high-impact Talk actions. */
 import { randomUUID } from "node:crypto";
+import { redactSensitiveText } from "../logging/redact.js";
 import { createDeferredCore, type Deferred } from "../shared/deferred.js";
 import {
   requiresHighImpactVoiceConfirmation,
@@ -493,9 +494,13 @@ function describeBlockedCall(call: PendingVoiceConfirmation["blockedCall"]): str
   const label = [title, command].find(
     (value): value is string => typeof value === "string" && value.trim().length > 0,
   );
+  // A label that holds a credential is never spoken: the generic question is used instead.
+  if (label === undefined || redactSensitiveText(label, { mode: "tools" }) !== label) {
+    return undefined;
+  }
   return (
     label
-      ?.replace(/["\\]/g, "")
+      .replace(/["\\]/g, "")
       .replace(/[\s\p{Cc}]+/gu, " ")
       .trim()
       .slice(0, MAX_SPOKEN_ACTION_CHARS)

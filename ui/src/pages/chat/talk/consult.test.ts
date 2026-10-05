@@ -11,11 +11,22 @@ const consultRun = {
   agentSessionKey: "agent:main:main",
 };
 
-function createChatEvents() {
+function createChatEvents(expectedSubscribers = 1) {
   let listener: ((event: { event: string; payload?: unknown }) => void) | undefined;
+  let subscribers = 0;
+  let markSubscribed!: () => void;
+  // Settles once every consult call is waiting for its result, so a test can cancel from a known state.
+  const allSubscribed = new Promise<void>((resolve) => {
+    markSubscribed = resolve;
+  });
   return {
+    allSubscribed,
     addEventListener: vi.fn((callback: typeof listener) => {
       listener = callback;
+      subscribers += 1;
+      if (subscribers === expectedSubscribers) {
+        markSubscribed();
+      }
       return () => {
         listener = undefined;
       };
@@ -103,7 +114,7 @@ describe("RealtimeTalkSession consult handoff", () => {
   });
 
   it("does not abort a run another consult call is still waiting on", async () => {
-    const events = createChatEvents();
+    const events = createChatEvents(2);
     const request = vi.fn(async (method: string) => {
       if (method === "talk.client.toolCall") {
         return { runId: "shared-run", agentId: "main", agentSessionKey: "agent:main:main" };
@@ -129,10 +140,8 @@ describe("RealtimeTalkSession consult handoff", () => {
     const b = start("call-b", second.signal);
     const toolCalls = () => request.mock.calls.filter(([m]) => m === "talk.client.toolCall");
     const aborts = () => request.mock.calls.filter(([m]) => m === "chat.abort");
-    await vi.waitFor(() => expect(toolCalls()).toHaveLength(2));
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 0);
-    });
+    await events.allSubscribed;
+    expect(toolCalls()).toHaveLength(2);
 
     first.abort();
     await a;
@@ -144,7 +153,7 @@ describe("RealtimeTalkSession consult handoff", () => {
   });
 
   it("aborts a shared run once when every waiting consult call is cancelled in the same tick", async () => {
-    const events = createChatEvents();
+    const events = createChatEvents(2);
     const request = vi.fn(async (method: string) => {
       if (method === "talk.client.toolCall") {
         return { runId: "shared-run-sync", agentId: "main", agentSessionKey: "agent:main:main" };
@@ -167,10 +176,8 @@ describe("RealtimeTalkSession consult handoff", () => {
       }),
     );
     const count = (name: string) => request.mock.calls.filter(([m]) => m === name).length;
-    await vi.waitFor(() => expect(count("talk.client.toolCall")).toBe(2));
-    await new Promise<void>((resolve) => {
-      setTimeout(resolve, 0);
-    });
+    await events.allSubscribed;
+    expect(count("talk.client.toolCall")).toBe(2);
 
     for (const controller of controllers) {
       controller.abort();

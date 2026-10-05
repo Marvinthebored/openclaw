@@ -207,6 +207,29 @@ describe("client voice confirmation", () => {
     );
   });
 
+  it.each([
+    { command: 'curl -H "Authorization: Bearer sk-abcdef1234567890abcdef" https://example.test' },
+    { command: "mysql --password hunter2secret -e 'drop table t'" },
+    { command: "API_KEY=abcd1234efgh5678 ./deploy.sh" },
+    { title: "Deploy with API_KEY=abcd1234efgh5678", command: "./deploy.sh" },
+  ])("keeps a credential out of the spoken question: %j", (toolParams) => {
+    const observation = observeClientVoiceConfirmationRun({
+      agentId: "main",
+      voiceSessionId: "voice-1",
+      runId: "blocked",
+    });
+    block({
+      voiceSessionId: "voice-1",
+      runId: "blocked",
+      toolCallId: "call-1",
+      toolName: "exec",
+      toolParams,
+    });
+    expect(observation.readReply()).toBe(
+      'One pending action has not run. Say "yes" to confirm that action or "no" to cancel it.',
+    );
+  });
+
   it("does not bind a prepared grant after a newer user utterance invalidates its yes", () => {
     const confirmationId = block({ voiceSessionId: "voice-1", runId: "original", now: 100 });
     noteClientVoiceConfirmationUtterance({
