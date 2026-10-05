@@ -25,11 +25,30 @@ describe("talk config validation fail-closed behavior", () => {
     });
   });
 
+  it("loads a configured shell read-only probability", async () => {
+    await withTempHomeConfig(
+      { agents: { entries: { main: {} } }, talk: { shellReadOnlyMinProbability: 0.95 } },
+      async () => {
+        expect(getRuntimeConfig().talk?.shellReadOnlyMinProbability).toBe(0.95);
+      },
+    );
+  });
+
   it.each([
     {
       name: "invalid silence timeout",
       talk: { silenceTimeoutMs: true },
       message: /silenceTimeoutMs|talk/i,
+    },
+    {
+      name: "zero shell read-only probability",
+      talk: { shellReadOnlyMinProbability: 0 },
+      message: /shellReadOnlyMinProbability/,
+    },
+    {
+      name: "shell read-only probability above one",
+      talk: { shellReadOnlyMinProbability: 1.01 },
+      message: /shellReadOnlyMinProbability/,
     },
     {
       name: "provider absent from providers",

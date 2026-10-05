@@ -110,6 +110,20 @@ describe("Decision shell classification before the voice confirmation gate", () 
     expect(consume().allowed).toBe(false);
   });
 
+  it.each([
+    { probability: 0.92, shellReadOnlyMinProbability: 0.95, blocked: true },
+    { probability: 0.8, shellReadOnlyMinProbability: 0.75, blocked: false },
+  ])(
+    "applies talk.shellReadOnlyMinProbability $shellReadOnlyMinProbability to probability $probability",
+    async ({ probability, shellReadOnlyMinProbability, blocked }) => {
+      evaluate.mockResolvedValue(answer(probability));
+      const config = { ...ctx.config, talk: { shellReadOnlyMinProbability } };
+      expect(await check(shell, "exec", { ...ctx, config })).toMatchObject({ blocked });
+      expect(evaluate).toHaveBeenCalledOnce();
+      expect(consume().allowed).toBe(!blocked);
+    },
+  );
+
   const unavailableReasons = [
     "disabled",
     "not-configured",

@@ -18,6 +18,7 @@ describe("talk normalization", () => {
       apiKey: "secret-key", // pragma: allowlist secret
       consultThinkingLevel: " low ",
       consultFastMode: true,
+      shellReadOnlyMinProbability: 0.95,
       speechLocale: " ru-RU ",
       interruptOnSpeech: false,
       silenceTimeoutMs: 1500,
@@ -27,6 +28,7 @@ describe("talk normalization", () => {
       speechLocale: "ru-RU",
       consultThinkingLevel: "low",
       consultFastMode: true,
+      shellReadOnlyMinProbability: 0.95,
       interruptOnSpeech: false,
       silenceTimeoutMs: 1500,
     });

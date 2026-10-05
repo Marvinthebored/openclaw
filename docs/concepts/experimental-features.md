@@ -136,9 +136,12 @@ Only `exec` and `bash` shell calls are evaluated; Code Mode script wrappers and
 other tools retain their existing behavior. The provider receives the exact
 command and tool-call title as data, not conversation history.
 
-A Boolean read-only probability of at least **0.9** skips spoken confirmation for
-that exact tool fingerprint in that run. This initial threshold needs validation
-on representative commands; it is not an accuracy guarantee. The verdict is
+A Boolean read-only probability of at least `talk.shellReadOnlyMinProbability`
+(default **0.9**; greater than 0 and at most 1) skips spoken confirmation for
+that exact tool fingerprint in that run. Probabilities from different Decision
+providers are not interchangeable, so the right value depends on the selected
+Decision model. Validate it on representative commands before relying on it; no
+value is an accuracy guarantee. The verdict is
 consumed once at final execution. Unknown, lower-probability, unavailable, failed,
 or timed-out evaluations retain the existing confirmation gate. The budget is
 **3 seconds**, including preparation, with no chat or utility-model fallback.
