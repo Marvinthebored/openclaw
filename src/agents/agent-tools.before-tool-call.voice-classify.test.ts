@@ -22,7 +22,10 @@ import { wrapToolWithBeforeToolCallHook } from "./agent-tools.before-tool-call.w
 import { markCodeModeControlTool } from "./code-mode-control-tools.js";
 
 const mocks = vi.hoisted(() => ({ evaluate: vi.fn<typeof evaluateDecisionInRegistry>() }));
-vi.mock("../decisions/runtime.js", () => ({ evaluateDecisionInRegistry: mocks.evaluate }));
+vi.mock("../decisions/runtime.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../decisions/runtime.js")>()),
+  evaluateDecisionInRegistry: mocks.evaluate,
+}));
 const evaluate = mocks.evaluate;
 const binding = { agentId: "main", voiceSessionId: "voice-classify", sessionKey: "voice" };
 const ctx: HookContext = {
