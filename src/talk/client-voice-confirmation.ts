@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { resolveDecisionModelSetting } from "../agents/decision-model-setting.js";
 import { createRuntimeConfigReader } from "../config/runtime-snapshot.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
+import { isPlainObject } from "../infra/plain-object.js";
 import { createSubsystemLogger } from "../logging/subsystem.js";
 import { createDeferredCore, type Deferred } from "../shared/deferred.js";
 import {
@@ -59,6 +60,8 @@ type ConfirmationScopeState = {
   pending?: PendingVoiceConfirmation;
   recentUtterance?: RecentVoiceUserUtterance;
   approvedByRun: Map<string, Map<string, number>>;
+  /** Shell verdicts in flight per run; their grant map must outlive sibling cleanup. */
+  classifyingByRun: Map<string, number>;
   observationsByRun: Map<string, Map<string, string>>;
   pendingExpiryTimer?: ReturnType<typeof setTimeout>;
 };
@@ -178,6 +181,7 @@ function getOrCreateConfirmationScope(scopeKey: string): ConfirmationScopeState 
   }
   const state: ConfirmationScopeState = {
     approvedByRun: new Map(),
+    classifyingByRun: new Map(),
     observationsByRun: new Map(),
   };
   confirmationScopes.set(scopeKey, state);
@@ -203,7 +207,7 @@ function resolveApprovedFingerprint(
     if (!expired) {
       state?.observationsByRun.get(runId)?.delete(fingerprint);
     }
-    if (approved?.size === 0) {
+    if (approved?.size === 0 && !state?.classifyingByRun.has(runId)) {
       state?.approvedByRun.delete(runId);
     }
     if (state) {
@@ -449,7 +453,7 @@ export async function prepareClientVoiceToolConfirmationPolicy(
   ) {
     return;
   }
-  const args = params.toolParams as Record<string, unknown> | null;
+  const args = isPlainObject(params.toolParams) ? params.toolParams : undefined;
   const command = args?.command ?? args?.cmd;
   if (typeof command !== "string" || !command.trim()) {
     return;
@@ -462,6 +466,7 @@ export async function prepareClientVoiceToolConfirmationPolicy(
   const state = getOrCreateConfirmationScope(scopeKey);
   const approved = state.approvedByRun.get(runId) ?? new Map<string, number>();
   state.approvedByRun.set(runId, approved);
+  state.classifyingByRun.set(runId, (state.classifyingByRun.get(runId) ?? 0) + 1);
   const selection = resolveDecisionModelSetting(config, agentId);
   const threshold =
     config.talk?.shellReadOnlyMinProbability ?? SHELL_READ_ONLY_PROBABILITY_THRESHOLD;
@@ -554,7 +559,13 @@ export async function prepareClientVoiceToolConfirmationPolicy(
     // Missing providers, errors and aborted work retain the existing gate.
   } finally {
     clearTimeout(timeout);
-    if (approved.size === 0 && state.approvedByRun.get(runId) === approved) {
+    const classifying = (state.classifyingByRun.get(runId) ?? 1) - 1;
+    if (classifying > 0) {
+      state.classifyingByRun.set(runId, classifying);
+    } else {
+      state.classifyingByRun.delete(runId);
+    }
+    if (classifying <= 0 && approved.size === 0 && state.approvedByRun.get(runId) === approved) {
       state.approvedByRun.delete(runId);
     }
     cleanupConfirmationScope(scopeKey, state);
