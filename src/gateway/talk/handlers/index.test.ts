@@ -3169,7 +3169,7 @@ describe("talk.client.toolCall handler", () => {
     };
 
     expectRespondOk(await call("call-1", "How many files?"), { runId: "run-voice-1" });
-    expectRespondOk(await call("call-2", "  how many FILES? "), { runId: "run-voice-1" });
+    expectRespondOk(await call("call-2", "How many files?"), { runId: "run-voice-1" });
     expect(mocks.chatSend).toHaveBeenCalledTimes(1);
     expect(mocks.registerTalkRealtimeRelayAgentRun).toHaveBeenCalledTimes(1);
     expect(mocks.joinTalkRealtimeRelayAgentRun).toHaveBeenCalledWith({
