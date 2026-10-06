@@ -1,0 +1,28 @@
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+== BEFORE: base renderer + fixture and UI test only
+UI progress-bar4-before-iphone rc=65
+testTaskListProgressTagRendersAsBar failed (15.855 seconds).
+apps/ios/UITests/OpenClawSnapshotUITests.swift:61: error: -[OpenClawUITests.OpenClawSnapshotUITests testTaskListProgressTagRendersAsBar] : XCTAssertTrue failed - Task list has no progress bar
+EXPORT progress-bar4-before-iphone rc=0 files=13
+SHOT /tmp/ios-pr/ui-progress-bar4-before-iphone-shots/progress-bar4-before-iphone--progress-card-expanded.png
+SHOT /tmp/ios-pr/ui-progress-bar4-before-iphone-shots/progress-bar4-before-iphone--progress-card-collapsed.png
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+== AFTER: full progress-bar patch
+UI progress-bar4-after-iphone rc=0
+testReleaseChatScreenshot passed (19.027 seconds).
+testTaskListProgressTagRendersAsBar passed (10.435 seconds).
+EXPORT progress-bar4-after-iphone rc=0 files=4
+SHOT /tmp/ios-pr/ui-progress-bar4-after-iphone-shots/progress-bar4-after-iphone--02-chat-connected.png
+SHOT /tmp/ios-pr/ui-progress-bar4-after-iphone-shots/progress-bar4-after-iphone--progress-card-expanded.png
+SHOT /tmp/ios-pr/ui-progress-bar4-after-iphone-shots/progress-bar4-after-iphone--progress-card-collapsed.png
+	 Executed 61 tests, with 2 tests skipped and 0 failures (0 unexpected) in 0.181 (0.183) seconds
+✔ Test run with 2297 tests in 195 suites passed after 32.510 seconds.
+KIT rc=0
+✔ Test run with 2297 tests in 195 suites passed after 32.510 seconds.
+FORMAT_LINT rc=0
+SWIFTLINT rc=0
+Done linting! Found 0 violations, 0 serious in 3 files.
+MAC_BUILD rc=0
+TREE_RESTORED 0
