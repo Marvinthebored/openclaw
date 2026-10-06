@@ -1,0 +1,28 @@
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+== RED: pushed head f8864e606c7 + CR regression, focused parser suite
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+CR_RED rc=1
+Swift/ContiguousArrayBuffer.swift:692: Fatal error: Index out of range
+error: Process '<swift-toolchain>/usr/libexec/swift/pm/swiftpm-testing-helper --test-bundle-path /tmp/ios-pr/kit-dd/arm64-apple-macosx/debug/OpenClawKitPackageTests.xctest/Content
+✘ Test "a NUL byte does not shift code protection" recorded an issue at ChatProgressCardMarkdownTests.swift:103:9: Expectation failed: (protectedParsed.bars → [OpenClawChatUI.ChatProgressCardMarkdown.Bar(label: nil, value: Optional(1.0), to
+✘ Test "a NUL byte does not shift code protection" recorded an issue at ChatProgressCardMarkdownTests.swift:104:9: Expectation failed: (protectedParsed.text → "✔ Test "multiple bars preserve their labels and remaining Markdown" passed after
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+== GREEN: fixed patch, focused parser suite
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+✔ Test run with 11 tests in 1 suite passed after 0.006 seconds.
+FOCUSED rc=0
+✔ Test run with 11 tests in 1 suite passed after 0.006 seconds.
+== GREEN: fixed patch, full shared kit suite
+	 Executed 61 tests, with 2 tests skipped and 0 failures (0 unexpected) in 0.185 (0.188) seconds
+✔ Test run with 2299 tests in 195 suites passed after 32.320 seconds.
+KIT rc=0
+✔ Test run with 2299 tests in 195 suites passed after 32.320 seconds.
+DIFF_CHECK rc=0
+FORMAT_LINT rc=0
+SWIFTLINT rc=0
+Done linting! Found 0 violations, 0 serious in 2 files.
+MAC_BUILD rc=0
+TREE_RESTORED 0
