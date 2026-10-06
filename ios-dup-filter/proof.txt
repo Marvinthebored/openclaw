@@ -1,0 +1,71 @@
+iOS duplicate reply: isolated simulator evidence, October 7, 2026
+
+Simulator: iPhone 17e. Local screenshot fixture transport; no live Gateway/provider.
+Base: a51a76bda63. Production fix: aeab13921fd.
+The identical apps/ios fixture/UI-test delta was applied in both runs.
+UI delta SHA256: 9ce1172f56832d78dd5768aabe2fe2359e60a4a95729d1c87ed4c1995b935e64
+Local UI-test commit: 6dc1a6d88a83d9374a1ca7f54846366b2a43ab84
+Only the PR production fix differs between RED and GREEN.
+
+Fixture: acknowledged user send; empty-text active-run history snapshot; then saved
+assistant session.message, identical agent assistant text, and a FIFO tool receipt.
+Agent frames pass through the public chat payload codec. History never supplies live
+reply text. Receipt existence is observed before counting native staticText labels.
+
+proof9:
+UI dup-filter9-before-iphone rc=65
+testStreamedReplyIsNotDuplicatedWithSavedRow failed (21.255 seconds).
+OpenClawSnapshotUITests.swift:79: XCTAssertEqual failed: ("2") is not equal to ("1") - Saved and streaming reply render duplicate copies
+RED duplicate-count 2 != 1 (saved + streaming)
+UI dup-filter9-after-iphone rc=0
+testStreamedReplyIsNotDuplicatedWithSavedRow passed (24.164 seconds).
+GREEN duplicate-count 1; saved reply remains after abort
+Test run with 19 tests in 1 suite passed after 1.778 seconds.
+REPLAY rc=0
+Test run with 2291 tests in 194 suites passed after 32.438 seconds.
+Executed 61 XCTest tests, with 2 skipped and 0 failures.
+KIT rc=0
+FORMAT_LINT rc=0 (0/6 files require formatting)
+TREE_RESTORED 0
+
+proof9 terminal rc=9 was a runner baseline-comparison error, not a UI/test failure.
+Strict SwiftLint returned rc=2 for both PR-head baseline and patched source. Baseline
+53 findings; patched 52. The sole removal was a preexisting 122-character line-length
+finding in the snapshot test, removed by wrapping it for SwiftFormat. Existing file/
+class size findings remain and their measured sizes increase with the added test.
+No clean all-file SwiftLint claim is made. The original exact-count equality gate
+incorrectly rejected a removed finding. A lint-only runner reproof follows below.
+
+Screenshots were copied without edits and visually inspected:
+- before-streaming.png: two visible copies of "The cobalt lighthouse is ready."
+- after-streaming.png: one saved copy; active receipt and Stop control remain.
+- after-stopped.png: one saved copy after the real Stop control aborts the run.
+Synthetic reaction selection differs between the first two images; reaction state
+has no role in the text count or the filter. No private data appears in the images.
+
+Screenshot SHA256:
+before-streaming.png fd327091a0e47d0e2570a072eb8f8beaf7bae96221b81128cd55d2d5ab28d097
+after-streaming.png 3c17c8593289afed146c85017a2e1583c2a1dabbcf9c35b8248a3bded52e3ed1
+after-stopped.png 12e3885573f42dc49fdad25a8d9c7aa6ad1037859b9c5649d5807c1564d2771c
+
+Limits: saved-before-stream only in this simulator fixture; sealed commentary and
+other arrival orders are covered by the shared hosted-kit regression, not these
+images. Abort retirement, not natural run completion, persistence/restart, or live
+Gateway behavior. No isolated physical-device run. Independent Codex source review
+found no actionable defects in the final fixture/UI test. No unrelated phone changes
+are in either simulator tree.
+
+proof10 (runner-only reproof; no Swift changes, UI/build/test rerun):
+DONE dup-filter-proof10.sh rc=0
+FORMAT_LINT rc=0 (0/6 files require formatting)
+SWIFTLINT_ALL rc=2
+SWIFTLINT_PR_HEAD_BASELINE rc=2
+SWIFTLINT_BASELINE_COMPARISON baseline=53 patched=52 new=0 removed=1
+SWIFTLINT_NEW_DIAGNOSTICS rc=0
+DIFF_CHECK rc=0
+TREE_RESTORED 0
+The corrected comparison uses file, severity, rule, and diagnostic reason, ignoring
+line shifts. Only numeric sizes in already-violating file/class-wide findings are
+normalized. Other diagnostic reasons compare verbatim. Comparator checks passed:
+equality accepted, additions rejected, removals accepted. The one removed finding
+is the existing 122-character snapshot-test line.
