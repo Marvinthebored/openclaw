@@ -293,6 +293,9 @@ struct ChatMessageBubble: View {
                     .contentShape(.accessibility, Rectangle())
                     .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("chat-assistant-message-body")
+                    .assistantSpeakerLabel(
+                        self.assistantName,
+                        avatarHidden: !self.showsAssistantAvatar && !self.isRunContent)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 2)
@@ -1018,6 +1021,9 @@ struct ChatStreamingAssistantBubble: View {
             .contentShape(.accessibility, Rectangle())
             .accessibilityElement(children: .contain)
             .accessibilityIdentifier("chat-streaming-assistant-body")
+            .assistantSpeakerLabel(
+                self.assistantName,
+                avatarHidden: !self.showsAssistantAvatar && !self.isRunContent)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -1240,5 +1246,13 @@ private struct ChatStreamingAssistantTextBody: View {
             }
             return prose
         }
+    }
+}
+
+extension View {
+    /// Without an avatar beside it, the reply's own container names the assistant for VoiceOver.
+    /// The label is empty where the avatar is shown, so a size-class change keeps the view's identity.
+    func assistantSpeakerLabel(_ name: String?, avatarHidden: Bool) -> some View {
+        self.accessibilityLabel(Text(verbatim: avatarHidden ? name ?? "" : ""))
     }
 }
