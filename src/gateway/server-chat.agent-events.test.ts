@@ -1092,7 +1092,7 @@ describe("agent event handler", () => {
     h.chatRunState.clear();
   });
 
-  it("projects the current voice challenge into Claude CLI's final chat result", () => {
+  it("projects the current voice challenge into Claude CLI's final chat result", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(10_000);
     const h = createHarness();
@@ -1119,12 +1119,12 @@ describe("agent event handler", () => {
       }
       confirmationId = blocked.reason.match(/VOICE_CONFIRMATION_REQUIRED:(\S+)/)![1]!;
     }
-    h.emit("run-voice-consult", "assistant", {
+    await h.emit("run-voice-consult", "assistant", {
       text: "VOICE_CONFIRMATION_REQUIRED:stale-model-id Please confirm.",
     });
     // Real Claude CLI run.completed diagnostics precede the outer final lifecycle.
     releaseClientVoiceConfirmationRun("main", "voice-session", "run-voice-consult");
-    h.end("run-voice-consult", 2);
+    await h.end("run-voice-consult", 2);
     const final = h.chat().at(-1)?.[1];
     expect(final).toMatchObject({
       state: "final",
@@ -1141,7 +1141,7 @@ describe("agent event handler", () => {
     expect(
       h.chatRunState.runs.get("run-voice-consult")?.readVoiceConfirmationReply,
     ).toBeUndefined();
-    h.handler.dispose();
+    await h.handler.dispose();
     h.chatRunState.clear();
     resetClientVoiceConfirmationStateForTest();
   });

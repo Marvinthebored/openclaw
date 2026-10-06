@@ -204,7 +204,9 @@ describe("RealtimeTalkSession consult handoff", () => {
           signal,
         });
       const aborts = () =>
-        request.mock.calls.filter(([m]) => m === "chat.abort").map(([, params]) => params);
+        request.mock.calls
+          .filter(([method]) => method === "chat.abort")
+          .map((call) => (call as unknown as [string, { runId: string }])[1]);
       return {
         events,
         first,
@@ -248,7 +250,7 @@ describe("RealtimeTalkSession consult handoff", () => {
       expect(t.aborts()).toEqual([expect.objectContaining({ runId: "run-x" })]);
       t.second.abort();
       await b;
-      expect(t.aborts().map((p) => (p as { runId: string }).runId)).toEqual(["run-x", "run-y"]);
+      expect(t.aborts().map((params) => params.runId)).toEqual(["run-x", "run-y"]);
     });
 
     it("aborts the held run when the repeat fails before it is acknowledged", async () => {
