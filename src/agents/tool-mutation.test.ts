@@ -77,6 +77,11 @@ describe("tool mutation helpers", () => {
     ["exec", "sleep 7; echo waited"],
     ["exec", "timeout 5 ls -l"],
     ["exec", "echo hello"],
+    ["bash", "find . -maxdepth 1 -type f | sed -E 's|.*/||; s|.*\\.||' | sort | uniq -c"],
+    [
+      "bash",
+      "find . -maxdepth 1 -type f | sed -E 's|.*/||; s|^[^.]*$|(no extension)|; s|.*\\.||' | sort | uniq -c",
+    ],
   ])("treats read-only shell command as non-mutating: %s %s", (toolName, command) => {
     expect(isMutatingToolCall(toolName, { command })).toBe(false);
     expect(buildToolMutationState(toolName, { command }).mutatingAction).toBe(false);
@@ -119,6 +124,10 @@ describe("tool mutation helpers", () => {
     ["bash", "ls | sed 's/a/b/w /tmp/out'"],
     ["bash", "ls | sed 's/a/touch x/e'"],
     ["bash", "ls | sed 's/a/b/;w /tmp/out'"],
+    ["bash", "ls | sed 's/a/b/; s/c/d/;w /tmp/out'"],
+    ["bash", "ls | sed 's/a/b/; s/c/d/e'"],
+    ["bash", "ls | sed 's/a/b/;; s/c/d/'"],
+    ["bash", "ls | sed 's/a/b/; p'"],
     ["bash", "ls | sed -e 's/a/b/' -i file.txt"],
     ["bash", "ls | sed 's/a/b/' \\; touch /tmp/out"],
     ["bash", "ls | awk '{print $1}'"],

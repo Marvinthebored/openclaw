@@ -204,6 +204,30 @@ function tokenizeReadOnlyShellCommands(command: string): string[][] | undefined 
   return commands;
 }
 
+// Substitutions to stdout, joined only by `;`. Each has its own delimiter. The flag set excludes
+// `w` (write file) and `e` (execute); an escaped delimiter does not match and stays unclassified.
+function isSedSubstitutionChain(expression: string): boolean {
+  const substitution = /s([^\w\s\\])(?:(?!\1).)*\1(?:(?!\1).)*\1[gpiI\d]*/y;
+  let index = 0;
+  for (;;) {
+    substitution.lastIndex = index;
+    if (!substitution.exec(expression)) {
+      return false;
+    }
+    index = substitution.lastIndex;
+    if (index === expression.length) {
+      return true;
+    }
+    if (expression[index] !== ";") {
+      return false;
+    }
+    index++;
+    while (expression[index] === " ") {
+      index++;
+    }
+  }
+}
+
 function isReadOnlySedCommand(tokens: readonly string[]): boolean {
   const args = tokens.slice(1);
   // `sed -e 'w /tmp/out'`, attached scripts such as `-e$w /tmp/out`, and
@@ -240,9 +264,7 @@ function isReadOnlySedCommand(tokens: readonly string[]): boolean {
   if (expression == null) {
     return false;
   }
-  // One substitution to stdout. The flag set excludes `w` (write file) and `e`
-  // (execute); an escaped delimiter does not match and stays unclassified.
-  if (/^s([^\w\s\\])(?:(?!\1).)*\1(?:(?!\1).)*\1[gpiI\d]*$/.test(expression)) {
+  if (isSedSubstitutionChain(expression)) {
     return true;
   }
   return sawSuppressAutoPrint && /^(\d+|\$)(,(\d+|\$))?p$/.test(expression);
