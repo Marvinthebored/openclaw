@@ -175,6 +175,10 @@ describe("RealtimeTalkSession consult handoff", () => {
       let resolveSecond!: (ack: Ack) => void;
       let rejectSecond!: (error: Error) => void;
       let toolCalls = 0;
+      let markSecondRequested!: () => void;
+      const secondRequested = new Promise<void>((resolve) => {
+        markSecondRequested = resolve;
+      });
       const request = vi.fn(async (method: string) => {
         if (method !== "talk.client.toolCall") {
           return { ok: true };
@@ -183,6 +187,7 @@ describe("RealtimeTalkSession consult handoff", () => {
         if (toolCalls === 1) {
           return ackFor("run-x");
         }
+        markSecondRequested();
         return await new Promise<Ack>((resolve, reject) => {
           resolveSecond = resolve;
           rejectSecond = reject;
@@ -195,14 +200,8 @@ describe("RealtimeTalkSession consult handoff", () => {
       } as never;
       const first = new AbortController();
       const second = new AbortController();
-      const start = (callId: string, signal: AbortSignal) =>
-        submitRealtimeTalkConsult({
-          ctx,
-          callId,
-          args: { question: "Check" },
-          submit: vi.fn(),
-          signal,
-        });
+      const start = (callId: string, signal: AbortSignal, args: unknown = { question: "Check" }) =>
+        submitRealtimeTalkConsult({ ctx, callId, args, submit: vi.fn(), signal });
       const aborts = () =>
         request.mock.calls
           .filter(([method]) => method === "chat.abort")
@@ -215,7 +214,7 @@ describe("RealtimeTalkSession consult handoff", () => {
         aborts,
         resolveSecond: (ack: Ack) => resolveSecond(ack),
         rejectSecond: (error: Error) => rejectSecond(error),
-        secondRequested: () => toolCalls >= 2,
+        secondRequested,
       };
     }
 
@@ -224,7 +223,24 @@ describe("RealtimeTalkSession consult handoff", () => {
       const a = t.start("call-a", t.first.signal);
       await t.events.subscribed(1);
       const b = t.start("call-b", t.second.signal);
-      await vi.waitFor(() => expect(t.secondRequested()).toBe(true));
+      await t.secondRequested;
+      t.first.abort();
+      await a;
+      expect(t.aborts()).toEqual([]);
+      t.resolveSecond(ackFor("run-x"));
+      await t.events.subscribed(2);
+      expect(t.aborts()).toEqual([]);
+      t.second.abort();
+      await b;
+      expect(t.aborts()).toEqual([expect.objectContaining({ runId: "run-x" })]);
+    });
+
+    it("holds the abort for an equivalent repeat written with an alias and another field order", async () => {
+      const t = setup();
+      const a = t.start("call-a", t.first.signal, { question: "Check", context: "kitchen" });
+      await t.events.subscribed(1);
+      const b = t.start("call-b", t.second.signal, { context: "kitchen", prompt: "Check" });
+      await t.secondRequested;
       t.first.abort();
       await a;
       expect(t.aborts()).toEqual([]);
@@ -241,7 +257,7 @@ describe("RealtimeTalkSession consult handoff", () => {
       const a = t.start("call-a", t.first.signal);
       await t.events.subscribed(1);
       const b = t.start("call-b", t.second.signal);
-      await vi.waitFor(() => expect(t.secondRequested()).toBe(true));
+      await t.secondRequested;
       t.first.abort();
       await a;
       expect(t.aborts()).toEqual([]);
@@ -258,7 +274,7 @@ describe("RealtimeTalkSession consult handoff", () => {
       const a = t.start("call-a", t.first.signal);
       await t.events.subscribed(1);
       const b = t.start("call-b", t.second.signal);
-      await vi.waitFor(() => expect(t.secondRequested()).toBe(true));
+      await t.secondRequested;
       t.first.abort();
       await a;
       expect(t.aborts()).toEqual([]);
