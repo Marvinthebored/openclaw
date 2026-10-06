@@ -205,16 +205,29 @@ function tokenizeReadOnlyShellCommands(command: string): string[][] | undefined 
 }
 
 // Substitutions to stdout, joined only by `;`. Each has its own delimiter. The flag set excludes
-// `w` (write file) and `e` (execute); an escaped delimiter does not match and stays unclassified.
+// `w` (write file) and `e` (execute). Where sed implementations could disagree on which delimiter
+// ends a part, nothing matches: an escaped delimiter (sed reads it as text), a delimiter inside a
+// bracket expression (BSD sed reads it as text, GNU sed does not), or an unusual delimiter.
+const SED_ESCAPE = String.raw`\\(?!\1)[^\n]`;
+// A leading `^` negates and a leading `]` is a member, so neither `[]` nor `[^]` closes.
+const SED_BRACKET_MEMBER = String.raw`(?:\[:[a-z]+:\]|(?!\1)[^\]\[\n])`;
+const SED_BRACKET_BODY = String.raw`(?:\]${SED_BRACKET_MEMBER}*|${SED_BRACKET_MEMBER}+)\]`;
+const SED_BRACKET = String.raw`\[(?:\^|(?!\^))${SED_BRACKET_BODY}`;
+const SED_SUBSTITUTION = new RegExp(
+  String.raw`s([/|,#@!%])` +
+    String.raw`(?:${SED_ESCAPE}|${SED_BRACKET}|(?!\1)[^\\\[\n])*\1` +
+    String.raw`(?:${SED_ESCAPE}|(?!\1)[^\\\n])*\1[gpiI\d]*`,
+  "y",
+);
+
 function isSedSubstitutionChain(expression: string): boolean {
-  const substitution = /s([^\w\s\\])(?:(?!\1).)*\1(?:(?!\1).)*\1[gpiI\d]*/y;
   let index = 0;
   for (;;) {
-    substitution.lastIndex = index;
-    if (!substitution.test(expression)) {
+    SED_SUBSTITUTION.lastIndex = index;
+    if (!SED_SUBSTITUTION.test(expression)) {
       return false;
     }
-    index = substitution.lastIndex;
+    index = SED_SUBSTITUTION.lastIndex;
     if (index === expression.length) {
       return true;
     }
