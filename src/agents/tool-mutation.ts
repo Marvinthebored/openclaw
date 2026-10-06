@@ -211,7 +211,7 @@ function isSedSubstitutionChain(expression: string): boolean {
   let index = 0;
   for (;;) {
     substitution.lastIndex = index;
-    if (!substitution.exec(expression)) {
+    if (!substitution.test(expression)) {
       return false;
     }
     index = substitution.lastIndex;
