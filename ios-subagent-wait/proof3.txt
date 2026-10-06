@@ -1,0 +1,27 @@
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+== BEFORE: a51a76bda63 + fixture and UI test only
+UI subagent-wait3-before-iphone rc=65
+testFinishedTurnShowsWaitingHelperAndOpensItsSession failed (16.750 seconds).
+apps/ios/UITests/OpenClawSnapshotUITests.swift:80: error: -[OpenClawUITests.OpenClawSnapshotUITests testFinishedTurnShowsWaitingHelperAndOpensItsSession] : XCTAssertTrue failed - Finished turn has no Waiting on subagents line
+RED_EXPECTED_MISSING_WAIT_LINE
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+== AFTER: full isolated item D patch
+UI subagent-wait3-after-iphone rc=0
+testFinishedTurnShowsWaitingHelperAndOpensItsSession passed (15.591 seconds).
+UI subagent-wait3-after-ipad rc=0
+testFinishedTurnShowsWaitingHelperAndOpensItsSession passed (16.214 seconds).
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+✔ Test run with 7 tests in 1 suite passed after 0.001 seconds.
+FOCUSED_KIT rc=0
+	 Executed 61 tests, with 2 tests skipped and 0 failures (0 unexpected) in 0.183 (0.186) seconds
+✔ Test run with 2295 tests in 195 suites passed after 32.238 seconds.
+KIT rc=0
+✔ Test run with 2295 tests in 195 suites passed after 32.238 seconds.
+FORMAT_LINT rc=0
+FORMAT_UITEST rc=1 (inherited long line only)
+apps/ios/UITests/OpenClawSnapshotUITests.swift:590:1: error: (wrap) Wrap lines that exceed the specified maximum width.
+SWIFTLINT rc=0
+Done linting! Found 0 violations, 0 serious in 4 files.
+TREE_RESTORED 0
