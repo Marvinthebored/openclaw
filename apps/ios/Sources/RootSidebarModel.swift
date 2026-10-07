@@ -260,6 +260,7 @@ final class RootSidebarModel {
             activeAgentID: activeAgentID,
             groups: groups,
             excludesMainSession: true,
+            includeEmptyGroups: true,
             query: query,
             sessionRoutingContract: sessionRoutingContract)
     }
@@ -327,6 +328,7 @@ final class RootSidebarModel {
     }
 
     func refreshSessions(appModel: NodeAppModel) async {
+        await appModel.sessionGroups.refresh(appModel: appModel)
         self.rosterGeneration &+= 1
         let rosterGeneration = self.rosterGeneration
         self.isRefreshing = true
