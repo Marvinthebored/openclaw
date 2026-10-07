@@ -1,0 +1,22 @@
+Startup-status proof9; base a51a76bda63.
+Patch SHA256: 0ae6401ace947ec7e36c0458a009f5f34ef013fc7cb84b4fcabbf92188c86020
+
+TREE_OK a51a76bda63 local-only: 
+UI startup-status9-before-iphone rc=65
+testStartupStatusShowsWaitingForResponse failed (17.433 seconds).
+apps/ios/UITests/OpenClawSnapshotUITests.swift:86: error: -[OpenClawUITests.OpenClawSnapshotUITests testStartupStatusShowsWaitingForResponse] : XCTAssertTrue failed - STARTUP_STATUS_MISSING: waiting run has no Gateway startup label
+RED_CONFIRMED STARTUP_STATUS_MISSING
+TREE_OK a51a76bda63 local-only: 
+UI startup-status9-after-iphone rc=0
+testStartupStatusShowsWaitingForResponse passed (15.563 seconds).
+FOCUSED_REUSED proof8: 11 tests in 2 suites passed; product and kit test sources unchanged
+	 Executed 61 tests, with 2 tests skipped and 0 failures (0 unexpected) in 0.174 (0.177) seconds
+✔ Test run with 2299 tests in 196 suites passed after 32.707 seconds.
+KIT rc=0
+FORMAT_LINT rc=0
+SWIFTLINT_PATCH rc=0
+Done linting! Found 0 violations, 0 serious in 8 files.
+Done linting! Found 0 violations, 0 serious in 9 files.
+MAC_BUILD rc=0
+TREE_RESTORED 0
+STARTUP_STATUS_PROOF_COMPLETE
