@@ -1,0 +1,30 @@
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+BASE_UITEST_FORMAT rc=1
+== BEFORE (required base + fixture/UI regression only)
+apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
+apps/ios/UITests/OpenClawSnapshotUITests.swift
+UI step-labels6-before-iphone rc=65
+testUnknownOutcomeStepUsesLocalToolTitle failed (13.167 seconds).
+apps/ios/UITests/OpenClawSnapshotUITests.swift:785: error: -[OpenClawUITests.OpenClawSnapshotUITests testUnknownOutcomeStepUsesLocalToolTitle] : XCTAssertFalse failed - Step still uses the unknown-outcome fallback: exec - outcome unknown pr
+EXPORT step-labels6-before-iphone rc=0 files=4
+SHOT /tmp/ios-pr/ui-step-labels6-before-iphone-shots/step-labels6-before-iphone--step-labels-expanded.png
+RED_CONFIRMED
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK a51a76bda63 local-only: 
+== AFTER (full item E patch)
+UI step-labels6-after-iphone rc=0
+testUnknownOutcomeStepUsesLocalToolTitle passed (14.052 seconds).
+EXPORT step-labels6-after-iphone rc=0 files=2
+SHOT /tmp/ios-pr/ui-step-labels6-after-iphone-shots/step-labels6-after-iphone--step-labels-expanded.png
+	 Executed 61 tests, with 2 tests skipped and 0 failures (0 unexpected) in 0.190 (0.193) seconds
+✔ Test run with 2289 tests in 194 suites passed after 32.843 seconds.
+KIT rc=0
+✔ Test run with 2289 tests in 194 suites passed after 32.843 seconds.
+FORMAT_LINT rc=0
+UITEST_FORMAT rc=1
+apps/ios/UITests/OpenClawSnapshotUITests.swift:572:1: error: (wrap) Wrap lines that exceed the specified maximum width.
+SWIFTLINT rc=0
+Done linting! Found 0 violations, 0 serious in 3 files.
+MAC_BUILD rc=0
+TREE_RESTORED 0
