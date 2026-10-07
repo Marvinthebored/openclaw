@@ -767,22 +767,32 @@ final class OpenClawSnapshotUITests: XCTestCase {
         let work = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Worked")).firstMatch
         XCTAssertTrue(work.waitForExistence(timeout: 5))
         work.tap()
-        let row = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Exec")).firstMatch
-        XCTAssertTrue(row.waitForExistence(timeout: 5))
-        XCTAssertTrue(
-            (row.value as? String)?.hasPrefix("No result") == true,
-            "The row must retain the prepared unknown status, not infer success from the raw result")
+        for (command, expectedStatus, showsUnknown) in [
+            ("printf ready", "No result", true),
+            ("printf missing", "No result", true),
+            ("printf complete", "Finished", false),
+        ] {
+            let row = app.descendants(matching: .any).matching(NSPredicate(
+                format: "label CONTAINS %@ AND value CONTAINS %@", "Exec", command)).firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 5), "Missing tool row: \(command)")
+            XCTAssertTrue(
+                (row.value as? String)?.hasPrefix(expectedStatus) == true,
+                "The row must retain the prepared outcome for \(command)")
+            // Accessibility already announced unknown outcomes; pixels must preserve that cue too.
+            let image = try XCTUnwrap(row.screenshot().image.cgImage)
+            let recognition = VNRecognizeTextRequest()
+            recognition.recognitionLevel = .accurate
+            recognition.recognitionLanguages = ["en-US"]
+            try VNImageRequestHandler(cgImage: image, options: [:]).perform([recognition])
+            let text = (recognition.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+                .joined(separator: " ").lowercased()
+            XCTAssertTrue(text.contains("exec"), "Rendered tool title was not recognized: \(text)")
+            XCTAssertFalse(text.contains("outcome unknown"), "Step still uses the fallback title: \(text)")
+            XCTAssertEqual(
+                text.contains("no result"), showsUnknown,
+                "Visible unknown-outcome cue is wrong for \(command): \(text)")
+        }
         self.attachScreenshot(named: "step-labels-expanded")
-        // The row's accessibility label already uses the local title on the base. Read pixels instead.
-        let image = try XCTUnwrap(row.screenshot().image.cgImage)
-        let recognition = VNRecognizeTextRequest()
-        recognition.recognitionLevel = .accurate
-        recognition.recognitionLanguages = ["en-US"]
-        try VNImageRequestHandler(cgImage: image, options: [:]).perform([recognition])
-        let text = (recognition.results ?? []).compactMap { $0.topCandidates(1).first?.string }
-            .joined(separator: " ").lowercased()
-        XCTAssertTrue(text.contains("exec"), "Rendered tool title was not recognized: \(text)")
-        XCTAssertFalse(text.contains("outcome unknown"), "Step still uses the unknown-outcome fallback: \(text)")
         XCTAssertTrue(app.staticTexts["Local readiness checked."].exists)
     }
 

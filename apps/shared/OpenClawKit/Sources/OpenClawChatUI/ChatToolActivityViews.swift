@@ -342,7 +342,8 @@ private struct ChatToolActivityRowContent: View {
 
             Spacer(minLength: 0)
 
-            if self.isDesktopLayout {
+            // The local title replaces the Gateway warning, so unknown outcomes still need a visible cue.
+            if self.isDesktopLayout || self.item.displayState == .unavailable {
                 Text(self.item.displayState.title)
                     .font(OpenClawChatTypography.caption)
                     .foregroundStyle(self.item.isError ? OpenClawChatTheme.danger : .secondary)

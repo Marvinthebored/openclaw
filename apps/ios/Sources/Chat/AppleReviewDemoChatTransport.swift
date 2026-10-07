@@ -490,10 +490,14 @@ private actor LocalFixtureChatStore {
                 } : nil,
             activity: ProcessInfo.processInfo.arguments.contains("--openclaw-step-labels-fixture")
                 ? JSONDecoder().decode([OpenClawChatHistoryActivity].self, from: Data("""
-                [{"messageId":"fixture-step-call","items":[{
-                  "itemId":"tool:fixture-exec","toolCallId":"fixture-exec","kind":"tool","phase":"end",
-                  "title":"Exec — outcome unknown","name":"exec"
-                }]}]
+                [{"messageId":"fixture-step-call","items":[
+                  {"itemId":"tool:fixture-exec","toolCallId":"fixture-exec","kind":"tool","phase":"end",
+                   "title":"Exec — outcome unknown","name":"exec"},
+                  {"itemId":"tool:fixture-no-result","toolCallId":"fixture-no-result","kind":"tool","phase":"end",
+                   "title":"Exec — outcome unknown","name":"exec"},
+                  {"itemId":"tool:fixture-success","toolCallId":"fixture-success","kind":"tool","phase":"end",
+                   "title":"Exec","name":"exec","status":"completed"}
+                ]}]
                 """.utf8)) : nil)
     }
 
@@ -761,11 +765,23 @@ private actor LocalFixtureChatStore {
                     transcriptMessageID: "fixture-step-prompt"),
                 OpenClawChatMessage(
                     role: "assistant",
-                    content: [OpenClawChatMessageContent(
-                        type: "toolCall",
-                        id: "fixture-exec",
-                        name: "exec",
-                        arguments: AnyCodable(["command": "printf ready"]))],
+                    content: [
+                        OpenClawChatMessageContent(
+                            type: "toolCall",
+                            id: "fixture-exec",
+                            name: "exec",
+                            arguments: AnyCodable(["command": "printf ready"])),
+                        OpenClawChatMessageContent(
+                            type: "toolCall",
+                            id: "fixture-no-result",
+                            name: "exec",
+                            arguments: AnyCodable(["command": "printf missing"])),
+                        OpenClawChatMessageContent(
+                            type: "toolCall",
+                            id: "fixture-success",
+                            name: "exec",
+                            arguments: AnyCodable(["command": "printf complete"])),
+                    ],
                     timestamp: now + 1,
                     transcriptMessageID: "fixture-step-call",
                     stopReason: "toolUse"),
@@ -776,10 +792,17 @@ private actor LocalFixtureChatStore {
                     transcriptMessageID: "fixture-step-result",
                     toolCallId: "fixture-exec",
                     toolName: "exec"),
+                OpenClawChatMessage(
+                    role: "toolResult",
+                    content: [OpenClawChatMessageContent(type: "text", text: "complete")],
+                    timestamp: now + 3,
+                    transcriptMessageID: "fixture-success-result",
+                    toolCallId: "fixture-success",
+                    toolName: "exec"),
                 self.message(
                     role: "assistant",
                     text: "Local readiness checked.",
-                    timestamp: now + 3,
+                    timestamp: now + 4,
                     transcriptMessageID: "fixture-step-answer"),
             ]
         }
