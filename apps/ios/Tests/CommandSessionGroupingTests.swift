@@ -4,6 +4,20 @@ import Testing
 @testable import OpenClaw
 
 struct CommandSessionGroupingTests {
+    @MainActor
+    @Test func `group mutations wait for a resolved current connection`() async {
+        let model = SessionGroupModel()
+        let appModel = NodeAppModel()
+        var invokedFallback = false
+        await model.mutate(
+            appModel: appModel,
+            request: OpenClawChatGatewayRequests.sessionGroupsDelete(name: "Projects"),
+            fallback: { _ in invokedFallback = true })
+        #expect(!invokedFallback)
+        #expect(model.failure != nil)
+        #expect(!model.submitting)
+    }
+
     @Test func `groups pinned categories and ungrouped in display order`() {
         let sections = CommandSessionGrouping.sections(from: [
             self.entry("ungrouped", activity: 2),
