@@ -1,4 +1,5 @@
 import UIKit
+import Vision
 import XCTest
 
 @MainActor
@@ -755,6 +756,34 @@ final class OpenClawSnapshotUITests: XCTestCase {
         jumpToLatest.tap()
         XCTAssertTrue(jumpToLatest.waitForNonExistence(timeout: 3))
         XCTAssertTrue(finalReply.exists)
+    }
+
+    func testUnknownOutcomeStepUsesLocalToolTitle() throws {
+        self.launchApp(
+            for: Self.chatScreenshotTarget,
+            additionalArguments: ["--openclaw-step-labels-fixture"])
+        let app = try XCTUnwrap(self.app)
+        XCTAssertTrue(app.staticTexts["Local readiness checked."].waitForExistence(timeout: 8))
+        let work = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Worked")).firstMatch
+        XCTAssertTrue(work.waitForExistence(timeout: 5))
+        work.tap()
+        let row = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Exec")).firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            (row.value as? String)?.hasPrefix("No result") == true,
+            "The row must retain the prepared unknown status, not infer success from the raw result")
+        self.attachScreenshot(named: "step-labels-expanded")
+        // The row's accessibility label already uses the local title on the base. Read pixels instead.
+        let image = try XCTUnwrap(row.screenshot().image.cgImage)
+        let recognition = VNRecognizeTextRequest()
+        recognition.recognitionLevel = .accurate
+        recognition.recognitionLanguages = ["en-US"]
+        try VNImageRequestHandler(cgImage: image, options: [:]).perform([recognition])
+        let text = (recognition.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+            .joined(separator: " ").lowercased()
+        XCTAssertTrue(text.contains("exec"), "Rendered tool title was not recognized: \(text)")
+        XCTAssertFalse(text.contains("outcome unknown"), "Step still uses the unknown-outcome fallback: \(text)")
+        XCTAssertTrue(app.staticTexts["Local readiness checked."].exists)
     }
 
     func testCompletedWorkDisclosureKeepsFinalReplyVisible() throws {

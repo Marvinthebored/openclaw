@@ -353,7 +353,7 @@ private struct ChatToolActivityRowContent: View {
     }
 
     private var toolTitle: some View {
-        Text(self.item.activity?.title ?? self.display.title)
+        Text(self.item.activity?.preparedTitle ?? self.display.title)
             .font(OpenClawChatTypography.footnoteSemiBold)
             .foregroundStyle(self.item.isError ? OpenClawChatTheme.danger : self.textColor)
             .lineLimit(1)
