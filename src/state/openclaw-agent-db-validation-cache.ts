@@ -12,6 +12,10 @@ import {
 } from "../infra/sqlite-schema-facts.js";
 import { readSqliteUserVersion } from "../infra/sqlite-user-version.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
+import {
+  AgentDatabaseSchemaAdmissionChangedError,
+  AgentDatabaseSchemaAdmissionInvalidError,
+} from "./agent-database-admission-error.js";
 import { hasPersistedOpenClawAgentCanonicalValidation } from "./openclaw-agent-canonical-validation-receipt.js";
 import {
   adoptCanonicalSessionValidationSchema,
@@ -150,6 +154,16 @@ function readTransferredSchema(value: unknown): OpenClawAgentDatabaseValidation[
     !(facts.tableSql instanceof Map) ||
     ![...facts.tableSql].every(
       ([name, sql]) => typeof name === "string" && (sql === null || typeof sql === "string"),
+    ) ||
+    !(facts.indexes instanceof Set) ||
+    ![...facts.indexes].every((index) => typeof index === "string") ||
+    !(facts.triggers instanceof Map) ||
+    ![...facts.triggers].every(
+      ([name, trigger]) =>
+        typeof name === "string" &&
+        isRecord(trigger) &&
+        typeof trigger.table === "string" &&
+        (trigger.sql === null || typeof trigger.sql === "string"),
     )
   ) {
     return undefined;
@@ -162,6 +176,8 @@ function readTransferredSchema(value: unknown): OpenClawAgentDatabaseValidation[
       schemaVersion: facts.schemaVersion,
       tables: facts.tables,
       tableSql: facts.tableSql,
+      indexes: facts.indexes,
+      triggers: facts.triggers,
     },
   };
 }
@@ -226,6 +242,14 @@ export function getOpenClawAgentDatabaseValidationForTransfer(
 export function captureOpenClawAgentDatabaseValidationTransfer(
   database: Pick<ValidationDatabase, "agentId" | "path">,
 ): (identity: string, received: unknown) => boolean {
+  const receive = captureValidationTransfer(database, false);
+  return (identity, received) => receive(identity, received) === "accepted";
+}
+
+function captureValidationTransfer(
+  database: Pick<ValidationDatabase, "agentId" | "path">,
+  schemaRequired: boolean,
+): (identity: string, received: unknown) => "accepted" | "stale" | "invalid" {
   const pathname = path.resolve(database.path);
   const existing = validatedPaths.get(pathname);
   const captured: ValidationEntry =
@@ -243,6 +267,27 @@ export function captureOpenClawAgentDatabaseValidationTransfer(
     : undefined;
   return (identity, received) => {
     if (
+      !isRecord(received) ||
+      received.agentId !== database.agentId ||
+      received.identity !== identity ||
+      !(received.valid instanceof SharedArrayBuffer) ||
+      received.valid.byteLength !== Int32Array.BYTES_PER_ELEMENT ||
+      !(received.canonicalReady instanceof SharedArrayBuffer) ||
+      received.canonicalReady.byteLength !== Int32Array.BYTES_PER_ELEMENT
+    ) {
+      return "invalid";
+    }
+    const schema = readTransferredSchema(received.schema);
+    const valid = Atomics.load(new Int32Array(received.valid), 0);
+    const schemaValid = schema && Atomics.load(new Int32Array(schema.valid), 0);
+    // A raced capture cannot turn a malformed receipt into a retryable refusal.
+    if (
+      (valid !== 0 && valid !== 1) ||
+      (schemaRequired && (!schema || (schemaValid !== 0 && schemaValid !== 1)))
+    ) {
+      return "invalid";
+    }
+    if (
       validatedPaths.get(pathname) !== captured ||
       (capturedValidation &&
         wasValid === 1 &&
@@ -250,16 +295,9 @@ export function captureOpenClawAgentDatabaseValidationTransfer(
       (captured.validation !== capturedValidation &&
         captured.validation &&
         Atomics.load(new Int32Array(captured.validation.valid), 0) !== 1) ||
-      !isRecord(received) ||
-      received.agentId !== database.agentId ||
-      received.identity !== identity ||
-      !(received.valid instanceof SharedArrayBuffer) ||
-      received.valid.byteLength !== Int32Array.BYTES_PER_ELEMENT ||
-      Atomics.load(new Int32Array(received.valid), 0) !== 1 ||
-      !(received.canonicalReady instanceof SharedArrayBuffer) ||
-      received.canonicalReady.byteLength !== Int32Array.BYTES_PER_ELEMENT
+      Atomics.load(new Int32Array(received.valid), 0) !== 1
     ) {
-      return false;
+      return "stale";
     }
     if (
       wasValid === 1 &&
@@ -267,15 +305,15 @@ export function captureOpenClawAgentDatabaseValidationTransfer(
       captured.validation?.agentId === database.agentId &&
       captured.validation?.identity === identity
     ) {
-      captured.validation.schema = readTransferredSchema(received.schema);
-      return true;
+      captured.validation.schema = schema;
+      return "accepted";
     }
     const validation = {
       agentId: database.agentId,
       identity,
       valid: received.valid,
       canonicalReady: received.canonicalReady,
-      schema: readTransferredSchema(received.schema),
+      schema,
     };
     if (hasRevokedOpenClawAgentDatabaseValidation(pathname)) {
       Atomics.store(new Int32Array(validation.canonicalReady), 0, 0);
@@ -294,7 +332,7 @@ export function captureOpenClawAgentDatabaseValidationTransfer(
     for (const alias of aliases) {
       validatedPaths.set(alias, { validation, integrityVerified: true });
     }
-    return true;
+    return "accepted";
   };
 }
 
@@ -302,12 +340,15 @@ export function captureOpenClawAgentDatabaseValidationTransfer(
 export function captureOpenClawAgentDatabaseAdmissionPublication(
   database: Pick<ValidationDatabase, "agentId" | "path">,
 ): (identity: string, received: unknown) => void {
-  const receive = captureOpenClawAgentDatabaseValidationTransfer(database);
+  const receive = captureValidationTransfer(database, true);
   return (identity, received) => {
-    const accepted = receive(identity, received);
+    const result = receive(identity, received);
+    if (result === "invalid") {
+      throw new AgentDatabaseSchemaAdmissionInvalidError();
+    }
     const schema = getOpenClawAgentDatabaseValidationForTransfer(database)?.schema;
-    if (!accepted || !schema || Atomics.load(new Int32Array(schema.valid), 0) !== 1) {
-      throw new Error("Agent schema admission changed before publication; retry the operation");
+    if (result === "stale" || !schema || Atomics.load(new Int32Array(schema.valid), 0) !== 1) {
+      throw new AgentDatabaseSchemaAdmissionChangedError();
     }
   };
 }
@@ -556,9 +597,11 @@ export function clearOpenClawAgentDatabaseValidationCache(rootPath?: string): vo
 /** Reader cleanup releases local metadata without revoking its parent's shared proof. */
 export function releaseOpenClawAgentDatabaseReadValidation(
   candidates: readonly Pick<OpenClawAgentDatabaseReadCandidateResource, "path" | "scope">[],
+  retainedPaths: readonly string[] = [],
 ): void {
   for (const pathname of validatedPaths.keys()) {
     if (
+      !retainedPaths.some((retained) => path.resolve(retained) === pathname) &&
       candidates.some((candidate) => matchesAgentDatabaseReadCandidatePath(candidate, pathname))
     ) {
       validatedPaths.delete(pathname);

@@ -37,6 +37,7 @@ export async function prepareAndAdmitChatSend(
   onAdmissionOwned?: () => Promise<boolean>,
   options?: {
     trustedSystemInput?: boolean;
+    isDirectExternalUser?: boolean;
     goalResume?: SessionGoalOperation & { action: "resume" };
     providerReviewAcknowledgment?: ProviderReviewAcknowledgment;
   },
@@ -80,6 +81,7 @@ export async function prepareAndAdmitChatSend(
     request: normalizedRequest.value,
     context,
     client,
+    isDirectExternalUser: options?.isDirectExternalUser,
   });
   if (!loadedSession.ok) {
     respond(
@@ -113,7 +115,7 @@ export async function prepareAndAdmitChatSend(
     }
   }
   phase?.mark("authority");
-  const shouldAdmit = await runChatSendPreAdmission({
+  const preparation = {
     request: normalizedRequest.value,
     session: loadedSession.value,
     respond,
@@ -122,7 +124,8 @@ export async function prepareAndAdmitChatSend(
     assertCurrent,
     assertCurrentAsync,
     withCurrent,
-  });
+  };
+  const shouldAdmit = await runChatSendPreAdmission(preparation);
   if (!shouldAdmit) {
     return undefined;
   }
@@ -136,12 +139,8 @@ export async function prepareAndAdmitChatSend(
   let admitted: Awaited<ReturnType<typeof admitChatSend>> | undefined;
   try {
     const nativeRestriction = await prepareChatSendNativeRuntimeRestriction({
-      request: normalizedRequest.value,
+      ...preparation,
       session,
-      client,
-      context,
-      assertCurrent,
-      assertCurrentAsync,
     });
     if (nativeRestriction) {
       respond(false, undefined, nativeRestriction);
@@ -149,16 +148,10 @@ export async function prepareAndAdmitChatSend(
     }
     phase?.mark("runAdmission");
     admitted = await admitChatSend({
-      request: normalizedRequest.value,
+      ...preparation,
       session,
-      respond,
-      context,
-      client,
       onAdmissionOwned,
       hasCurrentClientAuthority,
-      assertCurrent,
-      assertCurrentAsync,
-      withCurrent,
       withPreparedCurrent: sessionMutationAuthorization?.withPreparedCurrent,
     });
     if (!admitted.ok) {
