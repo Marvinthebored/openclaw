@@ -8,16 +8,19 @@ import { resolveEmbeddedSessionLane } from "../../agents/embedded-agent-runner/l
 import { hasPendingFollowupQueueWork } from "../../auto-reply/reply/queue/state.js";
 import {
   resolveSessionWorkStartError,
+  isSessionWorkStartInvalidatedError,
   SESSION_LIFECYCLE_CHANGED_ERROR_REASON,
   type SessionEntry,
 } from "../../config/sessions.js";
 import {
   applySessionPatchProjection,
   preflightSessionTranscriptForManualCompact,
-  readTranscriptStatsSync,
   trimSessionTranscriptForManualCompact,
 } from "../../config/sessions/session-accessor.js";
 import { projectCompactionAccountingPatch } from "../../config/sessions/session-entry-projection.js";
+import { readSessionEntryReadOnlyInWorker } from "../../config/sessions/session-entry-read-runtime.js";
+import { composeSessionSourceAssertion } from "../../config/sessions/session-source-authority.js";
+import { readTranscriptStatsAsync } from "../../config/sessions/session-transcript-stats.js";
 import type { InternalSessionEntry } from "../../config/sessions/types.js";
 import { formatErrorMessage } from "../../infra/errors.js";
 import { getCommandLaneSnapshot } from "../../process/command-queue.js";
@@ -26,28 +29,24 @@ import {
   runExclusiveSessionLifecycleMutation,
 } from "../../sessions/session-lifecycle-admission.js";
 import { recordSessionCompacted } from "../../sessions/session-state-events.js";
+import { hasPreparedGatewayDeviceAuthority } from "../device-revocation.js";
 import { captureGatewayOperatorRunAuthority } from "../operator-run-authority.js";
 import {
   resolveRequestedSessionAgentId as resolveRequestedGlobalAgentId,
   tryResolveSessionCompatibilityOwnerAgentId,
 } from "../session-request-agent.js";
-import {
-  resolveCanonicalGatewaySessionStoreKey,
-  resolveGatewaySessionStoreTargetWithStore,
-} from "../session-utils.js";
+import { resolveGatewaySessionStoreTargetInWorker } from "../session-utils-store-worker.js";
+import { resolveCanonicalGatewaySessionStoreKey } from "../session-utils.js";
 import { getWorkerInferenceSessionControl } from "../worker-environments/inference-control-internal.js";
 import { resolveVisibleActiveSessionRunState } from "./session-active-runs.js";
 import { emitSessionsChanged } from "./session-change-event.js";
 import { readGatewayRequestMutationAuthority } from "./session-mutation-guards.js";
+import { waitForTerminalSessionRunSettlement } from "./session-run-settlement.js";
 import {
   preflightGatewaySessionCompaction,
   runGatewaySessionCompaction,
 } from "./sessions-compaction-runner.js";
-import {
-  emitSessionOperation,
-  loadAccessorSessionEntryForGatewayTarget,
-  requireSessionKey,
-} from "./sessions-shared.js";
+import { emitSessionOperation, requireSessionKey } from "./sessions-shared.js";
 import type { GatewayRequestHandlers } from "./types.js";
 import { assertValidParams } from "./validation.js";
 
@@ -63,6 +62,10 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
       return;
     }
     const maxLines = params.maxLines;
+    const sessionChangedError = () =>
+      errorShape(ErrorCodes.INVALID_REQUEST, `Session ${key} changed before compaction. Retry.`, {
+        details: { reason: SESSION_LIFECYCLE_CHANGED_ERROR_REASON },
+      });
 
     const cfg = context.getRuntimeConfig();
     const requestedAgent = resolveRequestedGlobalAgentId(cfg, key, params.agentId);
@@ -72,19 +75,19 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
     }
     const requestedAgentId = requestedAgent.agentId;
     const compatibilityDefaultAgentId = tryResolveSessionCompatibilityOwnerAgentId(cfg, key);
-    const target = resolveGatewaySessionStoreTargetWithStore({
-      cfg,
-      key,
-      exactRead: true,
-      ...(requestedAgentId ? { agentId: requestedAgentId } : {}),
-    });
-    const storePath = target.storePath;
     let capturedOperator: Awaited<ReturnType<typeof captureGatewayOperatorRunAuthority>>;
     const assertRequestCurrent = () => {
       requestAuthority.assertCurrent();
       capturedOperator?.authority.assertCurrent();
     };
     try {
+      const target = await resolveGatewaySessionStoreTargetInWorker({
+        cfg,
+        key,
+        agentId: requestedAgentId,
+        assertActive: assertRequestCurrent,
+      });
+      const storePath = target.storePath;
       if (maxLines === undefined) {
         capturedOperator = await captureGatewayOperatorRunAuthority({
           client,
@@ -152,6 +155,7 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
         const trimPreflight = await preflightSessionTranscriptForManualCompact(transcriptScope, {
           maxLines,
         });
+        assertRequestCurrent();
         if (!trimPreflight.compacted) {
           respondNotCompacted(
             "kept" in trimPreflight ? { kept: trimPreflight.kept } : { reason: "no transcript" },
@@ -159,7 +163,8 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
           return;
         }
       } else {
-        const transcriptStats = readTranscriptStatsSync(transcriptScope);
+        const transcriptStats = await readTranscriptStatsAsync(transcriptScope);
+        assertRequestCurrent();
         if (transcriptStats.eventCount === 0) {
           respondNotCompacted({ reason: "no transcript" });
           return;
@@ -167,12 +172,12 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
       }
 
       const lifecycleRevision = entry.lifecycleRevision;
-      const readCurrentEntry = () => {
-        const latest = loadAccessorSessionEntryForGatewayTarget({
-          key,
-          cfg,
-          agentId: requestedAgentId,
-        }).entry;
+      const readCurrentEntry = async () => {
+        const latest = await readSessionEntryReadOnlyInWorker(
+          { ...transcriptScope, readConsistency: "latest" },
+          assertRequestCurrent,
+        );
+        assertRequestCurrent();
         return latest &&
           latest.sessionId === sessionId &&
           latest.lifecycleRevision === lifecycleRevision &&
@@ -182,12 +187,18 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
       };
       const queueIdentities = [key, target.canonicalKey, compactPrimaryKey, sessionId];
       const lifecycleIdentities = [...queueIdentities, lifecycleRevision];
-      const sessionChangedError = () =>
-        errorShape(ErrorCodes.INVALID_REQUEST, `Session ${key} changed before compaction. Retry.`, {
-          details: { reason: SESSION_LIFECYCLE_CHANGED_ERROR_REASON },
-        });
       let admissionError: ReturnType<typeof errorShape> | undefined;
       let compactionNoopReason: string | undefined;
+      const terminalSettled = await waitForTerminalSessionRunSettlement({
+        context,
+        storePath,
+        requestedKey: key,
+        canonicalKey: target.canonicalKey,
+        sessionId,
+        agentId: requestedAgentId,
+        defaultAgentId: compatibilityDefaultAgentId,
+        signal: abortSignal,
+      });
       await runExclusiveSessionLifecycleMutation("compact", {
         scope: storePath,
         identities: lifecycleIdentities,
@@ -195,12 +206,12 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
         signal: abortSignal,
         prepare: async () => {
           assertRequestCurrent();
-          const latestEntry = readCurrentEntry();
-          if (!latestEntry) {
-            admissionError = sessionChangedError();
-            return;
-          }
           if (maxLines === undefined) {
+            const latestEntry = await readCurrentEntry();
+            if (!latestEntry) {
+              admissionError = sessionChangedError();
+              return;
+            }
             compactionNoopReason = (
               await preflightGatewaySessionCompaction({
                 cfg,
@@ -217,6 +228,7 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
             }
           }
           const blockedByActiveRun =
+            !terminalSettled ||
             isCompetingSessionWorkAdmissionActive(storePath, lifecycleIdentities) ||
             (getWorkerInferenceSessionControl(context.workerEnvironmentService)?.hasSession(
               sessionId,
@@ -255,16 +267,31 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
             respondNotCompacted({ ok: false, reason: compactionNoopReason });
             return;
           }
-          const latestEntry = readCurrentEntry();
-          if (!latestEntry) {
-            respond(false, undefined, sessionChangedError());
-            return;
-          }
-
           const operationId = randomUUID();
+          const emitCompacted = (compacted: boolean) =>
+            emitSessionsChanged(context, {
+              sessionKey: target.canonicalKey,
+              agentId: target.agentId,
+              reason: "compact",
+              compacted,
+            });
           if (maxLines !== undefined) {
             const trimResult = await trimSessionTranscriptForManualCompact(transcriptScope, {
               maxLines,
+              authority: {
+                source: composeSessionSourceAssertion([
+                  requestAuthority.assertCurrent,
+                  options.sessionMutationAuthorization?.assertCurrent,
+                ]),
+                assertHostCurrent: () => {
+                  signal?.throwIfAborted();
+                  if (!hasPreparedGatewayDeviceAuthority(client, hasCurrentClientAuthority)) {
+                    throw new Error("Gateway requester authority changed");
+                  }
+                },
+                expectedLifecycleRevision: lifecycleRevision,
+                expectedSource: target.capturedReadSource,
+              },
             });
             if (trimResult.compacted) {
               await recordSessionCompacted({
@@ -285,17 +312,18 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
               undefined,
             );
             if (trimResult.compacted) {
-              emitSessionsChanged(context, {
-                sessionKey: target.canonicalKey,
-                agentId: target.agentId,
-                reason: "compact",
-                compacted: true,
-              });
+              emitCompacted(true);
             }
             return;
           }
 
-          const transcriptStats = readTranscriptStatsSync(transcriptScope);
+          const latestEntry = await readCurrentEntry();
+          if (!latestEntry) {
+            respond(false, undefined, sessionChangedError());
+            return;
+          }
+          const transcriptStats = await readTranscriptStatsAsync(transcriptScope);
+          assertRequestCurrent();
           if (transcriptStats.eventCount === 0) {
             respondNotCompacted({ reason: "no transcript" });
             return;
@@ -415,17 +443,18 @@ export const sessionCompactHandlers: GatewayRequestHandlers = {
             undefined,
           );
           if (result.ok) {
-            emitSessionsChanged(context, {
-              sessionKey: target.canonicalKey,
-              agentId: target.agentId,
-              reason: "compact",
-              compacted: result.compacted,
-            });
+            emitCompacted(result.compacted);
           }
         },
       });
     } catch (err) {
-      respond(false, undefined, errorShape(ErrorCodes.UNAVAILABLE, formatErrorMessage(err)));
+      respond(
+        false,
+        undefined,
+        maxLines !== undefined && isSessionWorkStartInvalidatedError(err)
+          ? sessionChangedError()
+          : errorShape(ErrorCodes.UNAVAILABLE, formatErrorMessage(err)),
+      );
     } finally {
       capturedOperator?.release();
     }

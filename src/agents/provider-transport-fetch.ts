@@ -1,4 +1,8 @@
-import { emitModelTransportDebug, formatModelTransportDebugUrl } from "@openclaw/ai/diagnostics";
+import {
+  emitModelTransportDebug,
+  emitModelTransportError,
+  formatModelTransportDebugUrl,
+} from "@openclaw/ai/diagnostics";
 import { parseRetryAfterHeadersSeconds as parseRetryAfterSeconds } from "@openclaw/ai/internal/retry-after";
 import {
   isCloudMetadataIpAddress,
@@ -82,12 +86,12 @@ function findSseEventBoundary(
 }
 
 async function cancelReaderBestEffort(
-  reader: ReadableStreamDefaultReader<Uint8Array> | undefined,
+  reader: ReadableStreamDefaultReader<Uint8Array>,
   reason?: unknown,
 ): Promise<void> {
   // Reader cancellation is cleanup. An upstream cancel failure must not replace
   // the wrapper's authoritative stream error or downstream cancellation.
-  await reader?.cancel(reason).catch(() => undefined);
+  await reader.cancel(reason).catch(() => undefined);
 }
 
 function capNonOkResponseBodyLazily(response: Response, maxBytes: number): Response {
@@ -95,18 +99,15 @@ function capNonOkResponseBodyLazily(response: Response, maxBytes: number): Respo
   if (!source) {
     return response;
   }
-  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+  const reader = source.getReader();
   let total = 0;
   // Own the reader: Node can leak an internal pipeThrough writer rejection when
   // downstream cancellation races the cap terminating the transform.
   const capped = new ReadableStream<Uint8Array>({
-    start() {
-      reader = source.getReader();
-    },
     async pull(controller) {
       try {
-        const chunk = await reader?.read();
-        if (!chunk || chunk.done) {
+        const chunk = await reader.read();
+        if (chunk.done) {
           controller.close();
           return;
         }
@@ -149,18 +150,15 @@ function sanitizeOpenAISdkSseResponse(
     const source = response.body;
     const decoder = new TextDecoder();
     const encoder = new TextEncoder();
-    let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+    const reader = source.getReader();
     let buffer = "";
     let totalBytes = 0;
     const sseBody = new ReadableStream<Uint8Array>({
-      start() {
-        reader = source.getReader();
-      },
       async pull(controller) {
         try {
           for (;;) {
-            const chunk = await reader?.read();
-            if (!chunk || chunk.done) {
+            const chunk = await reader.read();
+            if (chunk.done) {
               buffer += decoder.decode();
               const data = buffer.trim();
               if (data) {
@@ -203,7 +201,7 @@ function sanitizeOpenAISdkSseResponse(
   const source = response.body;
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();
-  let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+  const reader = source.getReader();
   let buffer = "";
   let scanOffset = 0;
 
@@ -238,17 +236,14 @@ function sanitizeOpenAISdkSseResponse(
   };
 
   const sanitizedBody = new ReadableStream<Uint8Array>({
-    start() {
-      reader = source.getReader();
-    },
     async pull(controller) {
       try {
         for (;;) {
           if (enqueueSanitized(controller, "")) {
             return;
           }
-          const chunk = await reader?.read();
-          if (!chunk || chunk.done) {
+          const chunk = await reader.read();
+          if (chunk.done) {
             const tail = decoder.decode();
             if (tail) {
               enqueueSanitized(controller, tail);
@@ -507,20 +502,6 @@ export function resolveModelRequestTimeoutMs(
   );
 }
 
-function buildModelRequestSignal(
-  baseSignal: AbortSignal | undefined,
-  timeoutMs: number | undefined,
-): AbortSignal | undefined {
-  if (timeoutMs === undefined) {
-    return baseSignal;
-  }
-  const timeoutSignal = AbortSignal.timeout(timeoutMs);
-  if (!baseSignal) {
-    return timeoutSignal;
-  }
-  return AbortSignal.any([baseSignal, timeoutSignal]);
-}
-
 function resolveHttpOrigin(value: unknown): string | undefined {
   if (typeof value !== "string" || !value.trim()) {
     return undefined;
@@ -682,7 +663,12 @@ export function buildGuardedModelFetch(
       requestInit ??
       (swappedEgress.headers && init ? { ...init, headers: swappedEgress.headers } : init);
     const baseSignal = baseInit?.signal ?? undefined;
-    const localServiceSignal = buildModelRequestSignal(baseSignal, requestTimeoutMs);
+    const timeoutSignal =
+      requestTimeoutMs === undefined ? undefined : AbortSignal.timeout(requestTimeoutMs);
+    const localServiceSignal =
+      baseSignal && timeoutSignal
+        ? AbortSignal.any([baseSignal, timeoutSignal])
+        : (baseSignal ?? timeoutSignal);
     const guardedFetchOptions = {
       url,
       init: baseInit,
@@ -730,9 +716,12 @@ export function buildGuardedModelFetch(
         providerId: model.provider,
         url,
       });
-      log.warn(
-        `[model-fetch] error provider=${model.provider} api=${model.api} model=${model.id} ` +
+      emitModelTransportError(
+        log,
+        "model-fetch",
+        `provider=${model.provider} api=${model.api} model=${model.id} ` +
           `elapsedMs=${Date.now() - fetchStartedAt} ${summarizeProviderTransportError(remediatedError)}`,
+        baseSignal,
       );
       localServiceLease?.release();
       throw remediatedError;

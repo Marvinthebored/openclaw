@@ -26,6 +26,7 @@ import { resolveWindowsServiceCommandProfile } from "./service-env-merge.js";
 import { ServiceInspectionError } from "./service-inspection-error.js";
 import type {
   GatewayServiceCommandConfig,
+  GatewayServiceCommandSnapshot,
   GatewayServiceEnv,
   GatewayServiceReadOptions,
   GatewayServiceRenderArgs,
@@ -72,17 +73,12 @@ function resolveWindowsStartupDir(env: GatewayServiceEnv): string {
   return path.join(appData, "Microsoft", "Windows", "Start Menu", "Programs", "Startup");
 }
 
-function sanitizeWindowsFilename(value: string): string {
-  return value.replace(/[<>:"/\\|?*]/g, "_").replace(/\p{Cc}/gu, "_");
-}
-
 export function resolveStartupEntryPath(env: GatewayServiceEnv, extension?: "cmd" | "vbs"): string {
-  const taskName = resolveTaskName(env);
+  const taskName = resolveTaskName(env)
+    .replace(/[<>:"/\\|?*]/g, "_")
+    .replace(/\p{Cc}/gu, "_");
   const entryExtension = extension ?? (shouldUseHiddenWindowsTaskLauncher(env) ? "vbs" : "cmd");
-  return path.join(
-    resolveWindowsStartupDir(env),
-    `${sanitizeWindowsFilename(taskName)}.${entryExtension}`,
-  );
+  return path.join(resolveWindowsStartupDir(env), `${taskName}.${entryExtension}`);
 }
 
 export function resolveStartupEntryPaths(env: GatewayServiceEnv): string[] {
@@ -431,7 +427,7 @@ async function readWindowsTaskCommand(
     const scriptPath = launchers?.[0]?.scriptPath ?? resolveTaskScriptPath(env);
     const content = await readTaskFile(scriptPath, deadline);
     options?.onLauncherContent?.(content, scriptPath);
-    let workingDirectory = action?.workingDirectory ?? "";
+    let workingDirectory = "";
     let commandLine = "";
     const environment: Record<string, string> = {};
     for (const rawLine of content.split(/\r?\n/)) {
@@ -461,7 +457,6 @@ async function readWindowsTaskCommand(
           throw new Error("Invalid Scheduled Task environment assignment");
         }
         if (assignment) {
-          // Generated cmd launchers inline service env before the final command.
           environment[assignment.key] = assignment.value;
         }
         continue;
@@ -512,7 +507,7 @@ async function readWindowsTaskCommand(
     ) {
       throw new Error("Scheduled Task selector changed during inspection");
     }
-    return {
+    const managedDefinition: GatewayServiceCommandSnapshot = {
       // The task-only outer process owns the Job Object; diagnostics and lifecycle
       // controls must compare against its inner Gateway child, which omits this flag.
       programArguments,
@@ -523,6 +518,22 @@ async function readWindowsTaskCommand(
             environmentValueSources: Object.fromEntries(
               Object.keys(environment).map((key) => [key, "inline"]),
             ),
+          }
+        : {}),
+    };
+    return {
+      ...managedDefinition,
+      ...(action?.workingDirectory
+        ? {
+            workingDirectory: workingDirectory || action.workingDirectory,
+            // Runtime intent binds the authored script; native cwd remains effective metadata.
+            managedDefinition,
+            managedOverrides:
+              cmdLauncher &&
+              path.win32.resolve(action.workingDirectory).toLowerCase() ===
+                path.win32.resolve(path.win32.dirname(scriptPath)).toLowerCase()
+                ? {}
+                : { launcher: "working-directory" },
           }
         : {}),
       sourcePath: scriptPath,

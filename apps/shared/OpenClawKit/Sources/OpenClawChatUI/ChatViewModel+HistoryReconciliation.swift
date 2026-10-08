@@ -768,7 +768,7 @@ extension OpenClawChatViewModel {
         }
         // A retained row that precedes a retained provisional answer keeps its place before it. A lagging
         // snapshot can lack both a submitted question and its answer, and appending only one reverses them.
-        // Retained rows after the last answer are newer than any history row and still go to the end.
+        // Keep the existing tail placement for retained rows after the last answer.
         let lastAnswerIndex = self.messages.lastIndex { unmatchedProvisionalFinalIDs.contains($0.id) }
         let placedRetainedIDs = lastAnswerIndex.map { index in
             Set(self.messages[...index].map(\.id)).intersection(retainedMessageIDs)

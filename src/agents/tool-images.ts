@@ -1,8 +1,3 @@
-/**
- * Tool image output sanitizer.
- *
- * Downscales and recompresses oversized base64 image blocks before provider replay.
- */
 import { canonicalizeBase64, estimateBase64DecodedBytes } from "@openclaw/media-core/base64";
 import { formatByteSize, resolveIntegerOption } from "@openclaw/normalization-core";
 import { toErrorObject } from "../infra/errors.js";
@@ -35,8 +30,6 @@ type ToolImageSanitizationOptions = ImageSanitizationLimits & {
 
 // Anthropic Messages API rejects oversized images; sanitize here so replayed
 // tool outputs do not break later turns or silent channel replies.
-const MAX_IMAGE_DIMENSION_PX = DEFAULT_IMAGE_MAX_DIMENSION_PX;
-const MAX_IMAGE_BYTES = DEFAULT_IMAGE_MAX_BYTES;
 // Hard cap on decoded input bytes before Buffer.from/resizer allocation. A
 // conservative limit well below demonstrated OOM thresholds, leaving headroom
 // for canonicalization, decode, and image-processing allocations while still
@@ -58,17 +51,13 @@ function isImageBlock(block: unknown): block is ImageContentBlock {
 }
 
 function inferMimeTypeFromBase64(base64: string): string | undefined {
-  const trimmed = base64.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-  if (trimmed.startsWith("/9j/")) {
+  if (base64.startsWith("/9j/")) {
     return "image/jpeg";
   }
-  if (trimmed.startsWith("iVBOR")) {
+  if (base64.startsWith("iVBOR")) {
     return "image/png";
   }
-  if (trimmed.startsWith("R0lGOD")) {
+  if (base64.startsWith("R0lGOD")) {
     return "image/gif";
   }
   return undefined;
@@ -109,11 +98,9 @@ function fileNameFromPathLike(pathLike: string): string | undefined {
     return undefined;
   }
 
-  try {
-    const url = new URL(value);
+  const url = URL.parse(value);
+  if (url) {
     return url.pathname.split("/").findLast(Boolean);
-  } catch {
-    // Not a URL; continue with path-like parsing.
   }
 
   return value.replaceAll("\\", "/").split("/").findLast(Boolean);
@@ -126,7 +113,7 @@ function inferImageFileName(params: {
   const explicitKeys = ["fileName", "filename", "path", "url"] as const;
   for (const key of explicitKeys) {
     const raw = Reflect.get(params.block, key);
-    if (typeof raw !== "string" || raw.trim().length === 0) {
+    if (typeof raw !== "string") {
       continue;
     }
     const candidate = fileNameFromPathLike(raw);
@@ -271,10 +258,10 @@ export async function sanitizeContentBlocksImages(
   label: string,
   opts: ToolImageSanitizationOptions = {},
 ): Promise<ToolContentBlock[]> {
-  const maxDimensionPx = resolveIntegerOption(opts.maxDimensionPx, MAX_IMAGE_DIMENSION_PX, {
+  const maxDimensionPx = resolveIntegerOption(opts.maxDimensionPx, DEFAULT_IMAGE_MAX_DIMENSION_PX, {
     min: 1,
   });
-  const maxBytes = resolveIntegerOption(opts.maxBytes, MAX_IMAGE_BYTES, { min: 1 });
+  const maxBytes = resolveIntegerOption(opts.maxBytes, DEFAULT_IMAGE_MAX_BYTES, { min: 1 });
   const out: ToolContentBlock[] = [];
   const omit = (reason: string) => out.push({ type: "text", text: `[${label}] ${reason}` });
   for (const block of blocks) {
@@ -339,7 +326,7 @@ export async function sanitizeContentBlocksImages(
 export async function sanitizeImageBlocks(
   images: ImageContent[],
   label: string,
-  opts: ImageSanitizationLimits = {},
+  opts: ToolImageSanitizationOptions = {},
 ): Promise<{ images: ImageContent[]; dropped: number }> {
   if (images.length === 0) {
     return { images, dropped: 0 };
