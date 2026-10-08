@@ -272,7 +272,6 @@ private struct ChatBubbleShape: InsettableShape {
 struct ChatMessageBubble: View {
     @Environment(\.openClawAssistantUsesReadingColumn) private var usesReadingColumn
     @Environment(\.openClawAssistantRunContent) private var isRunContent
-    @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.openClawAssistantBubblesInCleanChrome) private var assistantBubblesInClean
     @Environment(\.openClawChatDesktopLayout) private var isDesktopLayout
     @Environment(\.colorScheme) private var colorScheme
@@ -690,11 +689,10 @@ extension ChatMessageBubble {
     }
 
     private var bubbleShape: ChatBubbleShape {
-        // Alignment and padding follow the layout direction, so the corner tail does too.
-        let mirrored = self.style != .onboarding && self.layoutDirection == .rightToLeft
-        return ChatBubbleShape(
+        // SwiftUI already mirrors Shape paths in RTL on the supported OS versions.
+        ChatBubbleShape(
             cornerRadius: ChatUIConstants.bubbleCorner,
-            tail: self.usesTail ? (self.isUser != mirrored ? .right : .left) : .none,
+            tail: self.usesTail ? (self.isUser ? .right : .left) : .none,
             cornerTail: self.style != .onboarding)
     }
 
