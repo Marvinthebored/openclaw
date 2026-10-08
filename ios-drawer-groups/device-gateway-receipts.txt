@@ -1,0 +1,28 @@
+Physical iPhone, development build, production Gateway adapter (no fixture launch flags).
+Times are Gateway local time (UTC+8) on 2026-10-09. Lines are Gateway WebSocket response
+log lines as written; the Gateway logger truncates connection and request ids.
+
+06:31:58.445  ⇄ res ✓ sessions.groups.list 131ms bytes=539 conn=142da8d5…c7ef id=42F74585…7608
+              drawer opened, catalog read
+06:32:51.338  ⇄ res ✓ sessions.groups.rename 12011ms bytes=612 conn=142da8d5…c7ef id=38EF3E3C…8DB8
+              "Test group" renamed to "Test group renamed"
+06:33:47.615  ⇄ res ✓ sessions.groups.update 52ms bytes=307 conn=142da8d5…c7ef id=419F6D25…4FD3
+              group defaults saved with "Separate working copy" off
+06:33:58.707  ⇄ res ✓ sessions.create 1434ms bytes=742 conn=142da8d5…c7ef id=8423672D…29AF
+              "New Session in This Group"
+
+-- the app was then replaced by the build that adds the migration, and relaunched --
+
+06:34:40.786  ⇄ res ✓ sessions.groups.list 105ms bytes=582 conn=ef77a50a…7ff4 id=F5EEBA40…2636
+              first catalog refresh of the new build, on a new connection
+
+Between 06:31:50 and 06:35:30 the log holds no other sessions.groups.* or sessions.create
+response line. In particular it holds no sessions.groups.put line for the create at 06:32,
+and none after the upgrade.
+
+Gateway state read after the run (read-only):
+- catalog row: name "Test group renamed", position 5, created_at 06:32:22.592, cwd null, worktree 0
+- one session listed under group "Test group renamed", display name "New test session setup"
+
+Device-local legacy key openclaw:sessions:custom-groups, read from the app's preferences file
+copied off the device: absent before the upgrade, absent after it (34 keys in the file both times).
