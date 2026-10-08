@@ -1,16 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { resolveExecNotificationDefaults } from "../agents/bash-tools.exec-request-preparation.js";
 import { createHeartbeatToolResponsePayload } from "../auto-reply/heartbeat-tool-response.js";
+import { finalizeInboundContext } from "../auto-reply/reply/inbound-context.js";
 import { drainFormattedSystemEvents } from "../auto-reply/reply/session-system-events.js";
+import { initSessionState } from "../auto-reply/reply/session.js";
 import { getReplySystemEventContext } from "../auto-reply/reply/system-event-session-key.js";
 import type { OpenClawConfig } from "../config/config.js";
 import { loadTranscriptEvents } from "../config/sessions/session-accessor.js";
 import { readTranscriptEventMessage } from "../config/sessions/session-accessor.sqlite-read.js";
 import { setTestEnvValue } from "../test-utils/env.js";
 import { resetHeartbeatEventsForTest } from "./heartbeat-events.js";
+import type { HeartbeatDeps } from "./heartbeat-runner-execution.js";
 import { runHeartbeatOnce } from "./heartbeat-runner.js";
 import {
   readSessionStoreForTest,
   seedMainSessionStore,
+  seedSessionStore,
   setupTelegramHeartbeatPluginRuntimeForTests,
   withTempHeartbeatSandbox,
 } from "./heartbeat-runner.test-utils.js";
@@ -95,6 +100,168 @@ describe("exec completion from a WebChat session with an explicit heartbeat targ
       expect(published).toHaveLength(1);
     });
   });
+
+  it.each([1, 2])("keeps a chain of %i completions in its dashboard session", async (count) => {
+    await withTempHeartbeatSandbox(async ({ tmpDir, storePath }) => {
+      setTestEnvValue("OPENCLAW_STATE_DIR", tmpDir);
+      const marker = "CHAINED_WEBCHAT_COMPLETION_STAYS_HOME";
+      const cfg: OpenClawConfig = {
+        agents: {
+          defaults: {
+            workspace: tmpDir,
+            heartbeat: { every: "0m", target: "telegram", to: "-100999000111" },
+          },
+        },
+        channels: { telegram: { allowFrom: ["*"] } },
+        session: { store: storePath },
+      };
+      const sessionKey = "agent:main:dashboard:chained-exec";
+      await seedSessionStore(storePath, sessionKey, {
+        lastChannel: "webchat",
+        sessionId: "chained-webchat-session",
+        lifecycleRevision: "chained-webchat-generation",
+        createdVia: "operator",
+      });
+      enqueueSystemEvent("Exec completed (first, code 0) :: first result", {
+        sessionKey,
+        deliveryContext: { channel: "webchat" },
+        fromConversationTurn: true,
+      });
+      const sendTelegram = vi
+        .fn()
+        .mockResolvedValue({ messageId: "leaked", chatId: "-100999000111" });
+      const reply = vi
+        .fn<NonNullable<HeartbeatDeps["getReplyFromConfig"]>>()
+        .mockImplementation(async (ctx, options) => {
+          // Exercise the real initializer, which getReplyFromConfig normally calls.
+          // A stubbed model alone misses the persisted delivery change between turns.
+          await initSessionState({
+            cfg,
+            ctx: finalizeInboundContext(ctx),
+            commandAuthorized: true,
+          });
+          if (reply.mock.calls.length === 1) {
+            const defaults = resolveExecNotificationDefaults({
+              trigger: "heartbeat",
+              continuesConversation: options?.continuesConversation,
+              messageProvider: ctx.OriginatingChannel,
+              currentChannelId: ctx.OriginatingTo ?? ctx.To,
+            });
+            for (let index = 0; index < count; index++) {
+              enqueueSystemEvent(`Exec completed (chained-${index}, code 0) :: next result`, {
+                sessionKey,
+                deliveryContext: defaults.notifyDeliveryContext,
+                fromConversationTurn: defaults.notifyFromConversationTurn,
+              });
+            }
+            return { text: "First completed; started the next command." };
+          }
+          return { text: marker };
+        });
+      const run = () =>
+        runHeartbeatOnce({
+          cfg,
+          agentId: "main",
+          sessionKey,
+          source: "exec-event",
+          intent: "event",
+          reason: "exec-event",
+          deps: { getReplyFromConfig: reply, telegram: sendTelegram },
+        });
+      await expect(run()).resolves.toMatchObject({ status: "ran" });
+      expect(sendTelegram).not.toHaveBeenCalled();
+      expect(peekSystemEventEntries(sessionKey)).toHaveLength(count);
+      await expect(run()).resolves.toMatchObject({ status: "ran" });
+      expect(
+        sendTelegram,
+        "chained completion leaked to the heartbeat channel",
+      ).not.toHaveBeenCalled();
+      expect(await publishedAssistantTexts(storePath, sessionKey, marker)).toHaveLength(1);
+      expect(peekSystemEventEntries(sessionKey)).toEqual([]);
+    });
+  });
+
+  it.each(["user", "heartbeat", "cron"] as const)(
+    "keeps a Telegram DM command chain with its %s owner",
+    async (trigger) => {
+      await withTempHeartbeatSandbox(async ({ tmpDir, storePath }) => {
+        setTestEnvValue("OPENCLAW_STATE_DIR", tmpDir);
+        const dm = "12345";
+        const heartbeatTo = "-100999000111";
+        const cfg: OpenClawConfig = {
+          agents: {
+            defaults: {
+              workspace: tmpDir,
+              heartbeat: { every: "0m", target: "telegram", to: heartbeatTo },
+            },
+          },
+          channels: { telegram: { allowFrom: ["*"] } },
+          session: { store: storePath },
+        };
+        const sessionKey = "agent:main:telegram:direct:12345";
+        await seedSessionStore(storePath, sessionKey, {
+          lastChannel: "telegram",
+          lastTo: dm,
+          chatType: "direct",
+          createdVia: "operator",
+          sessionId: "dm-chain-session",
+          lifecycleRevision: "dm-chain-generation",
+        });
+        const first = resolveExecNotificationDefaults({
+          trigger,
+          messageProvider: "telegram",
+          currentChannelId: dm,
+        });
+        enqueueSystemEvent("Exec completed (first, code 0) :: first result", {
+          sessionKey,
+          deliveryContext: first.notifyDeliveryContext,
+          fromConversationTurn: first.notifyFromConversationTurn,
+        });
+        const sendTelegram = vi.fn().mockResolvedValue({ messageId: "sent", chatId: dm });
+        const reply = vi
+          .fn<NonNullable<HeartbeatDeps["getReplyFromConfig"]>>()
+          .mockImplementation(async (ctx, options) => {
+            await initSessionState({
+              cfg,
+              ctx: finalizeInboundContext(ctx),
+              commandAuthorized: true,
+            });
+            if (reply.mock.calls.length === 1) {
+              const next = resolveExecNotificationDefaults({
+                trigger: "heartbeat",
+                continuesConversation: options?.continuesConversation,
+                messageProvider: ctx.OriginatingChannel,
+                currentChannelId: ctx.OriginatingTo ?? ctx.To,
+              });
+              enqueueSystemEvent("Exec completed (next, code 0) :: next result", {
+                sessionKey,
+                deliveryContext: next.notifyDeliveryContext,
+                fromConversationTurn: next.notifyFromConversationTurn,
+              });
+            }
+            return { text: `Command result ${reply.mock.calls.length}.` };
+          });
+        const run = () =>
+          runHeartbeatOnce({
+            cfg,
+            agentId: "main",
+            sessionKey,
+            source: "exec-event",
+            intent: "event",
+            reason: "exec-event",
+            deps: { getReplyFromConfig: reply, telegram: sendTelegram },
+          });
+        await expect(run()).resolves.toMatchObject({ status: "ran" });
+        await expect(run()).resolves.toMatchObject({ status: "ran" });
+        const target = trigger === "user" ? dm : heartbeatTo;
+        expect(sendTelegram.mock.calls.map((call) => call.slice(0, 2))).toEqual([
+          [target, "Command result 1."],
+          [target, "Command result 2."],
+        ]);
+        expect(peekSystemEventEntries(sessionKey)).toEqual([]);
+      });
+    },
+  );
 
   it("still sends a genuine heartbeat poll to the explicit heartbeat channel", async () => {
     await withTempHeartbeatSandbox(async ({ tmpDir, storePath }) => {

@@ -249,6 +249,10 @@ async function resolveInitSessionStateAttemptContext(
 }
 
 function withoutThreadDelivery(entry: SessionEntry | undefined) {
+  // Internal ownership has no external route to strip; rebuilding it would erase the owner.
+  if (entry?.delivery?.kind === "internal") {
+    return entry.delivery;
+  }
   return normalizeSessionDeliveryState({
     route: stripThreadFromSessionRoute(sessionDeliveryRoute(entry)),
     context: stripThreadId(deliveryContextFromSession(entry)),
