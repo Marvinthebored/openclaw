@@ -1,0 +1,44 @@
+LOCK_ACQUIRED_EVENT_QUEUE
+SIDEBAR_WORKAROUND_NOT_NEEDED
+TREE_OK 245b7f6fb2ad8974a5c481359635f9fa50070caf local-only: 
+Prepared iOS Swift file list: apps/ios/SwiftSources.input.xcfilelist
+MAC verified OK
+MAC verified OK
+[ios-test-tls] generated the test-only listener identity
+Apple Mermaid assets: verified cache hit
+⚙️  Generating plists...
+⚙️  Generating project...
+⚙️  Writing project...
+Created project at /Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/OpenClaw.xcodeproj
+PINNED_BASE 245b7f6fb2ad8974a5c481359635f9fa50070caf
+PINNED_COMMIT 803a91530693a20be784a59b8983e473e66fbd4b
+e8fb82aa39895e98f608cbb0736aea5e8e6f0b81d731da340b1f26fca2337e21  /tmp/drawer-groups-red21/drawer-groups-rebased.patch
+PROOF_ROLE red-only; green/full gates belong to unchanged proof19 input
+== CURRENT BASE + base-compatible fixture/test; expected missing header red
+RED_INPUT_FORMAT rc=0
+Prepared iOS Swift file list: apps/ios/SwiftSources.input.xcfilelist
+MAC verified OK
+MAC verified OK
+[ios-test-tls] generated the test-only listener identity
+Apple Mermaid assets: verified cache hit
+⚙️  Generating plists...
+⚙️  Generating project...
+⚙️  Writing project...
+Created project at /Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/OpenClaw.xcodeproj
+UI drawer-groups21-before-iphone rc=65
+testDrawerGroupHeaderControls failed (23.907 seconds).
+/Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/UITests/OpenClawSnapshotUITests.swift:52: error: -[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls] : XCTAssertTrue failed
+EXPORT drawer-groups21-before-iphone rc=0 files=24
+SHOT /tmp/ios-pr/ui-drawer-groups21-before-iphone-shots/drawer-groups21-before-iphone--drawer-groups-landing.png
+UI drawer-groups21-before-ipad rc=65
+testDrawerGroupHeaderControls failed (18.163 seconds).
+/Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/UITests/OpenClawSnapshotUITests.swift:52: error: -[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls] : XCTAssertTrue failed
+EXPORT drawer-groups21-before-ipad rc=0 files=14
+SHOT /tmp/ios-pr/ui-drawer-groups21-before-ipad-shots/drawer-groups21-before-ipad--drawer-groups-landing.png
+/Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/UITests/OpenClawSnapshotUITests.swift:52: error: -[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls] : XCTAssertTrue failed
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls]' failed (23.907 seconds).
+/Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/UITests/OpenClawSnapshotUITests.swift:52: error: -[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls] : XCTAssertTrue failed
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls]' failed (18.163 seconds).
+PROOF_EXIT 0
+PROJECT_RESTORED rc=0
+TREE_RESTORED 0

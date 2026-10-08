@@ -1,0 +1,30 @@
+GREEN/FULL proof19
+UI drawer-groups19-before-iphone rc=65
+UI drawer-groups19-before-ipad rc=65
+UI drawer-groups19-after-iphone rc=0
+UI drawer-groups19-after-ipad rc=0
+KIT rc=0
+IOS_UNIT rc=0
+FORMAT rc=0
+SOURCE_SWIFTLINT rc=0
+LINT_ATTRIBUTION base=9 patched=9 new=0
+LINT_NEW_ANCHORS 0
+MAC_BUILD rc=0
+PROOF_EXIT 1
+PROJECT_RESTORED rc=0
+TREE_RESTORED 0
+
+CORRECTED RED proof21
+UI drawer-groups21-before-iphone rc=65
+UI drawer-groups21-before-ipad rc=65
+PROOF_EXIT 0
+PROJECT_RESTORED rc=0
+TREE_RESTORED 0
+
+✔ Test run with 2300 tests in 194 suites passed after 31.522 seconds.
+✔ Test run with 29 tests in 2 suites passed after 2.030 seconds.
+
+/Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/UITests/OpenClawSnapshotUITests.swift:52: error: -[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls] : XCTAssertTrue failed
+/Users/sanae/src/openclaw-pr-drawer-groups-20261008/apps/ios/UITests/OpenClawSnapshotUITests.swift:52: error: -[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls] : XCTAssertTrue failed
+
+PROOF_BUNDLE_EXIT 0
