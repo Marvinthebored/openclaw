@@ -249,7 +249,6 @@ async function resolveInitSessionStateAttemptContext(
 }
 
 function withoutThreadDelivery(entry: SessionEntry | undefined) {
-  // Internal ownership has no external route to strip; rebuilding it would erase the owner.
   if (entry?.delivery?.kind === "internal") {
     return entry.delivery;
   }
@@ -826,9 +825,6 @@ async function initSessionStateAttemptLocked(
   });
   if (metaPatch) {
     sessionEntry = { ...sessionEntry, ...metaPatch };
-  }
-  if (isSystemEvent && !isThread) {
-    sessionEntry.delivery = withoutThreadDelivery(sessionEntry);
   }
   if (!sessionEntry.chatType) {
     sessionEntry.chatType = "direct";

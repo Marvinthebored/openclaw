@@ -14,7 +14,6 @@ import {
 import { resolveSandboxRuntimeStatus } from "../../agents/sandbox/runtime-status.js";
 import type { OpenClawConfig } from "../../config/config.js";
 import type { InternalSessionEntry as SessionEntry } from "../../config/sessions.js";
-import * as sessionMetadata from "../../config/sessions/metadata.js";
 import {
   appendTranscriptMessage,
   listSessionParticipantsReadOnly,
@@ -3627,90 +3626,6 @@ describe("initSessionState dmScope delivery migration", () => {
   });
 });
 describe("initSessionState internal channel routing preservation", () => {
-  it.each(["heartbeat", "exec", "cron"] as const)(
-    "preserves internal ownership before metadata handling and during a system turn (%s)",
-    async (source) => {
-      const storePath = await makeStorePath("system-event-internal-owner-");
-      const sessionKey = "agent:main:main";
-      const cfg = { session: { store: storePath } } as OpenClawConfig;
-      await writeSessionStoreFast(storePath, {
-        [sessionKey]: {
-          sessionId: "internal-owner-session",
-          updatedAt: Date.now(),
-          delivery: { kind: "internal" },
-        },
-      });
-      const deriveMetadata = sessionMetadata.deriveSessionMetaPatch;
-      const observedDelivery: Array<SessionEntry["delivery"]> = [];
-      using metadata = vi
-        .spyOn(sessionMetadata, "deriveSessionMetaPatch")
-        .mockImplementation((params) => {
-          observedDelivery.push(params.existing?.delivery);
-          return deriveMetadata(params);
-        });
-      const result = await initSessionState({
-        ctx: {
-          Body: "automated turn with transport metadata",
-          SessionKey: sessionKey,
-          InternalTurnSource: source,
-          OriginatingChannel: "telegram",
-          OriginatingTo: "12345",
-          Provider: "telegram",
-        },
-        cfg,
-      });
-      expect(metadata).toHaveBeenCalledOnce();
-      expect(observedDelivery).toEqual([{ kind: "internal" }]);
-      expect(result.sessionEntry.delivery).toEqual({ kind: "internal" });
-      expect(loadSessionEntry({ storePath, sessionKey })?.delivery).toEqual({ kind: "internal" });
-
-      // Real channel ingress, unlike a system turn's metadata, owns a channel switch.
-      const external = await initSessionState({
-        ctx: {
-          Body: "message from Telegram",
-          SessionKey: sessionKey,
-          OriginatingChannel: "telegram",
-          OriginatingTo: "12345",
-          Provider: "telegram",
-          ChatType: "direct",
-        },
-        cfg,
-      });
-      expect(external.sessionEntry.delivery).toMatchObject({
-        kind: "external",
-        context: { channel: "telegram", to: "12345" },
-      });
-      expect(loadSessionEntry({ storePath, sessionKey })?.delivery).toMatchObject({
-        kind: "external",
-        context: { channel: "telegram", to: "12345" },
-      });
-    },
-  );
-
-  it("preserves external thread routing on a system-event thread session", async () => {
-    const storePath = await makeStorePath("system-event-thread-owner-");
-    const sessionKey = "agent:main:telegram:direct:12345:thread:42";
-    const delivery: SessionEntry["delivery"] = {
-      kind: "external",
-      route: {
-        channel: "telegram",
-        target: { to: "12345", chatType: "direct" },
-        thread: { id: "42", kind: "thread", source: "session" },
-      },
-      context: { channel: "telegram", to: "12345", threadId: "42" },
-      origin: { provider: "telegram", to: "12345", threadId: "42", chatType: "direct" },
-    };
-    await writeSessionStoreFast(storePath, {
-      [sessionKey]: { sessionId: "thread-owner-session", updatedAt: Date.now(), delivery },
-    });
-    const result = await initSessionState({
-      ctx: { Body: "command completed", SessionKey: sessionKey, InternalTurnSource: "exec" },
-      cfg: { session: { store: storePath } } as OpenClawConfig,
-    });
-    expect(result.sessionEntry.delivery).toEqual(delivery);
-    expect(loadSessionEntry({ storePath, sessionKey })?.delivery).toEqual(delivery);
-  });
-
   it("clears stale thread routing on non-thread system-event sessions", async () => {
     const storePath = await makeStorePath("system-event-clears-stale-thread-");
     const sessionKey = "agent:main:mattermost:channel:chan1";
