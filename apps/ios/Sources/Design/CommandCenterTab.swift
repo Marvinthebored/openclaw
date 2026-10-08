@@ -489,7 +489,7 @@ struct CommandCenterTab: View {
     private var sessionCategories: [String] {
         CommandSessionGrouping.categories(
             from: self.effectiveRecentChatSessions,
-            knownGroups: SessionGroupStore.load())
+            knownGroups: self.appModel.sessionGroups.names(for: self.effectiveRecentChatSessions))
     }
 
     private var effectiveDefaultChatSessionEntry: OpenClawChatSessionEntry? {
