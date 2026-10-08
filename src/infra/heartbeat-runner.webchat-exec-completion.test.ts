@@ -642,7 +642,11 @@ describe("WebChat completions with an explicit heartbeat target", () => {
         .fn<NonNullable<HeartbeatDeps["getReplyFromConfig"]>>()
         .mockImplementation(async (ctx, options) => {
           // Model stubs must still initialize the session to exercise persisted routing.
-          await initSessionState({ cfg: scenario.cfg, ctx: finalizeInboundContext(ctx) });
+          await initSessionState({
+            cfg: scenario.cfg,
+            ctx: finalizeInboundContext(ctx),
+            commandAuthorized: false,
+          });
           if (reply.mock.calls.length === 1) {
             const next = resolveExecNotificationDefaults({
               trigger: "heartbeat",
