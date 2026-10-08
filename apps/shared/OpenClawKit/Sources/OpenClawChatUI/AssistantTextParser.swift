@@ -15,7 +15,8 @@ enum AssistantTextParser {
     static func segments(from raw: String, includeThinking: Bool = true) -> [AssistantTextSegment] {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
-        guard raw.utf8.contains(UInt8(ascii: "<")) else {
+        // Preserve Foundation’s nonliteral entry check for delimiters with combining marks.
+        guard raw.contains("<") else {
             return [AssistantTextSegment(id: 0, kind: .response, text: trimmed)]
         }
 
@@ -35,7 +36,7 @@ enum AssistantTextParser {
                 break
             }
 
-            let isSelfClosing = self.isSelfClosingTag(in: raw, tagEnd: tagEnd)
+            let isSelfClosing = raw[..<tagEnd.lowerBound].reversed().first { !$0.isWhitespace } == "/"
             cursor = tagEnd.upperBound
             if isSelfClosing { continue }
 
@@ -72,16 +73,18 @@ enum AssistantTextParser {
 
     /// Finds the next `<think`, `</think`, `<final` or `</final` tag at or after `start`.
     ///
-    /// One pass over the bytes. Every transcript row parses its text on every update, and four case- and
-    /// diacritic-insensitive searches over the whole text per tag were the slow part. A candidate made only of
-    /// ASCII is decided from its bytes. A candidate that involves non-ASCII text (`<thínk`, a combining mark, the
-    /// precomposed `≮`) is decided by the same folding comparison as before, anchored at that position, so the
-    /// set of tags that match is unchanged.
+    /// Scan opening-byte candidates instead of repeatedly searching the whole string. ASCII tag names use
+    /// byte comparisons; candidates involving non-ASCII text (`<thínk`, a combining mark, or precomposed `≮`)
+    /// retain the original folding comparison, anchored at that position.
     static func nextTag(in text: String, from start: String.Index) -> TagMatch? {
         let utf8 = text.utf8
         var cursor = start
         while let candidate = utf8[cursor...].firstIndex(where: { $0 == Self.lessThan || $0 == 0xE2 }) {
             cursor = utf8.index(after: candidate)
+            // Reject unrelated scalars before locating boundaries in potentially long graphemes.
+            guard utf8[candidate] == Self.lessThan || utf8[candidate...].starts(with: Self.notLessThan) else {
+                continue
+            }
             // A prepending mark (U+0600 and its kind) joins the `<` after it into one character, and the search
             // never matched inside a character that began within its range. Only a non-ASCII byte before the
             // candidate can do that.
@@ -92,7 +95,7 @@ enum AssistantTextParser {
             }
             if utf8[candidate] == Self.lessThan {
                 if let match = self.tag(in: text, atLessThan: candidate) { return match }
-            } else if utf8[candidate...].starts(with: Self.notLessThan) {
+            } else {
                 // U+226E is `<` with a combining solidus, which the folding comparison treats as `<`.
                 if let match = self.foldedTag(in: text, at: candidate) { return match }
             }
@@ -159,17 +162,6 @@ enum AssistantTextParser {
 
     private static func isTagBoundary(_ character: Character, closing: Bool) -> Bool {
         character == ">" || character.isWhitespace || (!closing && character == "/")
-    }
-
-    private static func isSelfClosingTag(in text: String, tagEnd: Range<String.Index>) -> Bool {
-        var cursor = tagEnd.lowerBound
-        while cursor > text.startIndex {
-            cursor = text.index(before: cursor)
-            let char = text[cursor]
-            if char.isWhitespace { continue }
-            return char == "/"
-        }
-        return false
     }
 
     private static func appendSegment(

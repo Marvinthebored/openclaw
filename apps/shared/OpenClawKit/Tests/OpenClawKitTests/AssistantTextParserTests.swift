@@ -38,6 +38,25 @@ import Testing
         #expect(segments.map(\.text) == ["a < b <final-ish>kept</final-ish>", "hidden", "shown"])
     }
 
+    @Test(arguments: ["<\u{0301}think>shown", "<\u{0338}think>shown", "<\u{0301}final>shown"])
+    func `keeps combining-only opening delimiters as visible literal text`(_ raw: String) {
+        let segments = AssistantTextParser.segments(from: raw)
+
+        #expect(segments.map(\.kind) == [.response])
+        #expect(segments.map(\.text) == [raw])
+        #expect(AssistantTextParser.visibleSegments(from: raw).map(\.text) == [raw])
+        #expect(AssistantTextParser.hasVisibleContent(in: raw))
+    }
+
+    @Test func `preserves folded tags when a plain delimiter admits parsing`() {
+        let raw = "<\u{0301}think>hidden</think>shown"
+        let segments = AssistantTextParser.segments(from: raw)
+
+        #expect(segments.map(\.kind) == [.thinking, .response])
+        #expect(segments.map(\.text) == ["hidden", "shown"])
+        #expect(AssistantTextParser.visibleSegments(from: raw).map(\.text) == ["shown"])
+    }
+
     @Test func dropsEmptyTaggedContent() {
         let segments = AssistantTextParser.segments(from: "<think></think>")
         #expect(segments.isEmpty)
