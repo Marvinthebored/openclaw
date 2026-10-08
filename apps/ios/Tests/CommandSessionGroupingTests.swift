@@ -181,13 +181,110 @@ struct SessionGroupStoreTests {
         #expect(SessionGroupStore.adding(["Ops"], " Dev ") == ["Ops", "Dev"])
     }
 
-    @Test func `load and save round-trip through user defaults`() {
+    @MainActor
+    @Test func `load and save round-trip through user defaults`() async {
+        await GatewayPersistenceTestGate.shared.acquire()
+        defer { GatewayPersistenceTestGate.shared.release() }
         withUserDefaults([SessionGroupStore.defaultsKey: nil]) {
             #expect(SessionGroupStore.load() == [])
             SessionGroupStore.save([" Dev ", "Dev", "Ops"])
             #expect(SessionGroupStore.load() == ["Dev", "Ops"])
             SessionGroupStore.remember("Core")
             #expect(SessionGroupStore.load() == ["Dev", "Ops", "Core"])
+        }
+    }
+}
+
+@Suite(.serialized)
+@MainActor
+struct SessionGroupMigrationTests {
+    @Test(arguments: ["empty", "populated", "read-only", "legacy"])
+    func `refresh follows the web one-time local catalog migration`(_ scenario: String) async throws {
+        await GatewayPersistenceTestGate.shared.acquire()
+        defer { GatewayPersistenceTestGate.shared.release() }
+        try await withUserDefaults([SessionGroupStore.defaultsKey: ["Research"]]) {
+            let model = SessionGroupModel()
+            let appModel = NodeAppModel()
+            var requests: [OpenClawChatGatewayRequest] = []
+            let connection = OpenClawSessionMenuConnection(
+                methods: scenario == "legacy" ? [] : ["sessions.groups.list", "sessions.groups.put"],
+                scopes: scenario == "read-only" ? ["operator.read"] : ["operator.write"],
+                isCurrent: { true },
+                request: { request in
+                    requests.append(request)
+                    if request.method == "sessions.groups.list" {
+                        return Data((scenario == "populated"
+                                ? #"{"groups":[{"name":"Server","position":0}]}"#
+                                : #"{"groups":[]}"#).utf8)
+                    }
+                    #expect(request.method == "sessions.groups.put")
+                    return Data(#"{"ok":true,"groups":[{"name":"Research","position":0}]}"#.utf8)
+                })
+
+            await model.refresh(appModel: appModel, connectionProvider: { _ in connection })
+
+            #expect(model.failure == nil)
+            #expect(!model.loading)
+            switch scenario {
+            case "empty":
+                #expect(requests.map(\.method) == ["sessions.groups.list", "sessions.groups.put"])
+                let put = try #require(requests.last)
+                let names = put.params["names"]?.value as? [String]
+                #expect(names == ["Research"])
+                #expect(model.names(for: []) == ["Research"])
+                #expect(UserDefaults.standard.object(forKey: SessionGroupStore.defaultsKey) == nil)
+                await model.refresh(appModel: appModel, connectionProvider: { _ in connection })
+                #expect(requests.filter { $0.method == "sessions.groups.put" }.count == 1)
+            case "populated":
+                #expect(requests.map(\.method) == ["sessions.groups.list"])
+                #expect(model.names(for: []) == ["Server"])
+                #expect(UserDefaults.standard.object(forKey: SessionGroupStore.defaultsKey) == nil)
+            case "read-only":
+                #expect(requests.map(\.method) == ["sessions.groups.list"])
+                #expect(SessionGroupStore.load() == ["Research"])
+                #expect(model.names(for: []).isEmpty)
+            default:
+                #expect(requests.isEmpty)
+                #expect(SessionGroupStore.load() == ["Research"])
+                #expect(model.names(for: []) == ["Research"])
+            }
+        }
+    }
+
+    @Test(arguments: ["list", "put", "failure"])
+    func `refresh retains local names when migration does not complete for the current connection`(
+        _ boundary: String) async
+    {
+        await GatewayPersistenceTestGate.shared.acquire()
+        defer { GatewayPersistenceTestGate.shared.release() }
+        await withUserDefaults([SessionGroupStore.defaultsKey: ["Research"]]) {
+            let model = SessionGroupModel()
+            let appModel = NodeAppModel()
+            var current = true
+            var methods: [String] = []
+            let connection = OpenClawSessionMenuConnection(
+                methods: ["sessions.groups.list", "sessions.groups.put"],
+                scopes: ["operator.write"],
+                isCurrent: { current },
+                request: { request in
+                    methods.append(request.method)
+                    if request.method == "sessions.groups.list" {
+                        if boundary == "list" { current = false }
+                        return Data(#"{"groups":[]}"#.utf8)
+                    }
+                    if boundary == "failure" { throw URLError(.cannotConnectToHost) }
+                    current = false
+                    return Data(#"{"ok":true,"groups":[{"name":"Research","position":0}]}"#.utf8)
+                })
+
+            await model.refresh(appModel: appModel, connectionProvider: { _ in connection })
+
+            #expect(methods == (boundary == "list"
+                    ? ["sessions.groups.list"] : ["sessions.groups.list", "sessions.groups.put"]))
+            #expect(SessionGroupStore.load() == ["Research"])
+            #expect(model.catalog == nil)
+            #expect((model.failure != nil) == (boundary == "failure"))
+            #expect(!model.loading)
         }
     }
 }

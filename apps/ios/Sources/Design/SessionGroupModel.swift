@@ -30,7 +30,11 @@ final class SessionGroupModel {
             catalog: self.usesCatalog ? (self.catalog ?? []) : nil, local: self.local, sessions: sessions)
     }
 
-    func refresh(appModel: NodeAppModel) async {
+    func refresh(
+        appModel: NodeAppModel,
+        connectionProvider: (NodeAppModel) async
+            -> OpenClawSessionMenuConnection? = { await $0.sessionGroupConnection() }) async
+    {
         let identity = appModel.chatViewModelIdentityID
         if self.identity != identity {
             self.identity = identity
@@ -46,18 +50,33 @@ final class SessionGroupModel {
         defer { if self.generation == generation { self.loading = false } }
         self.local = SessionGroupStore.load()
         do {
-            let connection = await appModel.sessionGroupConnection()
-            guard self.generation == generation, self.identity == identity, !Task.isCancelled else { return }
+            let connection = await connectionProvider(appModel)
+            guard self.generation == generation, self.identity == identity,
+                  appModel.chatViewModelIdentityID == identity, !Task.isCancelled else { return }
             self.connection = connection
             guard let connection, connection.allows("sessions.groups.list", scope: "operator.read") else { return }
             let response: OpenClawChatSessionGroupsResponse = try await connection.read("sessions.groups.list")
-            guard self.generation == generation, self.identity == identity else { return }
-            self.catalog = response.groups
+            guard self.generation == generation, self.identity == identity,
+                  appModel.chatViewModelIdentityID == identity else { return }
+            var groups = response.groups
+            // Match the web catalog's one-time migration: never merge into an existing Gateway catalog.
+            if !self.local.isEmpty, connection.allows("sessions.groups.put") {
+                if groups.isEmpty {
+                    let migrated: OpenClawChatSessionGroupsMutationResponse = try await connection.read(
+                        "sessions.groups.put", ["names": AnyCodable(self.local)])
+                    guard self.generation == generation, self.identity == identity,
+                          appModel.chatViewModelIdentityID == identity else { return }
+                    groups = migrated.groups
+                }
+                SessionGroupStore.clear()
+                self.local = []
+            }
+            self.catalog = groups
             self.refreshFailure = nil
         } catch is CancellationError {
             return
         } catch {
-            guard self.generation == generation else { return }
+            guard self.generation == generation, appModel.chatViewModelIdentityID == identity else { return }
             self.refreshFailure = error.localizedDescription
         }
     }

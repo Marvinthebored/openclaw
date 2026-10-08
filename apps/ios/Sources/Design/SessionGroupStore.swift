@@ -15,6 +15,10 @@ enum SessionGroupStore {
         defaults.set(self.normalized(groups), forKey: self.defaultsKey)
     }
 
+    static func clear(defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: self.defaultsKey)
+    }
+
     static func remember(_ name: String, defaults: UserDefaults = .standard) {
         self.save(self.adding(self.load(defaults: defaults), name), defaults: defaults)
     }
