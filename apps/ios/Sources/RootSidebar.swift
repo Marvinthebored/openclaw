@@ -31,13 +31,16 @@ struct RootSidebar: View {
             ScrollView {
                 // One 10pt unit everywhere: side insets, section gaps, and
                 // the picker card's clearance all match.
-                LazyVStack(alignment: .leading, spacing: 10) {
+                // Not lazy: with three sections it saves nothing, and a lazy stack drops a section the
+                // keyboard pushes out of view, which closes an alert or sheet opened from one of its rows.
+                VStack(alignment: .leading, spacing: 10) {
                     self.agentsSection
                     self.pagesSection(pinnedSessionNodes: sessionLayout.pinnedNodes)
                     self.sessionsSection(
                         sections: sessionLayout.sections,
                         hasPinnedSessions: !sessionLayout.pinnedNodes.isEmpty)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 10)
             }
