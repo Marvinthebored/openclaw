@@ -23,7 +23,7 @@ struct RootSidebarOrderTests {
         #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(entries)) == entries)
         #expect(entries.first?.id == "route:agents-home")
         #expect(RootTabs.sidebarEntries(from: "usage,workboard,docs") == [
-            .route(.usage), .plugin("workboard/workboard"), .route(.docs),
+            .route(.usage), .route(.workboard), .route(.docs),
         ])
         #expect(RootTabs.sidebarEntries(from: "none").isEmpty)
         #expect(RootTabs.sidebarEntries(from: "") == RootTabs.defaultSidebarEntries)
@@ -81,12 +81,48 @@ struct RootSidebarOrderTests {
             entries: reconciled) == entries + [.session("agent:main:new")])
     }
 
-    @Test func `customization offers canonical web routes not hardcoded plugin or footer utilities`() {
-        #expect(RootTabs.sidebarCustomizablePages.map { RootTabs.SidebarEntry.route($0).id } == [
-            "route:agents-home", "route:dashboards", "route:usage", "route:cron", "route:sessions",
-            "route:systems", "route:activity", "route:meetings", "route:plugins", "route:apps", "route:portals",
+    @Test func `plugin discovery does not duplicate a saved native Workboard page`() {
+        let upgraded = RootTabs.sidebarEntries(from: "docs,workboard,overview")
+        let discovered = RootTabs.reconciledSidebarEntries(
+            upgraded, pinnedSessionKeys: [], defaultPluginKeys: ["workboard/workboard", "other/page"])
+        #expect(discovered == upgraded + [.plugin("other/page")])
+        #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(discovered)) == discovered)
+        let explicit = upgraded + [.plugin("workboard/workboard")]
+        #expect(RootTabs.reconciledSidebarEntries(
+            explicit, pinnedSessionKeys: [], defaultPluginKeys: ["workboard/workboard"]) == explicit)
+        #expect(RootTabs.reconciledSidebarEntries(
+            [.route(.usage)], pinnedSessionKeys: [], defaultPluginKeys: ["workboard/workboard"]) == [
+            .route(.usage), .plugin("workboard/workboard"),
         ])
-        #expect(!RootTabs.sidebarCustomizablePages.contains(.workboard))
-        #expect(RootTabs.SidebarDestination.systems.screen == .dashboard("/systems"))
+    }
+
+    @Test func `shipped defaults survive first launch and reset of the mixed sidebar`() {
+        let shipped: [RootTabs.SidebarEntry] = [.route(.overview), .route(.usage), .route(.cron)]
+        #expect(RootTabs.sidebarEntries(from: "") == shipped)
+        #expect(RootTabs.resetSidebarEntries([.route(.systems), .session("agent:main:saved")]) ==
+            shipped + [.session("agent:main:saved")])
+    }
+
+    @Test func `shipped page choices remain editable after mixed order is saved`() {
+        // v2026.9.9's writer stores raw values in pin order, including native
+        // Workboard. A missing plugin registry must not hide that saved choice.
+        let storage = "docs,overview,workboard,skillWorkshop,instances,files,dreaming,terminal," +
+            "usage,cron,agents,activity,sessions,desktop"
+        let upgraded = RootTabs.sidebarEntries(from: storage)
+        let savedPages = upgraded.compactMap { entry -> RootTabs.SidebarDestination? in
+            if case let .route(page) = entry { return page }
+            return nil
+        }
+        #expect(savedPages.map(\.rawValue).joined(separator: ",") == storage)
+        for page in savedPages {
+            #expect(RootTabs.sidebarCustomizablePages.contains(page))
+            let unpinned = RootTabs.settingSidebarEntry(.route(page), pinned: false, entries: upgraded)
+            #expect(!unpinned.contains(.route(page)))
+            let repinned = RootTabs.settingSidebarEntry(.route(page), pinned: true, entries: unpinned)
+            #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(repinned)) == repinned)
+        }
+        let extended = upgraded + [.route(.systems), .plugin("example/page"), .session("agent:main:saved")]
+        #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(extended)) == extended)
+        #expect(RootTabs.sidebarEntries(from: "none").isEmpty)
     }
 }

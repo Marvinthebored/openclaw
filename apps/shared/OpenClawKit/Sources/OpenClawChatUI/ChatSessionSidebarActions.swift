@@ -60,7 +60,7 @@ public final class ChatSessionSidebarActions {
         return self.refreshTask
     }
 
-    public func worktreePath(for session: OpenClawChatSessionEntry, at now: ContinuousClock.Instant = .now) -> String? {
+    func worktreePath(for session: OpenClawChatSessionEntry, at now: ContinuousClock.Instant = .now) -> String? {
         self.refresh(at: now, ifStale: true)
         guard self.connection?.isCurrent() == true, session.execNode == nil, let id = session.worktree?.id else {
             return nil
@@ -168,7 +168,7 @@ public final class ChatSessionSidebarActions {
         actor?.identity.flatMap { try? GatewayPayloadDecoding.decode($0, as: [String: String].self)["id"] } ?? actor?.id
     }
 
-    public static func editorURL(_ editor: String, path: String) -> URL? {
+    static func editorURL(_ editor: String, path: String) -> URL? {
         guard ["cursor", "vscode", "windsurf", "zed"].contains(editor), path.hasPrefix("/") else { return nil }
         let segments = path.replacingOccurrences(of: "\\", with: "/").split(
             separator: "/",

@@ -234,9 +234,8 @@ struct RootSidebar: View {
     }
 
     private var sidebarEntries: [RootTabs.SidebarEntry] {
-        RootTabs.reconciledSidebarEntries(
+        Self.sessionLayout(self.visibleSessionSections).reconciledEntries(
             RootTabs.sidebarEntries(from: self.pinnedPagesStorage),
-            pinnedSessionKeys: self.model.sessions.filter { $0.pinned == true }.map { self.sidebarSessionKey($0) },
             defaultPluginKeys: self.pinnedPagesStorage.isEmpty ? self.pluginEntries.filter(\.defaultVisible)
                 .map(\.key) : [])
     }
@@ -1119,10 +1118,9 @@ extension RootSidebar {
     }
 
     private var visibleSessionSections: [ChatSessionSidebarModel.Section] {
-        let rows = self.model.sessions.filter { !self.catalogAdoptedKeys.contains($0.key) }
         if self.model.showsAllAgents {
             return self.selectableAgents.compactMap { agent in
-                let agentRows = rows.filter {
+                let agentRows = self.model.sessions.filter {
                     ChatSessionSidebarModel.isSessionInActiveAgentScope(
                         key: $0.key,
                         agentID: $0.agentId,
@@ -1146,23 +1144,34 @@ extension RootSidebar {
                 return .init(id: "agent:" + agent.id, title: Self.agentDisplayName(agent), nodes: nodes)
             }
         }
-        return self.model.sections(
+        let sections = self.model.sections(
             query: self.searchText,
             currentSessionKey: self.appModel.chatSessionKey,
             mainSessionKey: self.appModel.mainSessionKey,
             activeAgentID: self.appModel.chatAgentId,
             groups: self.sessionGroups,
-            sessionRoutingContract: self.appModel.chatSessionRoutingContract).map { section in
-            .init(
-                id: section.id,
-                title: section.title,
-                nodes: section.nodes.filter { !self.catalogAdoptedKeys.contains($0.session.key) })
-        }
+            sessionRoutingContract: self.appModel.chatSessionRoutingContract)
+        return ChatSidebarCatalogPresentation.ordinarySections(
+            sections,
+            excluding: self.catalogAdoptedKeys,
+            currentKey: self.resolvedSelectedSessionKey,
+            currentIsKnown: self.model.sessions.contains { $0.key == self.resolvedSelectedSessionKey })
     }
 
     struct SessionLayout: Equatable {
         let pinnedNodes: [ChatSessionSidebarModel.Node]
         let sections: [ChatSessionSidebarModel.Section]
+
+        @MainActor func reconciledEntries(
+            _ entries: [RootTabs.SidebarEntry], defaultPluginKeys: [String]) -> [RootTabs.SidebarEntry]
+        {
+            // Catalog exclusion can promote an unpinned child within the Pages zone.
+            // Placement belongs to the projection, not a second check of the row's pin flag.
+            RootTabs.reconciledSidebarEntries(
+                entries,
+                pinnedSessionKeys: self.pinnedNodes.map { RootTabs.sidebarSessionSlot(for: $0.session) },
+                defaultPluginKeys: defaultPluginKeys)
+        }
     }
 
     static func sessionLayout(_ sections: [ChatSessionSidebarModel.Section]) -> SessionLayout {
@@ -1171,9 +1180,7 @@ extension RootSidebar {
         }
         var remainingSections = sections
         let pinnedSection = remainingSections.remove(at: pinnedIndex)
-        return SessionLayout(
-            pinnedNodes: pinnedSection.nodes,
-            sections: remainingSections)
+        return SessionLayout(pinnedNodes: pinnedSection.nodes, sections: remainingSections)
     }
 
     private var sessionCategories: [String] {

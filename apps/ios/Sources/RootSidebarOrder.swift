@@ -28,8 +28,6 @@ extension RootTabs {
                 guard let slash = key.firstIndex(of: "/"), slash != key.startIndex,
                       key.index(after: slash) != key.endIndex else { return nil }
                 self = .plugin(key)
-            } else if canonicalID == "route:workboard" {
-                self = .plugin("workboard/workboard")
             } else if canonicalID == "route:agents-home" {
                 self = .route(.agents)
             } else if canonicalID.hasPrefix("route:"),
@@ -43,14 +41,10 @@ extension RootTabs {
         }
     }
 
-    static let sidebarCustomizablePages: [SidebarDestination] = [
-        .agents, .dashboards, .usage, .cron, .sessions, .systems, .activity,
-        .meetings, .plugins, .apps, .portals,
-    ]
-
-    static let defaultSidebarEntries: [SidebarEntry] = [
-        .route(.agents), .route(.dashboards), .route(.systems), .route(.cron), .route(.plugins),
-    ]
+    // v2026.9.9 shipped these page choices and defaults under sidebar.pinnedPages.
+    // Extending the mixed order must not remove existing customization choices.
+    static let sidebarCustomizablePages = pinnableSidebarPages
+    static let defaultSidebarEntries = defaultPinnedSidebarPages.map(SidebarEntry.route)
 
     static func sidebarSessionSlot(for session: OpenClawChatSessionEntry) -> String {
         // Qualified keys match the web preference verbatim. Unqualified native
@@ -100,7 +94,12 @@ extension RootTabs {
     {
         var result = entries
         var seen = Set(entries)
-        for entry in defaultPluginKeys.map(SidebarEntry.plugin) + pinnedSessionKeys.map(SidebarEntry.session)
+        // Preserve the shipped native Workboard slot; plugin discovery must not
+        // add a second default row. Explicitly saved plugin slots remain intact.
+        let pluginDefaults = defaultPluginKeys.filter {
+            $0 != "workboard/workboard" || !seen.contains(.route(.workboard))
+        }
+        for entry in pluginDefaults.map(SidebarEntry.plugin) + pinnedSessionKeys.map(SidebarEntry.session)
             where seen.insert(entry).inserted
         {
             result.append(entry)
