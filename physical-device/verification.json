@@ -1,0 +1,14 @@
+{
+  "recordingSHA256": "e3a4bff1556feab25754e08f3a93ebd1e7c41de8daa6a06b27c21db28da05f45",
+  "durationSeconds": 23.15,
+  "sourceHead": "2f30d78cec2febddcb438b328cd0621717a2a208",
+  "phoneBuild": 102422,
+  "observed": [
+    "native session long-press menu",
+    "Copy submenu with Session ID",
+    "Session ID copied confirmation",
+    "pasted UUID matches user-supplied UUID"
+  ],
+  "copiedID_SHA256": "9258b7649bca656fa724de2348002ef94aab0fb3d5f511fcb322d088a3e6b0dc",
+  "redaction": "Only inspected menu, confirmation, and partially masked paste regions revealed; original audio and metadata removed; black intervals conceal navigation and private background."
+}

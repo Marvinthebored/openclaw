@@ -44,3 +44,7 @@ All screenshots contain synthetic fixture data and were inspected after export. 
 ## Review record
 
 AI-assisted implementation with independent adversarial review and re-review. Review fixes preserve catalog descendants, including unpinned children promoted into the Pages zone; restore shipped Pages defaults and choices; avoid duplicate native Workboard defaults; repair obsolete source-test boundaries; and use registration lifetime identity for plugin actions. The independent lifetime review checked replacement, disposal, connection retirement and synchronous admission-to-dispatch safety.
+
+## Physical-device follow-up — 10 October 2026
+
+Physical iPhone build **102422** on source `2f30d78cec2febddcb438b328cd0621717a2a208` shows the long-press session menu, Copy → Session ID, the success alert, and a matching pasted UUID. [Recording, observations, and redacted stills](physical-device/OBSERVATIONS.md). Final delta: 11 web tests and 5 native tests passed; lint, format, typecheck, and independent review passed.
