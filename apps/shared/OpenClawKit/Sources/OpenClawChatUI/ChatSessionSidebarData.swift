@@ -36,10 +36,6 @@ public final class OpenClawChatSessionSidebarData {
     @ObservationIgnored private var projections: [Projection: [OpenClawChatSessionEntry]] = [:]
     @ObservationIgnored var onProjectionComputed: ((Projection) -> Void)?
 
-    var queryTask: Task<Void, Never>? {
-        self.refreshCoordinator.task
-    }
-
     public init() {}
 
     isolated deinit { self.refreshCoordinator.cancel() }
