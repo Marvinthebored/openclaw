@@ -2,7 +2,8 @@ import OpenClawChatUI
 import OpenClawProtocol
 import SwiftUI
 
-/// The caret is a separate tap target. Only the title region owns the system long-press menu.
+/// A tap anywhere on the header folds or unfolds the group, as in the web sidebar. Only the title region
+/// owns the system long-press menu.
 struct CommandSessionGroupHeader<Accessory: View>: View {
     @Environment(NodeAppModel.self) private var appModel
     let name: String
@@ -37,14 +38,16 @@ struct CommandSessionGroupHeader<Accessory: View>: View {
         self.groups.collapsed.contains(self.name)
     }
 
+    private func toggle() {
+        if self.collapsed {
+            self.groups.collapsed.remove(self.name)
+        } else {
+            self.groups.collapsed.insert(self.name)
+        }
+    }
+
     private var caret: some View {
-        Button {
-            if self.collapsed {
-                self.groups.collapsed.remove(self.name)
-            } else {
-                self.groups.collapsed.insert(self.name)
-            }
-        } label: {
+        Button { self.toggle() } label: {
             HStack(spacing: 3) {
                 if self.busy {
                     ProgressView().controlSize(.mini)
@@ -84,6 +87,7 @@ struct CommandSessionGroupHeader<Accessory: View>: View {
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             .contentShape(Rectangle())
             .accessibilityIdentifier("SessionGroup.Header.\(self.name)")
+            .onTapGesture { self.toggle() }
             .contextMenu { self.menu }
             if self.trailingCount != nil {
                 self.caret
