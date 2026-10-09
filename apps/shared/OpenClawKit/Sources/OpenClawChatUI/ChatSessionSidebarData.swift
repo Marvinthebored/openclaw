@@ -29,16 +29,20 @@ public final class OpenClawChatSessionSidebarData {
     private(set) var scopeRevision = 0
     var onChange: (() -> Void)?
     var queryState: ChatSidebarQueryState?
-    @ObservationIgnored var queryTask: Task<Void, Never>?
+    @ObservationIgnored let refreshCoordinator = OpenClawChatSessionRefreshCoordinator()
 
     enum Projection: Hashable { case conversation(String), members([String]), swarm, sidebar, sidebarTree }
     private(set) var projectionRevision = 0
     @ObservationIgnored private var projections: [Projection: [OpenClawChatSessionEntry]] = [:]
     @ObservationIgnored var onProjectionComputed: ((Projection) -> Void)?
 
+    var queryTask: Task<Void, Never>? {
+        self.refreshCoordinator.task
+    }
+
     public init() {}
 
-    isolated deinit { self.queryTask?.cancel() }
+    isolated deinit { self.refreshCoordinator.cancel() }
 
     func invalidateQueryProjection() {
         self.projections[.sidebar] = nil
