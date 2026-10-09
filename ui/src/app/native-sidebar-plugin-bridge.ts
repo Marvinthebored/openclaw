@@ -50,7 +50,7 @@ export function startNativeSidebarPluginBridge(
   context: ApplicationContext,
 ): (() => void) | undefined {
   const host = window as NativeWindow;
-  const marker = host.__OPENCLAW_NATIVE_SIDEBAR_PLUGINS__;
+  const marker = host["__OPENCLAW_NATIVE_SIDEBAR_PLUGINS__"];
   const handler = host.webkit?.messageHandlers?.openclawSidebarPlugins;
   if (
     !nativeEmbedHost() ||
@@ -88,6 +88,8 @@ export function startNativeSidebarPluginBridge(
   };
   const post = (message: Record<string, unknown>) => {
     if (!lifetime.signal.aborted) {
+      // WKScriptMessageHandlerWithReply is not Window.postMessage; the native host owns origin checks.
+      // oxlint-disable-next-line unicorn/require-post-message-target-origin
       void handler.postMessage({ contract: 1, documentId, ...message }).catch(() => undefined);
     }
   };
@@ -107,7 +109,8 @@ export function startNativeSidebarPluginBridge(
       ...(sessionError ? { sessionError } : {}),
       sessionActions: currentSession()
         ? pluginSessionMenuActions(context.plugins, currentSession()!).map((action) => ({
-            ...action,
+            id: action.id,
+            label: action.label,
             disabled: action.disabled === true,
           }))
         : [],
