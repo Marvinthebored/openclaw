@@ -10,6 +10,7 @@ struct RootSidebar: View {
     @State private var searchText = ""
     @State private var isSearchActive = false
     @State private var showsPagesEditor = false
+    @State private var expandedSessions: Set<String> = []
     @State private var presentedAttention: OpenClawChatAttentionPresentation?
     @FocusState private var isSearchFocused: Bool
     @AppStorage("sidebar.pinnedPages") private var pinnedPagesStorage: String = ""
@@ -431,8 +432,8 @@ struct RootSidebar: View {
                     if !section.id.hasPrefix("group:") ||
                         !self.appModel.sessionGroups.collapsed.contains(section.title ?? "") || !self.searchText.isEmpty
                     {
-                        ForEach(self.sessionNodes(for: section)) { node in
-                            self.sessionButton(node, selectedSessionKey: selectedSessionKey)
+                        ForEach(self.sessionRows(for: section)) { row in
+                            self.sessionButton(row.node, selectedSessionKey: selectedSessionKey, depth: row.depth)
                         }
                     }
                 }
@@ -475,8 +476,8 @@ struct RootSidebar: View {
                 .accessibilityLabel(String(localized: "Edit Pages"))
             }
             self.homeRow
-            ForEach(pinnedSessionNodes) { node in
-                self.sessionButton(node, selectedSessionKey: self.resolvedSelectedSessionKey)
+            ForEach(self.rows(pinnedSessionNodes)) { row in
+                self.sessionButton(row.node, selectedSessionKey: self.resolvedSelectedSessionKey, depth: row.depth)
             }
             ForEach(self.pinnedPages) { destination in
                 self.destinationButton(destination)
@@ -605,7 +606,7 @@ struct RootSidebar: View {
         var remainingSections = sections
         let pinnedSection = remainingSections.remove(at: pinnedIndex)
         return SessionLayout(
-            pinnedNodes: self.flattened(pinnedSection.nodes),
+            pinnedNodes: pinnedSection.nodes,
             sections: remainingSections)
     }
 
@@ -623,12 +624,26 @@ struct RootSidebar: View {
         nodes.flatMap { [$0] + self.flattened($0.children) }
     }
 
-    private func sessionNodes(for section: ChatSessionSidebarModel.Section) -> [ChatSessionSidebarModel.Node] {
-        let nodes = Self.flattened(section.nodes)
+    private func sessionRows(for section: ChatSessionSidebarModel.Section) -> [ChatSessionSidebarModel.Row] {
+        let nodes = section.nodes
         guard section.id == "recent", let limit = Self.recentSessionCap(searchText: self.searchText) else {
-            return nodes
+            return self.rows(nodes)
         }
-        return Array(nodes.prefix(limit))
+        return self.rows(Array(nodes.prefix(limit)))
+    }
+
+    private func rows(_ nodes: [ChatSessionSidebarModel.Node]) -> [ChatSessionSidebarModel.Row] {
+        ChatSessionSidebarModel.rows(nodes, showsChildren: self.showsChildren)
+    }
+
+    /// Keep search results and the selected descendant visible even when their parent was not opened.
+    private func showsChildren(of node: ChatSessionSidebarModel.Node) -> Bool {
+        self.expandedSessions.contains(node.id) || self.mustShowChildren(of: node)
+    }
+
+    private func mustShowChildren(of node: ChatSessionSidebarModel.Node) -> Bool {
+        !self.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || Self.flattened(node.children).contains { $0.session.key == self.resolvedSelectedSessionKey }
     }
 
     static func recentSessionCap(searchText: String) -> Int? {
@@ -637,7 +652,8 @@ struct RootSidebar: View {
 
     private func sessionButton(
         _ node: ChatSessionSidebarModel.Node,
-        selectedSessionKey: String) -> some View
+        selectedSessionKey: String,
+        depth: Int = 0) -> some View
     {
         let session = node.session
         let isSelected = session.key == selectedSessionKey
@@ -726,8 +742,39 @@ struct RootSidebar: View {
             .accessibilityValue(Self.sessionAccessibilityValue(
                 isPinned: session.pinned == true,
                 isUnread: session.unread == true))
+            .accessibilityIdentifier("RootTabs.Sidebar.Session.\(session.key)")
+            if !node.children.isEmpty {
+                let isExpanded = self.showsChildren(of: node)
+                Button {
+                    if self.expandedSessions.contains(node.id) {
+                        self.expandedSessions.remove(node.id)
+                    } else {
+                        self.expandedSessions.insert(node.id)
+                    }
+                } label: {
+                    HStack(spacing: 3) {
+                        Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        // The open parent shows its rows; the number is kept in the layout so the caret stays put.
+                        Text(verbatim: "\(node.children.count)")
+                            .opacity(isExpanded ? 0 : 1)
+                            .accessibilityHidden(isExpanded)
+                    }
+                    .font(OpenClawType.caption2Medium)
+                    .foregroundStyle(OpenClawSidebarPalette.muted)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isExpanded
+                    ? String(localized: "Hide Sub-sessions")
+                    : String(localized: "Show Sub-sessions"))
+                .accessibilityValue(Text(verbatim: isExpanded ? "" : String(node.children.count)))
+                .accessibilityIdentifier("RootTabs.Sidebar.Session.Children.\(session.key)")
+                .disabled(self.mustShowChildren(of: node))
+            }
             self.attentionBadges(for: Self.flattened([node]).map(\.session), targetID: "session:\(session.key)")
         }
+        .padding(.leading, CGFloat(min(depth, 6)) * 16)
     }
 
     private func attentionBadges(for sessions: [OpenClawChatSessionEntry], targetID: String) -> some View {
