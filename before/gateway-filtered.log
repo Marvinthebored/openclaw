@@ -1,0 +1,105 @@
+{"measurement": "initial roster excluded; exact log slice", "connectionTag": "APP-B", "gatewayBroadcasts": 22, "nativeRelayEvents": 22}
+{"time":"2026-10-09T18:31:19.682+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:19.730+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:19.732+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 3ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11453 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:19.758+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:19.760+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 3ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11452 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:19.945+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:19.966+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:19.968+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11459 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:19.979+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:19.982+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11458 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.222+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:20.268+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.270+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11465 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.294+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.296+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11464 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.486+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:20.748+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:20.795+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.797+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.798+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.800+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.825+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.826+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.963+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:20.964+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.012+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:21.042+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.044+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 3ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.058+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.061+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.277+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:21.295+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.297+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.304+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.306+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.538+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:21.553+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.555+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 3ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.612+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.615+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.807+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:21.846+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.848+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.869+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:21.871+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.070+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:22.098+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.100+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.148+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.150+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.377+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:22.435+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.437+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.539+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.542+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 4ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.692+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:22.711+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.714+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 4ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.726+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.728+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.932+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:22.971+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.973+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.985+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:22.987+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.194+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:23.230+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.232+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.241+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.243+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.456+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:23.541+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.543+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.614+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.616+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.719+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:23.753+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.755+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11471 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.770+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:23.773+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11470 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:25.817+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:25.871+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:25.875+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:25.880+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 5ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=14953 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:25.884+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:25.886+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=14952 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:25.921+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:25.922+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=50 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=14952 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:26.053+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:26.054+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=14953 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.059+08:00","level":"info","subsystem":"gateway/ws","message":"← req health conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.063+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ health 4ms cached=true bytes=1512 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.198+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:27.198+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:27.280+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.298+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 17ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=13209 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.331+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.332+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=13209 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.647+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:27.648+08:00","level":"info","subsystem":"gateway/ws","message":"→ event sessions.changed seq=per-client clients=3 targets=1 dropIfSlow=true"}
+{"time":"2026-10-09T18:31:27.660+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.662+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 2ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11468 conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.697+08:00","level":"info","subsystem":"gateway/ws","message":"← req sessions.list conn=APP-B id=[REQUEST]"}
+{"time":"2026-10-09T18:31:27.698+08:00","level":"info","subsystem":"gateway/ws","message":"→ res ✓ sessions.list 1ms source=unspecified rowMode=full limit=200 offset=0 filterKind=includeGlobal+includeUnknown+agentId bytes=11468 conn=APP-B id=[REQUEST]"}

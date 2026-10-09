@@ -1,0 +1,45 @@
+{
+  "responsesByLimit": {
+    "50": 18,
+    "200": 3
+  },
+  "drawerRowUpdateListResponses": 0,
+  "buildCommit": "e001c9d8447ce4ea98c2881c068ed49383d59bf1",
+  "scenario": "six initial sessions; 16 real label patches; two session creations; two session deletions",
+  "connectionTag": "APP-A",
+  "sessionEventsDelivered": 22,
+  "gatewaySessionEventBroadcasts": 22,
+  "rowUpdateEventsDelivered": 16,
+  "invalidationEventsDelivered": 6,
+  "listResponseCount": 21,
+  "listResponseBytes": 252997,
+  "rowUpdateListResponses": 16,
+  "invalidationListResponses": 5,
+  "gatewayLogLineRange": {
+    "after": 400,
+    "through": 532
+  },
+  "uiRunPassed": true,
+  "updatedRows": [
+    "Updated Amber",
+    "Updated Birch",
+    "Updated Cedar",
+    "Updated Delta"
+  ],
+  "createdRows": [
+    "Created Elm",
+    "Created Fir"
+  ],
+  "deletedRowsAbsent": [
+    "Delete Seed",
+    "Spare Seed"
+  ],
+  "responseCountSource": "Gateway verbose res sessions.list lines scoped to app operator connection; bytes are Gateway-reported response payload bytes",
+  "eventCountSource": "Gateway sessions.changed broadcasts targeting its sole subscribed operator; matched one-for-one to unchanged frames on Gateway-side passive relay",
+  "redactions": [
+    "connection UUID -> short app tag",
+    "request/device/session IDs",
+    "IP addresses",
+    "scratch endpoint URLs"
+  ]
+}
