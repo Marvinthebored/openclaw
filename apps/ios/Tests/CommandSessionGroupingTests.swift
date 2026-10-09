@@ -302,4 +302,29 @@ struct SessionGroupMigrationTests {
             #expect(!model.loading)
         }
     }
+
+    @Test func `refresh keeps the catalog across a dropped link to the same gateway`() async {
+        await GatewayPersistenceTestGate.shared.acquire()
+        defer { GatewayPersistenceTestGate.shared.release() }
+        await withUserDefaults([SessionGroupStore.defaultsKey: nil]) {
+            let model = SessionGroupModel()
+            let appModel = NodeAppModel()
+            let connection = OpenClawSessionMenuConnection(
+                methods: ["sessions.groups.list", "sessions.groups.rename"],
+                scopes: ["operator.write"],
+                isCurrent: { true },
+                request: { _ in Data(#"{"groups":[{"name":"Empty","position":0}]}"#.utf8) })
+            appModel.setOperatorConnected(true)
+            await model.refresh(appModel: appModel, connectionProvider: { _ in connection })
+            #expect(model.names(for: []) == ["Empty"])
+            #expect(model.allows("sessions.groups.rename"))
+
+            appModel.setOperatorConnected(false)
+            await model.refresh(appModel: appModel, connectionProvider: { _ in nil })
+
+            // The empty group's header stays; its actions wait for the link.
+            #expect(model.names(for: []) == ["Empty"])
+            #expect(!model.allows("sessions.groups.rename"))
+        }
+    }
 }

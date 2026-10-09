@@ -17,6 +17,7 @@ final class SessionGroupModel {
     }
 
     private var identity: String?
+    private var owner: String?
     private var generation = 0
     private var local = SessionGroupStore.load()
     var collapsed = SessionGroupStore.loadCollapsed() {
@@ -40,7 +41,11 @@ final class SessionGroupModel {
         let identity = appModel.chatViewModelIdentityID
         if self.identity != identity {
             self.identity = identity
-            self.catalog = nil
+            // A dropped link is still the same Gateway: its last catalog keeps the group headers on screen.
+            if self.owner != appModel.chatViewModelOwnerID {
+                self.owner = appModel.chatViewModelOwnerID
+                self.catalog = nil
+            }
             self.connection = nil
             self.refreshFailure = nil
             self.mutationFailure = nil
