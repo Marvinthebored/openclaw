@@ -1,0 +1,288 @@
+{
+  "case": "K-D3",
+  "appHead": "91e83d3963812b40d821f563e4b40aaf4a702770",
+  "gatewayHead": "d2291a9359609ad90794b4daf64f82df16f07444",
+  "nativeUiExit": 0,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Native rendered test exit 0",
+      "pass": true
+    },
+    {
+      "name": "All native mutation responses ok",
+      "pass": true
+    },
+    {
+      "name": "Normal scratch credential pairing operator and node",
+      "pass": true
+    },
+    {
+      "name": "Actual native preference files captured",
+      "pass": true
+    },
+    {
+      "name": "Exactly two native reorder puts",
+      "pass": true
+    },
+    {
+      "name": "moved-up native order",
+      "pass": true
+    },
+    {
+      "name": "moved-up independently stored order",
+      "pass": true
+    },
+    {
+      "name": "moved-down native order",
+      "pass": true
+    },
+    {
+      "name": "moved-down independently stored order",
+      "pass": true
+    },
+    {
+      "name": "Exactly one native delete",
+      "pass": true
+    },
+    {
+      "name": "Group gone from stored catalog",
+      "pass": true
+    },
+    {
+      "name": "Seeded session ungrouped in stored row",
+      "pass": true
+    },
+    {
+      "name": "Native still moved-up captured",
+      "pass": true
+    },
+    {
+      "name": "Native still moved-down captured",
+      "pass": true
+    },
+    {
+      "name": "Native still deleted captured",
+      "pass": true
+    }
+  ],
+  "nativeMutationCount": 3,
+  "nativeMutations": [
+    {
+      "time": "2026-10-09T07:37:19.570Z",
+      "id": "812E1DC6-F37B-4CAF-9E64-82C27217D038",
+      "method": "sessions.groups.put",
+      "params": {
+        "names": [
+          "Anchor Amber",
+          "Proof Pear",
+          "Anchor Blue"
+        ]
+      },
+      "responseOk": true
+    },
+    {
+      "time": "2026-10-09T07:37:27.448Z",
+      "id": "49578930-6FE5-492C-BDBA-395972A0CFEB",
+      "method": "sessions.groups.put",
+      "params": {
+        "names": [
+          "Anchor Amber",
+          "Anchor Blue",
+          "Proof Pear"
+        ]
+      },
+      "responseOk": true
+    },
+    {
+      "time": "2026-10-09T07:37:37.954Z",
+      "id": "2375528C-750E-4918-8F9D-7B953F4D6937",
+      "method": "sessions.groups.delete",
+      "params": {
+        "name": "Proof Pear"
+      },
+      "responseOk": true
+    }
+  ],
+  "storedCatalogBefore": [
+    {
+      "name": "Anchor Amber",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Anchor Blue",
+      "position": 1,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Proof Pear",
+      "position": 2,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "storedCatalogAfter": [
+    {
+      "name": "Anchor Amber",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Anchor Blue",
+      "position": 1,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "nativeReadResponseCount": 24,
+  "nativeReadResponses": [
+    {
+      "method": "sessions.list",
+      "id": "78E8A826-14CC-4636-A1F9-780BD22ED25B",
+      "time": "2026-10-09T07:37:03.547Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "DE623457-3325-4B3F-921D-D6726409BE02",
+      "time": "2026-10-09T07:37:06.279Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "C44E6D6E-343D-4D4C-9341-8E1FA33F2EE8",
+      "time": "2026-10-09T07:37:06.331Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "AF0DA508-7634-4191-A046-D9596DB246B3",
+      "time": "2026-10-09T07:37:06.785Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "904BA317-CC80-4583-8F1C-DF4368BE66BD",
+      "time": "2026-10-09T07:37:06.810Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "79845774-BB05-4ECC-B8E6-1DE61FA42A90",
+      "time": "2026-10-09T07:37:06.930Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "4F36230B-0AD8-4656-A9E2-F4D97FD79C58",
+      "time": "2026-10-09T07:37:06.936Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "7B95C4E7-506B-4810-A3A4-BC00D2D49367",
+      "time": "2026-10-09T07:37:07.013Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "532BC8FD-C624-4C88-807B-81C67D102CB1",
+      "time": "2026-10-09T07:37:07.031Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "6B9A3A87-88F0-4AD5-8DFD-9515B2296F81",
+      "time": "2026-10-09T07:37:07.050Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "52E9AE05-0A71-46B6-8EA6-4EC3ED981BD2",
+      "time": "2026-10-09T07:37:19.483Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "6D54649B-EA81-4B2E-8163-8849EB4A353A",
+      "time": "2026-10-09T07:37:19.612Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "EAEE6A34-4C6E-476E-AFFE-1192E6063115",
+      "time": "2026-10-09T07:37:19.622Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "0C87651F-BD66-4528-8BA6-ED2680574892",
+      "time": "2026-10-09T07:37:19.624Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "E1BA161A-6115-47F9-BACB-C5D2165620AB",
+      "time": "2026-10-09T07:37:19.673Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "B1975F1A-07EE-43D0-B6ED-5B5717718DB2",
+      "time": "2026-10-09T07:37:27.428Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "75E2F667-8EE1-437C-96CE-1A3E23291A2A",
+      "time": "2026-10-09T07:37:27.497Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "E24962C5-2CE4-4D03-9175-A6FA38FE8A15",
+      "time": "2026-10-09T07:37:27.515Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "48043157-1437-468F-8A5D-D75390876244",
+      "time": "2026-10-09T07:37:27.516Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "50779FB9-692B-4147-B25E-B7F12632AB9D",
+      "time": "2026-10-09T07:37:27.544Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "259F20B8-2197-42CB-8E36-9B042FEA356B",
+      "time": "2026-10-09T07:37:38.094Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "C4F74F2C-9CA0-4F4C-B3D1-84582E688B97",
+      "time": "2026-10-09T07:37:38.107Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "20BE2AAF-CBD8-43AF-8E80-CEE96D2081C2",
+      "time": "2026-10-09T07:37:38.111Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "C6ADF8DF-8E93-4FFE-86C7-EB0A5D9C4F68",
+      "time": "2026-10-09T07:37:38.140Z",
+      "responseOk": true
+    }
+  ]
+}

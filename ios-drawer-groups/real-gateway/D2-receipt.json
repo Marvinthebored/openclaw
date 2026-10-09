@@ -1,0 +1,259 @@
+{
+  "case": "K-D2",
+  "appHead": "91e83d3963812b40d821f563e4b40aaf4a702770",
+  "gatewayHead": "d2291a9359609ad90794b4daf64f82df16f07444",
+  "nativeUiExit": 0,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Native rendered test exit 0",
+      "pass": true
+    },
+    {
+      "name": "All native mutation responses ok",
+      "pass": true
+    },
+    {
+      "name": "Normal scratch credential pairing operator and node",
+      "pass": true
+    },
+    {
+      "name": "Actual native preference files captured",
+      "pass": true
+    },
+    {
+      "name": "Browse uses native fs.listDir",
+      "pass": true
+    },
+    {
+      "name": "Exactly one native Save cwd plus explicit worktree false",
+      "pass": true
+    },
+    {
+      "name": "Saved defaults stored",
+      "pass": true
+    },
+    {
+      "name": "Exactly one native create same cwd",
+      "pass": true
+    },
+    {
+      "name": "Stored sessionRoot and spawnedCwd equal selected folder",
+      "pass": true
+    },
+    {
+      "name": "Created key equals independently stored row",
+      "pass": true
+    },
+    {
+      "name": "Git switch shown off / plain switch absent",
+      "pass": true
+    },
+    {
+      "name": "Created row actually shown under header",
+      "pass": true
+    },
+    {
+      "name": "Plain folder is outside Git",
+      "pass": true
+    },
+    {
+      "name": "Native still defaults-working-copy-off captured",
+      "pass": true
+    },
+    {
+      "name": "Native still new-session-in-group captured",
+      "pass": true
+    }
+  ],
+  "nativeMutationCount": 2,
+  "nativeMutations": [
+    {
+      "time": "2026-10-09T07:35:34.081Z",
+      "id": "B74565AC-0301-48F7-90B3-B7846DD74DED",
+      "method": "sessions.groups.update",
+      "params": {
+        "name": "Folder Fir",
+        "cwd": "/private/tmp/openclaw-finalM-D-folder-plain/Saved Folder",
+        "worktree": false
+      },
+      "responseOk": true
+    },
+    {
+      "time": "2026-10-09T07:35:49.412Z",
+      "id": "B4711627-206B-4653-80D5-76C27E00726D",
+      "method": "sessions.create",
+      "params": {
+        "key": "agent:main:dashboard:bc73b057-7477-4d82-b503-61744008ee36",
+        "category": "Folder Fir",
+        "agentId": "main",
+        "cwd": "/private/tmp/openclaw-finalM-D-folder-plain/Saved Folder",
+        "worktree": false
+      },
+      "responseOk": true
+    }
+  ],
+  "storedCatalogBefore": [
+    {
+      "name": "Folder Fir",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "storedCatalogAfter": [
+    {
+      "name": "Folder Fir",
+      "position": 0,
+      "cwd": "/private/tmp/openclaw-finalM-D-folder-plain/Saved Folder",
+      "worktree": 0
+    }
+  ],
+  "selectedFolder": "/private/tmp/openclaw-finalM-D-folder-plain/Saved Folder",
+  "switchPresent": false,
+  "switchValue": "absent",
+  "storedSessionRoot": "/private/tmp/openclaw-finalM-D-folder-plain/Saved Folder",
+  "storedSpawnedCwd": "/private/tmp/openclaw-finalM-D-folder-plain/Saved Folder",
+  "folderType": "plain",
+  "nativeReadResponseCount": 23,
+  "nativeReadResponses": [
+    {
+      "method": "sessions.list",
+      "id": "9F1495D6-E721-4415-AA75-A1B9520CE9AB",
+      "time": "2026-10-09T07:35:10.935Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "15EF56D9-91E4-42F4-927C-D02D12154B48",
+      "time": "2026-10-09T07:35:11.073Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "472F6574-D425-4443-A4F7-FD6290698849",
+      "time": "2026-10-09T07:35:11.480Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "5FF32563-0975-438D-9D18-064B1A60EA53",
+      "time": "2026-10-09T07:35:11.684Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "359C05DB-2101-426A-9818-BAC44CC531FD",
+      "time": "2026-10-09T07:35:11.689Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "F245B20F-9EE9-44DA-A865-4FD7681B3E04",
+      "time": "2026-10-09T07:35:11.740Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "C293CAB0-4738-454B-9042-B5D363F0AA07",
+      "time": "2026-10-09T07:35:11.742Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "84749ED1-8860-464D-8586-0745EBF9ADE2",
+      "time": "2026-10-09T07:35:12.382Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.defaults",
+      "id": "99D41F23-53AB-461E-BA8F-838A9FAD2853",
+      "time": "2026-10-09T07:35:22.053Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "4D91FE0F-F8F2-4B76-B995-6E09F32B51CD",
+      "time": "2026-10-09T07:35:34.195Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "48811315-D189-4273-A1F5-FD8DD600089A",
+      "time": "2026-10-09T07:35:34.205Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "2873B521-6306-4D3A-B249-BF1FE8D3A74C",
+      "time": "2026-10-09T07:35:34.242Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.defaults",
+      "id": "CFF2B2D7-D458-4942-8EF8-3B12E31F58EF",
+      "time": "2026-10-09T07:35:41.227Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.defaults",
+      "id": "0068C217-E7F2-47C8-9E48-3657D0ABF51F",
+      "time": "2026-10-09T07:35:49.404Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "9BFAFB65-B425-48C1-846D-5B011711B2A4",
+      "time": "2026-10-09T07:35:50.977Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "0BB58B89-09C5-4833-988D-248EAE5415B9",
+      "time": "2026-10-09T07:35:50.990Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "EDE1DA56-2443-4B52-B7CA-A85314D63FE5",
+      "time": "2026-10-09T07:35:50.992Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "A0D51F56-3B5D-4193-9274-14CE9684D16E",
+      "time": "2026-10-09T07:35:51.001Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "DD8F2CAB-81AD-4FC0-B5D5-1868B46C4A34",
+      "time": "2026-10-09T07:35:51.026Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "5EE008D1-8FDF-4180-94CB-3F760B5698CE",
+      "time": "2026-10-09T07:35:51.140Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "BCA7E526-BF03-4DA3-BF4D-DF7D84A1A8D7",
+      "time": "2026-10-09T07:35:51.257Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "CC1B6C2F-90A0-4B34-B7DD-211F6358C72E",
+      "time": "2026-10-09T07:35:52.016Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "93CC8F88-E64A-409A-B7A4-2FA7C4219661",
+      "time": "2026-10-09T07:35:52.791Z",
+      "responseOk": true
+    }
+  ]
+}

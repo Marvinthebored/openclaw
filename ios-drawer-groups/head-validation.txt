@@ -1,0 +1,50 @@
+PR #167173 head validation, 9 October 2026
+Head 91e83d3963812b40d821f563e4b40aaf4a702770
+
+== Head: unit suites
+✔ Test run with 41 tests in 5 suites passed after 2.997 seconds.
+== Head: iPhone simulator UI
+	 Executed 2 tests, with 0 failures (0 unexpected) in 65.690 (65.691) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 65.690 (65.692) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 65.690 (65.693) seconds
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls]' passed (53.254 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderFailedMutationKeepsError]' passed (12.435 seconds).
+== Head: iPad simulator UI
+	 Executed 2 tests, with 0 failures (0 unexpected) in 63.245 (63.248) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 63.245 (63.249) seconds
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls]' passed (51.940 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderFailedMutationKeepsError]' passed (11.305 seconds).
+== Head: SwiftFormat (7 changed files), strict SwiftLint (5 changed sources)
+0/7 files require formatting.
+Done linting! Found 0 violations, 0 serious in 5 files.
+
+== Control: head UI test with CommandSessionGroupHeader.swift from f2f912dd5e0
+apps/ios/UITests/OpenClawSnapshotUITests.swift:93: error: -[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls] : XCTAssertEqual failed: ("Optional("")") is not equal to ("Optional("1")") - A tap on the header must fold the group
+== Control: head unit tests with SessionGroupModel.swift from 73fe3b0c1dc
+✘ Test "refresh drops a kept catalog when the connection cannot list groups" recorded an issue at CommandSessionGroupingTests.swift:340:13: Expectation failed: (model.names(for: []) → ["Catalog Only"]) == ["Device Local"]
+✘ Test "refresh drops a kept catalog when the connection cannot list groups" recorded an issue at CommandSessionGroupingTests.swift:343:13: Expectation failed: !((model → OpenClaw.SessionGroupModel).usesCatalog → true → true)
+== Control: head unit tests with the fold pruning line removed
+✘ Test "a loaded catalog prunes folded names that no longer name a group" recorded an issue at CommandSessionGroupingTests.swift:367:13: Expectation failed: (model.collapsed → ["Kept", "Gone"]) == ["Kept"]
+✘ Test "a loaded catalog prunes folded names that no longer name a group" recorded an issue at CommandSessionGroupingTests.swift:368:13: Expectation failed: (SessionGroupStore.loadCollapsed() → ["Kept", "Gone"]) == ["Kept"]
+
+== Merge of the head with main 447144510b899463ee89774b62d015631d3bd891 (merge commit 7313690fccf, no conflicts)
+✔ Test run with 41 tests in 5 suites passed after 3.147 seconds.
+iPhone:
+	 Executed 2 tests, with 0 failures (0 unexpected) in 62.990 (62.991) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 62.990 (62.992) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 62.990 (62.993) seconds
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls]' passed (51.872 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderFailedMutationKeepsError]' passed (11.118 seconds).
+iPad:
+	 Executed 2 tests, with 0 failures (0 unexpected) in 63.163 (63.165) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 63.163 (63.166) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 63.163 (63.167) seconds
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderControls]' passed (51.896 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testDrawerGroupHeaderFailedMutationKeepsError]' passed (11.267 seconds).
+Shared kit, focused suites:
+✔ Test run with 112 tests in 4 suites passed after 0.023 seconds.
+0/7 files require formatting.
+Done linting! Found 0 violations, 0 serious in 5 files.
+Build of product 'OpenClaw' complete! (88.03s)
+native-app-i18n: entries=4470 changed=false
+LINT_ATTRIBUTION main=10 merge=10 inherited=10 caused=0

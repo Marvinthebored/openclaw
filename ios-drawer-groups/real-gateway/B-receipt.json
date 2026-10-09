@@ -1,0 +1,114 @@
+{
+  "case": "K-B",
+  "appHead": "91e83d3963812b40d821f563e4b40aaf4a702770",
+  "gatewayHead": "d2291a9359609ad90794b4daf64f82df16f07444",
+  "nativeUiExit": 0,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Native rendered test exit 0",
+      "pass": true
+    },
+    {
+      "name": "All native mutation responses ok",
+      "pass": true
+    },
+    {
+      "name": "Normal scratch credential pairing operator and node",
+      "pass": true
+    },
+    {
+      "name": "Actual native preference files captured",
+      "pass": true
+    },
+    {
+      "name": "Catalog initially populated",
+      "pass": true
+    },
+    {
+      "name": "No native put",
+      "pass": true
+    },
+    {
+      "name": "Stored catalog unchanged",
+      "pass": true
+    },
+    {
+      "name": "Legacy key gone",
+      "pass": true
+    },
+    {
+      "name": "Native still populated-catalog-only captured",
+      "pass": true
+    }
+  ],
+  "nativeMutationCount": 0,
+  "nativeMutations": [],
+  "storedCatalogBefore": [
+    {
+      "name": "Catalog Cedar",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "storedCatalogAfter": [
+    {
+      "name": "Catalog Cedar",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "nativeReadResponseCount": 8,
+  "nativeReadResponses": [
+    {
+      "method": "sessions.list",
+      "id": "2BF914F1-FC2B-4161-8827-FF208C31D58A",
+      "time": "2026-10-09T07:31:57.492Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "575F1404-4EDC-4CBF-9E57-1D1EB9DE4302",
+      "time": "2026-10-09T07:31:57.657Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "2BFD18AD-3107-4A35-B960-3489DFA9329C",
+      "time": "2026-10-09T07:31:58.128Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "818D728E-C676-4626-BE37-B5B77FA09046",
+      "time": "2026-10-09T07:31:58.330Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "F297AFB3-A574-4758-AEB8-29938143D773",
+      "time": "2026-10-09T07:31:58.334Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "04BE1A51-3898-4147-97AF-9D8C7F6819DD",
+      "time": "2026-10-09T07:31:58.389Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "2EC90A6C-F9A7-486F-8F64-5DD5088EF925",
+      "time": "2026-10-09T07:31:58.404Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "9CBB197D-0E67-43AF-8196-282093C08453",
+      "time": "2026-10-09T07:31:59.081Z",
+      "responseOk": true
+    }
+  ]
+}

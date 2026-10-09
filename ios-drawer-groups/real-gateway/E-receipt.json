@@ -1,0 +1,329 @@
+{
+  "case": "K-E",
+  "appHead": "91e83d3963812b40d821f563e4b40aaf4a702770",
+  "gatewayHead": "d2291a9359609ad90794b4daf64f82df16f07444",
+  "nativeUiExit": 0,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Native rendered test exit 0",
+      "pass": true
+    },
+    {
+      "name": "All native mutation responses ok",
+      "pass": true
+    },
+    {
+      "name": "Normal scratch credential pairing operator and node",
+      "pass": true
+    },
+    {
+      "name": "Actual native preference files captured",
+      "pass": true
+    },
+    {
+      "name": "K-E-idle 4 observations including 15s with prompt and keyboard",
+      "pass": true
+    },
+    {
+      "name": "K-E-drop 4 observations including 15s with prompt and keyboard",
+      "pass": true
+    },
+    {
+      "name": "Empty group has no seeded session",
+      "pass": true
+    },
+    {
+      "name": "Create after reconnect one native put",
+      "pass": true
+    },
+    {
+      "name": "Reconnect-created group stored",
+      "pass": true
+    },
+    {
+      "name": "Actual operator link drop recorded",
+      "pass": true
+    },
+    {
+      "name": "New operator admitted and native catalog read after drop",
+      "pass": true
+    },
+    {
+      "name": "Native create-group put occurs after reconnect",
+      "pass": true
+    },
+    {
+      "name": "Native still K-E-idle-t15 captured",
+      "pass": true
+    },
+    {
+      "name": "Native still K-E-drop-t15 captured",
+      "pass": true
+    },
+    {
+      "name": "Native still created-after-reconnect captured",
+      "pass": true
+    }
+  ],
+  "nativeMutationCount": 1,
+  "nativeMutations": [
+    {
+      "time": "2026-10-09T07:41:50.918Z",
+      "id": "83370D82-FA53-4B59-A51B-F6E53555370B",
+      "method": "sessions.groups.put",
+      "params": {
+        "names": [
+          "Empty Elm",
+          "Occupied Oak",
+          "Reconnect Redwood"
+        ]
+      },
+      "responseOk": true
+    }
+  ],
+  "storedCatalogBefore": [
+    {
+      "name": "Empty Elm",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Occupied Oak",
+      "position": 1,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "storedCatalogAfter": [
+    {
+      "name": "Empty Elm",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Occupied Oak",
+      "position": 1,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Reconnect Redwood",
+      "position": 2,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "observations": [
+    {
+      "alertExists": true,
+      "elapsed": 0.13840293884277344,
+      "window": "K-E-idle",
+      "keyboardExists": true,
+      "scheduledSeconds": 0
+    },
+    {
+      "alertExists": true,
+      "elapsed": 5.767815947532654,
+      "window": "K-E-idle",
+      "keyboardExists": true,
+      "scheduledSeconds": 5
+    },
+    {
+      "alertExists": true,
+      "elapsed": 10.796273946762085,
+      "window": "K-E-idle",
+      "keyboardExists": true,
+      "scheduledSeconds": 10
+    },
+    {
+      "alertExists": true,
+      "elapsed": 15.806007981300354,
+      "window": "K-E-idle",
+      "keyboardExists": true,
+      "scheduledSeconds": 15
+    },
+    {
+      "alertExists": true,
+      "elapsed": 0.14364206790924072,
+      "window": "K-E-drop",
+      "keyboardExists": true,
+      "scheduledSeconds": 0
+    },
+    {
+      "alertExists": true,
+      "elapsed": 5.716840028762817,
+      "window": "K-E-drop",
+      "keyboardExists": true,
+      "scheduledSeconds": 5
+    },
+    {
+      "alertExists": true,
+      "elapsed": 10.749958992004395,
+      "window": "K-E-drop",
+      "keyboardExists": true,
+      "scheduledSeconds": 10
+    },
+    {
+      "alertExists": true,
+      "elapsed": 15.763177990913391,
+      "window": "K-E-drop",
+      "keyboardExists": true,
+      "scheduledSeconds": 15
+    }
+  ],
+  "operatorReconnectCatalogResponses": [
+    {
+      "id": "2DF7A8B7-3C3A-4321-BA36-36919FF88C48",
+      "time": "2026-10-09T07:41:33.165Z",
+      "responseOk": true
+    },
+    {
+      "id": "C02AA0B7-92B2-4B78-BFE9-66DEECF9ABE3",
+      "time": "2026-10-09T07:41:50.904Z",
+      "responseOk": true
+    },
+    {
+      "id": "A73A3716-A38A-4B2C-877D-20B443B41BFB",
+      "time": "2026-10-09T07:41:50.966Z",
+      "responseOk": true
+    }
+  ],
+  "nativeReadResponseCount": 22,
+  "nativeReadResponses": [
+    {
+      "method": "sessions.list",
+      "id": "3E9CC15D-3F2B-4A2B-B778-49A9CF8444D8",
+      "time": "2026-10-09T07:40:43.389Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "D389DADF-4477-40FB-A97B-E218801037F3",
+      "time": "2026-10-09T07:40:43.835Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "11076456-CADB-4F20-86EB-3FFD1F4C1C88",
+      "time": "2026-10-09T07:40:43.924Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "ED6DB580-C6D3-473E-B82C-85F5F3AA8670",
+      "time": "2026-10-09T07:40:43.961Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "F75BCE41-B0B6-4456-ABCE-3E9C8FDEDB6B",
+      "time": "2026-10-09T07:40:44.157Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "6E8EEFD6-1DBF-440E-87C4-E414F01F6F3A",
+      "time": "2026-10-09T07:40:44.161Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "153BA58A-E03B-478B-8273-205585B6D9A0",
+      "time": "2026-10-09T07:40:44.197Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "09F9F4DC-97DE-4A95-9ED6-1A9F2BB6420B",
+      "time": "2026-10-09T07:40:44.230Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "B7CF285A-E526-42D8-86A7-C81055DCB2AB",
+      "time": "2026-10-09T07:40:44.238Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "359D4F2B-BE9C-40B0-A579-3FBE86946BAB",
+      "time": "2026-10-09T07:40:45.461Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "8F48115E-AD0F-48F4-BF48-B02B85A9D0DA",
+      "time": "2026-10-09T07:41:33.145Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "2DF7A8B7-3C3A-4321-BA36-36919FF88C48",
+      "time": "2026-10-09T07:41:33.165Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "1A869075-87A0-40F7-8BBA-0AE5CDE93D0F",
+      "time": "2026-10-09T07:41:33.197Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "275D23FD-5A7A-454F-B10D-5848E49BCB1E",
+      "time": "2026-10-09T07:41:33.233Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "F198E0C8-C296-4D3B-989C-D9DE4365C888",
+      "time": "2026-10-09T07:41:33.241Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "6926ECF5-2223-487E-893E-91D6C45046F7",
+      "time": "2026-10-09T07:41:33.327Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "8362A4D6-4266-4494-9867-F21FC17321C9",
+      "time": "2026-10-09T07:41:33.351Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "C02AA0B7-92B2-4B78-BFE9-66DEECF9ABE3",
+      "time": "2026-10-09T07:41:50.904Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "A6A60868-48CD-463D-BD89-5B4B494F7144",
+      "time": "2026-10-09T07:41:50.957Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "A73A3716-A38A-4B2C-877D-20B443B41BFB",
+      "time": "2026-10-09T07:41:50.966Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "E333482E-E456-486D-AE04-2F6C54CABB3A",
+      "time": "2026-10-09T07:41:50.968Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "26D4406C-AC4C-4349-8AE9-0D790F602DB4",
+      "time": "2026-10-09T07:41:51.002Z",
+      "responseOk": true
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "case": "K-D1",
+  "appHead": "91e83d3963812b40d821f563e4b40aaf4a702770",
+  "gatewayHead": "d2291a9359609ad90794b4daf64f82df16f07444",
+  "nativeUiExit": 0,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Native rendered test exit 0",
+      "pass": true
+    },
+    {
+      "name": "All native mutation responses ok",
+      "pass": true
+    },
+    {
+      "name": "Normal scratch credential pairing operator and node",
+      "pass": true
+    },
+    {
+      "name": "Actual native preference files captured",
+      "pass": true
+    },
+    {
+      "name": "Browse uses native fs.listDir",
+      "pass": true
+    },
+    {
+      "name": "Exactly one native Save cwd plus explicit worktree false",
+      "pass": true
+    },
+    {
+      "name": "Saved defaults stored",
+      "pass": true
+    },
+    {
+      "name": "Exactly one native create same cwd",
+      "pass": true
+    },
+    {
+      "name": "Stored sessionRoot and spawnedCwd equal selected folder",
+      "pass": true
+    },
+    {
+      "name": "Created key equals independently stored row",
+      "pass": true
+    },
+    {
+      "name": "Git switch shown off / plain switch absent",
+      "pass": true
+    },
+    {
+      "name": "Created row actually shown under header",
+      "pass": true
+    },
+    {
+      "name": "Plain folder is outside Git",
+      "pass": true
+    },
+    {
+      "name": "Native still defaults-working-copy-off captured",
+      "pass": true
+    },
+    {
+      "name": "Native still new-session-in-group captured",
+      "pass": true
+    }
+  ],
+  "nativeMutationCount": 2,
+  "nativeMutations": [
+    {
+      "time": "2026-10-09T07:33:36.345Z",
+      "id": "D4FD39FE-3144-4012-A3A7-45EED0B6FFFD",
+      "method": "sessions.groups.update",
+      "params": {
+        "cwd": "/private/tmp/openclaw-finalM-D-folder-git/Saved Folder",
+        "worktree": false,
+        "name": "Folder Fir"
+      },
+      "responseOk": true
+    },
+    {
+      "time": "2026-10-09T07:33:51.452Z",
+      "id": "01403BAC-1B46-4376-B5E4-31DD27CB7ECA",
+      "method": "sessions.create",
+      "params": {
+        "key": "agent:main:dashboard:5a978e52-cf4f-4339-ae09-384f7d1b144d",
+        "worktree": false,
+        "category": "Folder Fir",
+        "cwd": "/private/tmp/openclaw-finalM-D-folder-git/Saved Folder",
+        "agentId": "main"
+      },
+      "responseOk": true
+    }
+  ],
+  "storedCatalogBefore": [
+    {
+      "name": "Folder Fir",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "storedCatalogAfter": [
+    {
+      "name": "Folder Fir",
+      "position": 0,
+      "cwd": "/private/tmp/openclaw-finalM-D-folder-git/Saved Folder",
+      "worktree": 0
+    }
+  ],
+  "selectedFolder": "/private/tmp/openclaw-finalM-D-folder-git/Saved Folder",
+  "switchPresent": true,
+  "switchValue": "0",
+  "storedSessionRoot": "/private/tmp/openclaw-finalM-D-folder-git/Saved Folder",
+  "storedSpawnedCwd": "/private/tmp/openclaw-finalM-D-folder-git/Saved Folder",
+  "folderType": "git",
+  "nativeReadResponseCount": 22,
+  "nativeReadResponses": [
+    {
+      "method": "sessions.list",
+      "id": "E9E6BF72-71BC-4387-A3AE-30005EC25D36",
+      "time": "2026-10-09T07:33:10.418Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "727CFE23-7F79-43B9-8EF6-EE8960F1848A",
+      "time": "2026-10-09T07:33:10.924Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "91A89019-E15F-4596-92CB-192024F45CAC",
+      "time": "2026-10-09T07:33:11.079Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "68A110ED-D104-4B90-9DFD-65FE29515454",
+      "time": "2026-10-09T07:33:11.204Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "376516ED-2348-4EEE-8C92-8AC20A6FE211",
+      "time": "2026-10-09T07:33:11.209Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "0D492EC9-13C7-46B4-819A-924BE1D8ED3C",
+      "time": "2026-10-09T07:33:11.240Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "329F5431-7ECB-416E-AA0C-669AE36F6B38",
+      "time": "2026-10-09T07:33:11.249Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "EE8872C8-6769-475A-835E-D2A983231BBB",
+      "time": "2026-10-09T07:33:12.136Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.defaults",
+      "id": "F912600C-B6AC-4E00-8CB4-218ED47569BE",
+      "time": "2026-10-09T07:33:23.300Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "252FAFA2-0052-42DF-8C81-1A79040E469B",
+      "time": "2026-10-09T07:33:36.410Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "37B4963C-C7C4-4ABF-9911-0B0EE9827FB3",
+      "time": "2026-10-09T07:33:36.419Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "356697FC-063F-4500-AE00-9CFEB165BF81",
+      "time": "2026-10-09T07:33:36.464Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.defaults",
+      "id": "5444F8CA-32B3-442B-8482-E8702E69B01D",
+      "time": "2026-10-09T07:33:43.379Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.defaults",
+      "id": "A8F51632-18A9-4B53-92A5-0D6CCC7FB6A9",
+      "time": "2026-10-09T07:33:51.433Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "1DA762BF-2B77-43C7-93C5-E9EBC0156900",
+      "time": "2026-10-09T07:33:52.826Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "9BB5E417-9337-4FB6-A0E1-C84AB6E00AAB",
+      "time": "2026-10-09T07:33:52.832Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "D32784B4-5D2A-423B-842D-85C8EAB1AF62",
+      "time": "2026-10-09T07:33:52.835Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "C737091E-935C-4619-9531-C90EFA66B634",
+      "time": "2026-10-09T07:33:52.843Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "64A835FA-2B51-4E0C-8A60-29F3C86A0432",
+      "time": "2026-10-09T07:33:53.038Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "EEB6FAF6-4A0A-48C2-A41A-78734A6AE3A9",
+      "time": "2026-10-09T07:33:53.186Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "2FCE345A-4A93-4D1D-95C4-532F683AD534",
+      "time": "2026-10-09T07:33:53.893Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "48CAAD58-AD7B-4C26-B271-740422EF44B9",
+      "time": "2026-10-09T07:33:54.148Z",
+      "responseOk": true
+    }
+  ]
+}

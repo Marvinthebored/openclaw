@@ -1,0 +1,11 @@
+{
+  "pass": true,
+  "testedHead": "803a9153069",
+  "nativePutRequests": 0,
+  "legacyKeyPresentAfter": true,
+  "legacyNamesAfter": [
+    "Legacy Amber",
+    "Legacy Violet"
+  ],
+  "storedCatalogAfter": []
+}

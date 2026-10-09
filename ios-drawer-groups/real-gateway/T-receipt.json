@@ -1,0 +1,154 @@
+{
+  "case": "K-T",
+  "appHead": "91e83d3963812b40d821f563e4b40aaf4a702770",
+  "gatewayHead": "d2291a9359609ad90794b4daf64f82df16f07444",
+  "nativeUiExit": 0,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Native rendered test exit 0",
+      "pass": true
+    },
+    {
+      "name": "All native mutation responses ok",
+      "pass": true
+    },
+    {
+      "name": "Normal scratch credential pairing operator and node",
+      "pass": true
+    },
+    {
+      "name": "Actual native preference files captured",
+      "pass": true
+    },
+    {
+      "name": "Header tap folded count 1 with row hidden and no menu",
+      "pass": true
+    },
+    {
+      "name": "Second tap showed row",
+      "pass": true
+    },
+    {
+      "name": "Same header long press shows menu",
+      "pass": true
+    },
+    {
+      "name": "Stored group unchanged through taps",
+      "pass": true
+    },
+    {
+      "name": "Stored seeded session under Tap Tamarack",
+      "pass": true
+    },
+    {
+      "name": "Native still header-tap-folded captured",
+      "pass": true
+    },
+    {
+      "name": "Native still header-tap-unfolded captured",
+      "pass": true
+    },
+    {
+      "name": "Native still header-longpress-menu captured",
+      "pass": true
+    }
+  ],
+  "nativeMutationCount": 0,
+  "nativeMutations": [],
+  "storedCatalogBefore": [
+    {
+      "name": "Tap Tamarack",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "storedCatalogAfter": [
+    {
+      "name": "Tap Tamarack",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "tapObservations": [
+    {
+      "rowExists": false,
+      "stage": "folded",
+      "menuExists": false,
+      "count": "1"
+    },
+    {
+      "stage": "unfolded",
+      "rowExists": true
+    },
+    {
+      "stage": "menu",
+      "menuExists": true
+    }
+  ],
+  "nativeReadResponseCount": 10,
+  "nativeReadResponses": [
+    {
+      "method": "sessions.list",
+      "id": "5FAB12E4-2059-4F3C-9105-17C0DBBE0004",
+      "time": "2026-10-09T07:43:04.358Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "026809C6-E5DB-4E72-B2D7-E02C75E5E341",
+      "time": "2026-10-09T07:43:04.436Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "99F4C698-CBD6-4287-9482-9442D40D72E6",
+      "time": "2026-10-09T07:43:04.840Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "F4981394-1209-493F-86EB-82C12AAE53BF",
+      "time": "2026-10-09T07:43:04.891Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "1850FAF5-0475-4950-9171-C20228F79FFC",
+      "time": "2026-10-09T07:43:05.076Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "F4F92634-0536-4B86-9989-583E9135076A",
+      "time": "2026-10-09T07:43:05.080Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "6D13F703-D558-44E1-AF3E-14A17559A046",
+      "time": "2026-10-09T07:43:05.127Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "D1A42491-DB2D-4FDB-854B-7A3A1D4DBD5D",
+      "time": "2026-10-09T07:43:05.163Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "227EA708-C626-4871-9633-CE4C772FAFA0",
+      "time": "2026-10-09T07:43:05.166Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "2BA4FC69-8ACC-49CA-BB59-30599C22532D",
+      "time": "2026-10-09T07:43:05.962Z",
+      "responseOk": true
+    }
+  ]
+}

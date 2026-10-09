@@ -1,0 +1,6 @@
+Physical iPhone, live Gateway, 9 October 2026. Gateway response lines for the app's connection.
+
+13:47:57.212 res ok sessions.groups.update 121ms
+13:48:06.346 res ok sessions.create 129ms
+13:48:23.776 res ok sessions.groups.rename 170ms
+13:48:48.596 res ok sessions.groups.delete 118ms

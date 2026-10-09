@@ -1,0 +1,341 @@
+{
+  "case": "K-F",
+  "appHead": "91e83d3963812b40d821f563e4b40aaf4a702770",
+  "gatewayHead": "d2291a9359609ad90794b4daf64f82df16f07444",
+  "nativeUiExit": 0,
+  "passed": true,
+  "checks": [
+    {
+      "name": "Native rendered test exit 0",
+      "pass": true
+    },
+    {
+      "name": "All native mutation responses ok",
+      "pass": true
+    },
+    {
+      "name": "Normal scratch credential pairing operator and node",
+      "pass": true
+    },
+    {
+      "name": "Actual native preference files captured",
+      "pass": true
+    },
+    {
+      "name": "folded-before-relaunch native preference retained",
+      "pass": true
+    },
+    {
+      "name": "folded-after-relaunch native preference retained",
+      "pass": true
+    },
+    {
+      "name": "folded-before-delete native preference retained",
+      "pass": true
+    },
+    {
+      "name": "Deleted name pruned from native preference",
+      "pass": true
+    },
+    {
+      "name": "Gateway actually deleted group",
+      "pass": true
+    },
+    {
+      "name": "Operator reconnect followed by native catalog read",
+      "pass": true
+    },
+    {
+      "name": "Actual operator link drop recorded",
+      "pass": true
+    },
+    {
+      "name": "New operator admitted and native catalog read after drop",
+      "pass": true
+    },
+    {
+      "name": "Real Gateway delete RPC ok",
+      "pass": true
+    },
+    {
+      "name": "Native still folded-after-relaunch captured",
+      "pass": true
+    },
+    {
+      "name": "Native still folded-after-operator-reconnect captured",
+      "pass": true
+    },
+    {
+      "name": "Native still after-gateway-delete-and-refresh captured",
+      "pass": true
+    }
+  ],
+  "nativeMutationCount": 0,
+  "nativeMutations": [],
+  "storedCatalogBefore": [
+    {
+      "name": "Folded Fern",
+      "position": 0,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Idle Iris",
+      "position": 1,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Empty Aspen",
+      "position": 2,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "storedCatalogAfter": [
+    {
+      "name": "Idle Iris",
+      "position": 1,
+      "cwd": null,
+      "worktree": null
+    },
+    {
+      "name": "Empty Aspen",
+      "position": 2,
+      "cwd": null,
+      "worktree": null
+    }
+  ],
+  "preferenceCaptures": [
+    {
+      "tag": "folded-before-relaunch",
+      "key": "openclaw:sessions:collapsed-groups",
+      "keyPresent": true,
+      "names": [
+        "Folded Fern"
+      ],
+      "targetName": "Folded Fern",
+      "targetPresent": true
+    },
+    {
+      "tag": "folded-after-relaunch",
+      "key": "openclaw:sessions:collapsed-groups",
+      "keyPresent": true,
+      "names": [
+        "Folded Fern"
+      ],
+      "targetName": "Folded Fern",
+      "targetPresent": true
+    },
+    {
+      "tag": "folded-before-delete",
+      "key": "openclaw:sessions:collapsed-groups",
+      "keyPresent": true,
+      "names": [
+        "Folded Fern"
+      ],
+      "targetName": "Folded Fern",
+      "targetPresent": true
+    },
+    {
+      "tag": "folded-after-delete",
+      "key": "openclaw:sessions:collapsed-groups",
+      "keyPresent": true,
+      "names": [],
+      "targetName": "Folded Fern",
+      "targetPresent": false
+    }
+  ],
+  "operatorReconnectCatalogResponses": [
+    {
+      "id": "477CAE54-7146-45E8-BBE9-EA8D52E10DAF",
+      "time": "2026-10-09T07:39:20.787Z",
+      "responseOk": true
+    },
+    {
+      "id": "DDE19C0A-71C7-4712-8E06-7E831D65F2E7",
+      "time": "2026-10-09T07:39:27.101Z",
+      "responseOk": true
+    },
+    {
+      "id": "213E1BB7-EBD5-479F-A7B4-CD4393EB3888",
+      "time": "2026-10-09T07:39:27.305Z",
+      "responseOk": true
+    }
+  ],
+  "gatewayDeleteResponse": {
+    "ok": true,
+    "updatedSessions": 1
+  },
+  "nativeReadResponseCount": 28,
+  "nativeReadResponses": [
+    {
+      "method": "sessions.list",
+      "id": "13CAFC1C-083B-4840-8C45-DD674A0210DF",
+      "time": "2026-10-09T07:38:57.055Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "43012590-7C91-4749-B005-C5898AADEC7E",
+      "time": "2026-10-09T07:38:57.105Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "F554BA3B-6329-4BFC-A37A-A23109F842D1",
+      "time": "2026-10-09T07:39:00.307Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "A9F29ECA-2B78-4111-8ED1-BDAA8B3B8D25",
+      "time": "2026-10-09T07:39:00.406Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "D6FD5C32-810E-4525-ABD0-F92878AFD278",
+      "time": "2026-10-09T07:39:00.456Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "301B0A35-A0E4-466C-9A09-111C49CABE00",
+      "time": "2026-10-09T07:39:00.559Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "19724931-E5D4-4147-A6E4-7FEA31D02811",
+      "time": "2026-10-09T07:39:00.697Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "FE693D3C-A283-4748-A515-BB62F55DFC76",
+      "time": "2026-10-09T07:39:00.702Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "36C1C6C6-8E74-4EFE-84F4-587F9D06A8BE",
+      "time": "2026-10-09T07:39:00.809Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "FCDE38A9-3137-43E8-8596-B0C0270C40A5",
+      "time": "2026-10-09T07:39:00.826Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "9762A468-E394-4E6C-901E-9941D568D018",
+      "time": "2026-10-09T07:39:00.836Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "65E89850-30AA-476F-B8D3-327483C24436",
+      "time": "2026-10-09T07:39:14.618Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "F72F0FBB-7B96-442F-8E02-C7C0D74EAC34",
+      "time": "2026-10-09T07:39:14.724Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "56BA3D3F-ED39-4735-8224-242A82278CC3",
+      "time": "2026-10-09T07:39:14.749Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "DE74D8A8-B0CD-4081-A1B4-5CF23D9CB215",
+      "time": "2026-10-09T07:39:14.776Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "CBF9072B-D156-42BC-B4CE-47B3D32F85B1",
+      "time": "2026-10-09T07:39:14.909Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "ABAF0B2F-E724-4FD7-922D-3C607620F5B8",
+      "time": "2026-10-09T07:39:20.765Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "477CAE54-7146-45E8-BBE9-EA8D52E10DAF",
+      "time": "2026-10-09T07:39:20.787Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "7C361E58-409A-4534-B8F4-B710074ECE21",
+      "time": "2026-10-09T07:39:20.865Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "D735F033-693F-44E8-B109-4807D86104A0",
+      "time": "2026-10-09T07:39:20.884Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "7A71A4AA-A6FF-4255-A857-FE58C54FCBE2",
+      "time": "2026-10-09T07:39:20.898Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "537A82CC-2C2A-4E78-9BD9-741D47D70C47",
+      "time": "2026-10-09T07:39:21.023Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "527ADE62-D430-422F-8AEC-5865C39A722E",
+      "time": "2026-10-09T07:39:27.082Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "DDE19C0A-71C7-4712-8E06-7E831D65F2E7",
+      "time": "2026-10-09T07:39:27.101Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "AFF12868-16CC-44D9-A196-86F037F92A78",
+      "time": "2026-10-09T07:39:27.156Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "40C39CC1-CAFD-4EA1-861B-3BE433AD3EB7",
+      "time": "2026-10-09T07:39:27.236Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.groups.list",
+      "id": "213E1BB7-EBD5-479F-A7B4-CD4393EB3888",
+      "time": "2026-10-09T07:39:27.305Z",
+      "responseOk": true
+    },
+    {
+      "method": "sessions.list",
+      "id": "25D21100-E2D7-42E7-ACDE-27975896ABAC",
+      "time": "2026-10-09T07:39:27.333Z",
+      "responseOk": true
+    }
+  ]
+}
