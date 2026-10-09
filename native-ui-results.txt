@@ -1,0 +1,5 @@
+Test Case '-[OpenClawUITests.RootSidebarMenuParityUITests testWholeHeaderAndRowLongPressMenusOpenNativeControls]' passed (101.397 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 101.397 (101.398) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 101.397 (101.399) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 101.397 (101.399) seconds
+** TEST EXECUTE SUCCEEDED **

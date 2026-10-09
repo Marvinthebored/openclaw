@@ -1,0 +1,3 @@
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > resolves and runs session actions with the captured key and durable ID 1ms
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > rechecks session action availability at dispatch and retires its row observer 0ms
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
