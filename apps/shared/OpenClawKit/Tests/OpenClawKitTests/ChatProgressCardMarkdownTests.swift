@@ -58,6 +58,7 @@ struct ChatProgressCardMarkdownTests {
             #"\<progress value='1' max='2'></progress>"#,
             "<!-- <progress value='1' max='2'></progress> -->",
             "<pre><progress value='1' max='2'></progress></pre>",
+            "<div>\n<progress value='1' max='2'></progress>\n</div>",
             "<script><progress value='1' max='2'></progress></script>",
             "Note <script><progress value='1' max='2'></progress></script>",
             "Note <textarea><progress value='1' max='2'></progress></textarea>",
@@ -68,6 +69,23 @@ struct ChatProgressCardMarkdownTests {
             let parsed = ChatProgressCardMarkdown(text)
             #expect(parsed.bars.isEmpty)
             #expect(parsed.text == text)
+        }
+    }
+
+    @Test func `link destinations titles and image descriptions stay literal`() {
+        for text in [
+            "[guide](<progress>)",
+            "[guide][p]\n\n[p]: <progress>",
+            #"[guide](https://example.test "About <progress>")"#,
+            "![<progress>](https://example.test/status.png)",
+        ] {
+            let parsed = ChatProgressCardMarkdown(text)
+            #expect(parsed.bars.isEmpty)
+            #expect(parsed.text == text)
+
+            let withBar = ChatProgressCardMarkdown(text + "\n\n<progress value=3 max=5></progress>")
+            #expect(withBar.bars == [.init(label: nil, value: 3, total: 5)])
+            #expect(withBar.text == text)
         }
     }
 
@@ -109,6 +127,20 @@ struct ChatProgressCardMarkdownTests {
         #expect(realBarParsed.text == "\u{0}`x`")
     }
 
+    @Test func `unreliable HTML source positions preserve the whole card`() {
+        for html in ["<progress value=3 max=5></progress>", "<em>x</em>"] {
+            for suffix in ["", " trailing prose"] {
+                let text = "> note\ncontinued \(html)\(suffix)"
+                let parsed = ChatProgressCardMarkdown(text)
+                #expect(parsed.bars.isEmpty)
+                #expect(parsed.text == text)
+            }
+        }
+        let quoted = ChatProgressCardMarkdown("> note\n> continued <progress value=3 max=5></progress>")
+        #expect(quoted.bars == [.init(label: nil, value: 3, total: 5)])
+        #expect(quoted.text == "> note\n> continued ")
+    }
+
     @Test func `numeric attributes are parsed outside labels and may be unquoted`() {
         let example = ChatProgressCardMarkdown("<progress aria-label=\"Example value='9' max='10'\"></progress>")
         #expect(example.bars == [.init(label: "Example value='9' max='10'", value: nil, total: 1)])
@@ -117,14 +149,18 @@ struct ChatProgressCardMarkdownTests {
     }
 
     @Test func `removing a bar preserves neighboring code indentation`() {
-        let parsed = ChatProgressCardMarkdown("<progress value=3 max=5></progress>\n\n    let code = 1\n")
-        #expect(parsed.bars == [.init(label: nil, value: 3, total: 5)])
-        #expect(parsed.text == "    let code = 1")
+        for code in ["let code = 1", "</progress>"] {
+            let parsed = ChatProgressCardMarkdown("<progress value=3 max=5>\n\n    \(code)\n")
+            #expect(parsed.bars == [.init(label: nil, value: 3, total: 5)])
+            #expect(parsed.text == "    \(code)")
+        }
     }
 
     @Test func `literal raw tag openers do not hide a later real bar`() {
         for example in [
             "Example: `<pre>`",
+            "Example: `<span title='x'`",
+            "Example: `<progress value='1'`",
             "```html\n<script>\n```",
             #"Example: \<textarea>"#,
             "<span title='<pre>'>example</span>",
@@ -132,6 +168,19 @@ struct ChatProgressCardMarkdownTests {
             let parsed = ChatProgressCardMarkdown(example + "\n\n<progress value=3 max=5></progress>")
             #expect(parsed.bars == [.init(label: nil, value: 3, total: 5)])
             #expect(parsed.text == example)
+        }
+    }
+
+    @Test func `raw tag text in a progress label cannot hide a later bar`() {
+        for label in ["<pre>", "<script>", "<span title='x'>"] {
+            let parsed = ChatProgressCardMarkdown(
+                "<progress aria-label=\"\(label)\" value=1 max=2></progress>\n\n"
+                    + "<progress value=3 max=5></progress>")
+            #expect(parsed.bars == [
+                .init(label: label, value: 1, total: 2),
+                .init(label: nil, value: 3, total: 5),
+            ])
+            #expect(parsed.text.isEmpty)
         }
     }
 
