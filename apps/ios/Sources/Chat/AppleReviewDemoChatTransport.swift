@@ -680,6 +680,28 @@ private actor LocalFixtureChatStore {
             effectiveFastMode: self.fastMode,
             permissionMode: self.permissionMode,
             toolOverrides: self.toolOverrides)
+        if ProcessInfo.processInfo.arguments.contains("--openclaw-subsession-fold-fixture") {
+            let parentKey = "agent:main:dashboard:fold-parent"
+            let childKeys = (1...4).map { "agent:main:dashboard:fold-child-\($0)" }
+            let fixtureTime = Date().timeIntervalSince1970 * 1000
+            let parent = OpenClawChatSessionEntry(
+                key: parentKey, displayName: "Fold parent", updatedAt: fixtureTime, childSessions: childKeys)
+            let children = childKeys.enumerated().map { index, key in
+                OpenClawChatSessionEntry(
+                    key: key,
+                    displayName: "Fold child \(index + 1)",
+                    updatedAt: fixtureTime,
+                    parentSessionKey: parentKey)
+            }
+            return OpenClawChatSessionsListResponse(
+                ts: Date().timeIntervalSince1970 * 1000,
+                path: nil,
+                count: 7,
+                defaults: nil,
+                sessions: [entry, parent, OpenClawChatSessionEntry(
+                    key: "agent:main:dashboard:fold-leaf", displayName: "Fold leaf", updatedAt: fixtureTime)] +
+                    children)
+        }
         entry.visibility = .shared
         entry.sharingRole = .owner
         return OpenClawChatSessionsListResponse(

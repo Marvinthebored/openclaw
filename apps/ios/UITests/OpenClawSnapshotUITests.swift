@@ -161,6 +161,61 @@ final class OpenClawSnapshotUITests: XCTestCase {
         self.attachScreenshot(named: "drawer-groups-failed-mutation")
     }
 
+    func testSubsessionFolding() throws {
+        self.launchApp(
+            for: Self.chatScreenshotTarget,
+            additionalArguments: ["--openclaw-subsession-fold-fixture"])
+        let app = try XCTUnwrap(self.app)
+        self.tapSidebarReveal(in: app)
+        let parent = app.buttons["RootTabs.Sidebar.Session.Children.agent:main:dashboard:fold-parent"]
+        self.attachScreenshot(named: "subsession-initial")
+        XCTAssertTrue(parent.waitForExistence(timeout: 8), "Parent must offer a child-fold caret")
+        XCTAssertEqual(parent.label, "Show Sub-sessions")
+        XCTAssertEqual(parent.value as? String, "4")
+        XCTAssertFalse(app.buttons["RootTabs.Sidebar.Session.Children.agent:main:dashboard:fold-leaf"].exists)
+        XCTAssertTrue(app.staticTexts["Fold leaf"].exists)
+        XCTAssertFalse(app.staticTexts["Fold child 1"].exists)
+        let collapsedFrame = parent.frame
+        self.attachScreenshot(named: "subsession-collapsed-count")
+        parent.tap()
+        XCTAssertTrue(app.staticTexts["Fold child 1"].waitForExistence(timeout: 5))
+        for index in 1...4 {
+            XCTAssertTrue(app.staticTexts["Fold child \(index)"].exists)
+        }
+        XCTAssertEqual(parent.label, "Hide Sub-sessions")
+        XCTAssertEqual(parent.value as? String ?? "", "")
+        XCTAssertEqual(parent.frame.minX, collapsedFrame.minX, accuracy: 1)
+        XCTAssertEqual(parent.frame.width, collapsedFrame.width, accuracy: 1)
+        self.attachScreenshot(named: "subsession-expanded-no-count")
+        parent.tap()
+        XCTAssertTrue(app.staticTexts["Fold child 1"].waitForNonExistence(timeout: 5))
+        XCTAssertEqual(parent.value as? String, "4")
+        app.buttons["Search sessions"].tap()
+        let search = app.textFields["Search sessions"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        search.tap()
+        search.typeText("Fold")
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            // Keep the query while dismissing the keyboard; it otherwise covers the lazy session rows.
+            app.buttons["RootTabs.Sidebar.Hide"].tap()
+            self.tapSidebarReveal(in: app)
+            XCTAssertEqual(search.value as? String, "Fold")
+        }
+        XCTAssertTrue(app.staticTexts["Fold child 1"].waitForExistence(timeout: 5))
+        XCTAssertFalse(parent.isEnabled, "Search keeps matching children visible")
+        app.buttons["Clear session search"].tap()
+        XCTAssertTrue(parent.isEnabled)
+        // Dismiss the keyboard before selecting a session row.
+        app.buttons["Search sessions"].tap()
+        parent.tap()
+        app.staticTexts["Fold child 1"].tap()
+        if app.buttons["RootTabs.Sidebar.Show"].exists {
+            self.tapSidebarReveal(in: app)
+        }
+        XCTAssertTrue(app.staticTexts["Fold child 1"].waitForExistence(timeout: 5))
+        XCTAssertFalse(parent.isEnabled, "The selected child must remain reachable")
+    }
+
     func testReleaseControlScreenshot() {
         self.captureReleaseScreenshot(Self.controlScreenshotTarget)
     }
