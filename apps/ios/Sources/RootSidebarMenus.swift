@@ -4,13 +4,18 @@ import SwiftUI
 
 /// The native drawer uses the shared sidebar projection and stores only view preferences locally.
 enum RootSidebarPreferences {
+    /// Adding view controls must not change the roster shown by existing iOS installs.
+    static let defaultOptions = ChatSessionSidebarModel.ViewOptions(
+        sort: .updated, showAutomation: true, showSystem: true)
+
     private static let prefix = "openclaw.ios.sidebar."
 
     static func load(defaults: UserDefaults = .standard) -> ChatSessionSidebarModel.ViewOptions {
         .init(
-            sort: .init(rawValue: defaults.string(forKey: self.prefix + "sort") ?? "") ?? .created,
-            showAutomation: defaults.bool(forKey: self.prefix + "automation"),
-            showSystem: defaults.bool(forKey: self.prefix + "system"),
+            sort: .init(rawValue: defaults.string(forKey: self.prefix + "sort") ?? "") ?? self.defaultOptions.sort,
+            showAutomation: (defaults.object(forKey: self.prefix + "automation") as? Bool) ?? self.defaultOptions
+                .showAutomation,
+            showSystem: (defaults.object(forKey: self.prefix + "system") as? Bool) ?? self.defaultOptions.showSystem,
             grouping: .init(rawValue: defaults.string(forKey: self.prefix + "grouping") ?? "") ?? .category,
             emptyGroups: .init(rawValue: defaults.string(forKey: self.prefix + "emptyGroups") ?? "") ?? .filtering,
             status: .init(rawValue: defaults.string(forKey: self.prefix + "status") ?? "") ?? .active,
@@ -85,11 +90,16 @@ struct RootSidebarSessionViewMenu: View {
         Button(action: self.createGroup) { self.label("New Group…", "folder.badge.plus") }
         Button(action: self.selectSessions) { self.label("Select Sessions…", "checkmark.circle") }
         Button(action: self.openSources) { self.label("Session Sources…", "square.stack.3d.up") }
-        if self.options.isChanged(peopleAvailable: !self.owners.isEmpty) {
+        if self.options.isChanged(
+            peopleAvailable: !self.owners.isEmpty,
+            defaults: RootSidebarPreferences.defaultOptions)
+        {
             Button {
                 let grouping = self.options.grouping
                 let emptyGroups = self.options.emptyGroups
-                self.options.reset(peopleAvailable: !self.owners.isEmpty)
+                self.options.reset(
+                    peopleAvailable: !self.owners.isEmpty,
+                    defaults: RootSidebarPreferences.defaultOptions)
                 if self.showsAllAgents {
                     self.options.grouping = grouping
                     self.options.emptyGroups = emptyGroups

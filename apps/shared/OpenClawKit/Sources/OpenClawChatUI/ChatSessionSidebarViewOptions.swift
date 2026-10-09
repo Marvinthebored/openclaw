@@ -58,17 +58,20 @@ extension ChatSessionSidebarModel {
             self.grouping == .person && !peopleAvailable ? .category : self.grouping
         }
 
-        public func isChanged(peopleAvailable: Bool) -> Bool {
-            self.filterCount > 0 || self.showAutomation || self.showSystem || self.showMessagePreview ||
-                self.sort != .created || self.effectiveGrouping(peopleAvailable: peopleAvailable) != .category ||
-                self.emptyGroups != .filtering
+        public func isChanged(peopleAvailable: Bool, defaults: Self = .init()) -> Bool {
+            self.ownerFilter != defaults.ownerFilter || self.status != defaults.status ||
+                self.showAutomation != defaults.showAutomation || self.showSystem != defaults.showSystem ||
+                self.showMessagePreview != defaults.showMessagePreview || self.sort != defaults.sort ||
+                self.effectiveGrouping(peopleAvailable: peopleAvailable) != defaults.grouping ||
+                self.emptyGroups != defaults.emptyGroups
         }
 
-        public mutating func reset(peopleAvailable: Bool) {
+        public mutating func reset(peopleAvailable: Bool, defaults: Self = .init()) {
             // ui/src/components/sidebar-menus-render.ts:541 preserves a capability-hidden Person preference.
-            let grouping = self.effectiveGrouping(peopleAvailable: peopleAvailable) == .category
-                ? self.grouping : .category
-            self = Self(grouping: grouping)
+            let grouping = self.effectiveGrouping(peopleAvailable: peopleAvailable) == defaults.grouping
+                ? self.grouping : defaults.grouping
+            self = defaults
+            self.grouping = grouping
         }
 
         public func includes(_ session: OpenClawChatSessionEntry) -> Bool {

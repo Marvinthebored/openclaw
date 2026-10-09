@@ -66,14 +66,16 @@ struct RootSidebarMenuParityTests {
         #expect(Array(entries.prefix(saved.count)) == saved)
     }
 
-    @Test func `fresh and invalid preferences use web-compatible native defaults`() throws {
+    @Test func `fresh and invalid preferences preserve iOS roster defaults`() throws {
         let name = "RootSidebarMenuParityTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: name))
         defer { defaults.removePersistentDomain(forName: name) }
         let fresh = RootSidebarPreferences.load(defaults: defaults)
-        #expect(fresh == .init())
+        #expect(fresh == .init(sort: .updated, showAutomation: true, showSystem: true))
         #expect(fresh.status == .active)
-        #expect(fresh.sort == .created)
+        #expect(fresh.sort == .updated)
+        #expect(fresh.showAutomation)
+        #expect(fresh.showSystem)
         #expect(fresh.grouping == .category)
         #expect(fresh.emptyGroups == .filtering)
         for key in ["sort", "grouping", "emptyGroups", "status"] {
@@ -96,7 +98,9 @@ struct RootSidebarMenuParityTests {
         options.status = .snoozed
         options.ownerFilter = "involving-me"
         options.grouping = .person
-        options.sort = .updated
+        options.sort = .created
+        options.showAutomation = false
+        options.showSystem = false
         RootSidebarPreferences.save(options, defaults: defaults)
         #expect(RootSidebarPreferences.load(defaults: defaults) == options)
     }
@@ -270,6 +274,7 @@ struct RootSidebarMenuParityTests {
         let defaults = try #require(UserDefaults(suiteName: name))
         defer { defaults.removePersistentDomain(forName: name) }
         let model = RootSidebarModel(preferences: defaults)
+        model.viewOptions.sort = .created
         let app = NodeAppModel()
         let first = OpenClawChatSessionEntry(key: "agent:main:a")
         let second = OpenClawChatSessionEntry(key: "agent:main:b")

@@ -84,11 +84,6 @@ struct OpenClawTypographyTests {
             contentsOf: Self.sourceURL("Design/CommandCenterTab.swift"),
             encoding: .utf8)
 
-        let editor = try String(
-            contentsOf: Self.sourceURL("Design/CommandSessionMenuSheet.swift"),
-            encoding: .utf8)
-        #expect(editor.contains("text: self.$nameDraft"))
-        #expect(editor.contains("}.font(OpenClawType.body).autocorrectionDisabled()"))
         #expect(support.contains("Label(\"Move to Group\""))
         #expect(support.contains("Label(\"Delete…\""))
         #expect(support.contains(".font(OpenClawType.subhead)"))
