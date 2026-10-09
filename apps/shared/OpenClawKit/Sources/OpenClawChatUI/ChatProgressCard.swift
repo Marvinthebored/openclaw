@@ -290,7 +290,7 @@ struct ChatProgressCardMarkdown: Equatable {
             // Cmark can retain a container's column offset on lazy continuation lines.
             // Even in-bounds inline locations must identify the HTML that was parsed.
             if node is InlineHTML,
-               String(decoding: utf8[startOffset..<endOffset], as: UTF8.self)
+               String(bytes: utf8[startOffset..<endOffset], encoding: .utf8)?
                    .replacingOccurrences(of: "\r\n", with: "\n")
                    .replacingOccurrences(of: "\r", with: "\n") != html
             {
