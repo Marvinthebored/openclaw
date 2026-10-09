@@ -303,6 +303,85 @@ struct SessionGroupMigrationTests {
         }
     }
 
+    @Test func `refresh drops a kept catalog when the connection cannot list groups`() async {
+        await GatewayPersistenceTestGate.shared.acquire()
+        defer { GatewayPersistenceTestGate.shared.release() }
+        await withUserDefaults([SessionGroupStore.defaultsKey: ["Device Local"]]) {
+            let model = SessionGroupModel()
+            let appModel = NodeAppModel()
+            let owner = appModel.chatViewModelOwnerID
+            let connection = OpenClawSessionMenuConnection(
+                methods: ["sessions.groups.list"],
+                scopes: ["operator.read"],
+                isCurrent: { true },
+                request: { _ in Data(#"{"groups":[{"name":"Catalog Only","position":0}]}"#.utf8) })
+            appModel.setOperatorConnected(true)
+            await model.refresh(appModel: appModel, connectionProvider: { _ in connection })
+            #expect(model.names(for: []) == ["Catalog Only"])
+            #expect(model.usesCatalog)
+
+            appModel.setOperatorConnected(false)
+            await model.refresh(appModel: appModel, connectionProvider: { _ in nil })
+            #expect(appModel.chatViewModelOwnerID == owner)
+            #expect(model.names(for: []) == ["Catalog Only"], "A dropped link must keep the catalog")
+            #expect(model.usesCatalog)
+
+            let legacy = OpenClawSessionMenuConnection(
+                methods: [],
+                scopes: ["operator.write"],
+                isCurrent: { true },
+                request: { _ in
+                    Issue.record("A connection without group methods must not request the catalog")
+                    return Data()
+                })
+            appModel.setOperatorConnected(true)
+            await model.refresh(appModel: appModel, connectionProvider: { _ in legacy })
+            #expect(appModel.chatViewModelOwnerID == owner)
+            #expect(
+                model.names(for: []) == ["Device Local"],
+                "A current connection without group methods must show device-local groups")
+            #expect(!model.usesCatalog, "A current connection without group methods must drop the kept catalog")
+            #expect(!model.allows("sessions.groups.put"))
+            #expect(!model.allows("sessions.groups.rename"))
+        }
+    }
+
+    @Test func `a loaded catalog prunes folded names that no longer name a group`() async {
+        await GatewayPersistenceTestGate.shared.acquire()
+        defer { GatewayPersistenceTestGate.shared.release() }
+        await withUserDefaults([
+            SessionGroupStore.defaultsKey: nil,
+            SessionGroupStore.collapsedKey: nil,
+        ]) {
+            let model = SessionGroupModel()
+            let appModel = NodeAppModel()
+            let connection = OpenClawSessionMenuConnection(
+                methods: ["sessions.groups.list"],
+                scopes: ["operator.read"],
+                isCurrent: { true },
+                request: { _ in Data(#"{"groups":[{"name":"Kept","position":0}]}"#.utf8) })
+            await model.refresh(appModel: appModel, connectionProvider: { _ in connection })
+            #expect(model.names(for: []) == ["Kept"])
+            model.collapsed = ["Kept", "Gone"]
+            model.pruneCollapsed(for: [])
+            #expect(model.collapsed == ["Kept"], "A loaded catalog must prune folded names absent from its groups")
+            #expect(SessionGroupStore.loadCollapsed() == ["Kept"])
+
+            model.collapsed.insert("Gone")
+            let failed = OpenClawSessionMenuConnection(
+                methods: ["sessions.groups.list"],
+                scopes: ["operator.read"],
+                isCurrent: { true },
+                request: { _ in throw URLError(.cannotConnectToHost) })
+            await model.refresh(appModel: appModel, connectionProvider: { _ in failed })
+            #expect(model.failure != nil)
+            #expect(model.names(for: []) == ["Kept"])
+            model.pruneCollapsed(for: [])
+            #expect(model.collapsed == ["Kept", "Gone"], "A failed catalog refresh must not prune folded names")
+            #expect(SessionGroupStore.loadCollapsed() == ["Kept", "Gone"])
+        }
+    }
+
     @Test func `refresh keeps the catalog across a dropped link to the same gateway`() async {
         await GatewayPersistenceTestGate.shared.acquire()
         defer { GatewayPersistenceTestGate.shared.release() }
