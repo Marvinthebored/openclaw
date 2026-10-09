@@ -1,0 +1,59 @@
+{
+  "surface": "real iPhone simulator drawer",
+  "states": [
+    {
+      "stage": "folded",
+      "childExists": false,
+      "caretFrame": [
+        286,
+        516,
+        44,
+        44
+      ],
+      "count": "1",
+      "groupHeaderFrame": [
+        20,
+        466,
+        266,
+        44
+      ],
+      "viewport": [
+        0,
+        0,
+        402,
+        874
+      ]
+    },
+    {
+      "caretFrame": [
+        286,
+        516,
+        44,
+        44
+      ],
+      "viewport": [
+        0,
+        0,
+        402,
+        874
+      ],
+      "stage": "unfolded",
+      "childFrame": [
+        26,
+        566,
+        304,
+        44
+      ],
+      "groupHeaderFrame": [
+        20,
+        466,
+        266,
+        44
+      ],
+      "childExists": true,
+      "count": ""
+    }
+  ],
+  "caretXAndWidthDeltaAtMost1Point": true,
+  "groupHeaderUnchanged": true
+}
