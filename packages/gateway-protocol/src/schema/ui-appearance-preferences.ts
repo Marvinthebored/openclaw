@@ -3,6 +3,15 @@ import { normalizeTabIconPreference } from "./tab-icon.js";
 import { UI_APPEARANCE_TYPEFACE_VALUES } from "./ui-appearance-typefaces.js";
 
 export { normalizeTabIconPreference, type TabIconPreference } from "./tab-icon.js";
+/** Constant browser defaults; omitted config preferences remain omitted. */
+export const UI_PREFERENCE_DEFAULTS = {
+  theme: "claw",
+  themeMode: "system",
+  chatShowThinking: true,
+  chatShowToolCalls: true,
+  chatPersistCommentary: true,
+  chatSendShortcut: "enter",
+} as const;
 
 export const UI_APPEARANCE_PREFERENCE_KEYS = {
   theme: "ui.theme",
