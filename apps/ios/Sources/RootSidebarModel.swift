@@ -343,6 +343,7 @@ final class RootSidebarModel {
         switch loadedRoster {
         case let .success(roster):
             self.applyRoster(roster)
+            appModel.sessionGroups.pruneCollapsed(for: self.sessions)
         case let .failure(message):
             self.sessionErrorText = message
         case .cancelled:

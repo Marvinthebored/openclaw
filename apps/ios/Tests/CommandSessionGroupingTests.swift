@@ -193,6 +193,21 @@ struct SessionGroupStoreTests {
             #expect(SessionGroupStore.load() == ["Dev", "Ops", "Core"])
         }
     }
+
+    @MainActor
+    @Test func `folded groups survive a new model and are kept while no catalog is loaded`() async {
+        await GatewayPersistenceTestGate.shared.acquire()
+        defer { GatewayPersistenceTestGate.shared.release() }
+        withUserDefaults([SessionGroupStore.collapsedKey: nil]) {
+            let model = SessionGroupModel()
+            #expect(model.collapsed.isEmpty)
+            model.collapsed.insert("Ops")
+            #expect(SessionGroupModel().collapsed == ["Ops"])
+            // No catalog loaded: nothing is known to be stale.
+            model.pruneCollapsed(for: [])
+            #expect(SessionGroupStore.loadCollapsed() == ["Ops"])
+        }
+    }
 }
 
 @Suite(.serialized)
