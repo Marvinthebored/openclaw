@@ -1,17 +1,252 @@
-✔ Test "presence-only connections preserve named-main session aliases without exposing unlisted titles" passed after 0.002 seconds.
+Fetching https://github.com/mgriebling/SwiftMath from cache
+Fetching https://github.com/steipete/ElevenLabsKit from cache
+Fetched https://github.com/mgriebling/SwiftMath from cache (0.02s)
+Fetched https://github.com/steipete/ElevenLabsKit from cache (0.02s)
+[0/1] Planning build
+[1/1] Compiling plugin GenerateGatewayProtocol
+Building for debugging...
+[1/5] Write sources
+[2/5] Copying Mermaid
+[3/5] Write swift-version--58304C5D6DBC2206.txt
+[5/9] Emitting module OpenClawChatUI
+[6/9] Compiling OpenClawChatUI ChatSessionSidebarActions.swift
+[7/9] Compiling OpenClawChatUI ChatSessionSidebarModel.swift
+[8/9] Compiling OpenClawChatUI ChatSessionSidebarCatalogPresentation.swift
+[9/28] Compiling OpenClawChatUI ChatSessionIconPicker.swift
+[10/28] Compiling OpenClawChatUI ChatSessionSidebarPages.swift
+[11/28] Compiling OpenClawChatUI ChatCommandPalette.swift
+[12/28] Compiling OpenClawChatUI ChatCommandPaletteModel.swift
+[13/28] Compiling OpenClawChatUI ChatSessionSidebar+Catalogs.swift
+[14/28] Compiling OpenClawChatUI ChatSessionSidebar+Identity.swift
+[15/28] Compiling OpenClawChatUI ChatSessionSidebar+RosterState.swift
+[16/37] Compiling OpenClawChatUI ChatSessionSidebar+Interactions.swift
+[17/37] Compiling OpenClawChatUI ChatSessionMenuAccess.swift
+[18/37] Compiling OpenClawChatUI ChatSessionSidebar+GroupMenu.swift
+[19/40] Compiling OpenClawChatUI ChatSessionSidebarData.swift
+[20/40] Compiling OpenClawChatUI ChatSessionSidebarFilters.swift
+[21/40] Compiling OpenClawChatUI ChatSessionSidebarData+Queries.swift
+[22/43] Compiling OpenClawChatUI ChatSessionSidebarModel+Titles.swift
+[23/43] Compiling OpenClawChatUI ChatSessionSidebarGrouping.swift
+[24/43] Compiling OpenClawChatUI ChatSessionSidebarPreviews.swift
+[25/46] Compiling OpenClawChatUI ChatSessionSidebar+Row.swift
+[26/46] Compiling OpenClawChatUI ChatWindowShell.swift
+[27/46] Compiling OpenClawChatUI ChatSessionSidebar+Sections.swift
+[28/46] Compiling OpenClawChatUI ChatSessionSidebar+ContextMenu.swift
+[29/46] Compiling OpenClawChatUI ChatSessionSidebar+Tree.swift
+[30/46] Compiling OpenClawChatUI ChatSessionSidebarRowFacts.swift
+[31/46] Compiling OpenClawChatUI ChatSessionSidebar+ArchiveUndo.swift
+[32/46] Compiling OpenClawChatUI ChatSessionSidebar+Header.swift
+[33/46] Compiling OpenClawChatUI ChatSessionSidebar.swift
+[34/48] Compiling OpenClawChatUI ChatSessionSidebarBatch.swift
+[35/48] Compiling OpenClawChatUI ChatSessionSidebarChildren.swift
+[36/48] Compiling OpenClawChatUI ChatViewModel+TranscriptCache.swift
+[37/48] Compiling OpenClawChatUI ChatViewModel+TransportEvents.swift
+[38/48] Compiling OpenClawChatUI ChatViewModel+SessionKeys.swift
+[39/48] Compiling OpenClawChatUI ChatWebConversation.swift
+[40/48] Compiling OpenClawChatUI ChatViewModel.swift
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 591 |                     return
+ 592 |                 }
+ 593 |                 await MainActor.run { [weak self] in
+     |                                 `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 594 |                     self?.handleTransportEvent(evt)
+ 595 |                 }
+[41/48] Compiling OpenClawChatUI ChatViewModel+SessionActions.swift
+[42/48] Compiling OpenClawChatUI ChatSheets.swift
+[43/48] Compiling OpenClawChatUI ChatSessionSidebarViewOptions.swift
+[44/48] Compiling OpenClawChatUI ChatSessionManagementViews.swift
+[45/48] Compiling OpenClawChatUI ChatSessionSidebar+People.swift
+[46/48] Compiling OpenClawChatUI ChatSessionAttention.swift
+[47/48] Compiling OpenClawChatUI ChatSessionHoverCardProjection.swift
+[48/72] Compiling OpenClawKitTests ChatSessionSidebarSelectionTests.swift
+[49/72] Compiling OpenClawKitTests ChatSessionSidebarFiltersModelTests.swift
+[50/72] Compiling OpenClawKitTests ChatSessionSidebarFiltersTests.swift
+[51/72] Compiling OpenClawKitTests ChatSessionSidebarFollowupsModelTests.swift
+[52/72] Compiling OpenClawKitTests ChatSessionSidebarFollowupsQueryTests.swift
+[53/72] Compiling OpenClawKitTests ChatSessionSidebarCatalogPresentationTests.swift
+[54/72] Compiling OpenClawKitTests ChatSessionSidebarCatalogsTests.swift
+[55/72] Compiling OpenClawKitTests ChatSessionSidebarMenuTests.swift
+[56/72] Compiling OpenClawKitTests ChatViewModelAgentNavigationTests.swift
+[57/72] Compiling OpenClawKitTests ChatSessionSidebarPreviewsTests.swift
+[58/72] Compiling OpenClawKitTests ChatSessionSidebarTreeTests.swift
+[59/72] Compiling OpenClawKitTests ChatCommandPaletteTests.swift
+[60/72] Compiling OpenClawKitTests ChatSessionAttentionTests.swift
+[61/72] Compiling OpenClawKitTests ChatSessionSidebarPagesTests.swift
+[62/72] Emitting module OpenClawKitTests
+<local-path> warning: no calls to throwing functions occur within 'try' expression
+152 |                 #", "archived":true,"participants":[{"identity":{"type":"profile","id":"bea"},"label":"Bea"}],"participantCount":1"#)
+153 |         func attribution(_ options: ChatSessionSidebarModel.ViewOptions) throws -> ChatSidebarOwnership.Attribution {
+154 |             try #require(ownership.attribution(
+    |             `- warning: no calls to throwing functions occur within 'try' expression
+155 |                 for: row, options: options, isChild: false, decorated: false, viewingProfileIDs: ["bea"]))
+156 |         }
+[63/72] Compiling OpenClawKitTests ChatSessionSidebarModelTests.swift
+[64/72] Compiling OpenClawKitTests ChatSessionSidebarRowTests.swift
+[65/72] Compiling OpenClawKitTests ChatViewModelTests.swift
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1812 |         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ 1813 | 
+ 1814 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1815 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1816 |                 steps: [
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1852 |         try await loadAndWaitBootstrap(vm: vm, sessionId: "sess-main")
+ 1853 |         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ 1854 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1855 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1856 |                 steps: [legacyPlanStep("Old gateway step", status: "in_progress")]))
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1862 |         // Hold its capability reply until the unknown-capability assertions finish.
+ 1863 |         _ = await capabilityPhase.increment()
+ 1864 |         await MainActor.run { vm.handleTransportEvent(sequenceGap ? .seqGap : .routeChanged) }
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1865 |         await capabilityGate.waitUntilBlocked()
+ 1866 |         #expect(await MainActor.run { vm.progressCardStoreAvailable } == nil)
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1866 |         #expect(await MainActor.run { vm.progressCardStoreAvailable } == nil)
+ 1867 | 
+ 1868 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1869 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1870 |                 steps: [legacyPlanStep("New gateway step", status: "in_progress")]))
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1883 |         await waitForObservedState { vm.progressCardStoreAvailable == true }
+ 1884 | 
+ 1885 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1886 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1887 |                 steps: [legacyPlanStep("Ignored", status: "in_progress")]))
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1897 |         try await loadAndWaitBootstrap(vm: vm, sessionId: "sess-main")
+ 1898 | 
+ 1899 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1900 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1901 |                 steps: [legacyPlanStep("Ignored", status: "in_progress")]))
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1937 |         try await loadAndWaitBootstrap(vm: vm, sessionId: "sess-main")
+ 1938 |         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ 1939 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1940 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1941 |                 steps: [legacyPlanStep("Existing", status: "in_progress")]))
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1943 |         #expect(await MainActor.run { vm.progressCard != nil })
+ 1944 | 
+ 1945 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1946 |             vm.handleTransportEvent(legacyPlanEvent(steps: []))
+ 1947 |         }
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1957 |         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ 1958 | 
+ 1959 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1960 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1961 |                 steps: [AnyCodable("First")],
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1965 |         #expect(await MainActor.run { vm.progressCard?.steps?.first?.status.rawValue } == "pending")
+ 1966 | 
+ 1967 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 1968 |             vm.handleTransportEvent(legacyPlanEvent(
+ 1969 |                 steps: [AnyCodable("Second")],
+
+<local-path> warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 2059 |         await waitForObservedState { vm.progressCard?.revision == 5 }
+ 2060 | 
+ 2061 |         await MainActor.run {
+      |                         `- warning: result of call to 'run(resultType:body:)' is unused [#no-usage]
+ 2062 |             vm.handleTransportEvent(.progressCardChanged(ProgressCardChangedEvent(
+ 2063 |                 sessionkey: "agent:main:other",
+[66/72] Compiling OpenClawKitTests ChatSessionMenuAccessTests.swift
+[67/72] Compiling OpenClawKitTests ChatSessionSidebarBatchTests.swift
+[68/72] Compiling OpenClawKitTests ChatSidebarIdentityTests.swift
+[69/72] Compiling OpenClawKitTests ChatSessionSidebarQueryTests.swift
+[70/72] Compiling OpenClawKitTests ChatSessionSidebarPolicyModelTests.swift
+[71/73] Compiling OpenClawKitTests ChatViewModelUnreadTests.swift
+[71/73] Write Objects.LinkFileList
+[72/73] Linking OpenClawKitPackageTests
+Build complete! (37.75s)
+Test Suite 'Selected tests' started at 2026-10-10 00:38:03.194.
+Test Suite 'OpenClawKitPackageTests.xctest' started at 2026-10-10 00:38:03.195.
+Test Suite 'OpenClawKitPackageTests.xctest' passed at 2026-10-10 00:38:03.195.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-10-10 00:38:03.195.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite ChatSessionSidebarRefreshCoordinatorTests started.
+◇ Suite ChatSessionSidebarCatalogPresentationTests started.
+◇ Suite ChatSidebarPeopleFilterTests started.
+◇ Suite ChatSessionMenuAccessTests started.
+◇ Test "presence groups stay primary by default while explicit count sorts cross them" started.
+◇ Test "debounce bursts and canceled waits cannot suppress a replacement load" started.
+◇ Test "unknown count facets never claim running people or borrow loaded roster counts" started.
+◇ Test "spawned children do not gain pin or move-to-group actions" started.
+◇ Test "presence-only connections preserve named-main session aliases without exposing unlisted titles" started.
+◇ Test "broad writers cannot archive another creator or delete a live row" started.
+◇ Test "bound menu rejects replacement but acknowledges its own committed removal" started.
+◇ Test "bound menu discards async non lifecycle results after incarnation changes" started.
+◇ Test "catalog ownership uses canonical facts outside filtered roster membership" started.
+◇ Test "ranked search keeps flat relevance order and adopted hits without a raw catalog placeholder" started.
+◇ Test "disconnect retires an in-flight facet and requires fresh presence on reconnect" started.
+◇ Test "catalog projection does not reshape the ordinary forest without adopted exclusions" started.
+◇ Test "catalog rows follow retained archive and snooze facts after leaving the active roster" started.
+◇ Test "catalog exclusion preserves folded activity child hydration and empty groups" started.
+◇ Test "pushed presence supersedes a suspended system-presence snapshot" started.
+◇ Test "retired menu authority cannot dispatch or publish awaited response" started.
+◇ Test "only valid unknown catalog routes suppress the ordinary selected placeholder" started.
+◇ Test "deleting a source leaves adopted conversations and later selections open" started.
+◇ Test "scoped session grants preserve ownership and field boundaries" started.
+◇ Test "first load source errors stay visible without rows while offline hosts stay quiet" started.
+◇ Test "catalog section admission shares hidden archived and all agent visibility" started.
+◇ Test "row mutations retain clicked agent incarnation and archived deletion guard" started.
+◇ Test "adopted navigation retains the canonical agent and empty names remain visible" started.
+◇ Test case passing 2 arguments route → "catalog:Source:Host:%ZZ", catalog → false to "only valid unknown catalog routes suppress the ordinary selected placeholder" started.
+◇ Test case passing 2 arguments route → "catalog:Source:Host:Thread:extra", catalog → false to "only valid unknown catalog routes suppress the ordinary selected placeholder" started.
+◇ Test case passing 2 arguments route → "catalog:Source:Host:Thread%3AOne", catalog → true to "only valid unknown catalog routes suppress the ordinary selected placeholder" started.
+◇ Test case passing 2 arguments route → "agent::catalog:Source:Host:Thread", catalog → false to "only valid unknown catalog routes suppress the ordinary selected placeholder" started.
+◇ Test case passing 2 arguments route → "agent:main:catalog:Source:Host:Thread", catalog → true to "only valid unknown catalog routes suppress the ordinary selected placeholder" started.
+◇ Test "catalog exclusion happens after ordinary projection and promotes retained children" started.
+✔ Test "presence groups stay primary by default while explicit count sorts cross them" passed after 0.004 seconds.
 ✔ Test "unknown count facets never claim running people or borrow loaded roster counts" passed after 0.005 seconds.
-✔ Test "presence groups stay primary by default while explicit count sorts cross them" passed after 0.005 seconds.
+✔ Test "presence-only connections preserve named-main session aliases without exposing unlisted titles" passed after 0.005 seconds.
 ✔ Test "bound menu discards async non lifecycle results after incarnation changes" passed after 0.006 seconds.
-✔ Test "row mutations retain clicked agent incarnation and archived deletion guard" passed after 0.006 seconds.
-✔ Test "bound menu rejects replacement but acknowledges its own committed removal" passed after 0.006 seconds.
-✔ Test "broad writers cannot archive another creator or delete a live row" passed after 0.006 seconds.
-✔ Test "scoped session grants preserve ownership and field boundaries" passed after 0.006 seconds.
-✔ Test "spawned children do not gain pin or move-to-group actions" passed after 0.006 seconds.
-✔ Test "retired menu authority cannot dispatch or publish awaited response" passed after 0.006 seconds.
-✔ Suite ChatSessionMenuAccessTests passed after 0.006 seconds.
-✔ Test "pushed presence supersedes a suspended system-presence snapshot" passed after 0.006 seconds.
-✔ Test "disconnect retires an in-flight facet and requires fresh presence on reconnect" passed after 0.006 seconds.
-✔ Suite ChatSidebarPeopleFilterTests passed after 0.006 seconds.
-✔ Test "debounce bursts and canceled waits cannot suppress a replacement load" passed after 0.006 seconds.
-✔ Suite ChatSessionSidebarRefreshCoordinatorTests passed after 0.006 seconds.
-✔ Test run with 13 tests in 3 suites passed after 0.007 seconds.
+✔ Test "broad writers cannot archive another creator or delete a live row" passed after 0.011 seconds.
+✔ Test "catalog exclusion preserves folded activity child hydration and empty groups" passed after 0.011 seconds.
+✔ Test "bound menu rejects replacement but acknowledges its own committed removal" passed after 0.011 seconds.
+✔ Test "catalog rows follow retained archive and snooze facts after leaving the active roster" passed after 0.011 seconds.
+✔ Test "spawned children do not gain pin or move-to-group actions" passed after 0.011 seconds.
+✔ Test "retired menu authority cannot dispatch or publish awaited response" passed after 0.011 seconds.
+✔ Test "catalog projection does not reshape the ordinary forest without adopted exclusions" passed after 0.011 seconds.
+✔ Test "catalog ownership uses canonical facts outside filtered roster membership" passed after 0.011 seconds.
+✔ Test "deleting a source leaves adopted conversations and later selections open" passed after 0.011 seconds.
+✔ Test "ranked search keeps flat relevance order and adopted hits without a raw catalog placeholder" passed after 0.011 seconds.
+✔ Test "row mutations retain clicked agent incarnation and archived deletion guard" passed after 0.014 seconds.
+✔ Test "adopted navigation retains the canonical agent and empty names remain visible" passed after 0.014 seconds.
+✔ Test "first load source errors stay visible without rows while offline hosts stay quiet" passed after 0.014 seconds.
+✔ Test "only valid unknown catalog routes suppress the ordinary selected placeholder" with 5 test cases passed after 0.014 seconds.
+✔ Test "scoped session grants preserve ownership and field boundaries" passed after 0.014 seconds.
+✔ Test "catalog exclusion happens after ordinary projection and promotes retained children" passed after 0.014 seconds.
+✔ Suite ChatSessionMenuAccessTests passed after 0.015 seconds.
+✔ Test "disconnect retires an in-flight facet and requires fresh presence on reconnect" passed after 0.015 seconds.
+✔ Test "pushed presence supersedes a suspended system-presence snapshot" passed after 0.015 seconds.
+✔ Suite ChatSidebarPeopleFilterTests passed after 0.015 seconds.
+✔ Test "catalog section admission shares hidden archived and all agent visibility" passed after 0.016 seconds.
+✔ Suite ChatSessionSidebarCatalogPresentationTests passed after 0.016 seconds.
+✔ Test "debounce bursts and canceled waits cannot suppress a replacement load" passed after 0.016 seconds.
+✔ Suite ChatSessionSidebarRefreshCoordinatorTests passed after 0.016 seconds.
+✔ Test run with 24 tests in 4 suites passed after 0.016 seconds.

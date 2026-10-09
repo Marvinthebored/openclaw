@@ -1,38 +1,16 @@
-[
-  {
-    "file": "screenshots/after-appearance.png",
-    "sha256": "0f0bf0faeb81a302346361eb990399b8ad72401b8a14f4c63c88eba10bd2fbc7"
-  },
-  {
-    "file": "screenshots/after-assignment.png",
-    "sha256": "4eb0b91bcc324b1f3c2693c4c7496c55407ff8a965fc191a5d3e25f14c44f435"
-  },
-  {
-    "file": "screenshots/after-copy-submenu.png",
-    "sha256": "99900bf462bba43e871717b06227272353bbb8b38d60ad60dfd94caab3cab8ed"
-  },
-  {
-    "file": "screenshots/after-pages-editor.png",
-    "sha256": "ff7150f8ebd5dc545f68c173955a951ce7368d2d8a4945addad979ff08e5eb88"
-  },
-  {
-    "file": "screenshots/after-rename-copy-confirmation.png",
-    "sha256": "2871a650217c3f987408840549200d6e345e7a7e25e8883e1516ba9fcf98bfda"
-  },
-  {
-    "file": "screenshots/after-session-menu.png",
-    "sha256": "f4de938f860a5aef755e8dbcd12d97602f73d373e2be4b36cecbe23068f6392b"
-  },
-  {
-    "file": "screenshots/after-sidebar-landing.png",
-    "sha256": "32eac6d844f642dd490f33b03dc983b8a647558744b533cd5b07758c79cd5cf7"
-  },
-  {
-    "file": "screenshots/before-session-menu.png",
-    "sha256": "13c70c03360abfc748d3b704c676414b497012114c364bd768ef917f6433fb73"
-  },
-  {
-    "file": "screenshots/before-sidebar-landing.png",
-    "sha256": "a73f20241974a9ca7eb5a492bd3fa1be3eb3c8ba613623fde2c46ce08fe08d1a"
-  }
-]
+{
+  "after-appearance.png": "fe142f19f88fb9ca643f1c493a77b9449b94ebc5b32bab28ae62ba1f177c58cd",
+  "after-assignment.png": "c41619d59d50d02e4dc687aefd9abb9d18f8bbba60dae838943bacd4ed730751",
+  "after-copy-submenu.png": "f13068a26b9f73a7d8e3ab0575e1388c44c1649ab325a18bb693bb91889a8b18",
+  "after-pages-editor.png": "5fc1cd74bdf2dddbb786d4d95ae7c7be44b04c22b494fcdcd30d9f9598e4a9d5",
+  "after-rename-copy-confirmation.png": "ca91ba2bf96c3aaab400ad85f9ceccdaf4d6b1b39c6135884b769a0c4340a95d",
+  "after-session-menu.png": "eb864e494a0bd8d5900caed97698d8663c0dc16735548e8e50eeb7ece1920173",
+  "after-sidebar-landing.png": "660ef41f426984824d900478bb676258b1c50e87a1e2c612d9a50f386ac8b43e",
+  "before-session-menu.png": "13c70c03360abfc748d3b704c676414b497012114c364bd768ef917f6433fb73",
+  "before-sidebar-landing.png": "a73f20241974a9ca7eb5a492bd3fa1be3eb3c8ba613623fde2c46ce08fe08d1a",
+  "real-native-plugin-action.png": "913d42c0dba5355dac3c34c4b812d0d233895772f51a780f16e419edc235e3e5",
+  "stable-pages-customized.png": "89c4cecfb8126851f2cc43b013a92cde064af45081cbdf0cab48816decbb13c5",
+  "upgraded-pages-customized.png": "cacf792586d9426f41f825d3d18de4addb2d257474a7db835c599adcbf4dc5be",
+  "upgraded-pages-editor.png": "13e61e3f52828b3f60893a947121964d7d8632790db1dca7d9e9d4e0c998d35a",
+  "upgraded-pages-relaunch.png": "8d7d702060a32a22c27bef20f74531717bdd406884dda63c255b973dd4ea620a"
+}

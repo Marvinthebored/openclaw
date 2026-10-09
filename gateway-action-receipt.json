@@ -1,0 +1,16 @@
+{
+  "marker": "native-production-bridge",
+  "invocationCount": 1,
+  "role": "operator",
+  "clientId": "openclaw-control-ui",
+  "connectionId": "33f63add-e3c4-43f0-ae06-66b98042ed04",
+  "scopes": [
+    "operator.admin",
+    "operator.read",
+    "operator.write",
+    "operator.approvals",
+    "operator.questions",
+    "operator.pairing"
+  ],
+  "at": "2026-10-09T16:44:41.952Z"
+}

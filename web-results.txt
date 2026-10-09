@@ -1,3 +1,37 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - JSON import "./control-ui-i18n-config.json" without import attributes (../scripts/lib/control-ui-i18n-sync-plan.ts:2:41). Add `with { type: 'json' }`
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+Plugin "vitest:mocks:interceptor" defines Vite-specific hooks (configureServer) in a plugin returned from applyToEnvironment. These hooks will be ignored.
+
+ RUN  v5.0.1 <local-path>
+
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > projects optional navigation metadata and executes its registered action, not a guessed page 5ms
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > rejects a held menu after replace 0ms
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > rejects a held menu after reconnect 0ms
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > rejects a held menu after abort 0ms
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > rejects a held menu after revision 0ms
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > does not acknowledge success after connection retirement during an action 0ms
  ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > resolves and runs session actions with the captured key and durable ID 1ms
  ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > rechecks session action availability at dispatch and retires its row observer 0ms
-[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+ ✓  unit  src/app/native-sidebar-plugin-bridge.test.ts > native sidebar plugin bridge > does not activate without the native embed marker 0ms
+stderr | src/plugins/control-ui-navigation.test.ts
+Multiple versions of Lit loaded. Loading multiple versions is not recommended. See https://lit.dev/msg/multiple-versions for more information.
+
+Could not parse CSS stylesheet
+stderr | src/plugins/control-ui-navigation.test.ts > opens navigation actions through the sidebar menu owner for pointer and keyboard access
+Element wa-dropdown-item scheduled an update (generally because a property was set) after an update completed, causing a new update to be scheduled. This is inefficient and should be avoided unless the next update can only be scheduled as a side effect of the previous update. See https://lit.dev/msg/change-in-update for more information.
+
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+Could not parse CSS stylesheet
+ ✓  unit  src/plugins/control-ui-navigation.test.ts > opens navigation actions through the sidebar menu owner for pointer and keyboard access 362ms
+ ✓  unit  src/plugins/control-ui-navigation.test.ts > shows the active plugin section's ordered children and leaves pinned children standalone 8ms
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  00:41:14
+   Duration  1.54s (environment 28%, tests 28%, import 18%, worker 18%, transform 7%)
+

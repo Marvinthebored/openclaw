@@ -1,0 +1,181 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project OpenClaw.xcodeproj -scheme OpenClaw -configuration Debug -destination "platform=iOS Simulator,id=BA54C0E2-55DE-4150-9AD3-54B80BC82803" -derivedDataPath /tmp/sidebar-menu-pr-dd -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- OPENCLAW_CODE_SIGN_ENTITLEMENTS=build/OpenClaw.nopush.entitlements "-only-testing:OpenClawTests/RootSidebarOrderTests" "-only-testing:OpenClawTests/RootSidebarMenuParityTests" -resultBundlePath /private/tmp/sidebar-review-native1/results/red-tests.xcresult
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = -
+    CODE_SIGNING_ALLOWED = YES
+    OPENCLAW_CODE_SIGN_ENTITLEMENTS = build/OpenClaw.nopush.entitlements
+
+Resolve Package Graph
+failed to retrieve search paths with pkg-config; maybe pkg-config is not installedyou may be able to install libsodium using your system-packager:
+    brew install libsodium
+
+
+Resolved source packages:
+  GRDB: https://github.com/groue/GRDB.swift.git @ 7.11.1
+  OpenClawKit: <local-path>
+  cmark-gfm: https://github.com/swiftlang/swift-cmark.git @ 0.9.0
+  swift-markdown: https://github.com/swiftlang/swift-markdown @ 0.9.0
+  WebRTC: https://github.com/stasel/WebRTC.git @ 154.0.0
+  SwiftMath: https://github.com/mgriebling/SwiftMath @ 1.7.3
+  Commander: https://github.com/steipete/Commander.git @ 0.3.0
+  Sodium: https://github.com/jedisct1/swift-sodium.git @ cfd195c
+  ElevenLabsKit: https://github.com/steipete/ElevenLabsKit @ 0.1.3
+  swabble: <local-path>
+
+Writing result bundle at path:
+	/private/tmp/sidebar-review-native1/results/red-tests.xcresult
+
+2026-10-10 00:26:02.761358+0800 OpenClaw[29959:81722956] OpenClaw: installing uncaught exception handler
+2026-10-10 00:26:02.829482+0800 OpenClaw[29959:81723162] [GatewayDiag] [2026-10-09T16:26:02.827Z] watch messaging: activation complete state=activated error=none
+2026-10-10 00:26:02.833729+0800 OpenClaw[29959:81723156] [WC] -[WCSession onqueue_handleUpdateSessionState:]_block_invoke dropping as pairingIDs no longer match. pairingID (null), client pairingID: (null)
+2026-10-10 00:26:02.842577+0800 OpenClaw[29959:81723156] [WC] WCSession is not paired
+2026-10-10 00:26:02.868358+0800 OpenClaw[29959:81722956] [TalkMode] disabled
+2026-10-10 00:26:02.868406+0800 OpenClaw[29959:81723156] [GatewayDiag] [2026-10-09T16:26:02.867Z] node app model: init start
+2026-10-10 00:26:02.868688+0800 OpenClaw[29959:81723156] [GatewayDiag] [2026-10-09T16:26:02.867Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:02.868922+0800 OpenClaw[29959:81723156] [GatewayDiag] [2026-10-09T16:26:02.868Z] talk.timeline manager disabled
+2026-10-10 00:26:02.913458+0800 OpenClaw[29959:81723162] [GatewayDiag] [2026-10-09T16:26:02.913Z] app delegate: didFinishLaunching
+2026-10-10 00:26:03.290119+0800 OpenClaw[29959:81723170] [GatewayDiag] [2026-10-09T16:26:03.290Z] node app model: scene phase=inactive
+2026-10-10 00:26:03.290562+0800 OpenClaw[29959:81723170] [GatewayDiag] [2026-10-09T16:26:03.290Z] app delegate: scene phase changed=inactive
+IOSurfaceClientSetSurfaceNotify failed e00002c7
+2026-10-10 00:26:03.670984+0800 OpenClaw[29959:81722956] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-10 00:26:03.881698+0800 OpenClaw[29959:81722956] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-10 00:26:03.999972+0800 OpenClaw[29959:81723156] [GatewayDiag] [2026-10-09T16:26:04.000Z] node app model: scene phase=active
+2026-10-10 00:26:04.029145+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.029Z] app delegate: scene phase changed=active
+2026-10-10 00:26:04.199422+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.199Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:04.199957+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.199Z] watch exec approval: status changed reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:04.207031+0800 OpenClaw[29959:81723156] [GatewayDiag] [2026-10-09T16:26:04.207Z] chat.ui foreground refresh sessionKey=main pending=0
+2026-10-10 00:26:04.256138+0800 OpenClaw[29959:81722956] [OpenClawChatUI] refresh history failed not connected
+2026-10-10 00:26:04.278820+0800 OpenClaw[29959:81722956] [OpenClawChatUI] bootstrap failed not connected
+Test Suite 'Selected tests' started at 2026-10-10 00:26:04.567.
+Test Suite 'OpenClawTests.xctest' started at 2026-10-10 00:26:04.567.
+Test Suite 'OpenClawTests.xctest' passed at 2026-10-10 00:26:04.568.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-10-10 00:26:04.568.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64-apple-ios13.0-simulator
+◇ Suite RootSidebarMenuParityTests started.
+◇ Test "catalog promotion keeps an unpinned descendant in the rendered Pages inventory" started.
+✘ Test "catalog promotion keeps an unpinned descendant in the rendered Pages inventory" recorded an issue at RootSidebarMenuParityTests.swift:62:9: Expectation failed: (renderedPages.map(\.id) → []) == ["agent:main:child"]
+± removed ["agent:main:child"]
+✘ Test "catalog promotion keeps an unpinned descendant in the rendered Pages inventory" recorded an issue at RootSidebarMenuParityTests.swift:63:9: Expectation failed: (renderedPages.first?.children.map(\.id) → nil) == ["agent:main:grandchild"]
+✘ Test "catalog promotion keeps an unpinned descendant in the rendered Pages inventory" failed after 0.008 seconds with 2 issues.
+◇ Test "fresh and invalid preferences use web-compatible native defaults" started.
+✔ Test "fresh and invalid preferences use web-compatible native defaults" passed after 0.003 seconds.
+◇ Test "saved grouping ordering filters and preview round trip independently of selected agent" started.
+✔ Test "saved grouping ordering filters and preview round trip independently of selected agent" passed after 0.004 seconds.
+◇ Test "reset removes visible changes but retains a temporarily unavailable person grouping" started.
+✔ Test "reset removes visible changes but retains a temporarily unavailable person grouping" passed after 0.002 seconds.
+◇ Test "status choices partition active snoozed and archived rows without resurrecting selection" started.
+✔ Test "status choices partition active snoozed and archived rows without resurrecting selection" passed after 0.001 seconds.
+◇ Test "legacy projection keeps main in Home and snoozed selection out of sessions" started.
+✔ Test "legacy projection keeps main in Home and snoozed selection out of sessions" passed after 0.001 seconds.
+◇ Test "owner filter promotes matching child and does not synthesize an unrelated selected row" started.
+✔ Test "owner filter promotes matching child and does not synthesize an unrelated selected row" passed after 0.001 seconds.
+◇ Test "created and updated orders remain separate and named group order uses catalog positions" started.
+✔ Test "created and updated orders remain separate and named group order uses catalog positions" passed after 0.001 seconds.
+◇ Test "complete roster retains owner and self facets when later pages omit them" started.
+✔ Test "complete roster retains owner and self facets when later pages omit them" passed after 0.001 seconds.
+◇ Test "partial roster failure retains its valid facets and marks the roster incomplete" started.
+✔ Test "partial roster failure retains its valid facets and marks the roster incomplete" passed after 0.001 seconds.
+◇ Test "all-agent roster retains identical bare keys owned by different agents" started.
+✔ Test "all-agent roster retains identical bare keys owned by different agents" passed after 0.001 seconds.
+◇ Test "native roster request preserves filters without unconditional transcript enrichment" started.
+✔ Test "native roster request preserves filters without unconditional transcript enrichment" passed after 0.001 seconds.
+◇ Test "model preserves first observed created-order ties across reordered roster refreshes" started.
+2026-10-10 00:26:04.632309+0800 OpenClaw[29959:81722956] [WC] already in progress or activated
+2026-10-10 00:26:04.632703+0800 OpenClaw[29959:81722956] [TalkMode] disabled
+2026-10-10 00:26:04.634119+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.633Z] node app model: init start
+✔ Test "model preserves first observed created-order ties across reordered roster refreshes" passed after 0.005 seconds.
+2026-10-10 00:26:04.634475+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.633Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+◇ Test "model adopts new facets and clears previous connection facets when absent" started.
+2026-10-10 00:26:04.634810+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.633Z] talk.timeline manager disabled
+2026-10-10 00:26:04.691362+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.691Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:04.692887+0800 OpenClaw[29959:81722956] [WC] already in progress or activated
+2026-10-10 00:26:04.693210+0800 OpenClaw[29959:81722956] [TalkMode] disabled
+2026-10-10 00:26:04.693975+0800 OpenClaw[29959:81723311] [GatewayDiag] [2026-10-09T16:26:04.693Z] node app model: init start
+✔ Test "model adopts new facets and clears previous connection facets when absent" passed after 0.059 seconds.
+◇ Test "membership-filtered events apply authoritative refresh instead of adopting event rows" started.
+2026-10-10 00:26:04.694718+0800 OpenClaw[29959:81723311] [GatewayDiag] [2026-10-09T16:26:04.693Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:04.695050+0800 OpenClaw[29959:81723311] [GatewayDiag] [2026-10-09T16:26:04.693Z] talk.timeline manager disabled
+2026-10-10 00:26:04.736293+0800 OpenClaw[29959:81723323] [GatewayDiag] [2026-10-09T16:26:04.736Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:04.737428+0800 OpenClaw[29959:81722956] [WC] already in progress or activated
+2026-10-10 00:26:04.737774+0800 OpenClaw[29959:81722956] [TalkMode] disabled
+2026-10-10 00:26:04.738501+0800 OpenClaw[29959:81723323] [GatewayDiag] [2026-10-09T16:26:04.738Z] node app model: init start
+2026-10-10 00:26:04.738835+0800 OpenClaw[29959:81723323] [GatewayDiag] [2026-10-09T16:26:04.738Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:04.739090+0800 OpenClaw[29959:81723323] [GatewayDiag] [2026-10-09T16:26:04.738Z] talk.timeline manager disabled
+✔ Test "membership-filtered events apply authoritative refresh instead of adopting event rows" passed after 0.053 seconds.
+◇ Test "all-agent observer digests update only their explicit owner without a roster reload" started.
+2026-10-10 00:26:04.786037+0800 OpenClaw[29959:81723311] [GatewayDiag] [2026-10-09T16:26:04.786Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:04.787067+0800 OpenClaw[29959:81722956] [WC] already in progress or activated
+2026-10-10 00:26:04.787358+0800 OpenClaw[29959:81722956] [TalkMode] disabled
+2026-10-10 00:26:04.788204+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.787Z] node app model: init start
+2026-10-10 00:26:04.788487+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.787Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:04.788867+0800 OpenClaw[29959:81723160] [GatewayDiag] [2026-10-09T16:26:04.787Z] talk.timeline manager disabled
+✔ Test "all-agent observer digests update only their explicit owner without a roster reload" passed after 0.043 seconds.
+✘ Suite RootSidebarMenuParityTests failed after 0.189 seconds with 2 issues.
+◇ Suite RootSidebarOrderTests started.
+◇ Test "unqualified keys in different agents do not share an ordering slot" started.
+2026-10-10 00:26:04.833385+0800 OpenClaw[29959:81723317] [GatewayDiag] [2026-10-09T16:26:04.833Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+✔ Test "unqualified keys in different agents do not share an ordering slot" passed after 0.041 seconds.
+◇ Test "mixed canonical storage preserves opaque keys and unloaded agent slots" started.
+✘ Test "mixed canonical storage preserves opaque keys and unloaded agent slots" recorded an issue at RootSidebarOrderTests.swift:25:9: Expectation failed: (RootTabs.sidebarEntries(from: "usage,workboard,docs") → [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.usage), OpenClaw.RootTabs.SidebarEntry.plugin("workboard/workboard"), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.docs)]) == ([
+            .route(.usage), .route(.workboard), .route(.docs),
+        ] → [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.usage), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.workboard), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.docs)])
+± inserted [OpenClaw.RootTabs.SidebarEntry.plugin("workboard/workboard")], removed [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.workboard)]
+✘ Test "mixed canonical storage preserves opaque keys and unloaded agent slots" failed after 0.014 seconds with 1 issue.
+◇ Test "reset preserves every saved session slot even when no sessions are loaded" started.
+✔ Test "reset preserves every saved session slot even when no sessions are loaded" passed after 0.001 seconds.
+◇ Test "move crosses route plugin and session boundaries without deleting hidden slots" started.
+✔ Test "move crosses route plugin and session boundaries without deleting hidden slots" passed after 0.001 seconds.
+◇ Test "reconcile adds newly pinned rows without replacing saved order or unknown agents" started.
+✔ Test "reconcile adds newly pinned rows without replacing saved order or unknown agents" passed after 0.001 seconds.
+◇ Test "plugin discovery does not duplicate a saved native Workboard page" started.
+✔ Test "plugin discovery does not duplicate a saved native Workboard page" passed after 0.001 seconds.
+◇ Test "shipped defaults survive first launch and reset of the mixed sidebar" started.
+✘ Test "shipped defaults survive first launch and reset of the mixed sidebar" recorded an issue at RootSidebarOrderTests.swift:101:9: Expectation failed: (RootTabs.sidebarEntries(from: "") → [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.agents), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.dashboards), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.systems), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.cron), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.plugins)]) == (shipped → [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.overview), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.usage), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.cron)])
+± inserted [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.agents), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.dashboards), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.systems), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.plugins)], removed [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.overview), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.usage)]
+✘ Test "shipped defaults survive first launch and reset of the mixed sidebar" recorded an issue at RootSidebarOrderTests.swift:102:9: Expectation failed: (RootTabs.resetSidebarEntries([.route(.systems), .session("agent:main:saved")]) → [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.agents), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.dashboards), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.systems), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.cron), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.plugins), OpenClaw.RootTabs.SidebarEntry.session("agent:main:saved")]) == (shipped + [.session("agent:main:saved")] → [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.overview), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.usage), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.cron), OpenClaw.RootTabs.SidebarEntry.session("agent:main:saved")])
+± inserted [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.agents), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.dashboards), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.systems), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.plugins)], removed [OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.overview), OpenClaw.RootTabs.SidebarEntry.route(OpenClaw.RootTabs.SidebarDestination.usage)]
+✘ Test "shipped defaults survive first launch and reset of the mixed sidebar" failed after 0.001 seconds with 2 issues.
+◇ Test "shipped page choices remain editable after mixed order is saved" started.
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:116:9: Expectation failed: (savedPages.map(\.rawValue).joined(separator: ",") → "docs,overview,skillWorkshop,instances,files,dreaming,terminal,usage,cron,agents,activity,sessions,desktop") == (storage → "docs,overview,workboard,skillWorkshop,instances,files,dreaming,terminal,usage,cron,agents,activity,sessions,desktop")
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .docs)
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .overview)
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .skillWorkshop)
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .instances)
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .files)
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .dreaming)
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .terminal)
+✘ Test "shipped page choices remain editable after mixed order is saved" recorded an issue at RootSidebarOrderTests.swift:118:13: Expectation failed: (RootTabs.sidebarCustomizablePages → [OpenClaw.RootTabs.SidebarDestination.agents, OpenClaw.RootTabs.SidebarDestination.dashboards, OpenClaw.RootTabs.SidebarDestination.usage, OpenClaw.RootTabs.SidebarDestination.cron, OpenClaw.RootTabs.SidebarDestination.sessions, OpenClaw.RootTabs.SidebarDestination.systems, OpenClaw.RootTabs.SidebarDestination.activity, OpenClaw.RootTabs.SidebarDestination.meetings, OpenClaw.RootTabs.SidebarDestination.plugins, OpenClaw.RootTabs.SidebarDestination.apps, OpenClaw.RootTabs.SidebarDestination.portals]).contains(page → .desktop)
+✘ Test "shipped page choices remain editable after mixed order is saved" failed after 0.003 seconds with 9 issues.
+✘ Suite RootSidebarOrderTests failed after 0.060 seconds with 12 issues.
+✘ Test run with 24 tests in 2 suites failed after 0.251 seconds with 14 issues.
+2026-10-10 00:26:20.152 xcodebuild[29573:81719004] [MT] IDETestOperationsObserverDebug: 36.566 elapsed -- Testing started completed.
+2026-10-10 00:26:20.152 xcodebuild[29573:81719004] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-10 00:26:20.152 xcodebuild[29573:81719004] [MT] IDETestOperationsObserverDebug: 36.566 sec, +36.566 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/sidebar-review-native1/results/red-tests.xcresult
+
+Failing tests:
+	RootSidebarMenuParityTests.`catalog promotion keeps an unpinned descendant in the rendered Pages inventory`()
+	RootSidebarMenuParityTests.`catalog promotion keeps an unpinned descendant in the rendered Pages inventory`()
+	RootSidebarOrderTests.`mixed canonical storage preserves opaque keys and unloaded agent slots`()
+	RootSidebarOrderTests.`shipped defaults survive first launch and reset of the mixed sidebar`()
+	RootSidebarOrderTests.`shipped defaults survive first launch and reset of the mixed sidebar`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+	RootSidebarOrderTests.`shipped page choices remain editable after mixed order is saved`()
+
+** TEST EXECUTE FAILED **
+
+Testing started

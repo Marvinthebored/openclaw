@@ -1,41 +1,46 @@
-# Native iOS sidebar menu validation
+# Native iOS sidebar validation
 
-Source commit: [`3c487b0179494cb20445f1fa8431a77a6dd98164`](https://github.com/Marvinthebored/openclaw/commit/3c487b0179494cb20445f1fa8431a77a6dd98164).
+Source: [4d14a77c1e2c79f00ed847674a0a912e7dbbc9ec](https://github.com/Marvinthebored/openclaw/commit/4d14a77c1e2c79f00ed847674a0a912e7dbbc9ec).
 
 ## Results
 
-- iOS simulator build: passed.
-- Scoped app tests: **110 passed in 6 suites** (2.574 seconds test execution; 21.515 seconds Xcode test operation).
-- Shared package tests: **13 passed in 3 suites** (0.007 seconds test execution).
-- Native UI workflow: **1 passed**. Whole-header and whole-row long presses open native menus. Status filters, Pages editor, appearance and assignment sheets, saved rename, menu scrolling, Copy submenu, and Session ID confirmation were exercised.
-- Web bridge/navigation: **11 passed in 2 files**, single worker; 8.655 seconds command wall time.
-- Full Control UI typecheck, production build and hard performance budgets: passed.
-- Control UI and native localization verification: passed.
-- Changed native source SwiftLint, targeted SwiftFormat, and diff whitespace checks: passed.
+- App: **117 tests passed in seven suites**.
+- Shared: **24 tests passed in four suites**.
+- Web bridge/navigation: **11 tests passed in two files**.
+- Native menus: **one UI workflow passed**, including filtering, editing, assignment, rename, scroll and copy effects.
+- Stable-to-candidate upgrade: **one UI workflow passed**, preserving stored choices and proving editing/relaunch persistence.
+- Authenticated native plugin: **one XCTest passed**, with an independently verified Gateway receipt and inspected rendered result.
+- Control UI typecheck, production build/performance budgets, native source lint, localization, protocol-event coverage and whitespace checks passed.
+- Complete iOS/Watch build-for-testing index and macOS consumer build passed. Periphery reports **zero iOS app findings** and **zero shared declarations dead in both consumers**. [App results](periphery-ios-app.json), [shared intersection](periphery-shared-intersection.json), [scan summary](periphery-results.txt).
 
-Raw successful test summaries are in `native-app-results.txt`, `native-shared-results.txt`, `native-ui-results.txt`, and `web-results.txt`.
+## Shipped Pages compatibility
 
-## Rendered before and after
+The unmodified v2026.9.9 Pages implementation (commit bcfc88812a35243893585dbeca87ca41b48272ca) was built and run on an iPhone 17 Pro simulator. A native UI test verified its Overview/Usage/Automations defaults, then used its editor to save Docs → Workboard → Overview. Relaunch preserved that selection.
 
-Images are unmodified simulator screenshots with synthetic fixture data, inspected after export. The before run uses the same prerequisite group-header base and dark appearance. It asserts that Assign and Copy are absent from the original menu. The after run verifies the expanded menu and actual editing/navigation effects.
+The candidate was installed over the stable app on the same simulator without uninstalling or seeding a preference. The persisted `sidebar.pinnedPages` value and displayed order survived. The candidate editor unpinned and repinned Docs; Workboard → Overview → Docs survived another relaunch. Workboard remained a native choice without requiring a plugin catalog.
 
-- `screenshots/before-sidebar-landing.png`, `screenshots/before-session-menu.png`
-- `screenshots/after-sidebar-landing.png`, `screenshots/after-session-menu.png`
-- `screenshots/after-copy-submenu.png`, `screenshots/after-rename-copy-confirmation.png`
-- `screenshots/after-pages-editor.png`, `screenshots/after-assignment.png`, `screenshots/after-appearance.png`
+Output: [stable writer](stable-writer-results.txt), [candidate upgrade](stable-upgrade-results.txt). Screenshots: [stable customization](screenshots/stable-pages-customized.png), [candidate preserved order](screenshots/upgraded-pages-customized.png), [candidate after editing and relaunch](screenshots/upgraded-pages-relaunch.png).
 
-`screenshots.json` records screenshot hashes; `source-manifest.json` records the tested source hashes.
+## Real authenticated plugin action
 
-## Commands and suites
+The production native bridge and authenticated WKWebView loaded the candidate Control UI from an isolated token-authenticated Gateway. A registered plugin exposed a navigation action backed by a real operator-write Gateway method.
 
-- `xcodebuild build-for-testing` for the OpenClaw app and UI-test schemes on iPhone 17 Pro / iOS 26.5 Simulator.
-- `xcodebuild test-without-building` selecting RootSidebarMenuParityTests, RootSidebarOrderTests, RootSidebarPluginBridgeTests, RootTabsPresentationTests, CommandSessionMenuTests, and OpenClawTypographyTests.
-- `xcodebuild test-without-building` selecting RootSidebarMenuParityUITests.
-- `swift test --package-path apps/shared/OpenClawKit --filter 'ChatSessionMenuAccessTests|ChatSidebarPeopleFilterTests|ChatSessionSidebarRefreshCoordinatorTests'`.
-- Control UI Vitest: `src/app/native-sidebar-plugin-bridge.test.ts src/plugins/control-ui-navigation.test.ts --maxWorkers=1`.
-- `node scripts/run-tsgo.mjs -p tsconfig.ui.json`; `node scripts/ui.js build`.
-- `node --import ./scripts/tsx.mjs scripts/control-ui-i18n-verify.ts verify`; `node --import ./scripts/tsx.mjs scripts/native-app-i18n.ts verify`.
+The native bridge received the live registry, dispatched the action, and the plugin invoked its Gateway method. The Gateway wrote an independent receipt with invocation count **1**, operator role, Control UI client identity and write authorization. The WKWebView rendered “Gateway recorded 1 authenticated native action”; XCTest asserted that text and the cleared pending state. No RPC or JavaScript result was mocked.
+
+Output: [native test](native-plugin-results.txt), [server-written receipt](gateway-action-receipt.json), [rendered native result](screenshots/real-native-plugin-action.png).
+
+## Regression evidence
+
+- The retained sidebar source-regression test failed on the previous PR source; its repaired assertions pass in the app suite.
+- Pages defaults, preserved destinations and catalog-promoted descendants fail when the earlier admission/default behavior is restored; the candidate passes. [Native red output](native-regression-red.txt), [candidate app output](native-app-results.txt).
+- The real plugin runtime returns fresh registration wrappers. A fixture with that same behavior produced **two failures and nine passes** with the old identity guard. Matching registration key and lifetime fixes execution while retaining stale/replaced/disconnected/aborted rejection tests: **11 passed**. [Web red](web-regression-red.txt), [web green](web-results.txt).
+
+## Native menu evidence
+
+[UI output](native-ui-results.txt) covers whole-header and whole-row long presses, Status filters, the Pages editor, appearance and assignment sheets, saved rename, scrolling within native menus, the Copy submenu and Session ID confirmation. [Shared output](native-shared-results.txt) covers catalog projection, menu access, People filtering and refresh coordination.
+
+All screenshots contain synthetic fixture data and were inspected after export. Before images assert that Assign and Copy are absent on the prerequisite-only base. Current candidate landing and menus are in `screenshots/after-*.png`. `screenshots.json` and `source-manifest.json` record hashes.
 
 ## Review record
 
-AI-assisted implementation and independent adversarial review. Review identified and corrected a missing bound-menu connection on the standalone Sessions screen and a batch-delete confirmation that needed captured durable targets. Follow-up review checked those fixes, shared refresh cancellation and trailing invalidation, localized formats, and the fixture/UI-test changes. No outstanding findings remained in these passes.
+AI-assisted implementation with independent adversarial review and re-review. Review fixes preserve catalog descendants, including unpinned children promoted into the Pages zone; restore shipped Pages defaults and choices; avoid duplicate native Workboard defaults; repair obsolete source-test boundaries; and use registration lifetime identity for plugin actions. The independent lifetime review checked replacement, disposal, connection retirement and synchronous admission-to-dispatch safety.

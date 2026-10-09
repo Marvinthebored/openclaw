@@ -1,5 +1,892 @@
-Test Case '-[OpenClawUITests.RootSidebarMenuParityUITests testWholeHeaderAndRowLongPressMenusOpenNativeControls]' passed (101.397 seconds).
-	 Executed 1 test, with 0 failures (0 unexpected) in 101.397 (101.398) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 101.397 (101.399) seconds
-	 Executed 1 test, with 0 failures (0 unexpected) in 101.397 (101.399) seconds
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project OpenClaw.xcodeproj -scheme OpenClawUITests -configuration Debug -destination "platform=iOS Simulator,id=534C5D4D-3314-473A-ACEC-CC2342B52494" -derivedDataPath /tmp/sidebar-menu-pr-dd -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- OPENCLAW_CODE_SIGN_ENTITLEMENTS=build/OpenClaw.nopush.entitlements "-only-testing:OpenClawUITests/RootSidebarMenuParityUITests" -resultBundlePath /private/tmp/sidebar-review-native4/results/menu-ui.xcresult
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = -
+    CODE_SIGNING_ALLOWED = YES
+    OPENCLAW_CODE_SIGN_ENTITLEMENTS = build/OpenClaw.nopush.entitlements
+
+Resolve Package Graph
+failed to retrieve search paths with pkg-config; maybe pkg-config is not installedyou may be able to install libsodium using your system-packager:
+    brew install libsodium
+
+
+Resolved source packages:
+  OpenClawKit: <local-path>
+  swift-markdown: https://github.com/swiftlang/swift-markdown @ 0.9.0
+  cmark-gfm: https://github.com/swiftlang/swift-cmark.git @ 0.9.0
+  Commander: https://github.com/steipete/Commander.git @ 0.3.0
+  Sodium: https://github.com/jedisct1/swift-sodium.git @ cfd195c
+  WebRTC: https://github.com/stasel/WebRTC.git @ 154.0.0
+  GRDB: https://github.com/groue/GRDB.swift.git @ 7.11.1
+  SwiftMath: https://github.com/mgriebling/SwiftMath @ 1.7.3
+  ElevenLabsKit: https://github.com/steipete/ElevenLabsKit @ 0.1.3
+  swabble: <local-path>
+
+Writing result bundle at path:
+	/private/tmp/sidebar-review-native4/results/menu-ui.xcresult
+
+2026-10-10 00:35:34.242844+0800 OpenClawUITests-Runner[36077:81810857] [Default] Running tests...
+2026-10-10 00:35:34.266065+0800 OpenClawUITests-Runner[36077:81811011] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+2026-10-10 00:35:34.305828+0800 OpenClawUITests-Runner[36077:81811013] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+objc[36077]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x107fcc310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x107f18398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-10-10 00:35:37.064.
+Test Suite 'OpenClawUITests.xctest' started at 2026-10-10 00:35:37.064.
+Test Suite 'RootSidebarMenuParityUITests' started at 2026-10-10 00:35:37.064.
+Test Case '-[OpenClawUITests.RootSidebarMenuParityUITests testWholeHeaderAndRowLongPressMenusOpenNativeControls]' started.
+    t =     0.00s Start Test at 2026-10-10 00:35:37.065
+    t =     0.10s Set Up
+    t =     0.10s Open ai.openclawfoundation.app.debug
+    t =     0.10s     Launch ai.openclawfoundation.app.debug
+2026-10-10 00:35:37.211 xcodebuild[35804:81808312] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-10-10 00:35:37.211 xcodebuild[35804:81808312] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.40s         Setting up automation session
+    t =     1.93s         Wait for ai.openclawfoundation.app.debug to idle
+    t =     4.02s Wait for ai.openclawfoundation.app.debug to become Running Foreground
+    t =     4.02s Waiting 10.0s for "RootTabs.Sidebar.Show" Button to exist
+    t =     5.10s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.Show" Button`
+    t =     5.10s         Checking existence of `"RootTabs.Sidebar.Show" Button`
+    t =     5.21s Find the "RootTabs.Sidebar.Show" Button
+    t =     5.25s Tap "RootTabs.Sidebar.Show" Button
+    t =     5.25s     Wait for ai.openclawfoundation.app.debug to idle
+    t =     5.25s     Find the "RootTabs.Sidebar.Show" Button
+    t =     5.28s     Check for interrupting elements affecting "RootTabs.Sidebar.Show" Button
+    t =     5.34s     Synthesize event
+    t =     5.75s     Wait for ai.openclawfoundation.app.debug to idle
+    t =     5.75s Waiting 10.0s for "RootTabs.Sidebar.Destination.chat" Button to exist
+    t =     6.78s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.Destination.chat" Button`
+    t =     6.78s         Checking existence of `"RootTabs.Sidebar.Destination.chat" Button`
+    t =     6.81s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =     6.91s Added attachment named 'sidebar-menu-landing'
+    t =     6.91s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =     7.05s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =     7.08s Added attachment named 'sidebar-menu-landing-hierarchy'
+    t =     7.08s Waiting 10.0s for "RootTabs.Sidebar.SessionViewMenu" Any to exist
+    t =     8.16s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.SessionViewMenu" Any`
+    t =     8.16s         Checking existence of `"RootTabs.Sidebar.SessionViewMenu" Any`
+    t =     8.19s Find the "RootTabs.Sidebar.SessionViewMenu" Any
+    t =     8.22s Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.25s Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.28s Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.31s Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.34s Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.37s Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.40s Press "RootTabs.Sidebar.SessionViewMenu" StaticText for 1.0 seconds
+    t =     8.40s     Wait for ai.openclawfoundation.app.debug to idle
+    t =     8.41s     Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.43s     Check for interrupting elements affecting "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =     8.47s     Synthesize event
+    t =     9.70s     Wait for ai.openclawfoundation.app.debug to idle
+    t =     9.70s Waiting 5.0s for "Status" Button to exist
+    t =    10.78s     Checking `Expect predicate `existsNoRetry == 1` for object "Status" Button`
+    t =    10.78s         Checking existence of `"Status" Button`
+    t =    10.83s Waiting 5.0s for "Owner" Button to exist
+    t =    11.90s     Checking `Expect predicate `existsNoRetry == 1` for object "Owner" Button`
+    t =    11.90s         Checking existence of `"Owner" Button`
+    t =    11.95s Waiting 5.0s for "Sort By" Button to exist
+    t =    13.02s     Checking `Expect predicate `existsNoRetry == 1` for object "Sort By" Button`
+    t =    13.02s         Checking existence of `"Sort By" Button`
+    t =    13.06s Waiting 5.0s for "Group By" Button to exist
+    t =    14.14s     Checking `Expect predicate `existsNoRetry == 1` for object "Group By" Button`
+    t =    14.14s         Checking existence of `"Group By" Button`
+    t =    14.18s Waiting 5.0s for "Hide Empty Groups" Button to exist
+    t =    15.24s     Checking `Expect predicate `existsNoRetry == 1` for object "Hide Empty Groups" Button`
+    t =    15.24s         Checking existence of `"Hide Empty Groups" Button`
+    t =    15.30s Waiting 5.0s for "New Group…" Button to exist
+    t =    16.36s     Checking `Expect predicate `existsNoRetry == 1` for object "New Group…" Button`
+    t =    16.36s         Checking existence of `"New Group…" Button`
+    t =    16.40s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    16.72s Added attachment named 'sidebar-sessions-longpress'
+    t =    16.72s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    17.25s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    17.32s Added attachment named 'sidebar-sessions-longpress-hierarchy'
+    t =    17.32s Waiting 5.0s for "Status" Button to exist
+    t =    18.39s     Checking `Expect predicate `existsNoRetry == 1` for object "Status" Button`
+    t =    18.39s         Checking existence of `"Status" Button`
+    t =    18.43s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Status'
+    t =    18.48s Find the Other (Element at index 0)
+    t =    18.53s Find the Other (Element at index 1)
+    t =    18.58s Find the Other (Element at index 2)
+    t =    18.64s Find the Other (Element at index 3)
+    t =    18.70s Find the Other (Element at index 4)
+    t =    18.76s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    18.81s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    18.86s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    18.91s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    18.97s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.03s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.09s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    19.14s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    19.20s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.25s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.31s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.36s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.42s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.47s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.52s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.58s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.65s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.72s Find the "Status" Button
+    t =    19.78s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.84s Find the "line.3.horizontal.decrease" Button
+    t =    19.89s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    19.95s Find the "line.3.horizontal.decrease" Button
+    t =    20.00s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    20.05s Find the "line.3.horizontal.decrease" Button
+    t =    20.10s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    20.16s Find the "line.3.horizontal.decrease" Button
+    t =    20.21s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    20.26s Find the "line.3.horizontal.decrease" Button
+    t =    20.31s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    20.36s Find the "line.3.horizontal.decrease" Button
+    t =    20.41s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    20.45s Find the "line.3.horizontal.decrease" Button
+    t =    20.49s Find the "line.3.horizontal.decrease" Button
+    t =    20.54s Tap "line.3.horizontal.decrease" Button[0.50, 0.50]
+    t =    20.54s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    20.54s     Find the "line.3.horizontal.decrease" Button
+    t =    20.58s     Check for interrupting elements affecting "line.3.horizontal.decrease" Button
+    t =    20.62s     Synthesize event
+    t =    20.62s         Find the "line.3.horizontal.decrease" Button
+    t =    20.67s         Find the "line.3.horizontal.decrease" Button
+    t =    20.71s         Find the "line.3.horizontal.decrease" Button
+    t =    21.04s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    21.04s Waiting 5.0s for "Active" Button to exist
+    t =    22.12s     Checking `Expect predicate `existsNoRetry == 1` for object "Active" Button`
+    t =    22.12s         Checking existence of `"Active" Button`
+    t =    22.17s Waiting 5.0s for "Snoozed" Button to exist
+    t =    23.24s     Checking `Expect predicate `existsNoRetry == 1` for object "Snoozed" Button`
+    t =    23.24s         Checking existence of `"Snoozed" Button`
+    t =    23.28s Waiting 5.0s for "Archived" Button to exist
+    t =    24.37s     Checking `Expect predicate `existsNoRetry == 1` for object "Archived" Button`
+    t =    24.37s         Checking existence of `"Archived" Button`
+    t =    24.40s Waiting 5.0s for "All" Button to exist
+    t =    25.48s     Checking `Expect predicate `existsNoRetry == 1` for object "All" Button`
+    t =    25.48s         Checking existence of `"All" Button`
+    t =    25.53s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    25.66s Added attachment named 'sidebar-status-submenu'
+    t =    25.66s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    26.05s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    26.12s Added attachment named 'sidebar-status-submenu-hierarchy'
+    t =    26.12s Waiting 5.0s for "All" Button to exist
+    t =    27.19s     Checking `Expect predicate `existsNoRetry == 1` for object "All" Button`
+    t =    27.19s         Checking existence of `"All" Button`
+    t =    27.23s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'All'
+    t =    27.28s Find the Other (Element at index 0)
+    t =    27.33s Find the Other (Element at index 1)
+    t =    27.37s Find the Other (Element at index 2)
+    t =    27.42s Find the Other (Element at index 3)
+    t =    27.47s Find the Other (Element at index 4)
+    t =    27.52s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    27.57s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    27.62s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    27.67s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    27.73s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    27.78s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    27.83s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    27.88s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    27.94s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.00s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.05s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    28.10s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    28.15s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.20s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.25s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.30s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.35s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.40s Find the "All" Button
+    t =    28.45s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.50s Find the "All" Button
+    t =    28.54s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.59s Find the "All" Button
+    t =    28.64s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.69s Find the "All" Button
+    t =    28.74s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.80s Find the "All" Button
+    t =    28.85s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    28.90s Find the "All" Button
+    t =    28.95s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    29.01s Find the "All" Button
+    t =    29.05s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    29.09s Find the "All" Button
+    t =    29.14s Find the "All" Button
+    t =    29.19s Tap "All" Button[0.50, 0.50]
+    t =    29.19s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    29.19s     Find the "All" Button
+    t =    29.23s     Check for interrupting elements affecting "All" Button
+    t =    29.27s     Synthesize event
+    t =    29.27s         Find the "All" Button
+    t =    29.32s         Find the "All" Button
+    t =    29.37s         Find the "All" Button
+    t =    29.70s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    29.70s Waiting 5.0s for "All" Button to not exist
+    t =    30.76s     Checking `Expect predicate `existsNoRetry == 0` for object "All" Button`
+    t =    30.76s         Checking existence of `"All" Button`
+    t =    30.79s Press "RootTabs.Sidebar.SessionViewMenu" StaticText for 1.0 seconds
+    t =    30.79s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    30.79s     Find the "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =    30.82s     Check for interrupting elements affecting "RootTabs.Sidebar.SessionViewMenu" StaticText
+    t =    30.85s     Synthesize event
+    t =    32.08s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    32.08s Waiting 5.0s for "Status" Button to exist
+    t =    33.16s     Checking `Expect predicate `existsNoRetry == 1` for object "Status" Button`
+    t =    33.16s         Checking existence of `"Status" Button`
+    t =    33.20s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Status'
+    t =    33.24s Find the Other (Element at index 0)
+    t =    33.28s Find the Other (Element at index 1)
+    t =    33.32s Find the Other (Element at index 2)
+    t =    33.37s Find the Other (Element at index 3)
+    t =    33.41s Find the Other (Element at index 4)
+    t =    33.45s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    33.49s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    33.54s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    33.58s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    33.62s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    33.66s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    33.70s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    33.74s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    33.78s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    33.82s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    33.87s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    33.91s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    33.96s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.00s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.05s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.10s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.14s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.18s Find the "Status" Button
+    t =    34.22s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.27s Find the "line.3.horizontal.decrease" Button
+    t =    34.31s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.35s Find the "line.3.horizontal.decrease" Button
+    t =    34.40s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.44s Find the "line.3.horizontal.decrease" Button
+    t =    34.48s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.52s Find the "line.3.horizontal.decrease" Button
+    t =    34.56s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.60s Find the "line.3.horizontal.decrease" Button
+    t =    34.64s Find the Other at {{16.0, 82.0}, {250.0, 520.0}}
+    t =    34.68s Find the "line.3.horizontal.decrease" Button
+    t =    34.71s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    34.74s Find the "line.3.horizontal.decrease" Button
+    t =    34.78s Find the "line.3.horizontal.decrease" Button
+    t =    34.81s Tap "line.3.horizontal.decrease" Button[0.50, 0.50]
+    t =    34.81s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    34.82s     Find the "line.3.horizontal.decrease" Button
+    t =    34.85s     Check for interrupting elements affecting "line.3.horizontal.decrease" Button
+    t =    34.88s     Synthesize event
+    t =    34.88s         Find the "line.3.horizontal.decrease" Button
+    t =    34.92s         Find the "line.3.horizontal.decrease" Button
+    t =    34.96s         Find the "line.3.horizontal.decrease" Button
+    t =    35.28s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    35.28s Waiting 5.0s for "Active" Button to exist
+    t =    36.32s     Checking `Expect predicate `existsNoRetry == 1` for object "Active" Button`
+    t =    36.32s         Checking existence of `"Active" Button`
+    t =    36.35s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Active'
+    t =    36.39s Find the Other (Element at index 0)
+    t =    36.42s Find the Other (Element at index 1)
+    t =    36.46s Find the Other (Element at index 2)
+    t =    36.49s Find the Other (Element at index 3)
+    t =    36.53s Find the Other (Element at index 4)
+    t =    36.57s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    36.60s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    36.64s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    36.68s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    36.71s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    36.75s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    36.79s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    36.82s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    36.86s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    36.90s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    36.93s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    36.97s Find the Other at {{16.0, 82.0}, {250.0, 506.7}}
+    t =    37.01s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.05s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.08s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.12s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.16s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.20s Find the "Active" Button
+    t =    37.23s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.26s Find the "Active" Button
+    t =    37.30s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.33s Find the "Active" Button
+    t =    37.37s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.40s Find the "Active" Button
+    t =    37.44s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.48s Find the "Active" Button
+    t =    37.51s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.55s Find the "Active" Button
+    t =    37.58s Find the Other at {{16.0, 82.0}, {250.0, 250.0}}
+    t =    37.62s Find the "Active" Button
+    t =    37.66s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    37.68s Find the "Active" Button
+    t =    37.71s Find the "Active" Button
+    t =    37.75s Tap "Active" Button[0.50, 0.50]
+    t =    37.75s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    37.75s     Find the "Active" Button
+    t =    37.78s     Check for interrupting elements affecting "Active" Button
+    t =    37.81s     Synthesize event
+    t =    37.81s         Find the "Active" Button
+    t =    37.84s         Find the "Active" Button
+    t =    37.88s         Find the "Active" Button
+    t =    38.19s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    38.19s Waiting 5.0s for "Active" Button to not exist
+    t =    39.24s     Checking `Expect predicate `existsNoRetry == 0` for object "Active" Button`
+    t =    39.24s         Checking existence of `"Active" Button`
+    t =    39.27s Waiting 5.0s for StaticText (First Match) to exist
+    t =    40.32s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    40.32s         Checking existence of `StaticText (First Match)`
+    t =    40.34s Find the StaticText (First Match)
+    t =    40.36s Find the "PAGES" StaticText
+    t =    40.37s Find the "PAGES" StaticText
+    t =    40.40s Find the "PAGES" StaticText
+    t =    40.42s Find the "PAGES" StaticText
+    t =    40.44s Find the "PAGES" StaticText
+    t =    40.46s Find the "PAGES" StaticText
+    t =    40.48s Press "PAGES" StaticText for 1.0 seconds
+    t =    40.48s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    40.48s     Find the "PAGES" StaticText
+    t =    40.50s     Check for interrupting elements affecting "PAGES" StaticText
+    t =    40.52s     Synthesize event
+    t =    41.74s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    41.74s Waiting 5.0s for "Edit Pages…" Button to exist
+    t =    42.81s     Checking `Expect predicate `existsNoRetry == 1` for object "Edit Pages…" Button`
+    t =    42.81s         Checking existence of `"Edit Pages…" Button`
+    t =    42.85s Checking existence of `"Reset Pages" Button`
+    t =    42.88s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    42.97s Added attachment named 'sidebar-pages-longpress'
+    t =    42.97s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    43.15s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    43.19s Added attachment named 'sidebar-pages-longpress-hierarchy'
+    t =    43.19s Waiting 5.0s for "Edit Pages…" Button to exist
+    t =    44.25s     Checking `Expect predicate `existsNoRetry == 1` for object "Edit Pages…" Button`
+    t =    44.25s         Checking existence of `"Edit Pages…" Button`
+    t =    44.29s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Edit Pages…'
+    t =    44.33s Find the Other (Element at index 0)
+    t =    44.36s Find the Other (Element at index 1)
+    t =    44.40s Find the Other (Element at index 2)
+    t =    44.43s Find the Other (Element at index 3)
+    t =    44.46s Find the Other (Element at index 4)
+    t =    44.50s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    44.54s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    44.57s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    44.60s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    44.64s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.67s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.71s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    44.74s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    44.78s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.81s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.85s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.89s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.92s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.96s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    44.99s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.03s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.06s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.10s Find the "Edit Pages…" Button
+    t =    45.13s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.16s Find the "square.and.pencil" Button
+    t =    45.20s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.23s Find the "square.and.pencil" Button
+    t =    45.26s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.30s Find the "square.and.pencil" Button
+    t =    45.33s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.36s Find the "square.and.pencil" Button
+    t =    45.40s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.43s Find the "square.and.pencil" Button
+    t =    45.46s Find the Other at {{16.0, 302.0}, {250.0, 104.0}}
+    t =    45.50s Find the "square.and.pencil" Button
+    t =    45.53s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    45.55s Find the "square.and.pencil" Button
+    t =    45.58s Find the "square.and.pencil" Button
+    t =    45.61s Tap "square.and.pencil" Button[0.50, 0.50]
+    t =    45.61s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    45.61s     Find the "square.and.pencil" Button
+    t =    45.64s     Check for interrupting elements affecting "square.and.pencil" Button
+    t =    45.67s     Synthesize event
+    t =    45.67s         Find the "square.and.pencil" Button
+    t =    45.70s         Find the "square.and.pencil" Button
+    t =    45.73s         Find the "square.and.pencil" Button
+    t =    46.05s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    46.08s Waiting 5.0s for "Customize Sidebar" NavigationBar to exist
+    t =    47.13s     Checking `Expect predicate `existsNoRetry == 1` for object "Customize Sidebar" NavigationBar`
+    t =    47.13s         Checking existence of `"Customize Sidebar" NavigationBar`
+    t =    47.21s Waiting 5.0s for Switch (First Match) to exist
+    t =    48.25s     Checking `Expect predicate `existsNoRetry == 1` for object Switch (First Match)`
+    t =    48.25s         Checking existence of `Switch (First Match)`
+    t =    48.34s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    48.43s Added attachment named 'sidebar-pages-native-editor'
+    t =    48.43s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    48.69s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    48.75s Added attachment named 'sidebar-pages-native-editor-hierarchy'
+    t =    48.75s Tap "Done" Button
+    t =    48.75s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    48.75s     Find the "Done" Button
+    t =    48.79s     Check for interrupting elements affecting "Done" Button
+    t =    48.83s     Synthesize event
+    t =    49.13s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    49.13s Waiting 5.0s for "Customize Sidebar" NavigationBar to not exist
+    t =    50.13s     Checking `Expect predicate `existsNoRetry == 0` for object "Customize Sidebar" NavigationBar`
+    t =    50.13s         Checking existence of `"Customize Sidebar" NavigationBar`
+    t =    50.16s Waiting 10.0s for "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any to exist
+    t =    51.17s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any`
+    t =    51.17s         Checking existence of `"RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any`
+    t =    51.20s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any
+    t =    51.24s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.27s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.30s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.34s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.37s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.40s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.44s Press "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button for 1.0 seconds
+    t =    51.44s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    51.44s     Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.47s     Check for interrupting elements affecting "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    51.49s     Synthesize event
+    t =    52.73s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    52.73s Waiting 5.0s for "Rename…" Button to exist
+    t =    53.80s     Checking `Expect predicate `existsNoRetry == 1` for object "Rename…" Button`
+    t =    53.80s         Checking existence of `"Rename…" Button`
+    t =    53.84s Waiting 5.0s for "Icon & Color…" Button to exist
+    t =    54.90s     Checking `Expect predicate `existsNoRetry == 1` for object "Icon & Color…" Button`
+    t =    54.90s         Checking existence of `"Icon & Color…" Button`
+    t =    54.94s Waiting 5.0s for "Assign to…" Button to exist
+    t =    56.00s     Checking `Expect predicate `existsNoRetry == 1` for object "Assign to…" Button`
+    t =    56.00s         Checking existence of `"Assign to…" Button`
+    t =    56.04s Waiting 5.0s for "Copy" Button to exist
+    t =    57.08s     Checking `Expect predicate `existsNoRetry == 1` for object "Copy" Button`
+    t =    57.08s         Checking existence of `"Copy" Button`
+    t =    57.12s Waiting 5.0s for "Open in…" Button to exist
+    t =    58.15s     Checking `Expect predicate `existsNoRetry == 1` for object "Open in…" Button`
+    t =    58.15s         Checking existence of `"Open in…" Button`
+    t =    58.19s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    58.29s Added attachment named 'sidebar-session-longpress'
+    t =    58.29s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    58.50s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    58.55s Added attachment named 'sidebar-session-longpress-hierarchy'
+    t =    58.55s Waiting 5.0s for "Icon & Color…" Button to exist
+    t =    59.55s     Checking `Expect predicate `existsNoRetry == 1` for object "Icon & Color…" Button`
+    t =    59.55s         Checking existence of `"Icon & Color…" Button`
+    t =    59.59s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Icon & Color…'
+    t =    59.63s Find the Other (Element at index 0)
+    t =    59.67s Find the Other (Element at index 1)
+    t =    59.71s Find the Other (Element at index 2)
+    t =    59.75s Find the Other (Element at index 3)
+    t =    59.79s Find the Other (Element at index 4)
+    t =    59.83s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    59.87s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    59.92s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    59.96s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    60.00s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.05s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.09s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    60.13s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    60.18s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.22s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.26s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.30s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.35s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.39s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.43s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.47s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.51s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.55s Find the "Icon & Color…" Button
+    t =    60.59s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.63s Find the "paintpalette" Button
+    t =    60.67s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.71s Find the "paintpalette" Button
+    t =    60.75s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.79s Find the "paintpalette" Button
+    t =    60.83s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.87s Find the "paintpalette" Button
+    t =    60.91s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    60.95s Find the "paintpalette" Button
+    t =    60.99s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    61.04s Find the "paintpalette" Button
+    t =    61.07s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    61.10s Find the "paintpalette" Button
+    t =    61.14s Find the "paintpalette" Button
+    t =    61.17s Tap "paintpalette" Button[0.50, 0.50]
+    t =    61.17s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    61.18s     Find the "paintpalette" Button
+    t =    61.21s     Check for interrupting elements affecting "paintpalette" Button
+    t =    61.25s     Synthesize event
+    t =    61.25s         Find the "paintpalette" Button
+    t =    61.29s         Find the "paintpalette" Button
+    t =    61.32s         Find the "paintpalette" Button
+    t =    61.64s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    61.65s Waiting 5.0s for "Icon & Color" NavigationBar to exist
+    t =    62.69s     Checking `Expect predicate `existsNoRetry == 1` for object "Icon & Color" NavigationBar`
+    t =    62.69s         Checking existence of `"Icon & Color" NavigationBar`
+    t =    62.76s Checking existence of `"No Icon" Button`
+    t =    62.80s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    62.89s Added attachment named 'sidebar-session-appearance'
+    t =    62.89s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    63.12s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    63.18s Added attachment named 'sidebar-session-appearance-hierarchy'
+    t =    63.18s Tap "Done" Button
+    t =    63.18s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    63.18s     Find the "Done" Button
+    t =    63.22s     Check for interrupting elements affecting "Done" Button
+    t =    63.26s     Synthesize event
+    t =    63.55s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    63.56s Waiting 5.0s for "Icon & Color" NavigationBar to not exist
+    t =    64.56s     Checking `Expect predicate `existsNoRetry == 0` for object "Icon & Color" NavigationBar`
+    t =    64.56s         Checking existence of `"Icon & Color" NavigationBar`
+    t =    64.59s Press "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button for 1.0 seconds
+    t =    64.59s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    64.59s     Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    64.62s     Check for interrupting elements affecting "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    64.64s     Synthesize event
+    t =    65.87s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    65.87s Waiting 5.0s for "Assign to…" Button to exist
+    t =    66.92s     Checking `Expect predicate `existsNoRetry == 1` for object "Assign to…" Button`
+    t =    66.92s         Checking existence of `"Assign to…" Button`
+    t =    66.96s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Assign to…'
+    t =    66.99s Find the Other (Element at index 0)
+    t =    67.03s Find the Other (Element at index 1)
+    t =    67.07s Find the Other (Element at index 2)
+    t =    67.12s Find the Other (Element at index 3)
+    t =    67.16s Find the Other (Element at index 4)
+    t =    67.20s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    67.24s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    67.28s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    67.33s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    67.37s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.41s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.45s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    67.49s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    67.54s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.58s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.62s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.66s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.70s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.74s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.79s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.83s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.87s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.91s Find the "Assign to…" Button
+    t =    67.95s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    67.99s Find the "person.2" Button
+    t =    68.03s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    68.07s Find the "person.2" Button
+    t =    68.11s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    68.15s Find the "person.2" Button
+    t =    68.19s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    68.23s Find the "person.2" Button
+    t =    68.27s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    68.31s Find the "person.2" Button
+    t =    68.35s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    68.39s Find the "person.2" Button
+    t =    68.43s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    68.45s Find the "person.2" Button
+    t =    68.49s Find the "person.2" Button
+    t =    68.53s Tap "person.2" Button[0.50, 0.50]
+    t =    68.53s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    68.53s     Find the "person.2" Button
+    t =    68.57s     Check for interrupting elements affecting "person.2" Button
+    t =    68.60s     Synthesize event
+    t =    68.60s         Find the "person.2" Button
+    t =    68.64s         Find the "person.2" Button
+    t =    68.68s         Find the "person.2" Button
+    t =    69.00s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    69.01s Waiting 5.0s for "Assign to" NavigationBar to exist
+    t =    70.07s     Checking `Expect predicate `existsNoRetry == 1` for object "Assign to" NavigationBar`
+    t =    70.07s         Checking existence of `"Assign to" NavigationBar`
+    t =    70.11s Waiting 10.0s for "Fixture Collaborator" StaticText to exist
+    t =    71.15s     Checking `Expect predicate `existsNoRetry == 1` for object "Fixture Collaborator" StaticText`
+    t =    71.15s         Checking existence of `"Fixture Collaborator" StaticText`
+    t =    71.19s Checking existence of `"Fixture Agent" StaticText`
+    t =    71.22s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    71.31s Added attachment named 'sidebar-session-assignment'
+    t =    71.31s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    71.51s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    71.57s Added attachment named 'sidebar-session-assignment-hierarchy'
+    t =    71.57s Tap "Done" Button
+    t =    71.57s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    71.57s     Find the "Done" Button
+    t =    71.60s     Check for interrupting elements affecting "Done" Button
+    t =    71.64s     Synthesize event
+    t =    71.94s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    71.94s Waiting 5.0s for "Assign to" NavigationBar to not exist
+    t =    72.99s     Checking `Expect predicate `existsNoRetry == 0` for object "Assign to" NavigationBar`
+    t =    72.99s         Checking existence of `"Assign to" NavigationBar`
+    t =    73.02s Press "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button for 1.0 seconds
+    t =    73.02s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    73.02s     Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    73.04s     Check for interrupting elements affecting "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    73.08s     Synthesize event
+    t =    74.31s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    74.31s Waiting 5.0s for "Rename…" Button to exist
+    t =    75.33s     Checking `Expect predicate `existsNoRetry == 1` for object "Rename…" Button`
+    t =    75.33s         Checking existence of `"Rename…" Button`
+    t =    75.37s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Rename…'
+    t =    75.41s Find the Other (Element at index 0)
+    t =    75.45s Find the Other (Element at index 1)
+    t =    75.49s Find the Other (Element at index 2)
+    t =    75.53s Find the Other (Element at index 3)
+    t =    75.57s Find the Other (Element at index 4)
+    t =    75.62s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    75.66s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    75.70s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    75.74s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    75.78s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    75.83s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    75.87s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    75.92s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    75.96s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.01s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.05s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.09s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.13s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.18s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.22s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.26s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.31s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.35s Find the "Rename…" Button
+    t =    76.39s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.43s Find the "pencil" Button
+    t =    76.47s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.52s Find the "pencil" Button
+    t =    76.56s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.60s Find the "pencil" Button
+    t =    76.64s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.68s Find the "pencil" Button
+    t =    76.72s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.77s Find the "pencil" Button
+    t =    76.81s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    76.85s Find the "pencil" Button
+    t =    76.89s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    76.91s Find the "pencil" Button
+    t =    76.95s Find the "pencil" Button
+    t =    76.99s Tap "pencil" Button[0.50, 0.50]
+    t =    76.99s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    76.99s     Find the "pencil" Button
+    t =    77.03s     Check for interrupting elements affecting "pencil" Button
+    t =    77.06s     Synthesize event
+    t =    77.06s         Find the "pencil" Button
+    t =    77.10s         Find the "pencil" Button
+    t =    77.14s         Find the "pencil" Button
+    t =    77.46s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    77.46s Waiting 5.0s for "Rename Session" NavigationBar to exist
+    t =    78.54s     Checking `Expect predicate `existsNoRetry == 1` for object "Rename Session" NavigationBar`
+    t =    78.54s         Checking existence of `"Rename Session" NavigationBar`
+    t =    78.59s Waiting 5.0s for "Session name" TextField to exist
+    t =    79.61s     Checking `Expect predicate `existsNoRetry == 1` for object "Session name" TextField`
+    t =    79.61s         Checking existence of `"Session name" TextField`
+    t =    79.64s Tap "Session name" TextField
+    t =    79.64s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    79.65s     Find the "Session name" TextField
+    t =    79.68s     Check for interrupting elements affecting "Session name" TextField
+    t =    79.71s     Synthesize event
+    t =    80.00s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    80.24s Find the "Session name" TextField
+    t =    80.30s Type '' into "Session name" TextField
+    t =    80.30s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    80.30s     Find the "Session name" TextField
+    t =    80.35s     Check for interrupting elements affecting "Session name" TextField
+    t =    80.38s     Synthesize event
+    t =    80.79s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    80.79s Type 'Menu Parity Rename' into "Session name" TextField
+    t =    80.79s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    80.79s     Find the "Session name" TextField
+    t =    80.83s     Check for interrupting elements affecting "Session name" TextField
+    t =    80.87s     Synthesize event
+    t =    81.37s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    81.38s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    81.47s Added attachment named 'sidebar-session-rename-editor'
+    t =    81.47s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    81.70s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    81.75s Added attachment named 'sidebar-session-rename-editor-hierarchy'
+    t =    81.75s Tap "Save" Button
+    t =    81.75s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    81.76s     Find the "Save" Button
+    t =    81.80s     Check for interrupting elements affecting "Save" Button
+    t =    81.83s     Synthesize event
+    t =    82.13s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    82.13s Waiting 5.0s for "Rename Session" NavigationBar to not exist
+    t =    83.15s     Checking `Expect predicate `existsNoRetry == 0` for object "Rename Session" NavigationBar`
+    t =    83.15s         Checking existence of `"Rename Session" NavigationBar`
+    t =    83.17s Waiting 5.0s for "Menu Parity Rename" StaticText to exist
+    t =    84.22s     Checking `Expect predicate `existsNoRetry == 1` for object "Menu Parity Rename" StaticText`
+    t =    84.22s         Checking existence of `"Menu Parity Rename" StaticText`
+    t =    84.25s Press "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button for 1.0 seconds
+    t =    84.25s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    84.25s     Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    84.28s     Check for interrupting elements affecting "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =    84.31s     Synthesize event
+    t =    85.54s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    85.54s Waiting 5.0s for "Copy" Button to exist
+    t =    86.57s     Checking `Expect predicate `existsNoRetry == 1` for object "Copy" Button`
+    t =    86.57s         Checking existence of `"Copy" Button`
+    t =    86.61s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Copy'
+    t =    86.65s Find the Other (Element at index 0)
+    t =    86.69s Find the Other (Element at index 1)
+    t =    86.73s Find the Other (Element at index 2)
+    t =    86.77s Find the Other (Element at index 3)
+    t =    86.81s Find the Other (Element at index 4)
+    t =    86.86s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    86.90s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    86.95s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    86.99s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    87.03s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.07s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.12s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    87.16s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    87.20s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.24s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.29s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.33s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.37s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.41s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.45s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.50s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.54s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.58s Find the "Copy" Button
+    t =    87.62s Press Other at {{16.0, 96.3}, {250.0, 520.0}}[0.50, 0.85] for 0.1 seconds, then drag to Other at {{16.0, 96.3}, {250.0, 520.0}}[0.50, 0.20] with velocity of 500.00 pixels per second, and then hold for 0.0 seconds 
+    t =    87.62s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    87.62s     Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.67s     Check for interrupting elements affecting Other
+    t =    87.70s     Synthesize event
+    t =    87.70s         Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.75s         Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.79s         Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.83s         Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    87.88s         Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    88.89s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    89.27s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    89.31s Find the "doc.on.doc" Button
+    t =    89.35s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    89.40s Find the "doc.on.doc" Button
+    t =    89.43s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    89.47s Find the "doc.on.doc" Button
+    t =    89.51s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    89.55s Find the "doc.on.doc" Button
+    t =    89.58s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    89.63s Find the "doc.on.doc" Button
+    t =    89.66s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    89.70s Find the "doc.on.doc" Button
+    t =    89.74s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    89.76s Find the "doc.on.doc" Button
+    t =    89.80s Find the "doc.on.doc" Button
+    t =    89.84s Tap "doc.on.doc" Button[0.50, 0.50]
+    t =    89.84s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    89.84s     Find the "doc.on.doc" Button
+    t =    89.88s     Check for interrupting elements affecting "doc.on.doc" Button
+    t =    89.91s     Synthesize event
+    t =    89.91s         Find the "doc.on.doc" Button
+    t =    89.95s         Find the "doc.on.doc" Button
+    t =    89.99s         Find the "doc.on.doc" Button
+    t =    90.31s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    90.32s Waiting 5.0s for "Session Link" Button to exist
+    t =    91.32s     Checking `Expect predicate `existsNoRetry == 1` for object "Session Link" Button`
+    t =    91.32s         Checking existence of `"Session Link" Button`
+    t =    91.36s Find the "Session Link" Button
+    t =    91.40s Waiting 5.0s for "Session Preview Link" Button to exist
+    t =    92.44s     Checking `Expect predicate `existsNoRetry == 1` for object "Session Preview Link" Button`
+    t =    92.44s         Checking existence of `"Session Preview Link" Button`
+    t =    92.48s Find the "Session Preview Link" Button
+    t =    92.51s Waiting 5.0s for "Markdown" Button to exist
+    t =    93.52s     Checking `Expect predicate `existsNoRetry == 1` for object "Markdown" Button`
+    t =    93.52s         Checking existence of `"Markdown" Button`
+    t =    93.56s Find the "Markdown" Button
+    t =    93.59s Waiting 5.0s for "Session ID" Button to exist
+    t =    94.60s     Checking `Expect predicate `existsNoRetry == 1` for object "Session ID" Button`
+    t =    94.60s         Checking existence of `"Session ID" Button`
+    t =    94.64s Find the "Session ID" Button
+    t =    94.67s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    94.77s Added attachment named 'sidebar-session-copy-submenu'
+    t =    94.77s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    94.97s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    95.01s Added attachment named 'sidebar-session-copy-submenu-hierarchy'
+    t =    95.02s Waiting 5.0s for "Session ID" Button to exist
+    t =    96.06s     Checking `Expect predicate `existsNoRetry == 1` for object "Session ID" Button`
+    t =    96.06s         Checking existence of `"Session ID" Button`
+    t =    96.09s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Session ID'
+    t =    96.13s Find the Other (Element at index 0)
+    t =    96.16s Find the Other (Element at index 1)
+    t =    96.20s Find the Other (Element at index 2)
+    t =    96.24s Find the Other (Element at index 3)
+    t =    96.27s Find the Other (Element at index 4)
+    t =    96.31s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    96.34s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    96.38s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    96.42s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    96.45s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    96.49s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    96.52s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    96.56s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    96.60s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    96.63s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    96.67s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    96.71s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    96.75s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    96.79s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    96.83s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    96.86s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    96.90s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    96.94s Find the "Session ID" Button
+    t =    96.97s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    97.01s Find the "number" Button
+    t =    97.04s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    97.08s Find the "number" Button
+    t =    97.12s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    97.16s Find the "number" Button
+    t =    97.19s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    97.23s Find the "number" Button
+    t =    97.26s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    97.30s Find the "number" Button
+    t =    97.33s Find the Other at {{16.0, 334.4}, {250.0, 270.0}}
+    t =    97.36s Find the "number" Button
+    t =    97.40s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    97.42s Find the "number" Button
+    t =    97.45s Find the "number" Button
+    t =    97.48s Tap "number" Button[0.50, 0.50]
+    t =    97.48s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    97.48s     Find the "number" Button
+    t =    97.52s     Check for interrupting elements affecting "number" Button
+    t =    97.54s     Synthesize event
+    t =    97.54s         Find the "number" Button
+    t =    97.58s         Find the "number" Button
+    t =    97.62s         Find the "number" Button
+    t =    97.94s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    97.94s Waiting 5.0s for "Copy" Alert to exist
+    t =    98.95s     Checking `Expect predicate `existsNoRetry == 1` for object "Copy" Alert`
+    t =    98.95s         Checking existence of `"Copy" Alert`
+    t =    98.99s Checking existence of `"Session ID copied." StaticText`
+    t =    99.02s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    99.11s Added attachment named 'sidebar-session-copy-confirmation'
+    t =    99.11s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    99.27s Requesting snapshot of accessibility hierarchy for app with pid 36149
+    t =    99.31s Added attachment named 'sidebar-session-copy-confirmation-hierarchy'
+    t =    99.31s Tap "OK" Button
+    t =    99.31s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    99.31s     Find the "OK" Button
+    t =    99.34s     Check for interrupting elements affecting "OK" Button
+    t =    99.37s     Synthesize event
+    t =    99.66s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    99.66s Waiting 5.0s for "Copy" Alert to not exist
+    t =   100.69s     Checking `Expect predicate `existsNoRetry == 0` for object "Copy" Alert`
+    t =   100.69s         Checking existence of `"Copy" Alert`
+    t =   100.71s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =   100.74s Terminate ai.openclawfoundation.app.debug:36149
+    t =   101.84s Tear Down
+Test Case '-[OpenClawUITests.RootSidebarMenuParityUITests testWholeHeaderAndRowLongPressMenusOpenNativeControls]' passed (101.886 seconds).
+Test Suite 'RootSidebarMenuParityUITests' passed at 2026-10-10 00:37:18.950.
+	 Executed 1 test, with 0 failures (0 unexpected) in 101.886 (101.886) seconds
+Test Suite 'OpenClawUITests.xctest' passed at 2026-10-10 00:37:18.951.
+	 Executed 1 test, with 0 failures (0 unexpected) in 101.886 (101.887) seconds
+Test Suite 'Selected tests' passed at 2026-10-10 00:37:18.951.
+	 Executed 1 test, with 0 failures (0 unexpected) in 101.886 (101.887) seconds
+2026-10-10 00:37:19.360 xcodebuild[35804:81808312] [MT] IDETestOperationsObserverDebug: 111.761 elapsed -- Testing started completed.
+2026-10-10 00:37:19.360 xcodebuild[35804:81808312] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-10 00:37:19.360 xcodebuild[35804:81808312] [MT] IDETestOperationsObserverDebug: 111.761 sec, +111.761 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/sidebar-review-native4/results/menu-ui.xcresult
+
 ** TEST EXECUTE SUCCEEDED **
+
+Testing started

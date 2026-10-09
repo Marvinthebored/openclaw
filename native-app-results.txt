@@ -1,118 +1,382 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project OpenClaw.xcodeproj -scheme OpenClaw -configuration Debug -destination "platform=iOS Simulator,id=BA54C0E2-55DE-4150-9AD3-54B80BC82803" -derivedDataPath /tmp/sidebar-menu-pr-dd -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- OPENCLAW_CODE_SIGN_ENTITLEMENTS=build/OpenClaw.nopush.entitlements "-only-testing:OpenClawTests/RootSidebarMenuParityTests" "-only-testing:OpenClawTests/RootSidebarOrderTests" "-only-testing:OpenClawTests/RootSidebarPluginBridgeTests" "-only-testing:OpenClawTests/RootTabsPresentationTests" "-only-testing:OpenClawTests/CommandSessionMenuTests" "-only-testing:OpenClawTests/OpenClawTypographyTests" "-only-testing:OpenClawTests/RootTabsSidebarRegressionTests" -resultBundlePath /private/tmp/sidebar-review-native1/results/unit-tests.xcresult
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = -
+    CODE_SIGNING_ALLOWED = YES
+    OPENCLAW_CODE_SIGN_ENTITLEMENTS = build/OpenClaw.nopush.entitlements
+
+Resolve Package Graph
+failed to retrieve search paths with pkg-config; maybe pkg-config is not installedyou may be able to install libsodium using your system-packager:
+    brew install libsodium
+
+
+Resolved source packages:
+  swift-markdown: https://github.com/swiftlang/swift-markdown @ 0.9.0
+  Commander: https://github.com/steipete/Commander.git @ 0.3.0
+  SwiftMath: https://github.com/mgriebling/SwiftMath @ 1.7.3
+  WebRTC: https://github.com/stasel/WebRTC.git @ 154.0.0
+  OpenClawKit: <local-path>
+  swabble: <local-path>
+  Sodium: https://github.com/jedisct1/swift-sodium.git @ cfd195c
+  GRDB: https://github.com/groue/GRDB.swift.git @ 7.11.1
+  cmark-gfm: https://github.com/swiftlang/swift-cmark.git @ 0.9.0
+  ElevenLabsKit: https://github.com/steipete/ElevenLabsKit @ 0.1.3
+
+Writing result bundle at path:
+	/private/tmp/sidebar-review-native1/results/unit-tests.xcresult
+
+2026-10-10 00:26:48.988167+0800 OpenClaw[30684:81737527] OpenClaw: installing uncaught exception handler
+2026-10-10 00:26:49.108377+0800 OpenClaw[30684:81737527] [TalkMode] disabled
+2026-10-10 00:26:49.110613+0800 OpenClaw[30684:81737740] [GatewayDiag] [2026-10-09T16:26:49.107Z] node app model: init start
+2026-10-10 00:26:49.111140+0800 OpenClaw[30684:81737740] [GatewayDiag] [2026-10-09T16:26:49.107Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=notActivated
+2026-10-10 00:26:49.111588+0800 OpenClaw[30684:81737740] [GatewayDiag] [2026-10-09T16:26:49.108Z] talk.timeline manager disabled
+2026-10-10 00:26:49.160547+0800 OpenClaw[30684:81737754] [GatewayDiag] [2026-10-09T16:26:49.160Z] app delegate: didFinishLaunching
+2026-10-10 00:26:49.314499+0800 OpenClaw[30684:81737755] [WC] -[WCSession onqueue_handleUpdateSessionState:]_block_invoke dropping as pairingIDs no longer match. pairingID (null), client pairingID: (null)
+2026-10-10 00:26:49.315121+0800 OpenClaw[30684:81737753] [GatewayDiag] [2026-10-09T16:26:49.314Z] watch messaging: activation complete state=activated error=none
+2026-10-10 00:26:49.316861+0800 OpenClaw[30684:81737755] [WC] WCSession is not paired
+2026-10-10 00:26:49.316976+0800 OpenClaw[30684:81737755] [WC] -[WCSession onqueue_handleUpdateSessionState:]_block_invoke dropping as pairingIDs no longer match. pairingID (null), client pairingID: (null)
+2026-10-10 00:26:49.317144+0800 OpenClaw[30684:81737755] [WC] WCSession is not paired
+2026-10-10 00:26:49.317211+0800 OpenClaw[30684:81737755] [WC] -[WCSession onqueue_handleUpdateSessionState:]_block_invoke dropping as pairingIDs no longer match. pairingID (null), client pairingID: (null)
+2026-10-10 00:26:49.317305+0800 OpenClaw[30684:81737755] [WC] WCSession is not paired
+2026-10-10 00:26:49.317526+0800 OpenClaw[30684:81737755] [WC] -[WCSession onqueue_handleUpdateSessionState:]_block_invoke dropping as pairingIDs no longer match. pairingID (null), client pairingID: (null)
+2026-10-10 00:26:49.317687+0800 OpenClaw[30684:81737755] [WC] WCSession is not paired
+2026-10-10 00:26:49.610588+0800 OpenClaw[30684:81737755] [GatewayDiag] [2026-10-09T16:26:49.610Z] node app model: scene phase=inactive
+2026-10-10 00:26:49.611237+0800 OpenClaw[30684:81737755] [GatewayDiag] [2026-10-09T16:26:49.610Z] app delegate: scene phase changed=inactive
+IOSurfaceClientSetSurfaceNotify failed e00002c7
+2026-10-10 00:26:50.274377+0800 OpenClaw[30684:81737755] [GatewayDiag] [2026-10-09T16:26:50.274Z] node app model: scene phase=active
+2026-10-10 00:26:50.292720+0800 OpenClaw[30684:81737755] [GatewayDiag] [2026-10-09T16:26:50.292Z] app delegate: scene phase changed=active
+2026-10-10 00:26:50.362924+0800 OpenClaw[30684:81737743] [GatewayDiag] [2026-10-09T16:26:50.363Z] node app model: watch status callback reachable=false activation=notActivated backgrounded=false
+2026-10-10 00:26:50.363458+0800 OpenClaw[30684:81737743] [GatewayDiag] [2026-10-09T16:26:50.363Z] watch exec approval: status changed reachable=false activation=notActivated backgrounded=false
+2026-10-10 00:26:50.370334+0800 OpenClaw[30684:81737753] [GatewayDiag] [2026-10-09T16:26:50.370Z] chat.ui foreground refresh sessionKey=main pending=0
+2026-10-10 00:26:50.390794+0800 OpenClaw[30684:81737851] [GatewayDiag] [2026-10-09T16:26:50.391Z] watch messaging: status supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:50.392991+0800 OpenClaw[30684:81737527] [OpenClawChatUI] refresh history failed not connected
+2026-10-10 00:26:50.414371+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:50.414Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:50.414912+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:50.414Z] watch exec approval: status changed reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:50.416898+0800 OpenClaw[30684:81737527] [OpenClawChatUI] bootstrap failed not connected
+Test Suite 'Selected tests' started at 2026-10-10 00:26:50.697.
+Test Suite 'OpenClawTests.xctest' started at 2026-10-10 00:26:50.697.
+Test Suite 'OpenClawTests.xctest' passed at 2026-10-10 00:26:50.698.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-10-10 00:26:50.698.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64-apple-ios13.0-simulator
+◇ Suite CommandSessionMenuTests started.
+◇ Test "shared links use canonical gateway mount and never include credentials" started.
 ✔ Test "shared links use canonical gateway mount and never include credentials" passed after 0.001 seconds.
+◇ Test "global and bare session links require the clicked owner rather than selected agent" started.
 ✔ Test "global and bare session links require the clicked owner rather than selected agent" passed after 0.001 seconds.
-✔ Test "fixture executes appearance owner and read mutations against actual row state" passed after 0.007 seconds.
-✔ Test "plugin descriptor honors all required scopes and current connection" passed after 0.001 seconds.
-✔ Suite CommandSessionMenuTests passed after 0.011 seconds.
-✔ Test "Access actions use native branded controls" passed after 0.004 seconds.
+◇ Test "plugin descriptor honors all required scopes and current connection" started.
+✔ Test "plugin descriptor honors all required scopes and current connection" passed after 0.002 seconds.
+✔ Suite CommandSessionMenuTests passed after 0.005 seconds.
+◇ Suite OpenClawTypographyTests started.
+◇ Test "Access actions use native branded controls" started.
+✔ Test "Access actions use native branded controls" passed after 0.005 seconds.
+◇ Test "chat accessory controls use branded typography" started.
+◇ Test case passing 1 argument filename → "ChatFileAttachment.swift" to "chat accessory controls use branded typography" started.
+​◇ Test case passing 1 argument filename → "ChatMessageReactions.swift" to "chat accessory controls use branded typography" started.
 ​✔ Test "chat accessory controls use branded typography" with 2 test cases passed after 0.001 seconds.
+◇ Test "gateway picker uses branded typography" started.
 ✔ Test "gateway picker uses branded typography" passed after 0.001 seconds.
+◇ Test "group header controls use branded typography" started.
 ✔ Test "group header controls use branded typography" passed after 0.001 seconds.
+◇ Test "thread controls use branded typography" started.
 ✔ Test "thread controls use branded typography" passed after 0.002 seconds.
+◇ Test "long-press session sheets use branded native controls" started.
+◇ Test case passing 1 argument filename → "CommandSessionMenuSheet.swift" to "long-press session sheets use branded native controls" started.
+​◇ Test case passing 1 argument filename → "CommandSessionPluginActions.swift" to "long-press session sheets use branded native controls" started.
 ​✔ Test "long-press session sheets use branded native controls" with 2 test cases passed after 0.001 seconds.
+◇ Test "bundled fonts load from app bundle" started.
 ✔ Test "bundled fonts load from app bundle" passed after 0.001 seconds.
+◇ Test "dynamic type scales display fonts" started.
 ✔ Test "dynamic type scales display fonts" passed after 0.001 seconds.
+◇ Test "display variable weight axis instantiates heavy weights" started.
 ✔ Test "display variable weight axis instantiates heavy weights" passed after 0.001 seconds.
+◇ Test "app extensions register bundled branded fonts" started.
 ✔ Test "app extensions register bundled branded fonts" passed after 0.002 seconds.
-✔ Test "extension text surfaces use branded typography helpers" passed after 0.005 seconds.
+◇ Test "extension text surfaces use branded typography helpers" started.
+✔ Test "extension text surfaces use branded typography helpers" passed after 0.006 seconds.
+◇ Test "UIKit typography refreshes when Dynamic Type changes" started.
 ✔ Test "UIKit typography refreshes when Dynamic Type changes" passed after 0.002 seconds.
-✔ Test "listed iOS app surfaces enforce branded control typography" passed after 0.025 seconds.
+◇ Test "listed iOS app surfaces enforce branded control typography" started.
+✔ Test "listed iOS app surfaces enforce branded control typography" passed after 0.029 seconds.
+◇ Test "chat model menu uses branded typography" started.
 ✔ Test "chat model menu uses branded typography" passed after 0.005 seconds.
+◇ Test "chat copy and select text surfaces use branded typography" started.
 ✔ Test "chat copy and select text surfaces use branded typography" passed after 0.002 seconds.
-✔ Test "iOS app text and control calls keep branded font boundaries" passed after 1.469 seconds.
+◇ Test "iOS app text and control calls keep branded font boundaries" started.
+✔ Test "iOS app text and control calls keep branded font boundaries" passed after 1.671 seconds.
+◇ Test "font boundary scanner permits inheritance and rejects system overrides" started.
 ✔ Test "font boundary scanner permits inheritance and rejects system overrides" passed after 0.001 seconds.
+◇ Test "accessibility metadata text does not require visual typography" started.
 ✔ Test "accessibility metadata text does not require visual typography" passed after 0.001 seconds.
-✔ Test "secure fields do not use platform placeholder text" passed after 0.730 seconds.
+◇ Test "secure fields do not use platform placeholder text" started.
+✔ Test "secure fields do not use platform placeholder text" passed after 0.681 seconds.
+◇ Test "font boundary scanner excludes only whole macOS files" started.
 ✔ Test "font boundary scanner excludes only whole macOS files" passed after 0.001 seconds.
+◇ Test "form font alias requires its audited branded definition" started.
 ✔ Test "form font alias requires its audited branded definition" passed after 0.002 seconds.
+◇ Test "font boundary scanner excludes only complete macOS source envelopes" started.
 ✔ Test "font boundary scanner excludes only complete macOS source envelopes" passed after 0.001 seconds.
-✔ Suite OpenClawTypographyTests passed after 2.260 seconds.
-✔ Test "fresh and invalid preferences use web-compatible native defaults" passed after 0.002 seconds.
-✔ Test "saved grouping ordering filters and preview round trip independently of selected agent" passed after 0.005 seconds.
+✔ Suite OpenClawTypographyTests passed after 2.422 seconds.
+◇ Suite RootSidebarMenuParityTests started.
+◇ Test "catalog promotion keeps an unpinned descendant in the rendered Pages inventory" started.
+✔ Test "catalog promotion keeps an unpinned descendant in the rendered Pages inventory" passed after 0.003 seconds.
+◇ Test "fresh and invalid preferences use web-compatible native defaults" started.
+✔ Test "fresh and invalid preferences use web-compatible native defaults" passed after 0.004 seconds.
+◇ Test "saved grouping ordering filters and preview round trip independently of selected agent" started.
+✔ Test "saved grouping ordering filters and preview round trip independently of selected agent" passed after 0.003 seconds.
+◇ Test "reset removes visible changes but retains a temporarily unavailable person grouping" started.
 ✔ Test "reset removes visible changes but retains a temporarily unavailable person grouping" passed after 0.001 seconds.
-✔ Test "status choices partition active snoozed and archived rows without resurrecting selection" passed after 0.002 seconds.
+◇ Test "status choices partition active snoozed and archived rows without resurrecting selection" started.
+✔ Test "status choices partition active snoozed and archived rows without resurrecting selection" passed after 0.001 seconds.
+◇ Test "legacy projection keeps main in Home and snoozed selection out of sessions" started.
 ✔ Test "legacy projection keeps main in Home and snoozed selection out of sessions" passed after 0.001 seconds.
+◇ Test "owner filter promotes matching child and does not synthesize an unrelated selected row" started.
 ✔ Test "owner filter promotes matching child and does not synthesize an unrelated selected row" passed after 0.001 seconds.
+◇ Test "created and updated orders remain separate and named group order uses catalog positions" started.
 ✔ Test "created and updated orders remain separate and named group order uses catalog positions" passed after 0.001 seconds.
+◇ Test "complete roster retains owner and self facets when later pages omit them" started.
 ✔ Test "complete roster retains owner and self facets when later pages omit them" passed after 0.001 seconds.
+◇ Test "partial roster failure retains its valid facets and marks the roster incomplete" started.
 ✔ Test "partial roster failure retains its valid facets and marks the roster incomplete" passed after 0.001 seconds.
+◇ Test "all-agent roster retains identical bare keys owned by different agents" started.
 ✔ Test "all-agent roster retains identical bare keys owned by different agents" passed after 0.001 seconds.
-✔ Test "native roster request preserves filters without unconditional transcript enrichment" passed after 0.001 seconds.
-✔ Test "model preserves first observed created-order ties across reordered roster refreshes" passed after 0.006 seconds.
-✔ Test "model adopts new facets and clears previous connection facets when absent" passed after 0.032 seconds.
-✔ Test "membership-filtered events apply authoritative refresh instead of adopting event rows" passed after 0.037 seconds.
-✔ Test "all-agent observer digests update only their explicit owner without a roster reload" passed after 0.028 seconds.
-✔ Suite RootSidebarMenuParityTests passed after 0.117 seconds.
+◇ Test "native roster request preserves filters without unconditional transcript enrichment" started.
+✔ Test "native roster request preserves filters without unconditional transcript enrichment" passed after 0.004 seconds.
+◇ Test "model preserves first observed created-order ties across reordered roster refreshes" started.
+2026-10-10 00:26:53.187792+0800 OpenClaw[30684:81737527] [WC] already in progress or activated
+2026-10-10 00:26:53.188311+0800 OpenClaw[30684:81737527] [TalkMode] disabled
+2026-10-10 00:26:53.188938+0800 OpenClaw[30684:81737846] [GatewayDiag] [2026-10-09T16:26:53.188Z] node app model: init start
+2026-10-10 00:26:53.189159+0800 OpenClaw[30684:81737846] [GatewayDiag] [2026-10-09T16:26:53.188Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:53.189351+0800 OpenClaw[30684:81737846] [GatewayDiag] [2026-10-09T16:26:53.188Z] talk.timeline manager disabled
+✔ Test "model preserves first observed created-order ties across reordered roster refreshes" passed after 0.002 seconds.
+◇ Test "model adopts new facets and clears previous connection facets when absent" started.
+2026-10-10 00:26:53.219368+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:53.219Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:53.220099+0800 OpenClaw[30684:81737527] [WC] already in progress or activated
+2026-10-10 00:26:53.220328+0800 OpenClaw[30684:81737527] [TalkMode] disabled
+✔ Test "model adopts new facets and clears previous connection facets when absent" passed after 0.031 seconds.
+◇ Test "membership-filtered events apply authoritative refresh instead of adopting event rows" started.
+2026-10-10 00:26:53.220919+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:53.220Z] node app model: init start
+2026-10-10 00:26:53.221208+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:53.220Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:53.221453+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:53.220Z] talk.timeline manager disabled
+2026-10-10 00:26:53.248674+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:53.248Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:53.249458+0800 OpenClaw[30684:81737527] [WC] already in progress or activated
+2026-10-10 00:26:53.249685+0800 OpenClaw[30684:81737527] [TalkMode] disabled
+2026-10-10 00:26:53.250188+0800 OpenClaw[30684:81737754] [GatewayDiag] [2026-10-09T16:26:53.250Z] node app model: init start
+2026-10-10 00:26:53.250386+0800 OpenClaw[30684:81737754] [GatewayDiag] [2026-10-09T16:26:53.250Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:53.250562+0800 OpenClaw[30684:81737754] [GatewayDiag] [2026-10-09T16:26:53.250Z] talk.timeline manager disabled
+✔ Test "membership-filtered events apply authoritative refresh instead of adopting event rows" passed after 0.036 seconds.
+◇ Test "all-agent observer digests update only their explicit owner without a roster reload" started.
+2026-10-10 00:26:53.283748+0800 OpenClaw[30684:81737846] [GatewayDiag] [2026-10-09T16:26:53.283Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:53.284750+0800 OpenClaw[30684:81737527] [WC] already in progress or activated
+2026-10-10 00:26:53.285048+0800 OpenClaw[30684:81737527] [TalkMode] disabled
+2026-10-10 00:26:53.285718+0800 OpenClaw[30684:81737846] [GatewayDiag] [2026-10-09T16:26:53.285Z] node app model: init start
+2026-10-10 00:26:53.286043+0800 OpenClaw[30684:81737846] [GatewayDiag] [2026-10-09T16:26:53.285Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:53.286380+0800 OpenClaw[30684:81737846] [GatewayDiag] [2026-10-09T16:26:53.285Z] talk.timeline manager disabled
+✔ Test "all-agent observer digests update only their explicit owner without a roster reload" passed after 0.030 seconds.
+✔ Suite RootSidebarMenuParityTests passed after 0.120 seconds.
+◇ Suite RootSidebarOrderTests started.
+◇ Test "unqualified keys in different agents do not share an ordering slot" started.
+2026-10-10 00:26:53.315101+0800 OpenClaw[30684:81737849] [GatewayDiag] [2026-10-09T16:26:53.315Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
 ✔ Test "unqualified keys in different agents do not share an ordering slot" passed after 0.027 seconds.
+◇ Test "mixed canonical storage preserves opaque keys and unloaded agent slots" started.
 ✔ Test "mixed canonical storage preserves opaque keys and unloaded agent slots" passed after 0.001 seconds.
+◇ Test "reset preserves every saved session slot even when no sessions are loaded" started.
 ✔ Test "reset preserves every saved session slot even when no sessions are loaded" passed after 0.001 seconds.
+◇ Test "move crosses route plugin and session boundaries without deleting hidden slots" started.
 ✔ Test "move crosses route plugin and session boundaries without deleting hidden slots" passed after 0.001 seconds.
+◇ Test "reconcile adds newly pinned rows without replacing saved order or unknown agents" started.
 ✔ Test "reconcile adds newly pinned rows without replacing saved order or unknown agents" passed after 0.001 seconds.
-✔ Test "customization offers canonical web routes not hardcoded plugin or footer utilities" passed after 0.001 seconds.
-✔ Suite RootSidebarOrderTests passed after 0.028 seconds.
+◇ Test "plugin discovery does not duplicate a saved native Workboard page" started.
+✔ Test "plugin discovery does not duplicate a saved native Workboard page" passed after 0.001 seconds.
+◇ Test "shipped defaults survive first launch and reset of the mixed sidebar" started.
+✔ Test "shipped defaults survive first launch and reset of the mixed sidebar" passed after 0.001 seconds.
+◇ Test "shipped page choices remain editable after mixed order is saved" started.
+✔ Test "shipped page choices remain editable after mixed order is saved" passed after 0.001 seconds.
+✔ Suite RootSidebarOrderTests passed after 0.029 seconds.
+◇ Suite RootSidebarPluginBridgeTests started.
+◇ Test "plugin metadata cache is gateway scoped and never retains executable action descriptors" started.
 ✔ Test "plugin metadata cache is gateway scoped and never retains executable action descriptors" passed after 0.002 seconds.
+◇ Test "native session action seed preserves captured identity with JSON escaping" started.
 ✔ Test "native session action seed preserves captured identity with JSON escaping" passed after 0.001 seconds.
-✔ Test "delayed registry publication cannot write or replace a new gateway or document" passed after 0.001 seconds.
+◇ Test "delayed registry publication cannot write or replace a new gateway or document" started.
+✔ Test "delayed registry publication cannot write or replace a new gateway or document" passed after 0.002 seconds.
 ✔ Suite RootSidebarPluginBridgeTests passed after 0.005 seconds.
+◇ Suite RootTabsPresentationTests started.
+◇ Test "notification guidance opens delivery setup before system permissions" started.
 ✔ Test "notification guidance opens delivery setup before system permissions" passed after 0.001 seconds.
+◇ Test "every sidebar destination resolves to a native screen or a valid Dashboard route" started.
 ✔ Test "every sidebar destination resolves to a native screen or a valid Dashboard route" passed after 0.001 seconds.
+◇ Test "session activity clamps current and future timestamps to just now" started.
 ✔ Test "session activity clamps current and future timestamps to just now" passed after 0.001 seconds.
+◇ Test "dashboard deep link requests overview navigation" started.
+2026-10-10 00:26:53.327897+0800 OpenClaw[30684:81737527] [WC] already in progress or activated
+2026-10-10 00:26:53.328169+0800 OpenClaw[30684:81737527] [TalkMode] disabled
 ✔ Test "dashboard deep link requests overview navigation" passed after 0.001 seconds.
-✔ Test "sidebar gateway label ignores empty identity values" passed after 0.027 seconds.
+◇ Test "sidebar gateway label ignores empty identity values" started.
+2026-10-10 00:26:53.328825+0800 OpenClaw[30684:81737743] [GatewayDiag] [2026-10-09T16:26:53.328Z] node app model: init start
+2026-10-10 00:26:53.329086+0800 OpenClaw[30684:81737743] [GatewayDiag] [2026-10-09T16:26:53.328Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:53.329352+0800 OpenClaw[30684:81737743] [GatewayDiag] [2026-10-09T16:26:53.328Z] talk.timeline manager disabled
+✔ Test "sidebar gateway label ignores empty identity values" passed after 0.026 seconds.
+◇ Test "new chat request is consumed once by the active chat owner" started.
+2026-10-10 00:26:53.355336+0800 OpenClaw[30684:81737847] [GatewayDiag] [2026-10-09T16:26:53.355Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:26:53.357427+0800 OpenClaw[30684:81737527] [WC] already in progress or activated
+2026-10-10 00:26:53.357634+0800 OpenClaw[30684:81737527] [TalkMode] disabled
+2026-10-10 00:26:53.358145+0800 OpenClaw[30684:81737847] [GatewayDiag] [2026-10-09T16:26:53.358Z] node app model: init start
+2026-10-10 00:26:53.358489+0800 OpenClaw[30684:81737847] [GatewayDiag] [2026-10-09T16:26:53.358Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:26:53.358711+0800 OpenClaw[30684:81737847] [GatewayDiag] [2026-10-09T16:26:53.358Z] talk.timeline manager disabled
 ✔ Test "new chat request is consumed once by the active chat owner" passed after 0.028 seconds.
+◇ Test "overview session metrics exclude snoozed archived and internal sessions" started.
+2026-10-10 00:26:53.384131+0800 OpenClaw[30684:81737847] [GatewayDiag] [2026-10-09T16:26:53.384Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
 ✔ Test "overview session metrics exclude snoozed archived and internal sessions" passed after 0.001 seconds.
+◇ Test "overview token usage sums known totals and marks stale or missing rows partial" started.
 ✔ Test "overview token usage sums known totals and marks stale or missing rows partial" passed after 0.001 seconds.
-✔ Test "session roster loads every gateway page beyond the former thousand-row ceiling" passed after 0.003 seconds.
-✔ Test "session roster bounds an endlessly advancing gateway snapshot without dropping rows" passed after 0.028 seconds.
+◇ Test "session roster loads every gateway page beyond the former thousand-row ceiling" started.
+✔ Test "session roster loads every gateway page beyond the former thousand-row ceiling" passed after 0.004 seconds.
+◇ Test "session roster bounds an endlessly advancing gateway snapshot without dropping rows" started.
+✔ Test "session roster bounds an endlessly advancing gateway snapshot without dropping rows" passed after 0.029 seconds.
+◇ Test "session roster preserves successful pages when a later request fails" started.
 ✔ Test "session roster preserves successful pages when a later request fails" passed after 0.002 seconds.
+◇ Test "session roster rejects a nonadvancing gateway cursor without losing rows" started.
 ✔ Test "session roster rejects a nonadvancing gateway cursor without losing rows" passed after 0.001 seconds.
+◇ Test "session roster propagates cancellation after a successful page" started.
 ✔ Test "session roster propagates cancellation after a successful page" passed after 0.003 seconds.
+◇ Test "iOS usage requests device calendar days" started.
 ✔ Test "iOS usage requests device calendar days" passed after 0.001 seconds.
+◇ Test "failed cron attention ignores disabled jobs" started.
 ✔ Test "failed cron attention ignores disabled jobs" passed after 0.001 seconds.
+◇ Test "recent session cap is disabled while search is active" started.
 ✔ Test "recent session cap is disabled while search is active" passed after 0.001 seconds.
+◇ Test "configured gateway bypasses launch request and stale onboarding markers" started.
 ✔ Test "configured gateway bypasses launch request and stale onboarding markers" passed after 0.001 seconds.
+◇ Test "fresh install presents onboarding" started.
 ✔ Test "fresh install presents onboarding" passed after 0.001 seconds.
+◇ Test "completed setup without gateway opens settings" started.
 ✔ Test "completed setup without gateway opens settings" passed after 0.001 seconds.
+◇ Test "quick setup does not present when gateway already configured" started.
 ✔ Test "quick setup does not present when gateway already configured" passed after 0.001 seconds.
+◇ Test "quick setup presents for fresh install with discovered gateway" started.
 ✔ Test "quick setup presents for fresh install with discovered gateway" passed after 0.001 seconds.
+◇ Test "quick setup does not present when already connected" started.
 ✔ Test "quick setup does not present when already connected" passed after 0.001 seconds.
+◇ Test "sidebar destinations match frozen page order" started.
 ✔ Test "sidebar destinations match frozen page order" passed after 0.001 seconds.
+◇ Test "sidebar uses compact labels for long routes" started.
 ✔ Test "sidebar uses compact labels for long routes" passed after 0.001 seconds.
+◇ Test "app launch defaults to chat destination" started.
 ✔ Test "app launch defaults to chat destination" passed after 0.001 seconds.
+◇ Test "app launch uses requested destination before chat fallback" started.
 ✔ Test "app launch uses requested destination before chat fallback" passed after 0.001 seconds.
-✔ Test "legacy initial tab aliases map directly to sidebar destinations" passed after 0.001 seconds.
+◇ Test "legacy initial tab aliases map directly to sidebar destinations" started.
+✔ Test "legacy initial tab aliases map directly to sidebar destinations" passed after 0.007 seconds.
+◇ Test "chat transport identity distinguishes unresolved and resolved agents" started.
 ✔ Test "chat transport identity distinguishes unresolved and resolved agents" passed after 0.001 seconds.
+◇ Test "chat keeps active voice capture stoppable while attachment ownership is pinned" started.
 ✔ Test "chat keeps active voice capture stoppable while attachment ownership is pinned" passed after 0.001 seconds.
+◇ Test "localized QR status matcher accepts positional placeholders" started.
 ✔ Test "localized QR status matcher accepts positional placeholders" passed after 0.001 seconds.
+◇ Test "settings sidebar route follows navigation top then direct base" started.
 ✔ Test "settings sidebar route follows navigation top then direct base" passed after 0.001 seconds.
+◇ Test "wide i pad portrait uses persistent sidebar" started.
 ✔ Test "wide i pad portrait uses persistent sidebar" passed after 0.001 seconds.
+◇ Test "keyboard contracted content uses portrait window for sidebar layout" started.
 ✔ Test "keyboard contracted content uses portrait window for sidebar layout" passed after 0.001 seconds.
+◇ Test "sidebar layout container falls back to content size without a window" started.
 ✔ Test "sidebar layout container falls back to content size without a window" passed after 0.001 seconds.
+◇ Test "i pad wide landscape uses visible split sidebar" started.
 ✔ Test "i pad wide landscape uses visible split sidebar" passed after 0.001 seconds.
+◇ Test "persistent sidebar threshold depends on width not height" started.
+◇ Test case passing 1 argument height → 400.0 to "persistent sidebar threshold depends on width not height" started.
+​◇ Test case passing 1 argument height → 900.0 to "persistent sidebar threshold depends on width not height" started.
+​◇ Test case passing 1 argument height → 1366.0 to "persistent sidebar threshold depends on width not height" started.
 ​✔ Test "persistent sidebar threshold depends on width not height" with 3 test cases passed after 0.001 seconds.
-​✔ Test "phones and accessibility text retain single column navigation" with 6 test cases passed after 0.001 seconds.
+◇ Test "phones and accessibility text retain single column navigation" started.
+◇ Test case passing 1 argument width → 744.0 to "phones and accessibility text retain single column navigation" started.
+​◇ Test case passing 1 argument width → 800.0 to "phones and accessibility text retain single column navigation" started.
+​◇ Test case passing 1 argument width → 852.0 to "phones and accessibility text retain single column navigation" started.
+​◇ Test case passing 1 argument width → 932.0 to "phones and accessibility text retain single column navigation" started.
+​◇ Test case passing 1 argument width → 1032.0 to "phones and accessibility text retain single column navigation" started.
+​◇ Test case passing 1 argument width → 1366.0 to "phones and accessibility text retain single column navigation" started.
+​✔ Test "phones and accessibility text retain single column navigation" with 6 test cases passed after 0.004 seconds.
+◇ Test "tablet split preserves minimum detail width" started.
+◇ Test case passing 1 argument width → 800.0 to "tablet split preserves minimum detail width" started.
+​◇ Test case passing 1 argument width → 810.0 to "tablet split preserves minimum detail width" started.
+​◇ Test case passing 1 argument width → 820.0 to "tablet split preserves minimum detail width" started.
+​◇ Test case passing 1 argument width → 834.0 to "tablet split preserves minimum detail width" started.
+​◇ Test case passing 1 argument width → 1024.0 to "tablet split preserves minimum detail width" started.
+​◇ Test case passing 1 argument width → 1366.0 to "tablet split preserves minimum detail width" started.
 ​✔ Test "tablet split preserves minimum detail width" with 6 test cases passed after 0.001 seconds.
+◇ Test "split visibility preference survives an intervening drawer layout" started.
 ✔ Test "split visibility preference survives an intervening drawer layout" passed after 0.001 seconds.
+◇ Test "i pad split sidebar width stays usable" started.
 ✔ Test "i pad split sidebar width stays usable" passed after 0.001 seconds.
-✔ Test "initial sidebar visibility parses launch argument" passed after 0.008 seconds.
+◇ Test "initial sidebar visibility parses launch argument" started.
+✔ Test "initial sidebar visibility parses launch argument" passed after 0.004 seconds.
+◇ Test "sidebar controls have stable accessibility identifiers" started.
 ✔ Test "sidebar controls have stable accessibility identifiers" passed after 0.001 seconds.
+◇ Test "i pad drawer sidebar width stays inside screen" started.
 ✔ Test "i pad drawer sidebar width stays inside screen" passed after 0.001 seconds.
+◇ Test "phone drawer uses the wider cap when space allows" started.
 ✔ Test "phone drawer uses the wider cap when space allows" passed after 0.001 seconds.
+◇ Test "sidebar session accessibility names pin and unread state" started.
 ✔ Test "sidebar session accessibility names pin and unread state" passed after 0.001 seconds.
-​✔ Test "iOS sidebar groups awake sessions without restoring a snoozed selection" with 3 test cases passed after 0.001 seconds.
+◇ Test "iOS sidebar groups awake sessions without restoring a snoozed selection" started.
+◇ Test case passing 1 argument currentSessionKey → "recent" to "iOS sidebar groups awake sessions without restoring a snoozed selection" started.
+​◇ Test case passing 1 argument currentSessionKey → "agent:main:later" to "iOS sidebar groups awake sessions without restoring a snoozed selection" started.
+​◇ Test case passing 1 argument currentSessionKey → "later" to "iOS sidebar groups awake sessions without restoring a snoozed selection" started.
+​✔ Test "iOS sidebar groups awake sessions without restoring a snoozed selection" with 3 test cases passed after 0.005 seconds.
+◇ Test "sidebar agent badges use canonical identity fallback" started.
 ✔ Test "sidebar agent badges use canonical identity fallback" passed after 0.001 seconds.
+◇ Test "session work subtitle mirrors the web repo and branch line" started.
 ✔ Test "session work subtitle mirrors the web repo and branch line" passed after 0.001 seconds.
+◇ Test "sidebar subtitle keeps an unread final observer digest above work metadata" started.
 ✔ Test "sidebar subtitle keeps an unread final observer digest above work metadata" passed after 0.001 seconds.
+◇ Test "sidebar registers event stream before subscription request" started.
 ✔ Test "sidebar registers event stream before subscription request" passed after 0.001 seconds.
+◇ Test "sidebar retries failed subscribe and resubscribes after stream completion" started.
 ✔ Test "sidebar retries failed subscribe and resubscribes after stream completion" passed after 0.001 seconds.
-✔ Test "sidebar replays actual observer visibility after each reconnect" passed after 0.001 seconds.
-✔ Test "sidebar invalidates a confirmed same-route observer after resubscription" passed after 0.003 seconds.
+◇ Test "sidebar replays actual observer visibility after each reconnect" started.
+✔ Test "sidebar replays actual observer visibility after each reconnect" passed after 0.003 seconds.
+◇ Test "sidebar invalidates a confirmed same-route observer after resubscription" started.
+✔ Test "sidebar invalidates a confirmed same-route observer after resubscription" passed after 0.001 seconds.
+◇ Test "sidebar rejects an old visibility acknowledgement after same-route resubscription" started.
 ✔ Test "sidebar rejects an old visibility acknowledgement after same-route resubscription" passed after 0.001 seconds.
+◇ Test "sidebar observer identity restarts for foreground and background transitions" started.
 ✔ Test "sidebar observer identity restarts for foreground and background transitions" passed after 0.001 seconds.
+◇ Test "pinned pages storage round trips and preserves pin order" started.
 ✔ Test "pinned pages storage round trips and preserves pin order" passed after 0.001 seconds.
+◇ Test "drawer content follows reveal and dismiss drag" started.
 ✔ Test "drawer content follows reveal and dismiss drag" passed after 0.001 seconds.
+◇ Test "narrow landscape keeps drawer sidebar" started.
 ✔ Test "narrow landscape keeps drawer sidebar" passed after 0.001 seconds.
+◇ Test "i pad split prefers integrated visible sidebar" started.
 ✔ Test "i pad split prefers integrated visible sidebar" passed after 0.001 seconds.
+◇ Test "destination headers own hidden sidebar reveal control" started.
 ✔ Test "destination headers own hidden sidebar reveal control" passed after 0.001 seconds.
-✔ Suite RootTabsPresentationTests passed after 0.150 seconds.
-✔ Test run with 110 tests in 6 suites passed after 2.574 seconds.
+✔ Suite RootTabsPresentationTests passed after 0.152 seconds.
+◇ Suite RootTabsSidebarRegressionTests started.
+◇ Test "layout modes share one detail shell without conditional branches" started.
+✔ Test "layout modes share one detail shell without conditional branches" passed after 0.001 seconds.
+◇ Test "sidebar controls keep a background-free icon inside their hit target" started.
+✔ Test "sidebar controls keep a background-free icon inside their hit target" passed after 0.001 seconds.
+◇ Test "push reveal uses one full bleed card with local gesture state" started.
+✔ Test "push reveal uses one full bleed card with local gesture state" passed after 0.012 seconds.
+◇ Test "sidebar has one agent selector and one session inventory" started.
+✔ Test "sidebar has one agent selector and one session inventory" passed after 0.009 seconds.
+◇ Test "sidebar selection resets embedded settings navigation path" started.
+✔ Test "sidebar selection resets embedded settings navigation path" passed after 0.001 seconds.
+✔ Suite RootTabsSidebarRegressionTests passed after 0.023 seconds.
+✔ Test run with 117 tests in 7 suites passed after 2.760 seconds.
+2026-10-10 00:26:53.810 xcodebuild[30377:81734424] [MT] IDETestOperationsObserverDebug: 16.234 elapsed -- Testing started completed.
+2026-10-10 00:26:53.810 xcodebuild[30377:81734424] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-10 00:26:53.810 xcodebuild[30377:81734424] [MT] IDETestOperationsObserverDebug: 16.234 sec, +16.234 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/sidebar-review-native1/results/unit-tests.xcresult
+
 ** TEST EXECUTE SUCCEEDED **
+
+Testing started

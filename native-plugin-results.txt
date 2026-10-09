@@ -1,0 +1,70 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -xctestrun /tmp/sidebar-plugin-auth/private-proof.xctestrun -destination "platform=iOS Simulator,id=C339A76F-15E9-4372-9925-FCC4F483D009" -parallel-testing-enabled NO "-only-testing:OpenClawTests/SidebarPluginRuntimeProof" -resultBundlePath /private/tmp/sidebar-review-native6/results/plugin-runtime.xcresult
+
+2026-10-10 00:44:15.828 xcodebuild[42451:81865507] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+Writing result bundle at path:
+	/private/tmp/sidebar-review-native6/results/plugin-runtime.xcresult
+
+2026-10-10 00:44:15.833 xcodebuild[42451:81865507] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 00:44:16.021 xcodebuild[42451:81865507] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 00:44:16.587 xcodebuild[42451:81865507] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 00:44:16.714 xcodebuild[42451:81865507] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 00:44:34.215533+0800 OpenClaw[42793:81869243] OpenClaw: installing uncaught exception handler
+2026-10-10 00:44:34.328889+0800 OpenClaw[42793:81869477] [WC] -[WCSession onqueue_handleUpdateSessionState:]_block_invoke dropping as pairingIDs no longer match. pairingID (null), client pairingID: (null)
+2026-10-10 00:44:34.333890+0800 OpenClaw[42793:81869471] [GatewayDiag] [2026-10-09T16:44:34.327Z] watch messaging: activation complete state=activated error=none
+2026-10-10 00:44:34.338086+0800 OpenClaw[42793:81869477] [WC] WCSession is not paired
+2026-10-10 00:44:34.359539+0800 OpenClaw[42793:81869243] [TalkMode] disabled
+2026-10-10 00:44:34.359613+0800 OpenClaw[42793:81869484] [GatewayDiag] [2026-10-09T16:44:34.358Z] node app model: init start
+2026-10-10 00:44:34.360117+0800 OpenClaw[42793:81869484] [GatewayDiag] [2026-10-09T16:44:34.358Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 00:44:34.360550+0800 OpenClaw[42793:81869484] [GatewayDiag] [2026-10-09T16:44:34.360Z] talk.timeline manager disabled
+2026-10-10 00:44:34.418233+0800 OpenClaw[42793:81869493] [GatewayDiag] [2026-10-09T16:44:34.418Z] app delegate: didFinishLaunching
+2026-10-10 00:44:34.902134+0800 OpenClaw[42793:81869471] [GatewayDiag] [2026-10-09T16:44:34.902Z] node app model: scene phase=inactive
+2026-10-10 00:44:34.902811+0800 OpenClaw[42793:81869471] [GatewayDiag] [2026-10-09T16:44:34.902Z] app delegate: scene phase changed=inactive
+IOSurfaceClientSetSurfaceNotify failed e00002c7
+2026-10-10 00:44:35.349889+0800 OpenClaw[42793:81869243] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-10 00:44:35.597862+0800 OpenClaw[42793:81869243] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-10 00:44:35.844260+0800 OpenClaw[42793:81869493] [GatewayDiag] [2026-10-09T16:44:35.844Z] node app model: scene phase=active
+2026-10-10 00:44:35.873888+0800 OpenClaw[42793:81869494] [GatewayDiag] [2026-10-09T16:44:35.874Z] app delegate: scene phase changed=active
+2026-10-10 00:44:35.914382+0800 OpenClaw[42793:81869494] [GatewayDiag] [2026-10-09T16:44:35.914Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 00:44:35.914855+0800 OpenClaw[42793:81869494] [GatewayDiag] [2026-10-09T16:44:35.914Z] watch exec approval: status changed reachable=false activation=activated backgrounded=false
+2026-10-10 00:44:35.926548+0800 OpenClaw[42793:81869457] [GatewayDiag] [2026-10-09T16:44:35.926Z] chat.ui foreground refresh sessionKey=main pending=0
+2026-10-10 00:44:35.995299+0800 OpenClaw[42793:81869243] [OpenClawChatUI] refresh history failed not connected
+2026-10-10 00:44:36.025382+0800 OpenClaw[42793:81869243] [OpenClawChatUI] bootstrap failed not connected
+Test Suite 'Selected tests' started at 2026-10-10 00:44:36.340.
+Test Suite 'OpenClawTests.xctest' started at 2026-10-10 00:44:36.340.
+Test Suite 'SidebarPluginRuntimeProof' started at 2026-10-10 00:44:36.340.
+Test Case '-[OpenClawTests.SidebarPluginRuntimeProof testAuthenticatedProductionBridgeRunsRegisteredGatewayAction]' started.
+2026-10-10 00:44:36.420244+0800 OpenClaw[42793:81869805] [default] Failed to resolve host network app id to config: bundleID: com.apple.WebKit.Networking instance ID: Optional([_EXExtensionInstanceIdentifier: 5EA897AE-D3FC-43E3-90FD-912BCD3F7272])
+2026-10-10 00:44:36.580140+0800 OpenClaw[42793:81869243] [ResourceLoadStatistics] Failed to request storage access user agent string quirks from WebPrivacy.
+2026-10-10 00:44:36.580244+0800 OpenClaw[42793:81869243] [ResourceLoadStatistics] Failed to request storage access quirks from WebPrivacy.
+2026-10-10 00:44:36.580363+0800 OpenClaw[42793:81869243] [ResourceLoadStatistics] Failed to request known fingerprinting scripts from WebPrivacy: Error Domain=WebPrivacyErrorDomain Code=1001 "List data not found" UserInfo={NSLocalizedDescription=List data not found}
+2026-10-10 00:44:37.009239+0800 OpenClaw[42793:81869243] [ResourceLoadStatistics] Failed to request query parameters from WebPrivacy.
+2026-10-10 00:44:37.043623+0800 OpenClaw[42793:81869884] [ResourceLoadStatistics] WebContent[42871] Unable to filter tracking query parameters (missing data)
+2026-10-10 00:44:37.043679+0800 OpenClaw[42793:81869243] [ResourceLoadStatistics] Failed to request restricted opener domains from WebPrivacy
+2026-10-10 00:44:38.750937+0800 OpenClaw[42793:81869884] [ResourceLoadStatistics] WebContent[42871] Unable to hide query parameters from script (missing data)
+2026-10-10 00:44:38.751828+0800 OpenClaw[42793:81869243] [ResourceLoadStatistics] Failed to request allowed query parameters from WebPrivacy.
+2026-10-10 00:44:40.147701+0800 OpenClaw[42793:81869884] [ResourceLoadStatistics] WebContent[42871] Unable to hide query parameters from script (missing data)
+2026-10-10 00:44:40.898105+0800 OpenClaw[42793:81869884] [com.apple.WebKit.WebContent] WebContent[42871] makeImagePlus:3799: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+PROOF_SETTLED_REVISION 14
+PROOF_AUTHENTICATED_REGISTRY plugin=sidebar-native-proof connected=true action=record
+2026-10-10 00:44:41.887917+0800 OpenClaw[42793:81869884] [ResourceLoadStatistics] WebContent[42871] Unable to hide query parameters from script (missing data)
+PROOF_REAL_GATEWAY_ACTION observedCount=1 rendered=true productionBridge=true
+Test Case '-[OpenClawTests.SidebarPluginRuntimeProof testAuthenticatedProductionBridgeRunsRegisteredGatewayAction]' passed (5.767 seconds).
+Test Suite 'SidebarPluginRuntimeProof' passed at 2026-10-10 00:44:42.109.
+	 Executed 1 test, with 0 failures (0 unexpected) in 5.767 (5.768) seconds
+Test Suite 'OpenClawTests.xctest' passed at 2026-10-10 00:44:42.109.
+	 Executed 1 test, with 0 failures (0 unexpected) in 5.767 (5.769) seconds
+Test Suite 'Selected tests' passed at 2026-10-10 00:44:42.109.
+	 Executed 1 test, with 0 failures (0 unexpected) in 5.767 (5.769) seconds
+2026-10-10 00:44:42.114246+0800 OpenClaw[42793:81870360] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 42873 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 42873 does not exist}>
+2026-10-10 00:44:42.114344+0800 OpenClaw[42793:81870360] [ProcessSuspension] 0x1261346c0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=42873, error: (null)
+2026-10-10 00:44:42.453 xcodebuild[42451:81865507] [MT] IDETestOperationsObserverDebug: 26.430 elapsed -- Testing started completed.
+2026-10-10 00:44:42.453 xcodebuild[42451:81865507] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-10 00:44:42.453 xcodebuild[42451:81865507] [MT] IDETestOperationsObserverDebug: 26.430 sec, +26.430 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/sidebar-review-native6/results/plugin-runtime.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started
