@@ -34,7 +34,7 @@ public struct ChatSidebarCatalogPresentation {
     public let catalogs: [Catalog]
     public let liveRows: [String: OpenClawChatSessionEntry]
 
-    public var hasVisibleRows: Bool {
+    var hasVisibleRows: Bool {
         self.catalogs.contains { !$0.hosts.isEmpty }
     }
 
@@ -103,7 +103,7 @@ public struct ChatSidebarCatalogPresentation {
         }
     }
 
-    public static func target(catalogID: String, hostID: String, row: SessionCatalogSession, agentID: String)
+    static func target(catalogID: String, hostID: String, row: SessionCatalogSession, agentID: String)
         -> OpenClawChatSessionTarget
     {
         guard let key = row.sessionkey else {
@@ -112,7 +112,7 @@ public struct ChatSidebarCatalogPresentation {
         return .init(sessionKey: key, agentID: OpenClawChatSessionKey.agentID(from: key) ?? agentID)
     }
 
-    public static func sourceTarget(catalogID: String, hostID: String, row: SessionCatalogSession, agentID: String)
+    static func sourceTarget(catalogID: String, hostID: String, row: SessionCatalogSession, agentID: String)
         -> OpenClawChatSessionTarget
     {
         let allowed =
@@ -124,7 +124,7 @@ public struct ChatSidebarCatalogPresentation {
             agentID: agentID.lowercased())
     }
 
-    public static func shouldLeaveDeletedSource(
+    static func shouldLeaveDeletedSource(
         _ source: OpenClawChatSessionTarget,
         current: OpenClawChatSessionTarget) -> Bool
     {

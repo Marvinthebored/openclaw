@@ -100,7 +100,9 @@ function fixture(sessionId?: string) {
       subscribe: () => () => {},
     },
     plugins: {
-      registrations: (kind: string) => (kind === "actions" ? [sessionEntry] : entries),
+      // The real runtime creates fresh wrappers while preserving registration lifetimes.
+      registrations: (kind: string) =>
+        (kind === "actions" ? [sessionEntry] : entries).map((entry) => ({ ...entry })),
       subscribe: (callback: () => void) => {
         listener = callback;
         return () => {};
@@ -153,7 +155,7 @@ function fixture(sessionId?: string) {
     post,
     context,
     replace: () => {
-      entries = [{ ...registration }];
+      entries = [{ ...registration, signal: new AbortController().signal }];
     },
     reconnect: () => {
       revision++;

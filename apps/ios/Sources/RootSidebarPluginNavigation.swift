@@ -1,6 +1,5 @@
 import Foundation
 import OpenClawKit
-import OpenClawProtocol
 import SwiftUI
 
 /// Metadata is only a navigation hint. Action registrations are always loaded live.

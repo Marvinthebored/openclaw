@@ -152,7 +152,10 @@ export function startNativeSidebarPluginBridge(
       (!isSession && (!entry || entry.signal.aborted)) ||
       context.gateway.snapshot.phase !== "connected" ||
       context.gateway.connectionRevision !== publishedConnection ||
-      (!isSession && !context.plugins.registrations("navigation").includes(entry!)) ||
+      (!isSession &&
+        !context.plugins
+          .registrations("navigation")
+          .some((current) => current.key === entry!.key && current.signal === entry!.signal)) ||
       (isSession && (command.key !== sessionTarget?.key || !currentSession()))
     ) {
       respond(false, "The plugin menu changed. Reopen it and try again.");

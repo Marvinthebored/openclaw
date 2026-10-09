@@ -1,6 +1,5 @@
 import Foundation
 import OpenClawChatUI
-import OpenClawProtocol
 import SwiftUI
 
 /// The native drawer uses the shared sidebar projection and stores only view preferences locally.
