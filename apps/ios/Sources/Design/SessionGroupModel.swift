@@ -19,7 +19,9 @@ final class SessionGroupModel {
     private var identity: String?
     private var generation = 0
     private var local = SessionGroupStore.load()
-    var collapsed: Set<String> = []
+    var collapsed = SessionGroupStore.loadCollapsed() {
+        didSet { if self.collapsed != oldValue { SessionGroupStore.saveCollapsed(self.collapsed) } }
+    }
 
     func report(_ error: any Error) {
         self.mutationFailure = error.localizedDescription
@@ -40,7 +42,6 @@ final class SessionGroupModel {
             self.identity = identity
             self.catalog = nil
             self.connection = nil
-            self.collapsed = []
             self.refreshFailure = nil
             self.mutationFailure = nil
         }
@@ -79,6 +80,13 @@ final class SessionGroupModel {
             guard self.generation == generation, appModel.chatViewModelIdentityID == identity else { return }
             self.refreshFailure = error.localizedDescription
         }
+    }
+
+    /// Forgets folded names that no longer name a group. Only against a catalog whose last refresh succeeded:
+    /// a missing or stale catalog does not know the empty groups.
+    func pruneCollapsed(for sessions: [OpenClawChatSessionEntry]) {
+        guard self.catalog != nil, self.refreshFailure == nil else { return }
+        self.collapsed.formIntersection(self.names(for: sessions))
     }
 
     func allows(_ method: String) -> Bool {
