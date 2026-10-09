@@ -9,6 +9,8 @@ struct DashboardPageScreen: View {
     @State private var navigationPath: [SettingsRoute] = []
     let path: String
     let title: String
+    var queryItems: [URLQueryItem] = []
+    var fragment: String?
     var headerSidebarAction: OpenClawSidebarHeaderAction?
     var onClose: (() -> Void)?
     var onRouteChange: ((SettingsRoute?) -> Void)?
@@ -40,6 +42,14 @@ struct DashboardPageScreen: View {
         }
     }
 
+    private var pageURL: URL? {
+        guard let url = AuthenticatedControlUI.pageURL(
+            config: self.appModel.activeGatewayConnectConfig, path: self.path, queryItems: self.queryItems),
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return nil }
+        components.fragment = self.fragment
+        return components.url
+    }
+
     @ViewBuilder private var root: some View {
         let config = self.appModel.activeGatewayConnectConfig
         if config?.ingressAuthorization != nil {
@@ -59,7 +69,7 @@ struct DashboardPageScreen: View {
             hasOperatorAdminScope: self.appModel.hasOperatorAdminScope,
             isDemoMode: self.appModel.isAppleReviewDemoModeEnabled,
             isScreenshotMode: ProcessInfo.processInfo.arguments.contains("--openclaw-screenshot-mode")),
-            let url = AuthenticatedControlUI.pageURL(config: config, path: self.path, queryItems: [])
+            let url = self.pageURL
         {
             EmbeddedDashboardContent(
                 appModel: self.appModel,

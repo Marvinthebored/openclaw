@@ -1,17 +1,16 @@
-#if os(macOS)
 import Foundation
 import Observation
 import OpenClawProtocol
 
 @MainActor
 @Observable
-final class ChatSessionSidebarCatalogs {
-    enum Grouping: String, CaseIterable { case project, person, none }
+public final class ChatSessionSidebarCatalogs {
+    public enum Grouping: String, CaseIterable { case project, person, none }
     private enum RefreshPhase { case idle, reading, invalidated }
-    struct Group: Identifiable {
-        let id: String
-        let label: String?
-        var rows: [SessionCatalogSession]
+    public struct Group: Identifiable {
+        public let id: String
+        public let label: String?
+        public var rows: [SessionCatalogSession]
     }
 
     private struct PageFailure: Error {
@@ -26,15 +25,16 @@ final class ChatSessionSidebarCatalogs {
         let cursors: Set<String>
     }
 
-    private(set) var catalogs: [SessionCatalog] = []
-    private(set) var connection: OpenClawSidebarCatalogConnection?
-    private(set) var loading: Set<String> = []
-    private(set) var errors: [String: String] = [:]
-    private(set) var hidden: Set<String> = []
-    private(set) var grouping = Grouping.project
-    private(set) var agentID = ""
-    var isRendered = false
-    @ObservationIgnored var hasVisibleRows: (SessionCatalog) -> Bool = { $0.hosts.contains { !$0.sessions.isEmpty } }
+    public private(set) var catalogs: [SessionCatalog] = []
+    public private(set) var connection: OpenClawSidebarCatalogConnection?
+    public private(set) var loading: Set<String> = []
+    public private(set) var errors: [String: String] = [:]
+    public private(set) var hidden: Set<String> = []
+    public private(set) var grouping = Grouping.project
+    public private(set) var agentID = ""
+    public var isRendered = false
+    @ObservationIgnored public var hasVisibleRows: (SessionCatalog)
+        -> Bool = { $0.hosts.contains { !$0.sessions.isEmpty } }
     private var generation = UUID()
     private var observation = UUID()
     private var pageDepths: [String: [String: Int]] = [:]
@@ -46,18 +46,18 @@ final class ChatSessionSidebarCatalogs {
     private var preferenceKey: String?
     private let defaults: UserDefaults
     private let sleep: (Duration) async throws -> Void
-    var scopeID: UUID {
+    public var scopeID: UUID {
         self.generation
     }
 
-    init(defaults: UserDefaults = .standard, sleep: @escaping (Duration) async throws -> Void = {
+    public init(defaults: UserDefaults = .standard, sleep: @escaping (Duration) async throws -> Void = {
         try await Task.sleep(for: $0)
     }) {
         self.defaults = defaults
         self.sleep = sleep
     }
 
-    func observe(_ events: AsyncStream<OpenClawSidebarCatalogEvent>, agentID: String) async {
+    public func observe(_ events: AsyncStream<OpenClawSidebarCatalogEvent>, agentID: String) async {
         self.stop()
         let observation = UUID()
         self.observation = observation
@@ -92,7 +92,7 @@ final class ChatSessionSidebarCatalogs {
         }
     }
 
-    func stop() {
+    public func stop() {
         self.generation = UUID()
         self.refreshTask?.cancel()
         self.refreshTask = nil
@@ -110,7 +110,7 @@ final class ChatSessionSidebarCatalogs {
         self.errors = [:]
     }
 
-    func scheduleRefresh() {
+    public func scheduleRefresh() {
         // app-sidebar-session-catalog-live.ts:374 keeps the active cycle and records one trailing invalidation.
         if self.refreshPhase != .idle {
             self.refreshPhase = .invalidated
@@ -149,9 +149,10 @@ final class ChatSessionSidebarCatalogs {
             .catalogs
     }
 
-    func refresh() async {
-        let generation = self.generation
-        // A catalog refreshed while paging may briefly show an older window; the next refresh repairs it.
+    public func refresh() async {
+        self.refreshRevision += 1
+        let generation = self.generation, revision = self.refreshRevision, versions = self.revisions
+        // session-data-controller-catalog.ts:514 fences each catalog by its request revision.
         func eligible(_ id: String) -> Bool {
             !self.loading.contains(id)
         }
@@ -258,7 +259,11 @@ final class ChatSessionSidebarCatalogs {
     }
 
     @discardableResult
-    func loadMore(_ catalogID: String, hostIDs: Set<String>? = nil, discovering: Bool = false) async -> Set<String> {
+    public func loadMore(
+        _ catalogID: String,
+        hostIDs: Set<String>? = nil,
+        discovering: Bool = false) async -> Set<String>
+    {
         guard let catalog = self.catalogs.first(where: { $0.id == catalogID }),
               !self.loading.contains(catalogID), self.connection != nil else { return [] }
         let cursors: [String: String] = Dictionary(uniqueKeysWithValues: catalog.hosts.compactMap { host in
@@ -333,7 +338,7 @@ final class ChatSessionSidebarCatalogs {
     }
 
     @discardableResult
-    func archive(_ catalog: SessionCatalog, host: SessionCatalogHost, row: SessionCatalogSession) async -> Bool {
+    public func archive(_ catalog: SessionCatalog, host: SessionCatalogHost, row: SessionCatalogSession) async -> Bool {
         guard let connection, connection.isCurrent(), connection.allowsArchive, !Task.isCancelled,
               catalog.capabilities.archive, row.canarchive else { return false }
         let generation = self.generation
@@ -357,28 +362,28 @@ final class ChatSessionSidebarCatalogs {
         }
     }
 
-    func setHidden(_ id: String, _ hidden: Bool) {
+    public func setHidden(_ id: String, _ hidden: Bool) {
         self.reloadPreferences()
         if hidden { self.hidden.insert(id) } else { self.hidden.remove(id) }
         if let key = self.preferenceKey { self.defaults.set(self.hidden.sorted(), forKey: key + ".hidden") }
     }
 
-    func setGrouping(_ grouping: Grouping) {
+    public func setGrouping(_ grouping: Grouping) {
         self.grouping = grouping
         if let key = self.preferenceKey { self.defaults.set(grouping.rawValue, forKey: key + ".grouping") }
     }
 
-    func reloadPreferences() {
+    public func reloadPreferences() {
         guard let key = self.preferenceKey else { return }
         self.hidden = Set(self.defaults.stringArray(forKey: key + ".hidden") ?? [])
         self.grouping = Grouping(rawValue: self.defaults.string(forKey: key + ".grouping") ?? "") ?? .project
     }
 
-    func visible(archived: Bool) -> [SessionCatalog] {
+    public func visible(archived: Bool) -> [SessionCatalog] {
         archived ? [] : self.catalogs.filter { !self.hidden.contains($0.id) }
     }
 
-    func adoptedKeys(archived: Bool) -> Set<String> {
+    public func adoptedKeys(archived: Bool) -> Set<String> {
         // app-sidebar-session-catalogs.ts:95: the catalog wins; hiding it returns adopted rows to the ordinary roster.
         // A data-only host must not remove rows until its catalog presentation mounts.
         guard self.isRendered else { return [] }
@@ -398,7 +403,7 @@ final class ChatSessionSidebarCatalogs {
         }
     }
 
-    func groups(_ rows: [SessionCatalogSession]) -> [Group] {
+    public func groups(_ rows: [SessionCatalogSession]) -> [Group] {
         var groups: [Group] = []
         for row in rows {
             var id = "", label: String?
@@ -506,4 +511,3 @@ final class ChatSessionSidebarCatalogs {
             error: error ?? host.error)
     }
 }
-#endif

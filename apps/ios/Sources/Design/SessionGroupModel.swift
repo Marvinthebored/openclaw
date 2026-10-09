@@ -158,12 +158,18 @@ extension NodeAppModel {
         if ScreenshotFixtureMode.groupControlsEnabled {
             return DrawerGroupFixture.connection()
         }
+        let identity = self.chatViewModelIdentityID
+        let config = self.activeGatewayConnectConfig
         guard !self.isLocalGatewayFixtureEnabled,
               let route = await self.operatorSession.currentRoute(),
               let scopes = await self.operatorSession.currentOperatorScopes(ifCurrentRoute: route)
         else { return nil }
+        let metadata = await self.operatorSession.currentSessionMenuMetadata(ifCurrentRoute: route)
         let candidates = [
             "sessions.groups.list", "sessions.groups.put", "sessions.groups.rename", "sessions.groups.delete",
+            "sessions.list", "sessions.patch", "sessions.delete", "sessions.assignOwner", "sessions.setInvolvement",
+            "sessions.reclaim", "users.self", "users.list", "agents.list", "chat.history",
+            "controlUi.sessionPullRequests.subscribe", "plugins.uiDescriptors", "plugins.sessionAction",
             "sessions.groups.defaults", "sessions.groups.update", "sessions.create", "fs.listDir", "worktrees.branches",
         ]
         var methods = Set<String>()
@@ -172,12 +178,17 @@ extension NodeAppModel {
             else { return nil }
             if supported { methods.insert(method) }
         }
+        guard self.chatViewModelIdentityID == identity, !Task.isCancelled else { return nil }
         let gateway = self.operatorSession
         guard await gateway.currentRoute() == route else { return nil }
-        let identity = self.chatViewModelIdentityID
         var connection = OpenClawSessionMenuConnection(
             methods: methods,
             scopes: scopes,
+            policy: ["hasMultipleSessionSharingIdentities": AnyCodable(metadata?.multipleIdentities == true)],
+            link: { session, preview in
+                CommandSessionLink.url(
+                    config: config, canonicalBase: metadata?.controlUIURL, session: session, preview: preview)
+            },
             isCurrent: { [weak self] in self?.isOperatorGatewayConnected == true &&
                 self?.chatViewModelIdentityID == identity
             },
