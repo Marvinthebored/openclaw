@@ -28,6 +28,9 @@ struct RootTabsPresentationTests {
             .skillWorkshop: .dashboard("/skills/workshop"), .instances: .dashboard("/settings/devices"),
             .dreaming: .dashboard("/settings/memory/dreams"), .usage: .dashboard("/usage"),
             .cron: .dashboard("/automations"),
+            .dashboards: .dashboard("/dashboards"), .meetings: .dashboard("/meetings"),
+            .plugins: .dashboard("/plugins"), .apps: .dashboard("/apps"),
+            .portals: .dashboard("/portals"), .systems: .dashboard("/systems"),
         ]
         #expect(Set(expected.keys) == Set(RootTabs.SidebarDestination.allCases))
         for destination in RootTabs.SidebarDestination.allCases {
@@ -355,6 +358,7 @@ struct RootTabsPresentationTests {
             .desktop,
             .terminal,
             .docs,
+            .dashboards, .meetings, .plugins, .apps, .portals, .systems,
         ])
         #expect(destinationIDs == [
             "chat",
@@ -374,6 +378,7 @@ struct RootTabsPresentationTests {
             "docs",
             "settings",
             "gateway",
+            "dashboards", "meetings", "plugins", "apps", "portals", "systems",
         ])
         #expect(!destinationIDs.contains("agent"))
         #expect(RootTabs.sidebarDestinations.contains(.chat))

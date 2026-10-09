@@ -1,12 +1,14 @@
+import Foundation
 #if os(macOS)
 import AppKit
+#endif
 import Observation
 import OpenClawKit
 import OpenClawProtocol
 
 @MainActor
 @Observable
-final class ChatSessionSidebarActions {
+public final class ChatSessionSidebarActions {
     struct Profile: Decodable {
         let id: String
         let displayName: String?
@@ -16,31 +18,31 @@ final class ChatSessionSidebarActions {
         struct GitHub: Decodable { let login: String }
     }
 
-    struct Owner: Identifiable {
-        let type: String
-        let key: String
-        let label: String
-        var id: String {
+    public struct Owner: Identifiable {
+        public let type: String
+        public let key: String
+        public let label: String
+        public var id: String {
             "\(self.type):\(self.key)"
         }
     }
 
-    let connection: OpenClawSessionMenuConnection?
+    public let connection: OpenClawSessionMenuConnection?
     private var profiles: [Profile]?
     private var selfID: String?
     private var worktrees: [WorktreeRecord] = []
-    var directoryError: String?
-    var loadingOwners = false
+    public private(set) var directoryError: String?
+    public private(set) var loadingOwners = false
     @ObservationIgnored private(set) var refreshTask: Task<Void, Never>?
     @ObservationIgnored private var nextRefresh: ContinuousClock.Instant?
 
-    init(connection: OpenClawSessionMenuConnection? = nil) {
+    public init(connection: OpenClawSessionMenuConnection? = nil) {
         self.connection = connection
         self.selfID = connection?.selfProfileID
     }
 
     @discardableResult
-    func refresh(at now: ContinuousClock.Instant = .now, ifStale: Bool = false) -> Task<Void, Never>? {
+    public func refresh(at now: ContinuousClock.Instant = .now, ifStale: Bool = false) -> Task<Void, Never>? {
         if let refreshTask { return refreshTask }
         guard let connection, connection.isCurrent() else { return nil }
         if ifStale, let nextRefresh, now < nextRefresh { return nil }
@@ -58,7 +60,7 @@ final class ChatSessionSidebarActions {
         return self.refreshTask
     }
 
-    func worktreePath(for session: OpenClawChatSessionEntry, at now: ContinuousClock.Instant = .now) -> String? {
+    public func worktreePath(for session: OpenClawChatSessionEntry, at now: ContinuousClock.Instant = .now) -> String? {
         self.refresh(at: now, ifStale: true)
         guard self.connection?.isCurrent() == true, session.execNode == nil, let id = session.worktree?.id else {
             return nil
@@ -83,7 +85,7 @@ final class ChatSessionSidebarActions {
         self.directoryError = directoryError
     }
 
-    func owners(
+    public func owners(
         session: OpenClawChatSessionEntry,
         agents: [OpenClawChatAgentChoice],
         at now: ContinuousClock.Instant = .now) -> [Owner]
@@ -95,8 +97,8 @@ final class ChatSessionSidebarActions {
             return Owner(type: "human", key: profile.id, label: label)
         } ?? []
         let current = session.owner?.actor
-        if self.profiles == nil, current?.type == "human", let id = Self.ownerID(current) {
-            humans = [.init(type: "human", key: id, label: current?.label ?? id)]
+        if current?.type == "human", let id = Self.ownerID(current), !humans.contains(where: { $0.key == id }) {
+            humans.append(.init(type: "human", key: id, label: current?.label ?? id))
         }
         // ui/src/components/session-owner-menu.ts:59: retain the known owner on directory failure; Me leads.
         var owners = (humans.filter { $0.key != self.selfID } + agents.map {
@@ -106,11 +108,16 @@ final class ChatSessionSidebarActions {
             let order = $0.label.localizedCompare($1.label)
             return order == .orderedSame ? $0.key < $1.key : order == .orderedAscending
         }
+        if current?.type == "agent", let id = Self.ownerID(current),
+           !owners.contains(where: { $0.type == "agent" && $0.key == id })
+        {
+            owners.append(.init(type: "agent", key: id, label: current?.label ?? id))
+        }
         if let selfID { owners.insert(.init(type: "human", key: selfID, label: String(localized: "Me")), at: 0) }
         return owners
     }
 
-    static func canMoveToGroup(_ row: OpenClawChatSessionEntry, mainKeys: [String]) -> Bool {
+    public static func canMoveToGroup(_ row: OpenClawChatSessionEntry, mainKeys: [String]) -> Bool {
         if row.category?.isEmpty == false { return true }
         guard let parent = ChatPayloadDecoding.trimmedNonEmptyString(row.parentSessionKey) ??
             ChatPayloadDecoding.trimmedNonEmptyString(row.spawnedBy) else { return true }
@@ -157,11 +164,11 @@ final class ChatSessionSidebarActions {
             snoozedUntil: patch)
     }
 
-    static func ownerID(_ actor: OpenClawChatSessionEntry.CreatedActor?) -> String? {
+    public static func ownerID(_ actor: OpenClawChatSessionEntry.CreatedActor?) -> String? {
         actor?.identity.flatMap { try? GatewayPayloadDecoding.decode($0, as: [String: String].self)["id"] } ?? actor?.id
     }
 
-    static func editorURL(_ editor: String, path: String) -> URL? {
+    public static func editorURL(_ editor: String, path: String) -> URL? {
         guard ["cursor", "vscode", "windsurf", "zed"].contains(editor), path.hasPrefix("/") else { return nil }
         let segments = path.replacingOccurrences(of: "\\", with: "/").split(
             separator: "/",
@@ -176,6 +183,7 @@ final class ChatSessionSidebarActions {
     }
 }
 
+#if os(macOS)
 extension OpenClawChatViewModel {
     func performSidebarAction(
         refresh: Bool = true, _ operation: @escaping () async throws -> Void)
@@ -189,6 +197,15 @@ extension OpenClawChatViewModel {
     }
 
     func sidebarMarkdown(
+        session: OpenClawChatSessionEntry, connection: OpenClawSessionMenuConnection) async throws -> String
+    {
+        try await ChatSessionSidebarActions.markdown(session: session, connection: connection)
+    }
+}
+#endif
+
+extension ChatSessionSidebarActions {
+    public static func markdown(
         session: OpenClawChatSessionEntry, connection: OpenClawSessionMenuConnection) async throws -> String
     {
         struct Page: Decodable {
@@ -249,7 +266,7 @@ extension OpenClawChatViewModel {
         }
         let messages = pages.reversed().flatMap(\.self).compactMap {
             try? GatewayPayloadDecoding.decode($0, as: OpenClawChatMessage.self)
-        }.map(Self.stripInboundMetadata)
+        }.map(OpenClawChatViewModel.stripInboundMetadata)
         guard !messages.isEmpty else {
             throw NSError(domain: "SessionMenu", code: 2, userInfo: [NSLocalizedDescriptionKey:
                     String(localized: "There are no messages to copy.")])
@@ -260,5 +277,3 @@ extension OpenClawChatViewModel {
             messages: messages)
     }
 }
-
-#endif

@@ -1,4 +1,3 @@
-#if os(macOS)
 import Foundation
 import OpenClawProtocol
 
@@ -13,17 +12,21 @@ public enum OpenClawSidebarCatalogEvent: Sendable {
 
 @MainActor
 public struct OpenClawSidebarCatalogConnection {
-    let profileID: String
-    let changedEvents: Bool
-    let allowsArchive: Bool
-    let request: (OpenClawChatGatewayRequest) async throws -> Data
-    let isCurrent: () -> Bool
-    let openSources: () -> Void
+    public let profileID: String
+    public let changedEvents: Bool
+    public let allowsArchive: Bool
+    public let allowsContinue: Bool
+    public let allowsImport: Bool
+    public let request: (OpenClawChatGatewayRequest) async throws -> Data
+    public let isCurrent: () -> Bool
+    public let openSources: () -> Void
 
     public init(
         profileID: String,
         changedEvents: Bool,
         allowsArchive: Bool,
+        allowsContinue: Bool = false,
+        allowsImport: Bool = false,
         request: @escaping @MainActor (OpenClawChatGatewayRequest) async throws -> Data,
         isCurrent: @escaping @MainActor () -> Bool,
         openSources: @escaping @MainActor () -> Void)
@@ -31,6 +34,8 @@ public struct OpenClawSidebarCatalogConnection {
         self.profileID = profileID
         self.changedEvents = changedEvents
         self.allowsArchive = allowsArchive
+        self.allowsContinue = allowsContinue
+        self.allowsImport = allowsImport
         self.request = request
         self.isCurrent = isCurrent
         self.openSources = openSources
@@ -38,7 +43,7 @@ public struct OpenClawSidebarCatalogConnection {
 }
 
 extension OpenClawChatGatewayRequest {
-    static func catalogList(agentID: String, catalogID: String? = nil, cursors: [String: String] = [:])
+    public static func catalogList(agentID: String, catalogID: String? = nil, cursors: [String: String] = [:])
         -> OpenClawChatGatewayRequest
     {
         var params: [String: AnyCodable] = ["agentId": .init(agentID), "limitPerHost": .init(40)]
@@ -50,7 +55,7 @@ extension OpenClawChatGatewayRequest {
         return .init(method: "sessions.catalog.list", params: params, timeoutMs: 30000)
     }
 
-    static func catalogArchive(agentID: String, catalogID: String, hostID: String, row: SessionCatalogSession)
+    public static func catalogArchive(agentID: String, catalogID: String, hostID: String, row: SessionCatalogSession)
         -> OpenClawChatGatewayRequest
     {
         var params: [String: AnyCodable] = [
@@ -61,4 +66,3 @@ extension OpenClawChatGatewayRequest {
         return .init(method: "sessions.catalog.archive", params: params, timeoutMs: 30000)
     }
 }
-#endif

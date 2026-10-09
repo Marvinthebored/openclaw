@@ -1065,9 +1065,20 @@ enum DrawerGroupFixture {
                 "sessions.groups.delete",
                 "sessions.groups.defaults",
                 "sessions.groups.update",
-                "sessions.create",
+                "sessions.create", "sessions.patch", "sessions.delete", "sessions.assignOwner",
+                "sessions.setInvolvement", "users.self", "users.list", "agents.list", "chat.history",
+                "plugins.uiDescriptors", "plugins.sessionAction",
             ],
             scopes: ["operator.admin"],
+            policy: ["hasMultipleSessionSharingIdentities": AnyCodable(true)],
+            selfProfileID: "fixture-person",
+            link: { session, preview in
+                CommandSessionLink.url(
+                    config: nil,
+                    canonicalBase: "https://gateway.example",
+                    session: session,
+                    preview: preview)
+            },
             isCurrent: { ScreenshotFixtureMode.groupControlsEnabled },
             request: { try await self.store.request($0) })
         connection.groupDefaultsBrowser = OpenClawGroupDefaultsBrowser(
@@ -1084,7 +1095,14 @@ actor DrawerGroupFixtureStore {
             key: "agent:main:dashboard:fixture-project", displayName: "Project notes", category: "Projects"),
         OpenClawChatSessionEntry(
             key: "agent:main:dashboard:fixture-research", displayName: "Research notes", category: "Research"),
-    ]
+    ].map { row in
+        var row = row
+        row.sessionId = "fixture-" + row.key
+        row.sharingRole = .owner
+        row.hiddenFromInvolvingMe = false
+        return row
+    }
+
     private var cwd = "/work/repo"
     private var worktree = true
     private var catalogReads = 0
@@ -1097,6 +1115,43 @@ actor DrawerGroupFixtureStore {
     func request(_ request: OpenClawChatGatewayRequest) async throws -> Data {
         let name = request.params["name"]?.value as? String ?? ""
         switch request.method {
+        case "users.self":
+            return Data(#"{"profile":{"id":"fixture-person","displayName":"Fixture Person","emails":[]}}"#.utf8)
+        case "users.list":
+            return Data(#"""
+            {"profiles":[
+              {"id":"fixture-person","displayName":"Fixture Person","emails":[]},
+              {"id":"fixture-collaborator","displayName":"Fixture Collaborator","emails":[]}
+            ]}
+            """#.utf8)
+        case "agents.list":
+            return Data(#"""
+            {"defaultId":"main","agents":[
+              {"id":"main","name":"Fixture Agent"},
+              {"id":"research","name":"Research Agent"}
+            ]}
+            """#.utf8)
+        case "plugins.uiDescriptors":
+            return Data(#"""
+            {"descriptors":[{
+              "id":"inspect","pluginId":"fixture","surface":"session","label":"Inspect Fixture",
+              "description":"Returns a synthetic result without external effects."
+            }]}
+            """#.utf8)
+        case "plugins.sessionAction":
+            return Data(#"{"ok":true,"result":"Fixture action completed."}"#.utf8)
+        case "chat.history":
+            let key = request.params["sessionKey"]?.value as? String ?? ""
+            return try JSONSerialization.data(withJSONObject: [
+                "sessionId": "fixture-" + key, "totalMessages": 1, "hasMore": false,
+                "messages": [["role": "user", "content": [["type": "text", "text": "Fixture transcript"]]]],
+            ])
+        case "sessions.patch", "sessions.assignOwner", "sessions.setInvolvement":
+            return try self.mutateSession(request)
+        case "sessions.delete":
+            let key = request.params["key"]?.value as? String ?? ""
+            self.rows.removeAll { $0.key == key }
+            return Data(#"{"ok":true}"#.utf8)
         case "sessions.groups.list": self.catalogReads += 1
         case "sessions.groups.put":
             if ProcessInfo.processInfo.arguments.contains("--openclaw-failed-group-change-fixture") {
@@ -1131,17 +1186,45 @@ actor DrawerGroupFixtureStore {
             self.worktree = request.params["worktree"]?.value as? Bool ?? false
             return Data(#"{"ok":true}"#.utf8)
         case "sessions.create":
-            guard request.params["cwd"]?.value as? String == self.cwd,
-                  request.params["worktree"]?.value as? Bool == self.worktree
-            else { throw URLError(.badServerResponse) }
-            let key = request.params["key"]?.value as? String ?? ""
-            let category = request.params["category"]?.value as? String
-            self.rows.append(OpenClawChatSessionEntry(key: key, displayName: "New grouped session", category: category))
-            return try JSONEncoder().encode(OpenClawChatCreateSessionResponse(ok: true, key: key, sessionId: key))
+            return try self.createSession(request)
         default: throw URLError(.unsupportedURL)
         }
         return try JSONSerialization.data(withJSONObject: [
             "ok": true, "groups": self.names.enumerated().map { ["name": $0.element, "position": $0.offset] },
         ])
+    }
+
+    private func createSession(_ request: OpenClawChatGatewayRequest) throws -> Data {
+        guard request.params["cwd"]?.value as? String == self.cwd,
+              request.params["worktree"]?.value as? Bool == self.worktree
+        else { throw URLError(.badServerResponse) }
+        let key = request.params["key"]?.value as? String ?? ""
+        let category = request.params["category"]?.value as? String
+        self.rows.append(OpenClawChatSessionEntry(key: key, displayName: "New grouped session", category: category))
+        return try JSONEncoder().encode(OpenClawChatCreateSessionResponse(ok: true, key: key, sessionId: key))
+    }
+
+    private func mutateSession(_ request: OpenClawChatGatewayRequest) throws -> Data {
+        guard let key = request.params["key"]?.value as? String,
+              let index = self.rows.firstIndex(where: { $0.key == key }) else { throw URLError(.badURL) }
+        if let expected = request.params["expectedSessionId"]?.value as? String,
+           expected != self.rows[index].sessionId { throw URLError(.badServerResponse) }
+        guard var row = try JSONSerialization.jsonObject(with: JSONEncoder().encode(self.rows[index])) as? [String: Any]
+        else { throw URLError(.cannotDecodeContentData) }
+        if request.method == "sessions.assignOwner", let owner = request.params["owner"] {
+            row["owner"] = try ["actor": JSONSerialization.jsonObject(with: JSONEncoder().encode(owner))]
+        } else if request.method == "sessions.setInvolvement" {
+            row["hiddenFromInvolvingMe"] = request.params["hidden"]?.value as? Bool ?? false
+        } else {
+            for field in ["label", "category", "color", "icon", "pinned", "unread", "archived", "snoozedUntil"] {
+                if let value = request.params[field] {
+                    row[field] = try JSONSerialization.jsonObject(
+                        with: JSONEncoder().encode(value), options: [.fragmentsAllowed])
+                }
+            }
+        }
+        self.rows[index] = try JSONDecoder().decode(
+            OpenClawChatSessionEntry.self, from: JSONSerialization.data(withJSONObject: row))
+        return Data(#"{"ok":true}"#.utf8)
     }
 }

@@ -332,6 +332,7 @@ final class DashboardEmbedCompatibility {
 @MainActor
 final class AuthenticatedControlUIWebViewCoordinator: NSObject, WKNavigationDelegate {
     let deviceSettingsBridge: IOSDeviceSettingsBridge?
+    let sidebarPluginBridge: IOSSidebarPluginBridge?
     private let embedCompatibility: DashboardEmbedCompatibility?
     private var compatibilityDocumentID: UUID?
     private let url: URL
@@ -351,12 +352,14 @@ final class AuthenticatedControlUIWebViewCoordinator: NSObject, WKNavigationDele
         onMainFrameNavigationOutsideScope: (() -> Void)? = nil,
         authScript: String? = nil,
         deviceSettingsBridge: IOSDeviceSettingsBridge? = nil,
+        sidebarPluginBridge: IOSSidebarPluginBridge? = nil,
         usesNativeEmbed: Bool = false,
         embedCompatibility: DashboardEmbedCompatibility? = nil)
     {
         self.url = url
         self.authScript = authScript
         self.deviceSettingsBridge = deviceSettingsBridge
+        self.sidebarPluginBridge = sidebarPluginBridge
         self.usesNativeEmbed = usesNativeEmbed
         self.embedCompatibility = embedCompatibility
         self.expectedOrigin = GatewayTLSAuthority(url: url)
@@ -368,7 +371,12 @@ final class AuthenticatedControlUIWebViewCoordinator: NSObject, WKNavigationDele
     func installUserScripts(in controller: WKUserContentController) {
         controller.removeAllUserScripts()
         let embedScript = self.usesNativeEmbed ? Self.embedScript(url: self.url) : nil
-        for script in [self.authScript, embedScript, self.deviceSettingsBridge?.seedScript(for: self.url)] {
+        for script in [
+            self.authScript,
+            embedScript,
+            self.deviceSettingsBridge?.seedScript(for: self.url),
+            self.sidebarPluginBridge?.seedScript(for: self.url),
+        ] {
             guard let script else { continue }
             controller.addUserScript(WKUserScript(
                 source: script,
@@ -386,6 +394,7 @@ final class AuthenticatedControlUIWebViewCoordinator: NSObject, WKNavigationDele
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         self.activeNavigation = navigation
         self.deviceSettingsBridge?.willNavigate(in: webView)
+        self.sidebarPluginBridge?.retireDocument()
         self.installUserScripts(in: webView.configuration.userContentController)
     }
 
@@ -394,6 +403,7 @@ final class AuthenticatedControlUIWebViewCoordinator: NSObject, WKNavigationDele
         // WebKit retains the previous committed page when a provisional navigation fails.
         self.compatibilityDocumentID = self.embedCompatibility?.beginDocument()
         self.deviceSettingsBridge?.didCommitDocument(in: webView)
+        self.sidebarPluginBridge?.didCommitDocument()
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -405,6 +415,7 @@ final class AuthenticatedControlUIWebViewCoordinator: NSObject, WKNavigationDele
         guard self.activeNavigation === navigation else { return }
         self.retireEmbedCompatibility()
         self.deviceSettingsBridge?.retireDocument(in: webView)
+        self.sidebarPluginBridge?.retireDocument()
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError _: any Error) {
@@ -416,6 +427,7 @@ final class AuthenticatedControlUIWebViewCoordinator: NSObject, WKNavigationDele
         self.activeNavigation = nil
         self.retireEmbedCompatibility()
         self.deviceSettingsBridge?.retireDocument(in: webView)
+        self.sidebarPluginBridge?.retireDocument()
     }
 
     func retireEmbedCompatibility() {
@@ -528,6 +540,7 @@ struct AuthenticatedControlUIWebView: UIViewRepresentable {
     let allowedMainFramePathPrefix: String?
     let onMainFrameNavigationOutsideScope: (() -> Void)?
     let deviceSettingsBridge: IOSDeviceSettingsBridge?
+    let sidebarPluginBridge: IOSSidebarPluginBridge?
     let usesNativeEmbed: Bool
     let embedCompatibility: DashboardEmbedCompatibility?
 
@@ -538,6 +551,7 @@ struct AuthenticatedControlUIWebView: UIViewRepresentable {
         allowedMainFramePathPrefix: String? = nil,
         onMainFrameNavigationOutsideScope: (() -> Void)? = nil,
         deviceSettingsBridge: IOSDeviceSettingsBridge? = nil,
+        sidebarPluginBridge: IOSSidebarPluginBridge? = nil,
         usesNativeEmbed: Bool = false,
         embedCompatibility: DashboardEmbedCompatibility? = nil)
     {
@@ -547,6 +561,7 @@ struct AuthenticatedControlUIWebView: UIViewRepresentable {
         self.allowedMainFramePathPrefix = allowedMainFramePathPrefix
         self.onMainFrameNavigationOutsideScope = onMainFrameNavigationOutsideScope
         self.deviceSettingsBridge = deviceSettingsBridge
+        self.sidebarPluginBridge = sidebarPluginBridge
         self.usesNativeEmbed = usesNativeEmbed
         self.embedCompatibility = embedCompatibility
     }
@@ -559,6 +574,7 @@ struct AuthenticatedControlUIWebView: UIViewRepresentable {
             onMainFrameNavigationOutsideScope: self.onMainFrameNavigationOutsideScope,
             authScript: self.authScript,
             deviceSettingsBridge: self.deviceSettingsBridge,
+            sidebarPluginBridge: self.sidebarPluginBridge,
             usesNativeEmbed: self.usesNativeEmbed,
             embedCompatibility: self.embedCompatibility)
     }
@@ -574,7 +590,12 @@ struct AuthenticatedControlUIWebView: UIViewRepresentable {
                 deviceSettingsBridge, contentWorld: .page, name: IOSDeviceSettingsBridge.messageHandlerName)
         }
 
+        if let sidebarPluginBridge {
+            configuration.userContentController.addScriptMessageHandler(
+                sidebarPluginBridge, contentWorld: .page, name: IOSSidebarPluginBridge.messageHandlerName)
+        }
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        self.sidebarPluginBridge?.attach(to: webView)
         self.deviceSettingsBridge?.attach(to: webView) { [weak coordinator = context.coordinator, weak webView] in
             guard let coordinator, let webView else { return }
             coordinator.installUserScripts(in: webView.configuration.userContentController)
@@ -613,6 +634,9 @@ struct AuthenticatedControlUIWebView: UIViewRepresentable {
     {
         coordinator.retireEmbedCompatibility()
         coordinator.deviceSettingsBridge?.detach(from: webView)
+        coordinator.sidebarPluginBridge?.detach(from: webView)
+        webView.configuration.userContentController.removeScriptMessageHandler(
+            forName: IOSSidebarPluginBridge.messageHandlerName, contentWorld: .page)
         webView.configuration.userContentController.removeScriptMessageHandler(
             forName: IOSDeviceSettingsBridge.messageHandlerName, contentWorld: .page)
         webView.stopLoading()

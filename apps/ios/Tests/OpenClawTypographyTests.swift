@@ -5,6 +5,16 @@ import UIKit
 @testable import OpenClaw
 
 struct RootSidebarTypographyTests {
+    @Test func `pages customization labels use branded typography`() throws {
+        let source = try String(
+            contentsOf: URL(fileURLWithPath: #filePath)
+                .deletingLastPathComponent().deletingLastPathComponent()
+                .appendingPathComponent("Sources/RootSidebarPagesEditor.swift"), encoding: .utf8)
+        #expect(source.contains(".font(OpenClawType.subheadSemiBold)"))
+        #expect(source.contains(".font(OpenClawType.caption)"))
+        #expect(!source.contains(".font(."))
+    }
+
     @Test func `root sidebar uses branded typography`() throws {
         let sidebar = try String(
             contentsOf: URL(fileURLWithPath: #filePath)
@@ -74,13 +84,25 @@ struct OpenClawTypographyTests {
             contentsOf: Self.sourceURL("Design/CommandCenterTab.swift"),
             encoding: .utf8)
 
-        #expect(support.contains("TextField(self.editorPlaceholder"))
+        let editor = try String(
+            contentsOf: Self.sourceURL("Design/CommandSessionMenuSheet.swift"),
+            encoding: .utf8)
+        #expect(editor.contains("text: self.$nameDraft"))
+        #expect(editor.contains("}.font(OpenClawType.body).autocorrectionDisabled()"))
         #expect(support.contains("Label(\"Move to Group\""))
         #expect(support.contains("Label(\"Delete…\""))
         #expect(support.contains(".font(OpenClawType.subhead)"))
         #expect(support.contains(".font(OpenClawType.subheadSemiBold)"))
         #expect(!commandCenter.contains(".font(."))
         #expect(commandCenter.contains(".font(OpenClawType.captionMedium)"))
+    }
+
+    @Test(arguments: ["CommandSessionMenuSheet.swift", "CommandSessionPluginActions.swift"])
+    func `long-press session sheets use branded native controls`(filename: String) throws {
+        let source = try String(contentsOf: Self.sourceURL("Design/" + filename), encoding: .utf8)
+        #expect(source.contains(".font(OpenClawType.body)"))
+        #expect(source.contains(".font(OpenClawType.subheadSemiBold)"))
+        #expect(!source.contains(".font(."))
     }
 
     @Test func `bundled fonts load from app bundle`() {

@@ -173,6 +173,12 @@ public enum ChatSessionSidebarModel {
         public let id: String
         public let title: String?
         public let nodes: [Node]
+
+        public init(id: String, title: String?, nodes: [Node]) {
+            self.id = id
+            self.title = title
+            self.nodes = nodes
+        }
     }
 
     public static func isHiddenInternalSession(_ key: String) -> Bool {
@@ -401,7 +407,7 @@ public enum ChatSessionSidebarModel {
         }
     }
 
-    private static func node(session: OpenClawChatSessionEntry, children: [Node]) -> Node {
+    public static func node(session: OpenClawChatSessionEntry, children: [Node]) -> Node {
         let status = session.status?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let isQueued = status == "queued"
         let isRunning = !isQueued &&

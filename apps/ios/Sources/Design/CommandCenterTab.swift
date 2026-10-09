@@ -402,6 +402,15 @@ struct CommandCenterTab: View {
                                     mainSessionKey: self.appModel.mainSessionKey),
                                 performMutation: self.performSessionMutation,
                                 fork: { self.forkSession(session) })
+                            .environment(
+                                \.commandSessionMenuConnection,
+                                self.appModel.sessionGroups.connection?.bound(to: session) { row in
+                                    self.dashboardModel.sessions.contains { current in
+                                        OpenClawChatSessionSidebarData.identity(current) ==
+                                            OpenClawChatSessionSidebarData.identity(row) &&
+                                            current.sessionId == row.sessionId
+                                    }
+                                })
                         }
 
                         if self.hasMoreRecentSessions {
@@ -524,7 +533,9 @@ struct CommandCenterTab: View {
             do {
                 let key = try await self.appModel.makeChatTransport().forkSession(
                     parentKey: session.key,
-                    fromLastCompleted: session.hasActiveRun == true)
+                    fromLastCompleted: session.hasActiveRun == true,
+                    agentID: OpenClawChatSessionKey.agentID(from: session.key) ?? session.agentId)
+                self.appModel.setSelectedAgentId(OpenClawChatSessionKey.agentID(from: session.key) ?? session.agentId)
                 await self.dashboardModel.refreshSessions(appModel: self.appModel)
                 self.openSessionKey(key)
             } catch {
@@ -996,6 +1007,15 @@ struct CommandSessionsScreen: View {
             archivesSession: { self.statusScope != .archived && session.archived != true },
             performMutation: self.performMutation,
             fork: { self.forkSession(session) })
+        .environment(
+            \.commandSessionMenuConnection,
+            self.appModel.sessionGroups.connection?.bound(to: session) { row in
+                self.sessions.contains { current in
+                    OpenClawChatSessionSidebarData.identity(current) ==
+                        OpenClawChatSessionSidebarData.identity(row) &&
+                        current.sessionId == row.sessionId
+                }
+            })
     }
 
     private func openSessionKey(_ key: String) {
@@ -1009,7 +1029,9 @@ struct CommandSessionsScreen: View {
             do {
                 let key = try await self.appModel.makeChatTransport().forkSession(
                     parentKey: session.key,
-                    fromLastCompleted: session.hasActiveRun == true)
+                    fromLastCompleted: session.hasActiveRun == true,
+                    agentID: OpenClawChatSessionKey.agentID(from: session.key) ?? session.agentId)
+                self.appModel.setSelectedAgentId(OpenClawChatSessionKey.agentID(from: session.key) ?? session.agentId)
                 await self.refreshSessions()
                 self.openSessionKey(key)
             } catch {
