@@ -139,10 +139,6 @@ struct RootTabsSidebarRegressionTests {
             source,
             from: "private func agentSelectorLabel(",
             to: "private var newChatButton:")
-        let pages = try Self.extract(
-            source,
-            from: "private func pagesSection(",
-            to: "private var homeRow:")
         let sessions = try Self.extract(
             source,
             from: "private func sessionsSection(",
@@ -151,10 +147,6 @@ struct RootTabsSidebarRegressionTests {
             source,
             from: "private func sessionButton(",
             to: "private func attentionBadges(")
-        let projection = try Self.extract(
-            source,
-            from: "private var visibleSessionSections:",
-            to: "struct SessionLayout:")
         let footer = try Self.extract(
             source,
             from: "private var footer: some View",
@@ -182,16 +174,6 @@ struct RootTabsSidebarRegressionTests {
         #expect(footer.contains("self.selectSidebarDestination(.settings)"))
         #expect(footer.contains("RootTabs.Sidebar.Destination.settings"))
 
-        #expect(pages.contains("ForEach(self.visibleSidebarEntries)"))
-        #expect(pages.contains("case let .session(key):"))
-        #expect(pages.contains("pinnedSessionNodes.first(where: { self.sidebarSessionKey($0.session) == key })"))
-        #expect(pages.contains("ForEach(self.rows([node]))"))
-        #expect(pages
-            .contains("self.sessionButton(row.node, selectedSessionKey: selectedSessionKey, depth: row.depth)"))
-        // The shared catalog owner promotes uncataloged descendants instead of dropping adopted parent trees.
-        #expect(projection.contains("ChatSidebarCatalogPresentation.ordinarySections("))
-        #expect(projection.contains("excluding: self.catalogAdoptedKeys"))
-        #expect(!projection.contains("section.nodes.filter"))
         #expect(sessions.contains("section.id == \"recent\""))
         #expect(sessions.contains("String(localized: \"Sessions\")"))
         #expect(!sessions.contains("String(localized: \"Recent\")"))

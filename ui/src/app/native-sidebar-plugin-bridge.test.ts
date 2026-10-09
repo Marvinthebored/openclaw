@@ -102,7 +102,7 @@ function fixture(sessionId?: string) {
     plugins: {
       // The real runtime creates fresh wrappers while preserving registration lifetimes.
       registrations: (kind: string) =>
-        (kind === "actions" ? [sessionEntry] : entries).map((entry) => ({ ...entry })),
+        (kind === "actions" ? [sessionEntry] : entries).map((entry) => Object.assign({}, entry)),
       subscribe: (callback: () => void) => {
         listener = callback;
         return () => {};
@@ -125,7 +125,7 @@ function fixture(sessionId?: string) {
     },
   } as unknown as ApplicationContext;
   stop = startNativeSidebarPluginBridge(context);
-  const snapshot = () => messages.filter((message) => message.type === "snapshot").at(-1)!;
+  const snapshot = () => messages.findLast((message) => message.type === "snapshot")!;
   const command = (type = "run", extra: Record<string, unknown> = {}) => {
     const held = snapshot();
     response = createDeferred<WireMessage>();
@@ -212,7 +212,7 @@ describe("native sidebar plugin bridge", () => {
 
   it("does not acknowledge success after connection retirement during an action", async () => {
     const test = fixture();
-    const action = createDeferred<void>();
+    const action = createDeferred();
     test.run.mockReturnValueOnce(action.promise);
     const result = test.command();
     test.reconnect();
