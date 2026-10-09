@@ -60,7 +60,12 @@ final class SessionGroupModel {
             guard self.generation == generation, self.identity == identity,
                   appModel.chatViewModelIdentityID == identity, !Task.isCancelled else { return }
             self.connection = connection
-            guard let connection, connection.allows("sessions.groups.list", scope: "operator.read") else { return }
+            guard let connection, connection.isCurrent() else { return }
+            guard connection.allows("sessions.groups.list", scope: "operator.read") else {
+                // A live connection without the catalog method is not a dropped link: use the device-local groups.
+                self.catalog = nil
+                return
+            }
             let response: OpenClawChatSessionGroupsResponse = try await connection.read("sessions.groups.list")
             guard self.generation == generation, self.identity == identity,
                   appModel.chatViewModelIdentityID == identity else { return }
