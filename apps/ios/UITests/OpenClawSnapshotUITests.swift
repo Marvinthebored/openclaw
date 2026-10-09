@@ -90,6 +90,12 @@ final class OpenClawSnapshotUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Project notes"].waitForExistence(timeout: 5))
         XCTAssertNotEqual(caret.value as? String, "1")
         self.attachScreenshot(named: "drawer-groups-reexpanded")
+        header.tap()
+        XCTAssertEqual(caret.value as? String, "1", "A tap on the header must fold the group")
+        XCTAssertFalse(app.staticTexts["Project notes"].exists, "A folded group must hide its sessions")
+        XCTAssertFalse(app.buttons["New Session Defaults…"].exists, "A header tap must not open the context menu")
+        header.tap()
+        XCTAssertTrue(app.staticTexts["Project notes"].waitForExistence(timeout: 5))
         header.press(forDuration: 0.8)
         app.buttons["Move Down"].tap()
         let pending = app.descendants(matching: .any)["SessionGroup.Pending.Projects"].firstMatch
