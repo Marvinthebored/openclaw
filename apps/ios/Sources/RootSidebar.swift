@@ -561,7 +561,6 @@ struct RootSidebar: View {
                 }
             }
             RootSidebarPluginNavigation(
-                isActive: self.isDismissButtonEnabled && self.pluginActionsEntry == nil && self.dashboardRoute == nil,
                 onEntries: self.receivePluginEntries,
                 isPinned: { self.sidebarEntries.contains(.plugin($0.key)) },
                 setPinned: { self.setPluginPinned($0, pinned: $1) })

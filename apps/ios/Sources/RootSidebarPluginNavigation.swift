@@ -70,7 +70,6 @@ enum RootSidebarPluginRegistryCache {
 struct RootSidebarPluginNavigation: View {
     @Environment(NodeAppModel.self) private var appModel
     @State private var showsPicker = false
-    let isActive: Bool
     var onEntries: ([IOSSidebarPluginBridge.Entry]) -> Void = { _ in }
     var isPinned: (IOSSidebarPluginBridge.Entry) -> Bool = { _ in false }
     var setPinned: (IOSSidebarPluginBridge.Entry, Bool) -> Void = { _, _ in }

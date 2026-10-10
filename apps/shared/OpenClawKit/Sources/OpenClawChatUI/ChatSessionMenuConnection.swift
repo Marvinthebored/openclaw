@@ -9,8 +9,8 @@ public struct OpenClawSessionMenuConnection {
     public let local: Bool
     public var groupDefaultsBrowser: OpenClawGroupDefaultsBrowser?
     public let selfProfileID: String?
-    public let isCurrent: () -> Bool
-    private let sendRequest: (OpenClawChatGatewayRequest) async throws -> Data
+    public private(set) var isCurrent: () -> Bool
+    private var sendRequest: (OpenClawChatGatewayRequest) async throws -> Data
     private var responseIsCurrent: ((OpenClawChatGatewayRequest) -> Bool)?
     public let link: (OpenClawChatSessionEntry, Bool) -> URL?
     public let openWindow: (OpenClawChatSessionEntry) -> Void
@@ -81,15 +81,9 @@ public struct OpenClawSessionMenuConnection {
         to session: OpenClawChatSessionEntry,
         isCurrent targetIsCurrent: @escaping (OpenClawChatSessionEntry) -> Bool) -> Self
     {
-        var bound = Self(
-            hello: self.hello,
-            local: self.local,
-            selfProfileID: self.selfProfileID,
-            isCurrent: { self.isCurrent() && targetIsCurrent(session) },
-            request: { try await self.request($0) },
-            link: self.link,
-            openWindow: self.openWindow)
-        bound.groupDefaultsBrowser = self.groupDefaultsBrowser
+        var bound = self
+        bound.isCurrent = { self.isCurrent() && targetIsCurrent(session) }
+        bound.sendRequest = { try await self.request($0) }
         bound.responseIsCurrent = { request in
             guard self.isCurrent() else { return false }
             // A committed lifecycle mutation may remove the row via an event before its reply.

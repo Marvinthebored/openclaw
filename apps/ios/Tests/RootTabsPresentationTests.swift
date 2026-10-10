@@ -902,27 +902,6 @@ struct RootTabsPresentationTests {
         #expect(!hidden.isObserverVisible)
     }
 
-    @Test func `pinned pages storage round trips and preserves pin order`() {
-        #expect(RootTabs.pinnedSidebarPages(from: "") == RootTabs.defaultPinnedSidebarPages)
-        #expect(RootTabs.pinnedSidebarPages(from: "none").isEmpty)
-        #expect(RootTabs.pinnedSidebarPagesStorage([]) == "none")
-
-        // Storage order is the user's pin order (web parity).
-        let parsed = RootTabs.pinnedSidebarPages(from: "usage,overview,docs")
-        #expect(parsed == [.usage, .overview, .docs])
-
-        let storage = RootTabs.pinnedSidebarPagesStorage([.docs, .overview, .usage])
-        #expect(RootTabs.pinnedSidebarPages(from: storage) == [.docs, .overview, .usage])
-
-        // Duplicates collapse to first occurrence.
-        #expect(RootTabs.pinnedSidebarPages(from: "usage,usage,docs") == [.usage, .docs])
-
-        // Unknown raw values are dropped; chat is never pinnable.
-        #expect(RootTabs.pinnedSidebarPages(from: "chat,bogus").isEmpty)
-        #expect(!RootTabs.pinnedSidebarPages(from: "chat,overview").contains(.chat))
-        #expect(!RootTabs.pinnableSidebarPages.contains(.chat))
-    }
-
     @Test func `drawer content follows reveal and dismiss drag`() {
         #expect(RootTabs.sidebarContentOffset(
             sidebarWidth: 340,

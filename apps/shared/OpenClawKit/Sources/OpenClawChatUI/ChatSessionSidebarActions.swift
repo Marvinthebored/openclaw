@@ -195,12 +195,6 @@ extension OpenClawChatViewModel {
             } catch { NSAlert(error: error).runModal() }
         }
     }
-
-    func sidebarMarkdown(
-        session: OpenClawChatSessionEntry, connection: OpenClawSessionMenuConnection) async throws -> String
-    {
-        try await ChatSessionSidebarActions.markdown(session: session, connection: connection)
-    }
 }
 #endif
 

@@ -29,6 +29,19 @@ struct RootSidebarOrderTests {
         #expect(RootTabs.sidebarEntries(from: "") == RootTabs.defaultSidebarEntries)
     }
 
+    @Test func `page preferences migrate in pin order and discard duplicate or unpinnable values`() {
+        #expect(RootTabs.sidebarEntries(from: "usage,overview,docs") == [
+            .route(.usage), .route(.overview), .route(.docs),
+        ])
+        let pages: [RootTabs.SidebarEntry] = [.route(.docs), .route(.overview), .route(.usage)]
+        #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(pages)) == pages)
+        #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage([])).isEmpty)
+        #expect(RootTabs.sidebarEntries(from: "usage,usage,docs") == [.route(.usage), .route(.docs)])
+        #expect(RootTabs.sidebarEntries(from: "chat,bogus").isEmpty)
+        #expect(RootTabs.sidebarEntries(from: "chat,overview") == [.route(.overview)])
+        #expect(!RootTabs.pinnableSidebarPages.contains(.chat))
+    }
+
     @Test func `reset preserves every saved session slot even when no sessions are loaded`() {
         let entries: [RootTabs.SidebarEntry] = [
             .session("agent:other:older"), .plugin("workboard/workboard"), .route(.usage),
