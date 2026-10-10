@@ -49,6 +49,7 @@ type NativeWindow = Window & {
 export function startNativeSidebarPluginBridge(
   context: ApplicationContext,
 ): (() => void) | undefined {
+  // SAFETY: WebKit host fields are optional; marker and postMessage are validated below before use.
   const host = window as NativeWindow;
   const marker = host["__OPENCLAW_NATIVE_SIDEBAR_PLUGINS__"];
   const handler = host.webkit?.messageHandlers?.openclawSidebarPlugins;
