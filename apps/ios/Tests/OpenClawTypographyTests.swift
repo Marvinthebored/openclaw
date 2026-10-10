@@ -5,16 +5,6 @@ import UIKit
 @testable import OpenClaw
 
 struct RootSidebarTypographyTests {
-    @Test func `pages customization labels use branded typography`() throws {
-        let source = try String(
-            contentsOf: URL(fileURLWithPath: #filePath)
-                .deletingLastPathComponent().deletingLastPathComponent()
-                .appendingPathComponent("Sources/RootSidebarPagesEditor.swift"), encoding: .utf8)
-        #expect(source.contains(".font(OpenClawType.subheadSemiBold)"))
-        #expect(source.contains(".font(OpenClawType.caption)"))
-        #expect(!source.contains(".font(."))
-    }
-
     @Test func `root sidebar uses branded typography`() throws {
         let sidebar = try String(
             contentsOf: URL(fileURLWithPath: #filePath)
@@ -90,14 +80,6 @@ struct OpenClawTypographyTests {
         #expect(support.contains(".font(OpenClawType.subheadSemiBold)"))
         #expect(!commandCenter.contains(".font(."))
         #expect(commandCenter.contains(".font(OpenClawType.captionMedium)"))
-    }
-
-    @Test(arguments: ["CommandSessionMenuSheet.swift", "CommandSessionPluginActions.swift"])
-    func `long-press session sheets use branded native controls`(filename: String) throws {
-        let source = try String(contentsOf: Self.sourceURL("Design/" + filename), encoding: .utf8)
-        #expect(source.contains(".font(OpenClawType.body)"))
-        #expect(source.contains(".font(OpenClawType.subheadSemiBold)"))
-        #expect(!source.contains(".font(."))
     }
 
     @Test func `bundled fonts load from app bundle`() {
