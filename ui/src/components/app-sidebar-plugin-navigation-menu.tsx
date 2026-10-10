@@ -1,5 +1,4 @@
 import type { JSX } from "@solidjs/web";
-import { runControlUiNavigationAction } from "../plugins/control-ui-actions.ts";
 import { showToast } from "../lib/toast.ts";
 import { renderSidebarPluginNavigationMenu } from "./app-sidebar-nav-menus.tsx";
 import type { SidebarMenusController } from "./sidebar-menus-controller.tsx";
@@ -31,7 +30,7 @@ export function renderSidebarPluginNavigationMenuForController(
         return;
       }
       try {
-        await runControlUiNavigationAction(entry, id, controller.pluginActionLifetime.signal);
+        await action.run();
       } catch (error) {
         if (!entry.signal.aborted) {
           controller.host.sessionDataContext?.plugins.reportError(entry.pluginId, error);

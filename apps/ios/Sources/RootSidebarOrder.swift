@@ -2,18 +2,16 @@ import Foundation
 import OpenClawChatUI
 
 extension RootTabs {
-    /// The persisted order is independent of the currently loaded agent/catalog.
+    /// The persisted order is independent of the currently loaded agent.
     /// A missing row is not evidence that its saved slot should be discarded.
     enum SidebarEntry: Hashable, Identifiable {
         case route(SidebarDestination)
-        case plugin(String)
         case session(String)
 
         var id: String {
             switch self {
             case .route(.agents): "route:agents-home"
             case let .route(destination): "route:" + destination.rawValue
-            case let .plugin(key): "plugin:" + key
             case let .session(key): "session:" + key
             }
         }
@@ -23,11 +21,6 @@ extension RootTabs {
                 let key = String(canonicalID.dropFirst(8)).trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !key.isEmpty else { return nil }
                 self = .session(key)
-            } else if canonicalID.hasPrefix("plugin:") {
-                let key = String(canonicalID.dropFirst(7))
-                guard let slash = key.firstIndex(of: "/"), slash != key.startIndex,
-                      key.index(after: slash) != key.endIndex else { return nil }
-                self = .plugin(key)
             } else if canonicalID == "route:agents-home" {
                 self = .route(.agents)
             } else if canonicalID.hasPrefix("route:"),
@@ -64,7 +57,7 @@ extension RootTabs {
         } else {
             // Upgrade the shipped comma-delimited native page preference once
             // a customization is saved. Canonical keys use JSON, since opaque
-            // plugin and session keys may themselves contain commas.
+            // session keys may themselves contain commas.
             trimmed.split(separator: ",").map { value in
                 value.contains(":") ? String(value) : "route:" + value
             }
@@ -90,16 +83,11 @@ extension RootTabs {
     }
 
     static func reconciledSidebarEntries(
-        _ entries: [SidebarEntry], pinnedSessionKeys: [String], defaultPluginKeys: [String]) -> [SidebarEntry]
+        _ entries: [SidebarEntry], pinnedSessionKeys: [String]) -> [SidebarEntry]
     {
         var result = entries
         var seen = Set(entries)
-        // Preserve the shipped native Workboard slot; plugin discovery must not
-        // add a second default row. Explicitly saved plugin slots remain intact.
-        let pluginDefaults = defaultPluginKeys.filter {
-            $0 != "workboard/workboard" || !seen.contains(.route(.workboard))
-        }
-        for entry in pluginDefaults.map(SidebarEntry.plugin) + pinnedSessionKeys.map(SidebarEntry.session)
+        for entry in pinnedSessionKeys.map(SidebarEntry.session)
             where seen.insert(entry).inserted
         {
             result.append(entry)
@@ -114,7 +102,7 @@ extension RootTabs {
 
     /// Move through the rendered mixed zone, not just within one kind of row.
     /// Hidden slots keep their exact positions and become visible again when
-    /// their agent/catalog is loaded.
+    /// their agent is loaded.
     static func movingSidebarEntry(
         _ entry: SidebarEntry,
         by offset: Int,

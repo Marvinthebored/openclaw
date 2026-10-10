@@ -36,19 +36,4 @@ struct CommandSessionMenuTests {
             session: session,
             preview: false)?.path == "/chat/research/~key/~~dot")
     }
-
-    @Test func `plugin descriptor honors all required scopes and current connection`() throws {
-        let descriptor = try JSONDecoder().decode(CommandSessionPluginDescriptor.self, from: Data(#"""
-        {"id":"approve","pluginId":"fixture","surface":"session","label":"Approve","requiredScopes":["operator.write","operator.approvals"]}
-        """#.utf8))
-        var current = true
-        func connection(_ scopes: Set<String>) -> OpenClawSessionMenuConnection {
-            .init(methods: ["plugins.sessionAction"], scopes: scopes, isCurrent: { current }, request: { _ in Data() })
-        }
-        #expect(!descriptor.allowed(by: connection(["operator.write"])))
-        let permitted = connection(["operator.write", "operator.approvals"])
-        #expect(descriptor.allowed(by: permitted))
-        current = false
-        #expect(!descriptor.allowed(by: permitted))
-    }
 }

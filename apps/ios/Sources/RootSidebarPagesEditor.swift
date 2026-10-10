@@ -1,15 +1,11 @@
 import SwiftUI
 
 /// The native customization sheet edits the same mixed order as the drawer.
-/// Optional plugin rows are supplied by the current Gateway's live registry.
 struct RootSidebarPagesEditor: View {
     let destinations: [RootTabs.SidebarDestination]
     let pinnedPages: [RootTabs.SidebarDestination]
-    let optionalPlugins: [IOSSidebarPluginBridge.Entry]
-    let pinnedPluginKeys: Set<String>
     let onSelect: (RootTabs.SidebarDestination) -> Void
     let onTogglePin: (RootTabs.SidebarDestination) -> Void
-    let onTogglePlugin: (IOSSidebarPluginBridge.Entry) -> Void
     let onReset: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -40,24 +36,6 @@ struct RootSidebarPagesEditor: View {
                 } footer: {
                     Text("Pinned pages stay in the sidebar. Home is always shown.")
                         .font(OpenClawType.caption)
-                }
-                if !self.optionalPlugins.isEmpty {
-                    Section {
-                        ForEach(self.optionalPlugins.filter { !$0.defaultVisible }) { entry in
-                            Toggle(isOn: Binding(
-                                get: { self.pinnedPluginKeys.contains(entry.key) },
-                                set: { _ in self.onTogglePlugin(entry) }))
-                            {
-                                Label {
-                                    Text(entry.label).font(OpenClawType.subheadSemiBold)
-                                } icon: { Image(systemName: "puzzlepiece.extension") }
-                            }
-                            .frame(minHeight: 44)
-                            .contentShape(Rectangle())
-                        }
-                    } header: {
-                        Text("Plugins").font(OpenClawType.captionSemiBold)
-                    }
                 }
                 Section {
                     Button(action: self.onReset) {

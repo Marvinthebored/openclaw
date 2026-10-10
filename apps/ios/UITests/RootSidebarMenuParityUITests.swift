@@ -22,6 +22,7 @@ final class RootSidebarMenuParityUITests: XCTestCase {
         let show = app.buttons["RootTabs.Sidebar.Show"]
         if show.waitForExistence(timeout: 10), show.isHittable { show.tap() }
         XCTAssertTrue(app.buttons["RootTabs.Sidebar.Destination.chat"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["Plugin Pages & Actions…"].exists)
         self.capture(app, named: "sidebar-menu-landing")
 
         let sessions = app.descendants(matching: .any)
@@ -32,6 +33,7 @@ final class RootSidebarMenuParityUITests: XCTestCase {
         for label in ["Status", "Owner", "Sort By", "Group By", "Hide Empty Groups", "New Group…"] {
             XCTAssertTrue(app.buttons[label].waitForExistence(timeout: 5), "Missing session header action: \(label)")
         }
+        XCTAssertFalse(app.buttons["Session Sources…"].exists)
         self.capture(app, named: "sidebar-sessions-longpress")
         self.tapMenu("Status", in: app)
         for label in ["Active", "Snoozed", "Archived", "All"] {
@@ -67,6 +69,7 @@ final class RootSidebarMenuParityUITests: XCTestCase {
         for label in ["Rename…", "Icon & Color…", "Assign to…", "Copy", "Open in…"] {
             XCTAssertTrue(app.buttons[label].waitForExistence(timeout: 5), "Missing row action: \(label)")
         }
+        XCTAssertFalse(app.buttons["Plugin Actions…"].exists)
         self.capture(app, named: "sidebar-session-longpress")
         self.tapMenu("Icon & Color…", in: app)
         XCTAssertTrue(app.navigationBars["Icon & Color"].waitForExistence(timeout: 5))

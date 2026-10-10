@@ -22,7 +22,6 @@ export async function startNativeCapabilities(
       messageHandlers?: {
         openclawDeviceSettings?: { postMessage?: unknown };
         openclawNotifications?: { postMessage?: unknown };
-        openclawSidebarPlugins?: { postMessage?: unknown };
         openclawGateways?: { postMessage?: unknown };
       };
     };
@@ -50,12 +49,6 @@ export async function startNativeCapabilities(
     steps.push(async () => {
       const { createNativeConversationBridge } = await import("./native-conversation-bridge.ts");
       return startCapability("conversation", () => createNativeConversationBridge(context));
-    });
-  }
-  if (typeof handlers?.openclawSidebarPlugins?.postMessage === "function") {
-    steps.push(async () => {
-      const { startNativeSidebarPluginBridge } = await import("./native-sidebar-plugin-bridge.ts");
-      return lifecycle.signal.aborted ? undefined : startNativeSidebarPluginBridge(context);
     });
   }
   if (typeof handlers?.openclawDeviceSettings?.postMessage === "function") {

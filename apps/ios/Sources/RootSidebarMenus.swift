@@ -42,7 +42,6 @@ struct RootSidebarSessionViewMenu: View {
     let selectOwner: () -> Void
     let selectSessions: () -> Void
     let createGroup: () -> Void
-    let openSources: () -> Void
 
     var body: some View {
         Menu {
@@ -89,7 +88,6 @@ struct RootSidebarSessionViewMenu: View {
         Divider()
         Button(action: self.createGroup) { self.label("New Group…", "folder.badge.plus") }
         Button(action: self.selectSessions) { self.label("Select Sessions…", "checkmark.circle") }
-        Button(action: self.openSources) { self.label("Session Sources…", "square.stack.3d.up") }
         if self.options.isChanged(
             peopleAvailable: !self.owners.isEmpty,
             defaults: RootSidebarPreferences.defaultOptions)
@@ -123,7 +121,6 @@ struct RootSidebarDashboardRoute: Identifiable {
     let path: String
     let title: String
     var queryItems: [URLQueryItem] = []
-    var fragment: String?
     var id: String {
         self.path + self.queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
     }

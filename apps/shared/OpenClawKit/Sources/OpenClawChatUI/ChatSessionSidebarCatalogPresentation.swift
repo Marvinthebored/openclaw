@@ -1,44 +1,45 @@
+#if os(macOS)
 import Foundation
 import OpenClawProtocol
 
 @MainActor
-public struct ChatSidebarCatalogPresentation {
-    public struct Host: Identifiable {
-        public let source: SessionCatalogHost
-        public let rows: [SessionCatalogSession]
-        public var id: String {
+struct ChatSidebarCatalogPresentation {
+    struct Host: Identifiable {
+        let source: SessionCatalogHost
+        let rows: [SessionCatalogSession]
+        var id: String {
             self.source.hostid
         }
     }
 
-    public struct Catalog: Identifiable {
-        public let source: SessionCatalog
-        public let hosts: [Host]
-        public var id: String {
+    struct Catalog: Identifiable {
+        let source: SessionCatalog
+        let hosts: [Host]
+        var id: String {
             self.source.id
         }
     }
 
-    public struct VisibilityOption: Identifiable {
-        public let id: String
-        public let label: String
+    struct VisibilityOption: Identifiable {
+        let id: String
+        let label: String
     }
 
-    public static func visibilityOptions(_ catalogs: [SessionCatalog], hidden: Set<String>) -> [VisibilityOption] {
+    static func visibilityOptions(_ catalogs: [SessionCatalog], hidden: Set<String>) -> [VisibilityOption] {
         let known = Set(catalogs.map(\.id))
         return catalogs.map { .init(id: $0.id, label: $0.label) } + hidden.subtracting(known).sorted().map {
             .init(id: $0, label: $0)
         }
     }
 
-    public let catalogs: [Catalog]
-    public let liveRows: [String: OpenClawChatSessionEntry]
+    let catalogs: [Catalog]
+    let liveRows: [String: OpenClawChatSessionEntry]
 
     var hasVisibleRows: Bool {
         self.catalogs.contains { !$0.hosts.isEmpty }
     }
 
-    public init(
+    init(
         sources: [SessionCatalog],
         requestErrors: [String: String] = [:],
         query: OpenClawChatSidebarQuery,
@@ -69,7 +70,7 @@ public struct ChatSidebarCatalogPresentation {
         }
     }
 
-    public static func ordinarySections(
+    static func ordinarySections(
         _ sections: [ChatSessionSidebarModel.Section],
         excluding: Set<String>,
         rankedSearch: Bool = false,
@@ -133,11 +134,11 @@ public struct ChatSidebarCatalogPresentation {
         return source.agentID == current.agentID && identity == OpenClawChatSessionKey.catalogSource(current.sessionKey)
     }
 
-    public static func title(_ row: SessionCatalogSession) -> String {
+    static func title(_ row: SessionCatalogSession) -> String {
         row.name.flatMap { $0.isEmpty ? nil : $0 } ?? row.threadid
     }
 
-    public static func errors(_ catalog: SessionCatalog, requestError: String?) -> [String] {
+    static func errors(_ catalog: SessionCatalog, requestError: String?) -> [String] {
         var seen = Set<String>()
         let errors = [catalog.error] + catalog.hosts.compactMap {
             $0.error?["code"]?.value as? String == "NODE_OFFLINE" ? nil : $0.error
@@ -150,3 +151,4 @@ public struct ChatSidebarCatalogPresentation {
         }).compactMap(\.self).filter { !$0.isEmpty && seen.insert($0).inserted }
     }
 }
+#endif
