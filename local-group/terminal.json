@@ -1,0 +1,18 @@
+{
+  "apply": {
+    "exit": 0,
+    "seconds": 0.043
+  },
+  "candidateHead": "4460dbd8bf00d12720104c9c2d79448b68572173",
+  "matchedCandidateFiles": 60,
+  "local-group-ui": {
+    "exit": 0,
+    "seconds": 83.8
+  },
+  "passed": true,
+  "attachments": {
+    "exit": 0,
+    "seconds": 0.136
+  },
+  "candidateHashesRestored": true
+}

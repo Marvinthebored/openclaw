@@ -1,0 +1,260 @@
+Test Case '-[OpenClawUITests.RootSidebarMenuParityUITests testLocalGroupCreationWithoutCatalog]' started.
+    t =     0.00s Start Test at 2026-10-10 09:47:16.541
+    t =     0.13s Set Up
+    t =     0.13s Open <test-app-bundle>
+    t =     0.13s     Launch <test-app-bundle>
+2026-10-10 09:47:16.712 xcodebuild[75142:83585858] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-10-10 09:47:16.712 xcodebuild[75142:83585858] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.40s         Setting up automation session
+    t =     2.09s         Wait for <test-app-bundle> to idle
+    t =     4.47s Waiting 10.0s for "RootTabs.Sidebar.Show" Button to exist
+    t =     5.48s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.Show" Button`
+    t =     5.48s         Checking existence of `"RootTabs.Sidebar.Show" Button`
+    t =     5.57s Find the "RootTabs.Sidebar.Show" Button
+    t =     5.62s Tap "RootTabs.Sidebar.Show" Button
+    t =     5.62s     Wait for <test-app-bundle> to idle
+    t =     5.62s     Find the "RootTabs.Sidebar.Show" Button
+    t =     5.65s     Check for interrupting elements affecting "RootTabs.Sidebar.Show" Button
+    t =     5.71s     Synthesize event
+    t =     6.11s     Wait for <test-app-bundle> to idle
+    t =     6.11s Waiting 10.0s for "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any to exist
+    t =     7.15s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any`
+    t =     7.15s         Checking existence of `"RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any`
+    t =     7.18s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Any
+    t =     7.21s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     7.25s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     7.28s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     7.32s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     7.36s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     7.40s Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     7.44s Find the Target Application '<test-app-bundle>'
+    t =     7.54s Added attachment named 'local-group-before'
+    t =     7.54s Requesting snapshot of accessibility hierarchy for app with pid 76158
+    t =     7.75s Requesting snapshot of accessibility hierarchy for app with pid 76158
+    t =     7.87s Added attachment named 'local-group-before-hierarchy'
+    t =     7.87s Press "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button for 1.0 seconds
+    t =     7.87s     Wait for <test-app-bundle> to idle
+    t =     7.89s     Find the "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     7.99s     Check for interrupting elements affecting "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button
+    t =     8.05s     Synthesize event
+    t =     9.28s     Wait for <test-app-bundle> to idle
+    t =     9.29s Waiting 5.0s for "Move to Group" Button to exist
+    t =    10.33s     Checking `Expect predicate `existsNoRetry == 1` for object "Move to Group" Button`
+    t =    10.33s         Checking existence of `"Move to Group" Button`
+    t =    10.41s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'Move to Group'
+    t =    10.47s Find the Other (Element at index 0)
+    t =    10.54s Find the Other (Element at index 1)
+    t =    10.60s Find the Other (Element at index 2)
+    t =    10.66s Find the Other (Element at index 3)
+    t =    10.73s Find the Other (Element at index 4)
+    t =    10.79s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    10.87s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    10.95s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    11.02s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    11.14s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.22s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.28s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    11.34s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    11.40s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.45s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.51s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.58s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.64s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.70s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.76s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.82s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.89s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    11.95s Find the "Move to Group" Button
+    t =    12.01s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    12.08s Find the "folder" Button
+    t =    12.14s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    12.21s Find the "folder" Button
+    t =    12.27s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    12.34s Find the "folder" Button
+    t =    12.40s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    12.46s Find the "folder" Button
+    t =    12.53s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    12.59s Find the "folder" Button
+    t =    12.65s Find the Other at {{16.0, 96.3}, {250.0, 520.0}}
+    t =    12.71s Find the "folder" Button
+    t =    12.76s Find the Target Application '<test-app-bundle>'
+    t =    12.80s Find the "folder" Button
+    t =    12.86s Find the "folder" Button
+    t =    12.91s Tap "folder" Button[0.50, 0.50]
+    t =    12.91s     Wait for <test-app-bundle> to idle
+    t =    12.91s     Find the "folder" Button
+    t =    12.96s     Check for interrupting elements affecting "folder" Button
+    t =    13.00s         Wait for com.apple.springboard to idle
+    t =    13.07s     Synthesize event
+    t =    13.07s         Find the "folder" Button
+    t =    13.12s         Find the "folder" Button
+    t =    13.19s         Find the "folder" Button
+    t =    13.53s     Wait for <test-app-bundle> to idle
+    t =    13.53s Find the "New Group…" Button
+    t =    13.58s Find the Target Application '<test-app-bundle>'
+    t =    13.70s Added attachment named 'local-group-menu-enabled'
+    t =    13.71s Requesting snapshot of accessibility hierarchy for app with pid 76158
+    t =    14.03s Requesting snapshot of accessibility hierarchy for app with pid 76158
+    t =    14.08s Added attachment named 'local-group-menu-enabled-hierarchy'
+    t =    14.08s Waiting 5.0s for "New Group…" Button to exist
+    t =    15.11s     Checking `Expect predicate `existsNoRetry == 1` for object "New Group…" Button`
+    t =    15.11s         Checking existence of `"New Group…" Button`
+    t =    15.15s Get all elements bound by index for: Elements containing elements matching type Button with identifier 'New Group…'
+    t =    15.20s Find the Other (Element at index 0)
+    t =    15.25s Find the Other (Element at index 1)
+    t =    15.30s Find the Other (Element at index 2)
+    t =    15.35s Find the Other (Element at index 3)
+    t =    15.40s Find the Other (Element at index 4)
+    t =    15.45s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    15.51s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    15.56s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    15.61s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    15.65s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    15.70s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    15.76s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    15.81s Find the Other at {{0.0, 0.0}, {402.0, 874.0}}
+    t =    15.86s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    15.92s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    15.97s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    16.01s Find the Other at {{16.0, 112.0}, {250.0, 504.4}}
+    t =    16.06s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.11s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.16s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.21s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.26s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.31s Find the "New Group…" Button
+    t =    16.35s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.40s Find the "folder.badge.plus" Button
+    t =    16.44s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.48s Find the "folder.badge.plus" Button
+    t =    16.53s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.58s Find the "folder.badge.plus" Button
+    t =    16.62s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.67s Find the "folder.badge.plus" Button
+    t =    16.71s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.76s Find the "folder.badge.plus" Button
+    t =    16.80s Find the Other at {{16.0, 354.4}, {250.0, 250.0}}
+    t =    16.86s Find the "folder.badge.plus" Button
+    t =    16.90s Find the Target Application '<test-app-bundle>'
+    t =    16.93s Find the "folder.badge.plus" Button
+    t =    16.98s Find the "folder.badge.plus" Button
+    t =    17.02s Tap "folder.badge.plus" Button[0.50, 0.50]
+    t =    17.02s     Wait for <test-app-bundle> to idle
+    t =    17.02s     Find the "folder.badge.plus" Button
+    t =    17.06s     Check for interrupting elements affecting "folder.badge.plus" Button
+    t =    17.10s         Wait for com.apple.springboard to idle
+    t =    17.55s     Synthesize event
+    t =    17.55s         Find the "folder.badge.plus" Button
+    t =    17.59s         Find the "folder.badge.plus" Button
+    t =    17.63s         Find the "folder.badge.plus" Button
+    t =    17.96s     Wait for <test-app-bundle> to idle
+    t =    17.99s Waiting 5.0s for "New Group" NavigationBar to exist
+    t =    19.02s     Checking `Expect predicate `existsNoRetry == 1` for object "New Group" NavigationBar`
+    t =    19.02s         Checking existence of `"New Group" NavigationBar`
+    t =    19.09s Tap "Group name" TextField
+    t =    19.09s     Wait for <test-app-bundle> to idle
+    t =    19.09s     Find the "Group name" TextField
+    t =    19.13s     Check for interrupting elements affecting "Group name" TextField
+    t =    19.17s     Synthesize event
+    t =    19.47s     Wait for <test-app-bundle> to idle
+    t =    19.79s Type 'Local Proof' into "Group name" TextField
+    t =    19.79s     Wait for <test-app-bundle> to idle
+    t =    19.81s     Find the "Group name" TextField
+    t =    19.88s     Check for interrupting elements affecting "Group name" TextField
+    t =    19.93s     Synthesize event
+    t =    20.31s     Wait for <test-app-bundle> to idle
+    t =    20.32s Tap "Create" Button
+    t =    20.32s     Wait for <test-app-bundle> to idle
+    t =    20.32s     Find the "Create" Button
+    t =    20.38s     Check for interrupting elements affecting "Create" Button
+    t =    20.44s     Synthesize event
+    t =    20.74s     Wait for <test-app-bundle> to idle
+    t =    20.85s Waiting 8.0s for "New Group" NavigationBar to not exist
+    t =    21.89s     Checking `Expect predicate `existsNoRetry == 0` for object "New Group" NavigationBar`
+    t =    21.89s         Checking existence of `"New Group" NavigationBar`
+    t =    21.92s Waiting 8.0s for "SessionGroup.Header.Local Proof" Any to exist
+    t =    22.97s     Checking `Expect predicate `existsNoRetry == 1` for object "SessionGroup.Header.Local Proof" Any`
+    t =    22.97s         Checking existence of `"SessionGroup.Header.Local Proof" Any`
+    t =    23.01s Find the "SessionGroup.Header.Local Proof" Any
+    t =    23.09s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    23.16s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    23.21s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    23.27s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    23.33s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    23.39s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    23.44s Checking existence of `"RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button`
+    t =    23.48s Find the Target Application '<test-app-bundle>'
+    t =    23.60s Added attachment named 'local-group-created-and-moved'
+    t =    23.60s Requesting snapshot of accessibility hierarchy for app with pid 76158
+    t =    23.93s Requesting snapshot of accessibility hierarchy for app with pid 76158
+    t =    23.98s Added attachment named 'local-group-created-and-moved-hierarchy'
+    t =    23.98s Tap "SessionGroup.Caret.Local Proof" Button
+    t =    23.98s     Wait for <test-app-bundle> to idle
+    t =    23.98s     Find the "SessionGroup.Caret.Local Proof" Button
+    t =    24.02s     Check for interrupting elements affecting "SessionGroup.Caret.Local Proof" Button
+    t =    24.06s     Synthesize event
+    t =    24.37s     Wait for <test-app-bundle> to idle
+    t =    24.37s Waiting 5.0s for "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button to not exist
+    t =    25.42s     Checking `Expect predicate `existsNoRetry == 0` for object "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button`
+    t =    25.42s         Checking existence of `"RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button`
+    t =    25.58s Tap "SessionGroup.Caret.Local Proof" Button
+    t =    25.58s     Wait for <test-app-bundle> to idle
+    t =    25.58s     Find the "SessionGroup.Caret.Local Proof" Button
+    t =    25.62s     Check for interrupting elements affecting "SessionGroup.Caret.Local Proof" Button
+    t =    25.66s     Synthesize event
+    t =    25.96s     Wait for <test-app-bundle> to idle
+    t =    25.97s Waiting 5.0s for "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button to exist
+    t =    27.00s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button`
+    t =    27.00s         Checking existence of `"RootTabs.Sidebar.Session.agent:main:dashboard:fixture-project" Button`
+    t =    27.06s Terminate <test-app-bundle>:76158
+    t =    28.15s Open <test-app-bundle>
+    t =    28.15s     Launch <test-app-bundle>
+2026-10-10 09:47:44.693 xcodebuild[75142:83585858] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-10-10 09:47:44.693 xcodebuild[75142:83585858] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =    28.36s         Setting up automation session
+    t =    29.34s         Wait for <test-app-bundle> to idle
+    t =    31.94s Waiting 10.0s for "RootTabs.Sidebar.Show" Button to exist
+    t =    32.97s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Sidebar.Show" Button`
+    t =    32.97s         Checking existence of `"RootTabs.Sidebar.Show" Button`
+    t =    33.12s Find the "RootTabs.Sidebar.Show" Button
+    t =    33.19s Tap "RootTabs.Sidebar.Show" Button
+    t =    33.19s     Wait for <test-app-bundle> to idle
+    t =    33.20s     Find the "RootTabs.Sidebar.Show" Button
+    t =    33.25s     Check for interrupting elements affecting "RootTabs.Sidebar.Show" Button
+    t =    33.30s     Synthesize event
+    t =    33.61s     Wait for <test-app-bundle> to idle
+    t =    33.62s Waiting 10.0s for "SessionGroup.Header.Local Proof" StaticText to exist
+    t =    34.66s     Checking `Expect predicate `existsNoRetry == 1` for object "SessionGroup.Header.Local Proof" StaticText`
+    t =    34.66s         Checking existence of `"SessionGroup.Header.Local Proof" StaticText`
+    t =    34.71s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    34.77s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    34.83s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    34.89s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    34.96s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    35.02s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    35.08s Find the "SessionGroup.Header.Local Proof" StaticText
+    t =    35.14s Find the Target Application '<test-app-bundle>'
+    t =    35.29s Added attachment named 'local-group-remembered-after-relaunch'
+    t =    35.29s Requesting snapshot of accessibility hierarchy for app with pid 76375
+    t =    35.60s Requesting snapshot of accessibility hierarchy for app with pid 76375
+    t =    35.66s Added attachment named 'local-group-remembered-after-relaunch-hierarchy'
+LOCAL_GROUP_NATIVE_FLOW_PASS: row menu -> New Group -> moved row -> persisted empty group after relaunch
+    t =    35.66s Terminate <test-app-bundle>:76375
+    t =    36.72s Tear Down
+Test Case '-[OpenClawUITests.RootSidebarMenuParityUITests testLocalGroupCreationWithoutCatalog]' passed (36.845 seconds).
+Test Suite 'RootSidebarMenuParityUITests' passed at 2026-10-10 09:47:53.387.
+	 Executed 1 test, with 0 failures (0 unexpected) in 36.845 (36.846) seconds
+Test Suite 'OpenClawUITests.xctest' passed at 2026-10-10 09:47:53.387.
+	 Executed 1 test, with 0 failures (0 unexpected) in 36.845 (36.847) seconds
+Test Suite 'Selected tests' passed at 2026-10-10 09:47:53.387.
+	 Executed 1 test, with 0 failures (0 unexpected) in 36.845 (36.847) seconds
+2026-10-10 09:47:53.740 xcodebuild[75142:83585858] [MT] IDETestOperationsObserverDebug: 58.375 elapsed -- Testing started completed.
+2026-10-10 09:47:53.740 xcodebuild[75142:83585858] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-10 09:47:53.740 xcodebuild[75142:83585858] [MT] IDETestOperationsObserverDebug: 58.375 sec, +58.375 sec -- end
+
+Test session results, code coverage, and logs:
+	<proof-run>/results/local-group.xcresult
+
+** TEST SUCCEEDED **
+
+Testing started

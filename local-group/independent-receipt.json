@@ -1,0 +1,20 @@
+{
+  "advertisedMethods": [
+    "sessions.patch"
+  ],
+  "requests": [
+    "sessions.patch"
+  ],
+  "mutationReceipt": {
+    "actualCategory": "Local Proof",
+    "rememberedGroups": [
+      "Local Proof"
+    ],
+    "method": "sessions.patch",
+    "key": "agent:main:dashboard:fixture-project",
+    "expectedSessionId": "fixture-agent:main:dashboard:fixture-project"
+  },
+  "persistedGroupsAfterRelaunch": [
+    "Local Proof"
+  ]
+}
