@@ -171,7 +171,7 @@ extension NodeAppModel {
             "sessions.groups.list", "sessions.groups.put", "sessions.groups.rename", "sessions.groups.delete",
             "sessions.list", "sessions.patch", "sessions.delete", "sessions.assignOwner", "sessions.setInvolvement",
             "sessions.reclaim", "users.self", "users.list", "agents.list", "chat.history",
-            "controlUi.sessionPullRequests.subscribe", "plugins.uiDescriptors", "plugins.sessionAction",
+            "controlUi.sessionPullRequests.subscribe",
             "sessions.groups.defaults", "sessions.groups.update", "sessions.create", "fs.listDir", "worktrees.branches",
         ]
         var methods = Set<String>()

@@ -1067,7 +1067,6 @@ enum DrawerGroupFixture {
                 "sessions.groups.update",
                 "sessions.create", "sessions.patch", "sessions.delete", "sessions.assignOwner",
                 "sessions.setInvolvement", "users.self", "users.list", "agents.list", "chat.history",
-                "plugins.uiDescriptors", "plugins.sessionAction",
             ],
             scopes: ["operator.admin"],
             policy: ["hasMultipleSessionSharingIdentities": AnyCodable(true)],
@@ -1131,15 +1130,6 @@ actor DrawerGroupFixtureStore {
               {"id":"research","name":"Research Agent"}
             ]}
             """#.utf8)
-        case "plugins.uiDescriptors":
-            return Data(#"""
-            {"descriptors":[{
-              "id":"inspect","pluginId":"fixture","surface":"session","label":"Inspect Fixture",
-              "description":"Returns a synthetic result without external effects."
-            }]}
-            """#.utf8)
-        case "plugins.sessionAction":
-            return Data(#"{"ok":true,"result":"Fixture action completed."}"#.utf8)
         case "chat.history":
             let key = request.params["sessionKey"]?.value as? String ?? ""
             return try JSONSerialization.data(withJSONObject: [

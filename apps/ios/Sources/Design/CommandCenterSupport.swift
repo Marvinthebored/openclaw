@@ -186,11 +186,6 @@ struct CommandSessionActionsModifier: ViewModifier {
                 self.actionButton("Open in…", systemImage: "arrow.up.forward.app") {
                     self.present(.open)
                 }.disabled(self.connection?.isCurrent() != true)
-                if self.connection?.isCurrent() == true {
-                    self.actionButton("Plugin Actions…", systemImage: "puzzlepiece.extension") {
-                        self.present(.plugins)
-                    }
-                }
                 if ChatSessionSidebarActions.canStopCloudWorker(self.session), self.allows(.reclaim) {
                     self.actionButton("Stop Cloud Worker…", systemImage: "stop.circle") {
                         self.captureConfirmationTarget()

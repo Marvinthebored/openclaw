@@ -1,6 +1,5 @@
 import { nothing } from "lit";
 import { showToast } from "../lib/toast.ts";
-import { runControlUiNavigationAction } from "../plugins/control-ui-actions.ts";
 import { renderSidebarPluginNavigationMenu } from "./app-sidebar-nav-menus.ts";
 import type { SidebarMenusController } from "./sidebar-menus-controller.ts";
 
@@ -25,7 +24,7 @@ export function renderSidebarPluginNavigationMenuForController(controller: Sideb
         return;
       }
       try {
-        await runControlUiNavigationAction(entry, id, controller.pluginActionLifetime.signal);
+        await action.run();
       } catch (error) {
         if (!entry.signal.aborted) {
           controller.host.sessionDataContext?.plugins.reportError(entry.pluginId, error);

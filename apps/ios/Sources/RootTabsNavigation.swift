@@ -35,7 +35,7 @@ extension RootTabs {
         case docs
         case settings
         case gateway
-        case dashboards, meetings, plugins, apps, portals, systems
+        case dashboards, meetings, apps, portals, systems
 
         var id: String {
             rawValue
@@ -62,7 +62,6 @@ extension RootTabs {
             case .gateway: String(localized: "Settings / Gateway")
             case .dashboards: String(localized: "Dashboards")
             case .meetings: String(localized: "Meetings")
-            case .plugins: String(localized: "Plugins")
             case .apps: String(localized: "Apps")
             case .portals: String(localized: "Portals")
             case .systems: String(localized: "Systems")
@@ -97,7 +96,6 @@ extension RootTabs {
             case .gateway: "gearshape"
             case .dashboards: "rectangle.3.group"
             case .meetings: "video"
-            case .plugins: "puzzlepiece.extension"
             case .apps: "square.grid.2x2"
             case .portals: "globe"
             case .systems: "server.rack"
@@ -125,7 +123,6 @@ extension RootTabs {
             case .gateway: .gateway
             case .dashboards: .dashboard("/dashboards")
             case .meetings: .dashboard("/meetings")
-            case .plugins: .dashboard("/plugins")
             case .apps: .dashboard("/apps")
             case .portals: .dashboard("/portals")
             case .systems: .dashboard("/systems")
@@ -297,7 +294,7 @@ extension RootTabs {
         .desktop,
         .terminal,
         .docs,
-        .dashboards, .meetings, .plugins, .apps, .portals, .systems,
+        .dashboards, .meetings, .apps, .portals, .systems,
     ]
 
     /// Home (chat) is a fixed first row like the web sidebar; only these can be

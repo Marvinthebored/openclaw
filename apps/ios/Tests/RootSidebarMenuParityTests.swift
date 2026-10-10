@@ -37,35 +37,6 @@ struct RootSidebarMenuParityTests {
             now: self.now, viewOptions: options, owners: owners)
     }
 
-    @Test func `catalog promotion keeps an unpinned descendant in the rendered Pages inventory`() throws {
-        let rows = try self.rows(#"""
-        [
-          {"key":"agent:main:parent","pinned":true,"childSessions":["agent:main:child"]},
-          {"key":"agent:main:child","childSessions":["agent:main:grandchild"]},
-          {"key":"agent:main:grandchild"},
-          {"key":"agent:main:ordinary"}
-        ]
-        """#)
-        let sections = ChatSidebarCatalogPresentation.ordinarySections(
-            self.project(rows), excluding: ["agent:main:parent"],
-            currentKey: "", currentIsKnown: false)
-        let layout = RootSidebar.sessionLayout(sections)
-        let saved: [RootTabs.SidebarEntry] = [.route(.usage), .session("agent:other:unloaded")]
-        let entries = layout.reconciledEntries(saved, defaultPluginKeys: [])
-        let pageKeys = Set(entries.compactMap { entry -> String? in
-            if case let .session(key) = entry { return key }
-            return nil
-        })
-        let renderedPages = layout.pinnedNodes.filter {
-            pageKeys.contains(RootTabs.sidebarSessionSlot(for: $0.session))
-        }
-        #expect(renderedPages.map(\.id) == ["agent:main:child"])
-        #expect(renderedPages.first?.children.map(\.id) == ["agent:main:grandchild"])
-        #expect(renderedPages.first?.session.pinned != true)
-        #expect(self.keys(layout.sections) == ["agent:main:ordinary"])
-        #expect(Array(entries.prefix(saved.count)) == saved)
-    }
-
     @Test func `fresh and invalid preferences preserve iOS roster defaults`() throws {
         let name = "RootSidebarMenuParityTests.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: name))

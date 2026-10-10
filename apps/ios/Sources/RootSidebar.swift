@@ -11,10 +11,7 @@ struct RootSidebar: View {
     @Environment(\.displayScale) private var displayScale
     @Bindable var model: RootSidebarModel
     @Environment(AppAppearanceModel.self) private var appearanceModel
-    @State private var catalogAdoptedKeys: Set<String> = []
     @State private var showsAgentPicker = false
-    @State private var pluginEntries: [IOSSidebarPluginBridge.Entry] = []
-    @State private var pluginActionsEntry: IOSSidebarPluginBridge.Entry?
     @AppStorage("sidebar.pinnedAgents") private var pinnedAgentsStorage = ""
     @State private var dashboardRoute: RootSidebarDashboardRoute?
     @State private var showsNewGroup = false
@@ -40,7 +37,6 @@ struct RootSidebar: View {
     @State private var expandedSessions: Set<String> = []
     @State private var presentedAttention: OpenClawChatAttentionPresentation?
     @FocusState private var isSearchFocused: Bool
-    @AppStorage("sidebar.discoveredPlugins") private var discoveredPluginsStorage = "{}"
     @AppStorage("sidebar.pinnedPages") private var pinnedPagesStorage: String = ""
 
     let selectedDestination: RootTabs.SidebarDestination
@@ -77,26 +73,6 @@ struct RootSidebar: View {
                     self.sessionsSection(
                         sections: sessionLayout.sections,
                         hasPinnedSessions: !sessionLayout.pinnedNodes.isEmpty)
-                    if !self.model.showsAllAgents {
-                        RootSidebarCatalogs(
-                            sessions: self.model.sessions,
-                            options: self.model.viewOptions,
-                            owners: self.model.owners ?? [],
-                            ownerFilter: self.$model.viewOptions.ownerFilter,
-                            openSession: { key in
-                                self.appModel.openChat(sessionKey: key)
-                                self.selectSidebarDestination(.chat)
-                            },
-                            openDashboard: { self.dashboardRoute = $0 },
-                            isActive: self.isDismissButtonEnabled,
-                            adoptedKeys: self.$catalogAdoptedKeys,
-                            liveRow: { session in
-                                AnyView(self.sessionButton(
-                                    ChatSessionSidebarModel.node(session: session, children: []),
-                                    selectedSessionKey: self.resolvedSelectedSessionKey,
-                                    depth: 0))
-                            })
-                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 10)
@@ -138,7 +114,6 @@ struct RootSidebar: View {
                 path: route.path,
                 title: route.title,
                 queryItems: route.queryItems,
-                fragment: route.fragment,
                 onClose: { self.dashboardRoute = nil })
         }
         .sheet(isPresented: self.$showsNewGroup) {
@@ -209,35 +184,18 @@ struct RootSidebar: View {
             RootSidebarPagesEditor(
                 destinations: RootTabs.sidebarCustomizablePages.filter(self.isDestinationAvailable),
                 pinnedPages: self.storedPinnedPages,
-                optionalPlugins: self.pluginEntries,
-                pinnedPluginKeys: Set(self.sidebarEntries
-                    .compactMap {
-                        if case let .plugin(key) = $0 {
-                            key
-                        } else { nil }
-                    }),
                 onSelect: { destination in
                     self.showsPagesEditor = false
                     self.selectSidebarDestination(destination)
                 },
                 onTogglePin: self.togglePinnedPage,
-                onTogglePlugin: { self.setPluginPinned($0, pinned: !self.sidebarEntries.contains(.plugin($0.key))) },
                 onReset: self.resetSidebar)
-        }
-        .sheet(item: self.$pluginActionsEntry) { entry in
-            RootSidebarPluginActionsScreen(
-                navigationKey: entry.key,
-                onEntries: self.receivePluginEntries,
-                isPinned: { self.sidebarEntries.contains(.plugin($0.key)) },
-                setPinned: { self.setPluginPinned($0, pinned: $1) })
         }
     }
 
     private var sidebarEntries: [RootTabs.SidebarEntry] {
         Self.sessionLayout(self.visibleSessionSections).reconciledEntries(
-            RootTabs.sidebarEntries(from: self.pinnedPagesStorage),
-            defaultPluginKeys: self.pinnedPagesStorage.isEmpty ? self.pluginEntries.filter(\.defaultVisible)
-                .map(\.key) : [])
+            RootTabs.sidebarEntries(from: self.pinnedPagesStorage))
     }
 
     private func sidebarSessionKey(_ session: OpenClawChatSessionEntry) -> String {
@@ -263,11 +221,9 @@ struct RootSidebar: View {
     private var visibleSidebarEntries: [RootTabs.SidebarEntry] {
         let pinnedNodes = Self.sessionLayout(self.visibleSessionSections).pinnedNodes
         let sessionKeys = Set(pinnedNodes.map { self.sidebarSessionKey($0.session) })
-        let pluginKeys = Set(self.pluginEntries.map(\.key))
         return self.sidebarEntries.filter { entry in
             switch entry {
             case let .route(page): self.isDestinationAvailable(page)
-            case let .plugin(key): pluginKeys.contains(key)
             case let .session(key): sessionKeys.contains(key)
             }
         }
@@ -283,34 +239,8 @@ struct RootSidebar: View {
             .route(destination), pinned: !entries.contains(.route(destination)), entries: entries))
     }
 
-    private func setPluginPinned(_ entry: IOSSidebarPluginBridge.Entry, pinned: Bool) {
-        self.pinnedPagesStorage = RootTabs.sidebarEntriesStorage(RootTabs.settingSidebarEntry(
-            .plugin(entry.key), pinned: pinned, entries: self.sidebarEntries))
-    }
-
-    private func receivePluginEntries(_ entries: [IOSSidebarPluginBridge.Entry]) {
-        self.pluginEntries = entries
-        let owner = self.appModel.chatViewModelOwnerID
-        var discovered = (try? JSONDecoder().decode(
-            [String: [String]].self,
-            from: Data(self.discoveredPluginsStorage.utf8))) ?? [:]
-        let known = Set(discovered[owner] ?? [])
-        let defaults = entries.filter { $0.defaultVisible && !known.contains($0.key) }.map(\.key)
-        if !defaults.isEmpty {
-            self.pinnedPagesStorage = RootTabs.sidebarEntriesStorage(RootTabs.reconciledSidebarEntries(
-                self.sidebarEntries, pinnedSessionKeys: [], defaultPluginKeys: defaults))
-        }
-        discovered[owner] = Array(known.union(entries.map(\.key))).sorted()
-        if let data = try? JSONEncoder().encode(discovered), let storage = String(data: data, encoding: .utf8) {
-            self.discoveredPluginsStorage = storage
-        }
-    }
-
     private func resetSidebar() {
-        self.pinnedPagesStorage = RootTabs.sidebarEntriesStorage(RootTabs.reconciledSidebarEntries(
-            RootTabs.resetSidebarEntries(self.sidebarEntries),
-            pinnedSessionKeys: [],
-            defaultPluginKeys: self.pluginEntries.filter(\.defaultVisible).map(\.key)))
+        self.pinnedPagesStorage = RootTabs.sidebarEntriesStorage(RootTabs.resetSidebarEntries(self.sidebarEntries))
     }
 
     private func moveSidebarEntry(_ entry: RootTabs.SidebarEntry, by offset: Int) {
@@ -554,16 +484,8 @@ struct RootSidebar: View {
                             self.sessionButton(row.node, selectedSessionKey: selectedSessionKey, depth: row.depth)
                         }
                     }
-                case let .plugin(key):
-                    if let plugin = self.pluginEntries.first(where: { $0.key == key }) {
-                        self.pluginButton(plugin)
-                    }
                 }
             }
-            RootSidebarPluginNavigation(
-                onEntries: self.receivePluginEntries,
-                isPinned: { self.sidebarEntries.contains(.plugin($0.key)) },
-                setPinned: { self.setPluginPinned($0, pinned: $1) })
         }
     }
 
@@ -724,50 +646,11 @@ struct RootSidebar: View {
             selectSessions: { self.selectingSessions = true },
             createGroup: { self.groupDraft = ""
                 self.showsNewGroup = true
-            },
-            openSources: { self.dashboardRoute = .init(
-                path: "/settings/appearance",
-                title: String(localized: "Session Sources"),
-                queryItems: [.init(name: "section", value: "__appearance__")],
-                fragment: "settings-session-sources") })
+            })
     }
 
     private func movePinnedPage(_ destination: RootTabs.SidebarDestination, by offset: Int) {
         self.moveSidebarEntry(.route(destination), by: offset)
-    }
-
-    private func pluginButton(_ entry: IOSSidebarPluginBridge.Entry) -> some View {
-        Button {
-            if let components = URLComponents(string: entry.pageHref), components.scheme == nil,
-               components.host == nil, components.path.hasPrefix("/")
-            {
-                self.dashboardRoute = .init(
-                    path: components.path,
-                    title: entry.label,
-                    queryItems: components.queryItems ?? [],
-                    fragment: components.fragment)
-            } else { self.pluginActionsEntry = entry }
-        } label: {
-            Label { Text(verbatim: entry.label).font(OpenClawType.subheadSemiBold) }
-                icon: { Image(systemName: "puzzlepiece.extension") }
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .padding(.horizontal, 10).contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .contextMenu {
-            Button { self.pluginActionsEntry = entry } label: {
-                Label("Actions…", systemImage: "list.bullet").font(OpenClawType.subhead)
-            }
-            Button { self.setPluginPinned(entry, pinned: false) } label: {
-                Label("Remove from Sidebar", systemImage: "pin.slash").font(OpenClawType.subhead)
-            }
-            Button { self.moveSidebarEntry(.plugin(entry.key), by: -1) } label: {
-                Label("Move Up", systemImage: "arrow.up").font(OpenClawType.subhead)
-            }.disabled(self.visibleSidebarEntries.first == .plugin(entry.key))
-            Button { self.moveSidebarEntry(.plugin(entry.key), by: 1) } label: {
-                Label("Move Down", systemImage: "arrow.down").font(OpenClawType.subhead)
-            }.disabled(self.visibleSidebarEntries.last == .plugin(entry.key))
-        }
     }
 
     private func sectionTitle(_ title: String) -> some View {
@@ -1143,33 +1026,23 @@ extension RootSidebar {
                 return .init(id: "agent:" + agent.id, title: Self.agentDisplayName(agent), nodes: nodes)
             }
         }
-        let sections = self.model.sections(
+        return self.model.sections(
             query: self.searchText,
             currentSessionKey: self.appModel.chatSessionKey,
             mainSessionKey: self.appModel.mainSessionKey,
             activeAgentID: self.appModel.chatAgentId,
             groups: self.sessionGroups,
             sessionRoutingContract: self.appModel.chatSessionRoutingContract)
-        return ChatSidebarCatalogPresentation.ordinarySections(
-            sections,
-            excluding: self.catalogAdoptedKeys,
-            currentKey: self.resolvedSelectedSessionKey,
-            currentIsKnown: self.model.sessions.contains { $0.key == self.resolvedSelectedSessionKey })
     }
 
     struct SessionLayout: Equatable {
         let pinnedNodes: [ChatSessionSidebarModel.Node]
         let sections: [ChatSessionSidebarModel.Section]
 
-        @MainActor func reconciledEntries(
-            _ entries: [RootTabs.SidebarEntry], defaultPluginKeys: [String]) -> [RootTabs.SidebarEntry]
-        {
-            // Catalog exclusion can promote an unpinned child within the Pages zone.
-            // Placement belongs to the projection, not a second check of the row's pin flag.
+        @MainActor func reconciledEntries(_ entries: [RootTabs.SidebarEntry]) -> [RootTabs.SidebarEntry] {
             RootTabs.reconciledSidebarEntries(
                 entries,
-                pinnedSessionKeys: self.pinnedNodes.map { RootTabs.sidebarSessionSlot(for: $0.session) },
-                defaultPluginKeys: defaultPluginKeys)
+                pinnedSessionKeys: self.pinnedNodes.map { RootTabs.sidebarSessionSlot(for: $0.session) })
         }
     }
 

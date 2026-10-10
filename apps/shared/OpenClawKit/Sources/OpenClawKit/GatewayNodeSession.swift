@@ -123,7 +123,6 @@ public actor GatewayNodeSession {
     private var snapshotReceived = false
     private var workerHello: (protocolVersion: Int, capabilities: [String])?
     private var serverMethods: Set<String>?
-    private var serverEvents: Set<String>?
     private var serverCapabilities: Set<GatewayServerCapability>?
     private var operatorScopes: Set<String>?
     private var sessionMenuMetadata: (multipleIdentities: Bool, controlUIURL: String?)?
@@ -699,13 +698,6 @@ public actor GatewayNodeSession {
             .contains(method)
     }
 
-    public func supportsServerEvent(
-        _ event: String,
-        ifCurrentRoute expectedRoute: GatewayNodeSessionRoute) -> Bool?
-    {
-        self.currentRouteValue(self.serverEvents, ifCurrentRoute: expectedRoute)?.contains(event)
-    }
-
     public func currentOperatorScopes(ifCurrentRoute route: GatewayNodeSessionRoute) -> Set<String>? {
         self.currentRouteValue(self.operatorScopes, ifCurrentRoute: route)
     }
@@ -894,7 +886,6 @@ extension GatewayNodeSession {
             let capabilities = ok.features["capabilities"]?.arrayValue?.compactMap(\.stringValue) ?? []
             self.workerHello = (ok._protocol, capabilities)
             self.serverMethods = ok.advertisedServerMethods()
-            self.serverEvents = Set(ok.features["events"]?.arrayValue?.compactMap(\.stringValue) ?? [])
             self.serverCapabilities = Set(
                 GatewayServerCapability.allCases.filter { ok.supportsServerCapability($0) })
             self.operatorScopes = ok.advertisedOperatorScopes()
@@ -931,7 +922,6 @@ extension GatewayNodeSession {
         self.snapshotReceived = false
         self.workerHello = nil
         self.serverMethods = nil
-        self.serverEvents = nil
         self.serverCapabilities = nil
         self.operatorScopes = nil
         self.sessionMenuMetadata = nil

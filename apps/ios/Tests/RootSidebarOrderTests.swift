@@ -18,7 +18,7 @@ struct RootSidebarOrderTests {
 
     @Test func `mixed canonical storage preserves opaque keys and unloaded agent slots`() {
         let entries: [RootTabs.SidebarEntry] = [
-            .route(.agents), .plugin("plugin/custom,key"), .session("agent:not-loaded:thread,key"), .route(.usage),
+            .route(.agents), .session("agent:not-loaded:thread,key"), .route(.usage),
         ]
         #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(entries)) == entries)
         #expect(entries.first?.id == "route:agents-home")
@@ -44,7 +44,7 @@ struct RootSidebarOrderTests {
 
     @Test func `reset preserves every saved session slot even when no sessions are loaded`() {
         let entries: [RootTabs.SidebarEntry] = [
-            .session("agent:other:older"), .plugin("workboard/workboard"), .route(.usage),
+            .session("agent:other:older"), .route(.usage),
             .session("agent:missing:newer"),
         ]
         #expect(RootTabs.resetSidebarEntries(entries) == RootTabs.defaultSidebarEntries + [
@@ -52,24 +52,24 @@ struct RootSidebarOrderTests {
         ])
     }
 
-    @Test func `move crosses route plugin and session boundaries without deleting hidden slots`() {
+    @Test func `move crosses page and session boundaries without deleting hidden slots`() {
         let route = RootTabs.SidebarEntry.route(.usage)
-        let plugin = RootTabs.SidebarEntry.plugin("workboard/workboard")
+        let page = RootTabs.SidebarEntry.route(.workboard)
         let session = RootTabs.SidebarEntry.session("agent:main:visible")
         let hidden = RootTabs.SidebarEntry.session("agent:other:hidden")
-        let entries = [route, hidden, plugin, session]
+        let entries = [route, hidden, page, session]
         let moved = RootTabs.movingSidebarEntry(
-            plugin,
+            page,
             by: -1,
             entries: entries,
-            visibleEntries: [route, plugin, session])
-        #expect(moved == [plugin, hidden, route, session])
+            visibleEntries: [route, page, session])
+        #expect(moved == [page, hidden, route, session])
         #expect(RootTabs.movingSidebarEntry(
             session,
             by: -1,
             entries: moved,
-            visibleEntries: [plugin, route, session]) == [
-            plugin,
+            visibleEntries: [page, route, session]) == [
+            page,
             hidden,
             session,
             route,
@@ -78,35 +78,19 @@ struct RootSidebarOrderTests {
             route,
             by: -1,
             entries: entries,
-            visibleEntries: [route, plugin, session]) == entries)
+            visibleEntries: [route, page, session]) == entries)
     }
 
     @Test func `reconcile adds newly pinned rows without replacing saved order or unknown agents`() {
         let entries: [RootTabs.SidebarEntry] = [.session("agent:other:saved"), .route(.usage)]
         let reconciled = RootTabs.reconciledSidebarEntries(
             entries,
-            pinnedSessionKeys: ["agent:main:new", "agent:main:new"],
-            defaultPluginKeys: ["workboard/workboard"])
-        #expect(reconciled == entries + [.plugin("workboard/workboard"), .session("agent:main:new")])
+            pinnedSessionKeys: ["agent:main:new", "agent:main:new"])
+        #expect(reconciled == entries + [.session("agent:main:new")])
         #expect(RootTabs.settingSidebarEntry(
-            .plugin("workboard/workboard"),
+            .session("agent:main:new"),
             pinned: false,
-            entries: reconciled) == entries + [.session("agent:main:new")])
-    }
-
-    @Test func `plugin discovery does not duplicate a saved native Workboard page`() {
-        let upgraded = RootTabs.sidebarEntries(from: "docs,workboard,overview")
-        let discovered = RootTabs.reconciledSidebarEntries(
-            upgraded, pinnedSessionKeys: [], defaultPluginKeys: ["workboard/workboard", "other/page"])
-        #expect(discovered == upgraded + [.plugin("other/page")])
-        #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(discovered)) == discovered)
-        let explicit = upgraded + [.plugin("workboard/workboard")]
-        #expect(RootTabs.reconciledSidebarEntries(
-            explicit, pinnedSessionKeys: [], defaultPluginKeys: ["workboard/workboard"]) == explicit)
-        #expect(RootTabs.reconciledSidebarEntries(
-            [.route(.usage)], pinnedSessionKeys: [], defaultPluginKeys: ["workboard/workboard"]) == [
-            .route(.usage), .plugin("workboard/workboard"),
-        ])
+            entries: reconciled) == entries)
     }
 
     @Test func `shipped defaults survive first launch and reset of the mixed sidebar`() {
@@ -118,7 +102,7 @@ struct RootSidebarOrderTests {
 
     @Test func `shipped page choices remain editable after mixed order is saved`() {
         // v2026.9.9's writer stores raw values in pin order, including native
-        // Workboard. A missing plugin registry must not hide that saved choice.
+        // Workboard. Saving the mixed order must not hide that saved choice.
         let storage = "docs,overview,workboard,skillWorkshop,instances,files,dreaming,terminal," +
             "usage,cron,agents,activity,sessions,desktop"
         let upgraded = RootTabs.sidebarEntries(from: storage)
@@ -134,7 +118,7 @@ struct RootSidebarOrderTests {
             let repinned = RootTabs.settingSidebarEntry(.route(page), pinned: true, entries: unpinned)
             #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(repinned)) == repinned)
         }
-        let extended = upgraded + [.route(.systems), .plugin("example/page"), .session("agent:main:saved")]
+        let extended = upgraded + [.route(.systems), .session("agent:main:saved")]
         #expect(RootTabs.sidebarEntries(from: RootTabs.sidebarEntriesStorage(extended)) == extended)
         #expect(RootTabs.sidebarEntries(from: "none").isEmpty)
     }

@@ -1,11 +1,7 @@
 import type { BoardGetParams } from "@openclaw/gateway-protocol";
-import type {
-  ControlUiAction,
-  ControlUiNavigationItem,
-  ControlUiSession,
-} from "../../../src/plugin-sdk/control-ui.js";
+import type { ControlUiAction, ControlUiSession } from "../../../src/plugin-sdk/control-ui.js";
 import type { PluginSessionMenuAction } from "../components/session-menu.ts";
-import type { ControlUiPluginCapability, ControlUiRegistration } from "./control-ui-capability.ts";
+import type { ControlUiPluginCapability } from "./control-ui-capability.ts";
 import { scopeControlUiHost } from "./control-ui-scope.ts";
 
 export function pluginSessionMenuActions(
@@ -80,21 +76,5 @@ export async function runControlUiPluginAction(
     host: scopeControlUiHost(entry.host, signal),
     signal,
   });
-  signal.throwIfAborted();
-}
-
-/** Navigation actions remain owned by their live plugin registration. */
-export async function runControlUiNavigationAction(
-  entry: ControlUiRegistration<ControlUiNavigationItem>,
-  actionId: string,
-  lifetime?: AbortSignal,
-): Promise<void> {
-  const signal = lifetime ? AbortSignal.any([lifetime, entry.signal]) : entry.signal;
-  signal.throwIfAborted();
-  const action = entry.value.actions?.find((candidate) => candidate.id === actionId);
-  if (!action) {
-    throw new Error("This plugin action is no longer available. Reopen its menu.");
-  }
-  await action.run();
   signal.throwIfAborted();
 }

@@ -8,7 +8,7 @@ extension EnvironmentValues {
 }
 
 enum CommandSessionMenuPresentation: String, Identifiable {
-    case appearance, assignment, open, plugins, rename, newGroup
+    case appearance, assignment, open, rename, newGroup
     var id: String {
         self.rawValue
     }
@@ -18,7 +18,6 @@ enum CommandSessionMenuPresentation: String, Identifiable {
         case .appearance: String(localized: "Icon & Color")
         case .assignment: String(localized: "Assign to")
         case .open: String(localized: "Open in")
-        case .plugins: String(localized: "Plugin Actions")
         case .rename: String(localized: "Rename Session")
         case .newGroup: String(localized: "New Group")
         }
@@ -84,7 +83,6 @@ struct CommandSessionMenuSheet: View {
                 case .appearance: self.appearance
                 case .assignment: self.assignment
                 case .open: self.destinations
-                case .plugins: CommandSessionPluginActions(session: self.session, connection: self.connection)
                 case .rename, .newGroup: self.nameEditor
                 }
             }
