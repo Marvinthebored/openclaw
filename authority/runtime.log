@@ -1,0 +1,86 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -xctestrun /tmp/sidebar-authority-auth-verified/private-proof.xctestrun -destination "platform=iOS Simulator,id=04C6335E-CD84-43AE-AAE7-AB4D2A727713" -parallel-testing-enabled NO "-only-testing:OpenClawTests/SidebarPluginRuntimeProof/testProductionAuthorityRejectsStaleAndUntrustedCallers" -resultBundlePath /private/tmp/sidebar-authority-verified/results/authority-runtime.xcresult
+
+2026-10-10 10:56:10.635 xcodebuild[7907:83883349] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+Writing result bundle at path:
+	/private/tmp/sidebar-authority-verified/results/authority-runtime.xcresult
+
+2026-10-10 10:56:10.642 xcodebuild[7907:83883349] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 10:56:10.818 xcodebuild[7907:83883349] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 10:56:11.147 xcodebuild[7907:83883349] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 10:56:11.384 xcodebuild[7907:83883349] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 10:56:11.509 xcodebuild[7907:83883349] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+2026-10-10 10:56:27.815942+0800 OpenClaw[8261:83887204] OpenClaw: installing uncaught exception handler
+2026-10-10 10:56:27.878093+0800 OpenClaw[8261:83887544] [WC] -[WCSession onqueue_handleUpdateSessionState:]_block_invoke dropping as pairingIDs no longer match. pairingID (null), client pairingID: (null)
+2026-10-10 10:56:27.879104+0800 OpenClaw[8261:83887534] [GatewayDiag] [2026-10-10T02:56:27.878Z] watch messaging: activation complete state=activated error=none
+2026-10-10 10:56:27.892144+0800 OpenClaw[8261:83887544] [WC] WCSession is not paired
+2026-10-10 10:56:27.914577+0800 OpenClaw[8261:83887204] [TalkMode] disabled
+2026-10-10 10:56:27.914605+0800 OpenClaw[8261:83887541] [GatewayDiag] [2026-10-10T02:56:27.914Z] node app model: init start
+2026-10-10 10:56:27.914832+0800 OpenClaw[8261:83887541] [GatewayDiag] [2026-10-10T02:56:27.914Z] watch messaging: set status handler supported=true paired=false appInstalled=false reachable=false activation=activated
+2026-10-10 10:56:27.915124+0800 OpenClaw[8261:83887541] [GatewayDiag] [2026-10-10T02:56:27.915Z] talk.timeline manager disabled
+2026-10-10 10:56:27.955543+0800 OpenClaw[8261:83887560] [GatewayDiag] [2026-10-10T02:56:27.955Z] app delegate: didFinishLaunching
+2026-10-10 10:56:28.285323+0800 OpenClaw[8261:83887546] [GatewayDiag] [2026-10-10T02:56:28.285Z] node app model: scene phase=inactive
+2026-10-10 10:56:28.285716+0800 OpenClaw[8261:83887546] [GatewayDiag] [2026-10-10T02:56:28.285Z] app delegate: scene phase changed=inactive
+IOSurfaceClientSetSurfaceNotify failed e00002c7
+2026-10-10 10:56:28.617417+0800 OpenClaw[8261:83887204] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-10 10:56:28.793436+0800 OpenClaw[8261:83887204] fopen failed for data file: errno = 2 (No such file or directory)
+2026-10-10 10:56:28.900776+0800 OpenClaw[8261:83887544] [GatewayDiag] [2026-10-10T02:56:28.901Z] node app model: scene phase=active
+2026-10-10 10:56:28.925632+0800 OpenClaw[8261:83887544] [GatewayDiag] [2026-10-10T02:56:28.925Z] app delegate: scene phase changed=active
+2026-10-10 10:56:29.008674+0800 OpenClaw[8261:83887561] [GatewayDiag] [2026-10-10T02:56:29.008Z] node app model: watch status callback reachable=false activation=activated backgrounded=false
+2026-10-10 10:56:29.009150+0800 OpenClaw[8261:83887561] [GatewayDiag] [2026-10-10T02:56:29.009Z] watch exec approval: status changed reachable=false activation=activated backgrounded=false
+2026-10-10 10:56:29.015776+0800 OpenClaw[8261:83887562] [GatewayDiag] [2026-10-10T02:56:29.016Z] chat.ui foreground refresh sessionKey=main pending=0
+2026-10-10 10:56:29.062754+0800 OpenClaw[8261:83887204] [OpenClawChatUI] refresh history failed not connected
+2026-10-10 10:56:29.079350+0800 OpenClaw[8261:83887204] [OpenClawChatUI] bootstrap failed not connected
+Test Suite 'Selected tests' started at 2026-10-10 10:56:29.329.
+Test Suite 'OpenClawTests.xctest' started at 2026-10-10 10:56:29.329.
+Test Suite 'SidebarPluginRuntimeProof' started at 2026-10-10 10:56:29.329.
+Test Case '-[OpenClawTests.SidebarPluginRuntimeProof testProductionAuthorityRejectsStaleAndUntrustedCallers]' started.
+2026-10-10 10:56:29.385728+0800 OpenClaw[8261:83887541] [default] Failed to resolve host network app id to config: bundleID: com.apple.WebKit.Networking instance ID: Optional([_EXExtensionInstanceIdentifier: F63D8C46-DC01-4329-A47F-CC010B646EF5])
+2026-10-10 10:56:29.522124+0800 OpenClaw[8261:83887204] [ResourceLoadStatistics] Failed to request storage access quirks from WebPrivacy.
+2026-10-10 10:56:29.522266+0800 OpenClaw[8261:83887204] [ResourceLoadStatistics] Failed to request known fingerprinting scripts from WebPrivacy: Error Domain=WebPrivacyErrorDomain Code=1001 "List data not found" UserInfo={NSLocalizedDescription=List data not found}
+2026-10-10 10:56:29.522317+0800 OpenClaw[8261:83887204] [ResourceLoadStatistics] Failed to request storage access user agent string quirks from WebPrivacy.
+2026-10-10 10:56:29.778654+0800 OpenClaw[8261:83887204] [ResourceLoadStatistics] Failed to request query parameters from WebPrivacy.
+2026-10-10 10:56:29.804541+0800 OpenClaw[8261:83887204] [ResourceLoadStatistics] Failed to request restricted opener domains from WebPrivacy
+2026-10-10 10:56:29.804656+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8317] Unable to filter tracking query parameters (missing data)
+2026-10-10 10:56:30.768701+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8317] Unable to hide query parameters from script (missing data)
+2026-10-10 10:56:30.769574+0800 OpenClaw[8261:83887204] [ResourceLoadStatistics] Failed to request allowed query parameters from WebPrivacy.
+2026-10-10 10:56:32.096213+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8317] Unable to hide query parameters from script (missing data)
+2026-10-10 10:56:33.052167+0800 OpenClaw[8261:83887801] [com.apple.WebKit.WebContent] WebContent[8317] makeImagePlus:3799: *** ERROR: 'WEBP'-_reader->initImage[0] failed err=-50
+2026-10-10 10:56:33.983942+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8317] Unable to hide query parameters from script (missing data)
+AUTHORITY positive-before authenticatedEffects=1
+2026-10-10 10:56:34.086512+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8317] Unable to hide query parameters from script (missing data)
+2026-10-10 10:56:34.088066+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8317] Unable to hide query parameters from script (missing data)
+AUTHORITY same-origin-child-frame rejectedByProductionWKHandler=true authenticatedEffects=1
+2026-10-10 10:56:34.552426+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8358] Unable to hide query parameters from script (missing data)
+AUTHORITY foreign-hosting-document rejectedByProductionWKHandler=true authenticatedEffects=1
+AUTHORITY retired-registration oldNativeMenuAndWebCommandRejected=true authenticatedEffects=1
+2026-10-10 10:56:34.638245+0800 OpenClaw[8261:83887801] [ResourceLoadStatistics] WebContent[8317] Unable to hide query parameters from script (missing data)
+AUTHORITY retired-document replayWithCurrentRevisionRejected=true authenticatedEffects=1
+AUTHORITY positive-after authenticatedEffects=2 negatives=4 forbiddenEffects=0 productionBridge=true
+Test Case '-[OpenClawTests.SidebarPluginRuntimeProof testProductionAuthorityRejectsStaleAndUntrustedCallers]' passed (6.726 seconds).
+Test Suite 'SidebarPluginRuntimeProof' passed at 2026-10-10 10:56:36.056.
+	 Executed 1 test, with 0 failures (0 unexpected) in 6.726 (6.727) seconds
+Test Suite 'OpenClawTests.xctest' passed at 2026-10-10 10:56:36.056.
+	 Executed 1 test, with 0 failures (0 unexpected) in 6.726 (6.727) seconds
+Test Suite 'Selected tests' passed at 2026-10-10 10:56:36.057.
+	 Executed 1 test, with 0 failures (0 unexpected) in 6.726 (6.727) seconds
+2026-10-10 10:56:36.058597+0800 OpenClaw[8261:83887541] [assertion] Error acquiring assertion: <Error Domain=RBSServiceErrorDomain Code=1 "((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))" UserInfo={NSLocalizedFailureReason=((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))}>
+2026-10-10 10:56:36.058702+0800 OpenClaw[8261:83887541] [ProcessSuspension] 0x12a140600 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=8358, error: (null)
+2026-10-10 10:56:36.061705+0800 OpenClaw[8261:83887541] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 8358 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 8358 does not exist}>
+2026-10-10 10:56:36.062363+0800 OpenClaw[8261:83887541] [ProcessSuspension] 0x12a1406c0 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=8358, error: (null)
+2026-10-10 10:56:36.086452+0800 OpenClaw[8261:83887541] [assertion] Error acquiring assertion: <Error Domain=RBSServiceErrorDomain Code=1 "((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))" UserInfo={NSLocalizedFailureReason=((target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.rendering AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.networking AND target is not running or doesn't have entitlement com.apple.developer.web-browser-engine.webcontent))}>
+2026-10-10 10:56:36.086582+0800 OpenClaw[8261:83887541] [ProcessSuspension] 0x12a140780 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=8317, error: (null)
+2026-10-10 10:56:36.087994+0800 OpenClaw[8261:83887541] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 8317 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 8317 does not exist}>
+2026-10-10 10:56:36.088122+0800 OpenClaw[8261:83887541] [ProcessSuspension] 0x12a140840 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'WebProcess NearSuspended Assertion' for process with PID=8317, error: (null)
+2026-10-10 10:56:36.089584+0800 OpenClaw[8261:83887541] [assertion] Error acquiring assertion: <Error Domain=RBSAssertionErrorDomain Code=2 "Specified target process 8319 does not exist" UserInfo={NSLocalizedFailureReason=Specified target process 8319 does not exist}>
+2026-10-10 10:56:36.089684+0800 OpenClaw[8261:83887541] [ProcessSuspension] 0x12a140900 - ProcessAssertion::acquireSync Failed to acquire RBS assertion 'XPCConnectionTerminationWatchdog' for process with PID=8319, error: (null)
+2026-10-10 10:56:36.434 xcodebuild[7907:83883349] [MT] IDETestOperationsObserverDebug: 25.597 elapsed -- Testing started completed.
+2026-10-10 10:56:36.434 xcodebuild[7907:83883349] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-10 10:56:36.434 xcodebuild[7907:83883349] [MT] IDETestOperationsObserverDebug: 25.597 sec, +25.597 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/sidebar-authority-verified/results/authority-runtime.xcresult
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

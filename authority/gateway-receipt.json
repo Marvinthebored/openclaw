@@ -1,0 +1,39 @@
+{
+  "invocationCount": 2,
+  "effects": [
+    {
+      "marker": "native-production-bridge",
+      "caseLabel": "positive-before",
+      "invocationCount": 1,
+      "role": "operator",
+      "clientId": "openclaw-control-ui",
+      "connectionId": "08b34363-3306-4f7c-a05b-4e860b4379ea",
+      "scopes": [
+        "operator.admin",
+        "operator.read",
+        "operator.write",
+        "operator.approvals",
+        "operator.questions",
+        "operator.pairing"
+      ],
+      "at": "2026-10-10T02:56:33.999Z"
+    },
+    {
+      "marker": "native-production-bridge",
+      "caseLabel": "positive-after",
+      "invocationCount": 2,
+      "role": "operator",
+      "clientId": "openclaw-control-ui",
+      "connectionId": "e04cbd31-9a75-4c39-a8d5-55fa6c307d93",
+      "scopes": [
+        "operator.admin",
+        "operator.read",
+        "operator.write",
+        "operator.approvals",
+        "operator.questions",
+        "operator.pairing"
+      ],
+      "at": "2026-10-10T02:56:35.962Z"
+    }
+  ]
+}

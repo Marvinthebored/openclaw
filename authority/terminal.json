@@ -1,0 +1,18 @@
+{
+  "candidateHead": "4460dbd8bf00d12720104c9c2d79448b68572173",
+  "matchedSwiftFiles": 52,
+  "proof-build": {
+    "exit": 0,
+    "seconds": 15.621
+  },
+  "auth-xctestrun": {
+    "exit": 0,
+    "seconds": 0.04
+  },
+  "authority-runtime": {
+    "exit": 0,
+    "seconds": 29.367
+  },
+  "passed": true,
+  "sourceHashesRestored": true
+}
