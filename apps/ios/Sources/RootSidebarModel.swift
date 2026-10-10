@@ -43,18 +43,22 @@ struct ChatSessionRosterSnapshot: Sendable {
         var offset = 0
         var pageCount = 0
 
+        func snapshot(isComplete: Bool = false) -> Self {
+            Self(
+                sessions: sessions,
+                isCached: false,
+                totalCount: totalCount,
+                isComplete: isComplete,
+                owners: owners,
+                involvingProfileID: involvingProfileID)
+        }
+
         while true {
             try Task.checkCancellation()
             // Match sessions.list's bounded scan so a changing Gateway snapshot
             // cannot keep a sidebar refresh alive forever.
             guard pageCount < Self.maximumPageCount, sessions.count < Self.maximumSessionCount else {
-                return Self(
-                    sessions: sessions,
-                    isCached: false,
-                    totalCount: totalCount,
-                    isComplete: false,
-                    owners: owners,
-                    involvingProfileID: involvingProfileID)
+                return snapshot()
             }
             pageCount += 1
             let response: OpenClawChatSessionsListResponse
@@ -64,13 +68,7 @@ struct ChatSessionRosterSnapshot: Sendable {
                 throw CancellationError()
             } catch {
                 guard !sessions.isEmpty else { throw error }
-                return Self(
-                    sessions: sessions,
-                    isCached: false,
-                    totalCount: totalCount,
-                    isComplete: false,
-                    owners: owners,
-                    involvingProfileID: involvingProfileID)
+                return snapshot()
             }
             try Task.checkCancellation()
 
@@ -84,13 +82,7 @@ struct ChatSessionRosterSnapshot: Sendable {
                     sessions[index] = session
                 } else {
                     guard sessions.count < Self.maximumSessionCount else {
-                        return Self(
-                            sessions: sessions,
-                            isCached: false,
-                            totalCount: totalCount,
-                            isComplete: false,
-                            owners: owners,
-                            involvingProfileID: involvingProfileID)
+                        return snapshot()
                     }
                     rowIndices[OpenClawChatSessionSidebarData.identity(session)] = sessions.count
                     sessions.append(session)
@@ -101,13 +93,7 @@ struct ChatSessionRosterSnapshot: Sendable {
             let hasMore = response.hasMore ?? totalCount.map { advancedOffset < $0 } ?? false
             guard hasMore else {
                 let isComplete = totalCount.map { sessions.count >= $0 } ?? true
-                return Self(
-                    sessions: sessions,
-                    isCached: false,
-                    totalCount: totalCount,
-                    isComplete: isComplete,
-                    owners: owners,
-                    involvingProfileID: involvingProfileID)
+                return snapshot(isComplete: isComplete)
             }
 
             let nextOffset = response.nextOffset ?? advancedOffset
@@ -115,13 +101,7 @@ struct ChatSessionRosterSnapshot: Sendable {
                   nextOffset > offset,
                   totalCount.map({ nextOffset < $0 }) ?? true
             else {
-                return Self(
-                    sessions: sessions,
-                    isCached: false,
-                    totalCount: totalCount,
-                    isComplete: false,
-                    owners: owners,
-                    involvingProfileID: involvingProfileID)
+                return snapshot()
             }
             offset = nextOffset
         }
