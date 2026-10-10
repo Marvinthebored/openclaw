@@ -111,10 +111,12 @@ final class SessionGroupModel {
     func mutate(
         appModel: NodeAppModel,
         request: OpenClawChatGatewayRequest,
+        connection capturedConnection: OpenClawSessionMenuConnection? = nil,
         catalogNames: (([String]) -> [String])? = nil,
         fallback: @escaping (OpenClawSessionMenuConnection) async throws -> Void) async
     {
-        guard let connection = self.connection, connection.isCurrent(), !self.submitting else {
+        // A row editor keeps its captured lease without replacing the sidebar's shared connection.
+        guard let connection = capturedConnection ?? self.connection, connection.isCurrent(), !self.submitting else {
             self.report(OpenClawChatTransportSendError.notDispatched)
             return
         }

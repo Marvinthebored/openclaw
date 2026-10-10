@@ -406,7 +406,8 @@ struct CommandSessionActionsModifier: ViewModifier {
             }
             self.actionButton("New Group…", systemImage: "folder.badge.plus") {
                 self.present(.newGroup)
-            }.disabled(self.connection?.allows("sessions.groups.put") != true)
+            }.disabled(self.appModel.sessionGroups.usesCatalog &&
+                !self.appModel.sessionGroups.allows("sessions.groups.put"))
             if self.session.category?.trimmedNonEmpty != nil {
                 self.actionButton("Remove from Group", systemImage: "folder.badge.minus") {
                     self.patch(category: .some(nil))

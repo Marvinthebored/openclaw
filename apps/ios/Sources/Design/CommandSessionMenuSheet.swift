@@ -141,16 +141,19 @@ struct CommandSessionMenuSheet: View {
         Task {
             defer { self.saving = false }
             do {
-                guard self.connection.allows("sessions.groups.put"),
-                      self.connection.allows(.group, session: self.session)
-                else {
+                guard self.connection.allows(.group, session: self.session) else {
                     throw OpenClawChatTransportSendError.notDispatched
                 }
-                let fresh: OpenClawChatSessionGroupsResponse = try await self.connection.read("sessions.groups.list")
-                let names = OpenClawChatSessionGroupCatalog.names(catalog: fresh.groups, local: [], sessions: [])
-                if !names.contains(value) {
-                    try await self.connection
-                        .request(OpenClawChatGatewayRequests.sessionGroupsPut(names: names + [value]))
+                let groups = self.appModel.sessionGroups
+                await groups.mutate(
+                    appModel: self.appModel,
+                    request: OpenClawChatGatewayRequests.sessionGroupsPut(names: []),
+                    connection: self.connection,
+                    catalogNames: { SessionGroupStore.adding($0, value) },
+                    fallback: { _ in SessionGroupStore.remember(value) })
+                if let failure = groups.failure {
+                    self.failure = failure
+                    return
                 }
                 try await self.connection.request(OpenClawChatGatewayRequests.sessionMenu(
                     "sessions.patch", session: self.session, fields: ["category": .init(value)]))
