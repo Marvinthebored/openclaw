@@ -48,7 +48,7 @@ struct RootSidebarCatalogs: View {
                 self.catalog(catalog)
             }
             if let error = self.data.errors[""] {
-                self.error(error)
+                self.catalogError(error)
             }
             if !self.data.catalogs.isEmpty || !self.data.hidden.isEmpty {
                 Button { self.visibilityPresented = true } label: {
@@ -110,7 +110,7 @@ struct RootSidebarCatalogs: View {
                     }
                 }
                 ForEach(ChatSidebarCatalogPresentation.errors(
-                    catalog.source, requestError: self.data.errors[catalog.id]), id: \.self) { self.error($0) }
+                    catalog.source, requestError: self.data.errors[catalog.id]), id: \.self) { self.catalogError($0) }
                 if self.data.loading.contains(catalog.id) {
                     ProgressView().padding(10)
                 } else if catalog.source.hosts.contains(where: { $0.nextcursor?.isEmpty == false }) {
@@ -200,7 +200,7 @@ struct RootSidebarCatalogs: View {
             fragment: "settings-session-sources"))
     }
 
-    private func error(_ message: String) -> some View {
+    private func catalogError(_ message: String) -> some View {
         VStack(alignment: .leading) {
             Text(verbatim: message).font(OpenClawType.captionMedium).foregroundStyle(OpenClawBrand.warn)
             Button { self.data.scheduleRefresh() } label: {
