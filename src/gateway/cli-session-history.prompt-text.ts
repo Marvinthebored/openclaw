@@ -51,7 +51,7 @@ function stripLeadingSystemEventLines(text: string): string {
   if (!hasEvent || (end < lines.length && lines[end] !== "")) {
     return text;
   }
-  return context + lines.slice(end).join("\n");
+  return context + lines.slice(end).join("\n").replace(/^\n+/u, "");
 }
 
 // Compare-only view of an imported prompt without the context OpenClaw added
