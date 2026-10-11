@@ -1,0 +1,9 @@
+{"case": "stable", "stage": "stable-relaunch", "rawFile": "stable/wire.jsonl", "rawLine": 233, "role": "operator", "method": "connect", "ok": true}
+{"case": "stable", "stage": "stable-relaunch", "rawFile": "stable/wire.jsonl", "rawLine": 260, "role": "operator", "method": "sessions.list", "ok": true}
+{"case": "stable", "stage": "open-saved-chat", "rawFile": "stable/wire.jsonl", "rawLine": 350, "role": "operator", "method": "chat.history", "sessionKey": "agent:worker:dashboard:upgrade-chat"}
+{"case": "main", "stage": "upgrade-launch", "rawFile": "main/wire.jsonl", "rawLine": 380, "role": "operator", "method": "connect", "ok": true}
+{"case": "main", "stage": "upgrade-launch", "rawFile": "main/wire.jsonl", "rawLine": 396, "role": "operator", "method": "sessions.list", "ok": true}
+{"case": "main", "stage": "open-saved-chat", "rawFile": "main/wire.jsonl", "rawLine": 477, "role": "operator", "method": "chat.history", "sessionKey": "agent:worker:dashboard:upgrade-chat"}
+{"case": "candidate", "stage": "upgrade-launch", "rawFile": "candidate/wire.jsonl", "rawLine": 387, "role": "operator", "method": "connect", "ok": true}
+{"case": "candidate", "stage": "upgrade-launch", "rawFile": "candidate/wire.jsonl", "rawLine": 398, "role": "operator", "method": "sessions.list", "ok": true}
+{"case": "candidate", "stage": "open-saved-chat", "rawFile": "candidate/wire.jsonl", "rawLine": 482, "role": "operator", "method": "chat.history", "sessionKey": "agent:worker:dashboard:upgrade-chat"}

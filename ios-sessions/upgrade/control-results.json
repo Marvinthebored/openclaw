@@ -1,0 +1,32 @@
+[
+  {
+    "case": "stable",
+    "selectedAgentBefore": "worker",
+    "selectedAgentAfter": "worker",
+    "pairingConnectsWithoutRepair": true,
+    "nodeInstanceIDPreserved": true,
+    "chatListContainsUpgradeChat": true,
+    "openedSessionKey": "agent:worker:dashboard:upgrade-chat",
+    "renderedHistoryMarker": "PROOF UPGRADE CHAT \u2014 synthetic saved data."
+  },
+  {
+    "case": "main",
+    "selectedAgentBefore": "worker",
+    "selectedAgentAfter": "worker",
+    "pairingConnectsWithoutRepair": true,
+    "nodeInstanceIDPreserved": true,
+    "chatListContainsUpgradeChat": true,
+    "openedSessionKey": "agent:worker:dashboard:upgrade-chat",
+    "renderedHistoryMarker": "PROOF UPGRADE CHAT \u2014 synthetic saved data."
+  },
+  {
+    "case": "candidate",
+    "selectedAgentBefore": "worker",
+    "selectedAgentAfter": "worker",
+    "pairingConnectsWithoutRepair": true,
+    "nodeInstanceIDPreserved": true,
+    "chatListContainsUpgradeChat": true,
+    "openedSessionKey": "agent:worker:dashboard:upgrade-chat",
+    "renderedHistoryMarker": "PROOF UPGRADE CHAT \u2014 synthetic saved data."
+  }
+]

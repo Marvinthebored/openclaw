@@ -1,0 +1,13 @@
+upgrade/native-controls1/results/stable-stable-relaunch.log:37: UPGRADE_OBSERVATION stage=stable-relaunch selectedAgent=Proof Worker
+upgrade/native-controls1/results/stable-stable-relaunch.log:95: Test Case '-[OpenClawUITests.FocusProof testStableRelaunch]' passed (11.649 seconds).
+upgrade/native-controls1/results/stable-stable-writer.log:191: Test Case '-[OpenClawUITests.FocusProof testStableWriter]' passed (39.941 seconds).
+upgrade/native-controls1/results/main-stable-relaunch.log:39: UPGRADE_OBSERVATION stage=stable-relaunch selectedAgent=Proof Worker
+upgrade/native-controls1/results/main-stable-relaunch.log:97: Test Case '-[OpenClawUITests.FocusProof testStableRelaunch]' passed (13.649 seconds).
+upgrade/native-controls1/results/main-stable-writer.log:190: Test Case '-[OpenClawUITests.FocusProof testStableWriter]' passed (52.333 seconds).
+upgrade/native-controls1/results/main-upgrade.log:37: UPGRADE_OBSERVATION stage=upgraded selectedAgent=Proof Worker
+upgrade/native-controls1/results/main-upgrade.log:95: Test Case '-[OpenClawUITests.FocusProof testUpgrade]' passed (12.213 seconds).
+upgrade/native-controls1/results/candidate-stable-relaunch.log:37: UPGRADE_OBSERVATION stage=stable-relaunch selectedAgent=Proof Worker
+upgrade/native-controls1/results/candidate-stable-relaunch.log:95: Test Case '-[OpenClawUITests.FocusProof testStableRelaunch]' passed (12.512 seconds).
+upgrade/native-controls1/results/candidate-stable-writer.log:193: Test Case '-[OpenClawUITests.FocusProof testStableWriter]' passed (48.473 seconds).
+upgrade/native-controls1/results/candidate-upgrade.log:37: UPGRADE_OBSERVATION stage=upgraded selectedAgent=Proof Worker
+upgrade/native-controls1/results/candidate-upgrade.log:95: Test Case '-[OpenClawUITests.FocusProof testUpgrade]' passed (12.483 seconds).
