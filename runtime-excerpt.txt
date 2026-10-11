@@ -1,0 +1,28 @@
+1791689268.154911 ms=57 sb=1 active=1 build=102455 scroll=0 last=stream age=1396 sbLive=26
+1791689268.931998 note apply prev=661 in=163 delta=false
+1791689268.940331 note applied ms=29 changed=false delta=false
+1791689269.784687 ms=45 sb=1 active=1 build=102455 scroll=0 last=stream age=799 sbLive=27
+1791689270.5881848 ms=68 sb=1 active=1 build=102455 scroll=0 last=stream age=1579 sbLive=27
+1791689270.545274 note n body=6 live=6
+1791689270.868077 ms=102 sb=1 active=1 build=102455 scroll=0 last=stream age=1825 sbLive=27
+1791689270.984065 ms=73 sb=1 active=1 build=102455 scroll=0 last=stream age=1970 sbLive=27
+1791689271.143114 ms=55 sb=1 active=1 build=102455 scroll=0 last=stream age=2148 sbLive=27
+1791689271.249662 ms=63 sb=1 active=1 build=102455 scroll=0 last=stream age=2246 sbLive=27
+1791689271.3540769 ms=67 sb=1 active=1 build=102455 scroll=0 last=stream age=2347 sbLive=27
+1791689271.461755 ms=59 sb=1 active=1 build=102455 scroll=0 last=stream age=2462 sbLive=27
+1791689273.6311789 ms=99 sb=1 active=1 build=102455 scroll=0 last=stream age=-17 sbLive=27
+1791689273.538282 note apply prev=665 in=165 delta=false
+1791689273.550088 note applied ms=31 changed=true delta=false
+1791689273.550868 note n body=19 live=19
+1791689274.3576689 ms=107 sb=1 active=1 build=102455 scroll=0 last=stream age=701 sbLive=27
+1791689274.4493961 ms=48 sb=1 active=1 build=102455 scroll=0 last=stream age=852 sbLive=27
+1791689275.6075048 ms=103 sb=1 active=1 build=102455 scroll=0 last=stream age=1955 sbLive=27
+1791689275.5131521 note n body=9 live=9
+1791689275.727927 ms=59 sb=1 active=1 build=102455 scroll=0 last=stream age=2120 sbLive=27
+1791689275.845158 ms=77 sb=1 active=1 build=102455 scroll=0 last=stream age=2218 sbLive=27
+1791689275.950985 ms=58 sb=1 active=1 build=102455 scroll=0 last=stream age=2344 sbLive=27
+1791689280.908675 ms=93 sb=1 active=1 build=102455 scroll=0 last=stream age=7266 sbLive=27
+1791689280.851842 note n body=12 live=12
+1791689281.01651 ms=58 sb=1 active=1 build=102455 scroll=0 last=stream age=7409 sbLive=27
+1791689281.111188 ms=51 sb=1 active=1 build=102455 scroll=0 last=stream age=7511 sbLive=27
+1791689281.2205281 ms=65 sb=1 active=1 build=102455 scroll=0 last=stream age=7606 sbLive=27
