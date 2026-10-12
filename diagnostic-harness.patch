@@ -1,0 +1,254 @@
+diff --git a/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift b/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
+index 40a2ac1a39dc..5fd4bdd9c269 100644
+--- a/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
++++ b/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
+@@ -546,6 +546,11 @@ private actor LocalFixtureChatStore {
+             self.duplicateReplayStarted = false
+             return OpenClawChatSendResponse(runId: runId, status: "pending")
+         }
++        if ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof") {
++            self.activeRunID = runId
++            Task { await self.performanceReplay(sessionKey: sessionKey, runId: runId) }
++            return OpenClawChatSendResponse(runId: runId, status: "started")
++        }
+         let trimmed = message.trimmingCharacters(in: .whitespacesAndNewlines)
+         let subject = trimmed.isEmpty ? "that request" : "\"\(trimmed)\""
+         if ScreenshotFixtureMode.holdsInitialChatRun,
+@@ -620,6 +625,31 @@ private actor LocalFixtureChatStore {
+         self.eventContinuation?.yield(event)
+     }
+ 
++    private func performanceReplay(sessionKey: String, runId: String) async {
++        try? await Task.sleep(for: .seconds(2))
++        let stamp = Date().timeIntervalSince1970 * 1000
++        NSLog("PERFPROOF token-only-begin")
++        for i in 1...12 {
++            NSLog("PERFPROOF input token-only index=\(i)")
++            self.emitDuplicateAgentEvent(runId: runId, seq: i, stream: "usage", timestamp: stamp + Double(i), data: ["outputTokens": i * 100])
++            try? await Task.sleep(for: .milliseconds(180))
++        }
++        NSLog("PERFPROOF token-only-end")
++        for i in 13...140 {
++            let text = String(repeating: "Synthetic paced response line.\n", count: i - 12)
++            NSLog("PERFPROOF input assistant index=\(i)")
++            self.emitDuplicateAgentEvent(runId: runId, seq: i, stream: "assistant", timestamp: stamp + Double(i), data: ["text": text])
++            try? await Task.sleep(for: .milliseconds(100))
++        }
++        let saved = Self.message(role: "assistant", text: String(repeating: "Synthetic paced response line.\n", count: 128), timestamp: stamp + 200, transcriptMessageID: "\(runId):assistant")
++        self.messages.append(saved)
++        self.eventContinuation?.yield(.sessionMessage(OpenClawSessionMessageEventPayload(
++            sessionKey: sessionKey, message: saved, messageId: saved.transcriptMessageID, messageSeq: nil)))
++        self.activeRunID = nil
++        NSLog("PERFPROOF input terminal")
++        self.eventContinuation?.yield(.chat(OpenClawChatEventPayload(runId: runId, sessionKey: sessionKey, state: "final", message: nil, errorMessage: nil)))
++    }
++
+     private var heldInitialRun = false
+     private var activeRunID: String?
+     private var eventContinuation: AsyncStream<OpenClawChatTransportEvent>.Continuation?
+@@ -850,6 +880,11 @@ private actor LocalFixtureChatStore {
+     }
+ 
+     private static func seedMessages(fixture: LocalChatFixture) -> [OpenClawChatMessage] {
++        if ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof") {
++            return (0..<60).map { index in
++                Self.message(role: index % 2 == 0 ? "user" : "assistant", text: "Synthetic history row \(index).", timestamp: Double(index), transcriptMessageID: "proof-history-\(index)")
++            }
++        }
+         let now = Date().timeIntervalSince1970 * 1000
+         if ProcessInfo.processInfo.arguments.contains("--openclaw-system-notices-fixture") {
+             return [
+diff --git a/apps/ios/UITests/OpenClawSnapshotUITests.swift b/apps/ios/UITests/OpenClawSnapshotUITests.swift
+index 60605420440d..d590bc6705fd 100644
+--- a/apps/ios/UITests/OpenClawSnapshotUITests.swift
++++ b/apps/ios/UITests/OpenClawSnapshotUITests.swift
+@@ -44,6 +44,35 @@ final class OpenClawSnapshotUITests: XCTestCase {
+         try super.tearDownWithError()
+     }
+ 
++
++    func testPerformanceReviewProof() async throws {
++        self.launchApp(for: Self.chatScreenshotTarget, additionalArguments: ["--openclaw-performance-proof"])
++        let app = try XCTUnwrap(self.app)
++        let input = self.chatMessageInput(in: app)
++        XCTAssertTrue(input.waitForExistence(timeout: 8))
++        input.tap(); input.typeText("Synthetic performance proof")
++        app.buttons["chat-send-message"].tap()
++        let transcript = app.scrollViews["chat-transcript"]
++        transcript.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.05)).tap()
++        self.attachScreenshot(named: "proof-run-start")
++        let output = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "Synthetic paced response line.")).firstMatch
++        XCTAssertTrue(output.waitForExistence(timeout: 12))
++        self.attachScreenshot(named: "proof-live-edge")
++        transcript.swipeDown(); transcript.swipeDown()
++        self.attachScreenshot(named: "proof-paused-reader")
++        let anchor = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Synthetic history row ")).allElementsBoundByIndex.first { $0.isHittable }
++        let pausedAnchor = try XCTUnwrap(anchor, "No synthetic history anchor visible after pausing")
++        let pausedY = pausedAnchor.frame.minY
++        try await Task.sleep(for: .seconds(2))
++        XCTAssertEqual(pausedAnchor.frame.minY, pausedY, accuracy: 2, "Paced growth moved the paused reader")
++        self.attachScreenshot(named: "proof-paused-reader-stable")
++        XCTAssertTrue(app.buttons["Stop response"].waitForNonExistence(timeout: 35))
++        self.attachScreenshot(named: "proof-completion-paused")
++        transcript.swipeUp(); transcript.swipeUp()
++        XCTAssertTrue(output.exists)
++        self.attachScreenshot(named: "proof-settled")
++    }
++
+     func testReleaseControlScreenshot() {
+         self.captureReleaseScreenshot(Self.controlScreenshotTarget)
+     }
+diff --git a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift
+index 4a1c8e4907df..63552e74dcf9 100644
+--- a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift
++++ b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift
+@@ -257,6 +257,7 @@ public struct OpenClawChatView: View {
+     }
+ 
+     public var body: some View {
++        let _ = NSLog("PERFPROOF body transcript")
+         ZStack {
+             if self.drawsBackground, self.style == .standard {
+                 OpenClawChatTheme.background
+@@ -266,6 +267,15 @@ public struct OpenClawChatView: View {
+             self.content
+         }
+         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
++        .task {
++            guard ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof") else { return }
++            try? await Task.sleep(for: .seconds(5))
++            for _ in 0..<3 {
++                NSLog("PERFPROOF input identical-history")
++                self.viewModel.replaceMessages(self.viewModel.messages)
++                try? await Task.sleep(for: .milliseconds(200))
++            }
++        }
+         .onAppear {
+             self.viewModel.refreshSourceContext()
+             self.viewModel.load()
+@@ -1556,6 +1566,7 @@ private struct ChatRunStatusContent<Content: View>: View {
+     @ViewBuilder var content: () -> Content
+ 
+     var body: some View {
++        let _ = NSLog("PERFPROOF body telemetry")
+         self.content()
+     }
+ }
+@@ -1566,6 +1577,7 @@ private struct ChatLiveAssistantText<Content: View>: View {
+     @ViewBuilder var content: (String) -> Content
+ 
+     var body: some View {
++        let _ = NSLog("PERFPROOF body live-text")
+         if let text = self.viewModel.liveAssistantDisplayText {
+             self.content(text)
+         }
+diff --git a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+StreamPacing.swift b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+StreamPacing.swift
+index 5d01ee131f4b..44d63ea0914d 100644
+--- a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+StreamPacing.swift
++++ b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+StreamPacing.swift
+@@ -16,6 +16,7 @@ extension OpenClawChatViewModel {
+             self.applyStreamingAssistantDisplay(text)
+             return
+         }
++        NSLog("PERFPROOF pacing pending characters=\(text.count)")
+         self.streamPacing.pending = text
+         guard self.streamPacing.scheduledID == nil else { return }
+         let scheduledID = UUID()
+@@ -33,6 +34,7 @@ extension OpenClawChatViewModel {
+         self.streamPacing.scheduledID = nil
+         guard let pending = self.streamPacing.pending else { return }
+         self.streamPacing.pending = nil
++        NSLog("PERFPROOF pacing flush characters=\(pending.count)")
+         self.applyStreamingAssistantDisplay(pending)
+     }
+ }
+diff --git a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+TranscriptCache.swift b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+TranscriptCache.swift
+index a09496215166..02b4b8afa04c 100644
+--- a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+TranscriptCache.swift
++++ b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+TranscriptCache.swift
+@@ -17,6 +17,7 @@ extension OpenClawChatViewModel {
+         // Do not publish a narration mutation for an unchanged history response.
+         var narration = self.narration
+         let reconciled = narration.reconcile(messages, settled: narrationSettled)
++        NSLog("PERFPROOF history unchanged=\(self.messages == reconciled.messages) narrationChanged=\(reconciled.changed)")
+         if reconciled.changed { self.narration = narration }
+         guard self.messages != reconciled.messages || reconciled.changed else { return }
+         self.messages = reconciled.messages
+@@ -24,11 +25,6 @@ extension OpenClawChatViewModel {
+         markTimelineChanged()
+     }
+ 
+-    /// Prefer the transcript's copy of a sentence over the live stream, regardless of arrival order.
+-    var liveAssistantText: String? {
+-        self.liveText(self.streamingAssistantText)
+-    }
+-
+     var liveAssistantDisplayText: String? {
+         self.liveText(self.displayedStreamingAssistantText)
+     }
+diff --git a/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatStreamReplayTests.swift b/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatStreamReplayTests.swift
+index 5985cbd1fb67..faa8818eb681 100644
+--- a/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatStreamReplayTests.swift
++++ b/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatStreamReplayTests.swift
+@@ -493,6 +493,10 @@ struct ChatStreamReplayTests {
+             let (text, expected) = entry
+             transport.emit(replayAssistantDeltaEvent(runId: runId, cumulativeText: text, seq: offset + 1))
+             await harness.converge("hosted stream applied") { $0.streamingAssistantText == text }
++            // Rendering assertions consume the paced display, not just authoritative input.
++            if let scheduledID = vm.streamPacing.scheduledID {
++                vm.flushStreamingAssistantDisplay(scheduledID: scheduledID)
++            }
+             expectRendered(expected)
+         }
+ 
+@@ -559,6 +563,9 @@ struct ChatStreamReplayTests {
+         #expect(Self.mathLabels(in: host).map(\.latex) == ["x = 1"])
+         harness.transport.emit(replayAssistantDeltaEvent(runId: runId, cumulativeText: "$$y = 2$$", seq: 5))
+         try await harness.converge("different live text received") { $0.streamingAssistantText == "$$y = 2$$" }
++        if let scheduledID = harness.vm.streamPacing.scheduledID {
++            harness.vm.flushStreamingAssistantDisplay(scheduledID: scheduledID)
++        }
+         host.layoutSubtreeIfNeeded()
+         #expect(Self.mathLabels(in: host).map(\.latex).sorted() == ["x = 1", "y = 2"])
+     }
+@@ -582,22 +589,22 @@ struct ChatStreamReplayTests {
+ 
+         // Prior turns and non-assistant rows must not suppress a new reply.
+         vm.replaceMessages([reply, user])
+-        #expect(vm.liveAssistantText == "**Ready**")
++        #expect(vm.liveText(vm.streamingAssistantText) == "**Ready**")
+         let tool = replayDurableMessage(role: "toolResult", text: "**Ready**", timestamp: 300)
+         vm.replaceMessages([user, tool])
+-        #expect(vm.liveAssistantText == "**Ready**")
++        #expect(vm.liveText(vm.streamingAssistantText) == "**Ready**")
+         vm.replaceMessages([user, reply, tool])
+-        #expect(vm.liveAssistantText == nil)
++        #expect(vm.liveText(vm.streamingAssistantText) == nil)
+         #expect(vm.streamingAssistantText == "**Ready**")
+ 
+         // Compare raw Markdown, not parsed visible words; dropping the matching row restores live text.
+         vm.updateStreamingAssistantText("Ready")
+-        #expect(vm.liveAssistantText == "Ready")
++        #expect(vm.liveText(vm.streamingAssistantText) == "Ready")
+         vm.updateStreamingAssistantText("**Ready**")
+         vm.replaceMessages([user])
+-        #expect(vm.liveAssistantText == "**Ready**")
++        #expect(vm.liveText(vm.streamingAssistantText) == "**Ready**")
+         vm.updateStreamingAssistantText(nil)
+-        #expect(vm.liveAssistantText == nil)
++        #expect(vm.liveText(vm.streamingAssistantText) == nil)
+     }
+ 
+     @Test @MainActor func `live text comparison preserves supported text types and block boundaries`() {
+@@ -615,9 +622,9 @@ struct ChatStreamReplayTests {
+             ], timestamp: nil)
+             vm.replaceMessages([message])
+             vm.updateStreamingAssistantText("ab")
+-            #expect(vm.liveAssistantText == "ab")
++            #expect(vm.liveText(vm.streamingAssistantText) == "ab")
+             vm.updateStreamingAssistantText("a\nb")
+-            #expect(vm.liveAssistantText == nil)
++            #expect(vm.liveText(vm.streamingAssistantText) == nil)
+         }
+     }
+ 
