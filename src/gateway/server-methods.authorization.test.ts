@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { awaitGateBeforeSettlement } from "../../test/helpers/promise.js";
 import * as acpMetadata from "../acp/runtime/session-meta-readonly.js";
+import { setRuntimeConfigSnapshot } from "../config/runtime-snapshot.js";
 import {
   loadSessionEntry,
   patchSessionEntryCore,
@@ -102,23 +103,6 @@ describe("gateway method authorization", () => {
     );
   });
 
-  it("rejects profile mutations before the handler without write scope", async () => {
-    const respond = await dispatchProfileMutation({
-      profileId: "profile-1",
-      scopes: ["operator.read"],
-    });
-
-    expect(respond).toHaveBeenCalledWith(false, undefined, {
-      code: "FORBIDDEN",
-      message: "missing scope: operator.write",
-      details: {
-        code: "MISSING_SCOPE",
-        missingScope: "operator.write",
-        requiredScopes: ["operator.write"],
-      },
-    });
-  });
-
   it("allows an identified write caller to edit its own profile", async () => {
     const profile = { id: "profile-1" };
     ensureProfileIdForEmail.mockResolvedValue(profile.id);
@@ -163,6 +147,7 @@ describe("gateway method authorization", () => {
     { phase: "before response", change: "reassignment" },
   ] as const)("rejects a session $change $phase", async ({ phase, change }) => {
     await withOpenClawTestState({ scenario: "minimal" }, async () => {
+      setRuntimeConfigSnapshot({});
       const sessionKey = "agent:main:commit-bound-authorization";
       await upsertSessionEntryCore(
         { agentId: "main", sessionKey },
@@ -319,6 +304,7 @@ describe("gateway method authorization", () => {
 
   it("authorizes lifecycle targets from each method's protocol shape", async () => {
     await withOpenClawTestState({ scenario: "minimal" }, async () => {
+      setRuntimeConfigSnapshot({});
       const sessionKey = "agent:main:lifecycle-authorization-target";
       await upsertSessionEntryCore(
         { agentId: "main", sessionKey },

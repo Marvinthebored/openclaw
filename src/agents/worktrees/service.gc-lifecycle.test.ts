@@ -7,6 +7,10 @@ import {
   withinTest,
 } from "../../../test/helpers/promise.js";
 import { useAutoCleanupTempDirTracker } from "../../../test/helpers/temp-dir.js";
+import {
+  clearRuntimeConfigSnapshot,
+  setRuntimeConfigSnapshot,
+} from "../../config/runtime-snapshot.js";
 import type { SessionEntry } from "../../config/sessions/types.js";
 import {
   isSessionLifecycleMutationActive,
@@ -22,7 +26,7 @@ import {
 } from "../../state/openclaw-state-db.js";
 import { requireGit } from "./git.js";
 import { createManagedWorktreeOwnerPolicy } from "./owner-protection.js";
-import { getRegistryWorktree } from "./registry.js";
+import { getRegistryWorktree } from "./registry.test-support.js";
 import * as removal from "./removal-git.js";
 import { acquireWorktreeRunLease } from "./run-lease.js";
 import { ManagedWorktreeService } from "./service.js";
@@ -43,12 +47,37 @@ vi.mock("../../config/sessions/session-accessor.js", () => ({
     entry: session.entry,
   }),
 }));
+// mock-isolation: Owner metadata stays synthetic while checkout claims and lifecycle admission stay real.
+vi.mock("../../config/sessions/session-accessor.entry.js", () => ({
+  resolveSessionEntryAccessTarget: ({ sessionKey }: { sessionKey: string }) => ({
+    agentId: "main",
+    canonicalKey: sessionKey,
+    entry: session.entry,
+  }),
+  readResolvedSessionEntriesInWorker: async ({ sessionKeys }: { sessionKeys: string[] }) =>
+    new Map(
+      sessionKeys.map((sessionKey) => [
+        sessionKey,
+        {
+          agentId: "main",
+          canonicalKey: sessionKey,
+          entry: session.entry,
+        },
+      ]),
+    ),
+}));
 // mock-isolation: This local checkout has no remote worker placements.
 vi.mock("../../gateway/session-worker-placement-context.js", () => ({
   resolveSessionWorkerPlacementContext: () => ({
     workerSessionPlacementService: {
       getMany: () => new Map(),
-      listForReconcile: () => [],
+      listAsync: async () => [],
+      prepareMaintenancePlacements: async () => ({
+        placements: [],
+        assertCurrent: () => {},
+        release: () => {},
+      }),
+      prepareSessionPlacement: async () => ({ current: () => undefined, release: () => {} }),
     },
   }),
 }));
@@ -59,6 +88,7 @@ const tempDirs = useAutoCleanupTempDirTracker((cleanup) => {
     session.entry = undefined;
     await closeOpenClawStateDatabaseAsync();
     closeOpenClawStateDatabaseForTest();
+    clearRuntimeConfigSnapshot();
     cleanup();
   });
 });
@@ -73,6 +103,8 @@ it("releases session mutation admission during Git while the registry claim fenc
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir };
   const sessionKey = "agent:main:archived-worktree";
   const storePath = path.join(root, "sessions.json");
+  const cfg = { session: { store: storePath } };
+  setRuntimeConfigSnapshot(cfg);
   const record = await materializeManagedWorktreeFixture({
     env,
     stateDir,
@@ -107,7 +139,7 @@ it("releases session mutation admission during Git while the registry claim fenc
     await publishRemoval.promise;
   });
   const cleanup = service.gc({
-    ...createManagedWorktreeOwnerPolicy({ session: { store: storePath } }),
+    ...createManagedWorktreeOwnerPolicy(cfg),
     signal,
   });
   void cleanup.catch(() => {});
@@ -181,6 +213,8 @@ it("refuses unarchive after an interrupted removal releases its process claim", 
   const env = { ...process.env, OPENCLAW_STATE_DIR: stateDir };
   const sessionKey = "agent:main:partial-worktree";
   const storePath = path.join(root, "sessions.json");
+  const cfg = { session: { store: storePath } };
+  setRuntimeConfigSnapshot(cfg);
   const record = await materializeManagedWorktreeFixture({
     env,
     stateDir,

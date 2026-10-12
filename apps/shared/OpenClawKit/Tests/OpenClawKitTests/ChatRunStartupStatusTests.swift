@@ -58,7 +58,10 @@ private struct StartupStatusTransport: OpenClawChatTransport {
     }
 
     func sendMessage(
-        sessionKey _: String, message _: String, thinking _: String, idempotencyKey: String,
+        sessionKey _: String,
+        message _: String,
+        thinking _: String,
+        idempotencyKey: String,
         attachments _: [OpenClawChatAttachmentPayload]) async throws -> OpenClawChatSendResponse
     {
         .init(runId: idempotencyKey, status: "started")
@@ -241,7 +244,10 @@ struct ChatRunStartupTransportTests {
     private func replay(_ json: String, text: String = "", model: OpenClawChatViewModel) throws {
         let events = try JSONDecoder().decode([OpenClawAgentEventPayload].self, from: Data(json.utf8))
         let payload = OpenClawChatHistoryPayload(
-            sessionKey: "main", sessionId: nil, messages: [], thinkingLevel: nil,
+            sessionKey: "main",
+            sessionId: nil,
+            messages: [],
+            thinkingLevel: nil,
             inFlightRun: .init(runId: "r", text: text, events: events))
         #expect(model.applyHistoryPayload(
             payload, for: model.beginHistoryRequest(), preservingOptimisticLocalMessages: true))
@@ -255,7 +261,28 @@ struct ChatRunStartupTransportTests {
             model: model)
         #expect(model.runStartupStatus == "Waiting for a response…")
         try self.replay(
-            #"[{"runId":"r","seq":5,"stream":"run_status","data":{"phase":"retrying","attempt":2,"maxAttempts":4}},{"runId":"r","seq":4,"stream":"assistant","data":{"text":"Earlier output"}}]"#,
+            #"""
+            [
+              {
+                "runId": "r",
+                "seq": 5,
+                "stream": "run_status",
+                "data": {
+                  "phase": "retrying",
+                  "attempt": 2,
+                  "maxAttempts": 4
+                }
+              },
+              {
+                "runId": "r",
+                "seq": 4,
+                "stream": "assistant",
+                "data": {
+                  "text": "Earlier output"
+                }
+              }
+            ]
+            """#,
             model: model)
         #expect(model.runStartupStatus == "Retrying… 2/4")
         try self.replay(
@@ -263,7 +290,19 @@ struct ChatRunStartupTransportTests {
             model: model)
         #expect(model.runStartupStatus == nil)
         try self.chat(
-            #"{"runId":"r","sessionKey":"main","state":"status","phase":"starting_model","seq":5,"retry":{"attempt":2,"maxAttempts":4}}"#,
+            #"""
+            {
+              "runId": "r",
+              "sessionKey": "main",
+              "state": "status",
+              "phase": "starting_model",
+              "seq": 5,
+              "retry": {
+                "attempt": 2,
+                "maxAttempts": 4
+              }
+            }
+            """#,
             model: model)
         #expect(model.runStartupStatus == nil)
     }
@@ -272,13 +311,26 @@ struct ChatRunStartupTransportTests {
         let model = self.model()
         defer { model.clearPendingRuns() }
         try self.chat(
-            #"{"runId":"r","sessionKey":"main","state":"status","phase":"starting_model","seq":10,"retry":{"attempt":2,"maxAttempts":4}}"#,
+            #"""
+            {
+              "runId": "r",
+              "sessionKey": "main",
+              "state": "status",
+              "phase": "starting_model",
+              "seq": 10,
+              "retry": {
+                "attempt": 2,
+                "maxAttempts": 4
+              }
+            }
+            """#,
             model: model)
         try self.replay("[]", text: "Old buffered text", model: model)
         #expect(model.runStartupStatus == "Retrying… 2/4")
         try self.replay(
             #"[{"runId":"r","seq":8,"stream":"assistant","data":{}}]"#,
-            text: "Old buffered text", model: model)
+            text: "Old buffered text",
+            model: model)
         #expect(model.runStartupStatus == "Retrying… 2/4")
         try self.replay(
             #"[{"runId":"r","seq":11,"stream":"assistant","data":{}}]"#,
@@ -294,12 +346,36 @@ struct ChatRunStartupTransportTests {
             #"{"runId":"r","sessionKey":"main","state":"status","phase":"starting_model","seq":3}"#,
             model: model)
         for json in [
-            #"{"runId":"r","seq":4,"stream":"item","data":{"kind":"tool","phase":"start","itemId":"hidden","title":"Hidden","suppressChannelProgress":true}}"#,
+            #"""
+            {
+              "runId": "r",
+              "seq": 4,
+              "stream": "item",
+              "data": {
+                "kind": "tool",
+                "phase": "start",
+                "itemId": "hidden",
+                "title": "Hidden",
+                "suppressChannelProgress": true
+              }
+            }
+            """#,
             #"{"runId":"r","seq":5,"stream":"item","data":{"kind":"tool"}}"#,
             #"{"runId":"r","seq":6,"stream":"plan","data":{"phase":"update","steps":["Do work"]}}"#,
             #"{"runId":"r","seq":7,"stream":"assistant","data":{"text":""}}"#,
             #"{"runId":"r","seq":8,"stream":"tool","data":{"phase":"start"}}"#,
-            #"{"runId":"r","seq":9,"stream":"item","data":{"kind":"preamble","phase":"update","progressText":"Growing preview"}}"#,
+            #"""
+            {
+              "runId": "r",
+              "seq": 9,
+              "stream": "item",
+              "data": {
+                "kind": "preamble",
+                "phase": "update",
+                "progressText": "Growing preview"
+              }
+            }
+            """#,
             #"{"runId":"r","seq":10,"stream":"lifecycle","data":{"phase":"start"}}"#,
         ] {
             try self.agent(json, model: model)
@@ -310,7 +386,19 @@ struct ChatRunStartupTransportTests {
             model: model)
         #expect(model.runStartupStatus == "Waiting for a response…")
         try self.agent(
-            #"{"runId":"r","seq":11,"stream":"item","data":{"kind":"tool","phase":"start","itemId":"visible","title":"Read file"}}"#,
+            #"""
+            {
+              "runId": "r",
+              "seq": 11,
+              "stream": "item",
+              "data": {
+                "kind": "tool",
+                "phase": "start",
+                "itemId": "visible",
+                "title": "Read file"
+              }
+            }
+            """#,
             model: model)
         #expect(model.runStartupStatus == nil)
     }
@@ -348,7 +436,19 @@ struct ChatRunStartupTransportTests {
         let model = self.model()
         defer { model.clearPendingRuns() }
         try self.chat(
-            #"{"runId":"r","sessionKey":"main","state":"status","phase":"starting_model","seq":10,"retry":{"attempt":2,"maxAttempts":4}}"#,
+            #"""
+            {
+              "runId": "r",
+              "sessionKey": "main",
+              "state": "status",
+              "phase": "starting_model",
+              "seq": 10,
+              "retry": {
+                "attempt": 2,
+                "maxAttempts": 4
+              }
+            }
+            """#,
             model: model)
         try self.agent(
             #"{"runId":"r","seq":11,"stream":"tool","data":{"phase":"result","name":"read","toolCallId":"unknown"}}"#,
@@ -359,7 +459,19 @@ struct ChatRunStartupTransportTests {
             model: model)
         #expect(model.runStartupStatus == nil)
         try self.chat(
-            #"{"runId":"r","sessionKey":"main","state":"status","phase":"starting_model","seq":13,"retry":{"attempt":3,"maxAttempts":4}}"#,
+            #"""
+            {
+              "runId": "r",
+              "sessionKey": "main",
+              "state": "status",
+              "phase": "starting_model",
+              "seq": 13,
+              "retry": {
+                "attempt": 3,
+                "maxAttempts": 4
+              }
+            }
+            """#,
             model: model)
         try self.agent(
             #"{"runId":"r","seq":14,"stream":"tool","data":{"phase":"result","name":"read","toolCallId":"known"}}"#,
