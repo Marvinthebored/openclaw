@@ -108,7 +108,9 @@ does not identify an agent. The SDK sends a stable opaque `subscriptionId` for
 each wire observer and includes it in resubscriptions and unsubscribe requests.
 For multiple IDs on one connection and session, full-stream interest takes
 precedence until its last owner releases; approvals remain enabled while any
-owner requests them. Omitting the ID retains the legacy single-observer behavior.
+owner requests them. Unsubscribing an observer resets the connection's text baseline;
+remaining observers receive a complete snapshot before append-only delivery resumes.
+Omitting the ID retains the legacy single-observer behavior.
 Older clients remain compatible with the updated Gateway; the updated SDK's
 ownership fields require an updated Gateway.
 
@@ -223,10 +225,14 @@ or protocol-version change.
   in event rows. The Control UI applies these rows locally to existing roster
   members, so their values match the list. An explicit model, account, or runtime
   selection can also mark the event with `catalogChanged: true`.
-  Visible Control UI panes refresh commands and the direct model catalog together, coalescing
-  ordinary `patch` and `command-metadata` events while refreshing marked selections
-  immediately. Compact `chat.metadata` responses omit model/account data, so the
-  direct catalog refresh also reconciles selection changes without the hint.
+  Full rows can include `sessionModelRevision`, which changes with saved model,
+  account, runtime, and lifecycle inputs, independently of title and activity.
+  Visible Control UI panes retain matching model catalogs and refresh changed
+  selections immediately. Missing revisions and explicit `catalogChanged` hints
+  still invalidate the catalog. Session events retain the agent's command list;
+  `chat.metadata.changed` invalidates commands unless `commandsChanged: false`.
+  Usage-only and model-only publications leave commands available without another
+  metadata RPC.
   Top-level lifecycle and capacity fields
   remain event receipts, including explicit clearing values. When a nested row
   omits an optional field, honor its top-level clearing tombstone; nested values

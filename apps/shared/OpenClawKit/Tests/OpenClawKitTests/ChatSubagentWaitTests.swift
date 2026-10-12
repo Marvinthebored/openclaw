@@ -41,6 +41,17 @@ struct ChatSubagentWaitTests {
         #expect(wait?.child == nil)
     }
 
+    @Test func `a helper waiting on its own descendants is still unfinished`() {
+        let parent = self.session("parent", helperRunning: true)
+        var child = self.session("child", helperRunning: true, parent: "parent")
+        child.status = "done"
+        let wait = ChatSubagentWait.resolve(session: parent, sessions: [parent, child], runActive: false)
+        #expect(wait?.child?.key == "child")
+        let other = self.session("other", running: true, parent: "parent")
+        #expect(ChatSubagentWait.resolve(
+            session: parent, sessions: [parent, child, other], runActive: false)?.child == nil)
+    }
+
     @Test func `no wait while the chat itself runs or when no helper runs`() {
         let waiting = self.session("parent", helperRunning: true)
         #expect(ChatSubagentWait.resolve(session: waiting, sessions: [waiting], runActive: true) == nil)

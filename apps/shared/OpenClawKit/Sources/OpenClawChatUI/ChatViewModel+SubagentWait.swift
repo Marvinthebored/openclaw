@@ -7,7 +7,7 @@ struct ChatSubagentWait: Equatable {
         let name: String
     }
 
-    /// Named only when exactly one helper is running, as in the Control UI.
+    /// Name a single known unfinished helper; the roster may still be partial.
     let child: Child?
 
     static func resolve(
@@ -19,7 +19,9 @@ struct ChatSubagentWait: Equatable {
               session.hasActiveSubagentRun == true, !Self.isRunning(session)
         else { return nil }
         let running = sessions.filter { row in
-            guard row.key != session.key, row.archived != true, Self.isRunning(row) else { return false }
+            guard row.key != session.key, row.archived != true,
+                  Self.isRunning(row) || row.hasActiveSubagentRun == true
+            else { return false }
             if let parent = row.parentSessionKey ?? row.spawnedBy { return parent == session.key }
             return session.childSessions?.contains(row.key) == true
         }
