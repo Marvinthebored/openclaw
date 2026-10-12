@@ -696,7 +696,7 @@ private actor LocalFixtureChatStore {
         if self.activeRunID == runId,
            let sessionKey = self.duplicateReplaySessionKey,
            !self.duplicateReplayStarted,
-           self.eventContinuation != nil
+           !self.eventContinuations.isEmpty
         {
             self.duplicateReplayStarted = true
             self.replayDuplicateReply(
