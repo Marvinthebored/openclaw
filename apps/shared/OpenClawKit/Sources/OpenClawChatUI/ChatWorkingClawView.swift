@@ -538,7 +538,7 @@ struct ChatWorkingStatusText: View {
             Text(duration)
                 .font(OpenClawChatTypography.captionSemiBold)
                 .monospacedDigit()
-            if self.status == nil, let tokensText = ChatTurnRecapText.tokens(self.outputTokens) {
+            if let tokensText = ChatTurnRecapText.tokens(self.outputTokens) {
                 Text("·")
                     .font(OpenClawChatTypography.caption)
                     .accessibilityHidden(true)

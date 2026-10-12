@@ -94,7 +94,21 @@ final class OpenClawSnapshotUITests: XCTestCase {
         let copies = app.staticTexts.matching(NSPredicate(
             format: "label CONTAINS %@", "The cobalt lighthouse is ready."))
         XCTAssertTrue(copies.firstMatch.waitForExistence(timeout: 5), "Fixture reply marker is missing")
+        let retry = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "Retrying… 2/3")).firstMatch
+        XCTAssertTrue(retry.waitForExistence(timeout: 5), "Fixture retry status is missing")
         self.attachScreenshot(named: "dup-filter-streaming")
+        // The indicator groups accessibility under its phase; inspect its actual pixels for telemetry.
+        let image = try XCTUnwrap(retry.screenshot().image.cgImage)
+        let recognition = VNRecognizeTextRequest()
+        recognition.recognitionLevel = .accurate
+        recognition.recognitionLanguages = ["en-US"]
+        try VNImageRequestHandler(cgImage: image, options: [:]).perform([recognition])
+        let text = (recognition.results ?? []).compactMap { $0.topCandidates(1).first?.string }
+            .joined(separator: " ").lowercased()
+        XCTAssertTrue(
+            text.contains("485 tokens"),
+            "RETRY_TOKENS_MISSING: retry hides cumulative output tokens: \(text)")
         XCTAssertEqual(copies.count, 1, "Saved and streaming reply render duplicate copies")
 
         let stop = app.buttons["Stop response"]

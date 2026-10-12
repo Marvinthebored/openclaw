@@ -648,6 +648,18 @@ private actor LocalFixtureChatStore {
                 "phase": "start", "name": "read", "toolCallId": "dup-filter-receipt",
                 "args": ["path": "dup-filter-inputs-received"],
             ])
+        self.emitDuplicateAgentEvent(
+            runId: runId,
+            seq: 3,
+            stream: "usage",
+            timestamp: timestamp + 4,
+            data: ["outputTokens": 485])
+        self.emitDuplicateAgentEvent(
+            runId: runId,
+            seq: 4,
+            stream: "run_status",
+            timestamp: timestamp + 5,
+            data: ["phase": "retrying", "attempt": 2, "maxAttempts": 3])
     }
 
     private func emitDuplicateAgentEvent(
