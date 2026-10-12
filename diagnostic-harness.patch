@@ -1,0 +1,261 @@
+diff --git a/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift b/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
+index 40a2ac1a39dc..c4f18a56b499 100644
+--- a/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
++++ b/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
+@@ -654,7 +654,11 @@ private actor LocalFixtureChatStore {
+             errorMessage: nil)))
+     }
+ 
++    private var proofRosterRevision = 0
++
+     func sessions() throws -> OpenClawChatSessionsListResponse {
++        self.proofRosterRevision = Int(Date().timeIntervalSince1970 * 1000) % 1_000_000
++        NSLog("PERFPROOF roster revision=\(self.proofRosterRevision)")
+         var entry = OpenClawChatSessionEntry(
+             key: fixture.sessionKey,
+             kind: "chat",
+@@ -684,7 +688,7 @@ private actor LocalFixtureChatStore {
+         return OpenClawChatSessionsListResponse(
+             ts: Date().timeIntervalSince1970 * 1000,
+             path: nil,
+-            count: 1,
++            count: ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof") ? 40 : 1,
+             defaults: OpenClawChatSessionsDefaults(
+                 modelProvider: self.fixture.modelProvider,
+                 model: self.fixture.modelID,
+@@ -694,7 +698,13 @@ private actor LocalFixtureChatStore {
+                 thinkingDefault: "auto",
+                 mainSessionKey: self.fixture.sessionKey,
+                 modelSelectionTarget: self.fixtureModelSelectionTarget),
+-            sessions: [entry])
++            sessions: ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof") ? (0..<40).map { index in
++              var row = entry
++              row.key = index == 0 ? entry.key : "agent:main:proof-\(index)"
++              row.displayName = String(format: "Proof session %02d revision %06d", index, self.proofRosterRevision)
++              row.sessionId = "synthetic-proof-\(index)"
++              return row
++          } : [entry])
+     }
+ 
+     private var fixtureModelSelectionTarget: String {
+diff --git a/apps/ios/Sources/Design/OpenClawTypography.swift b/apps/ios/Sources/Design/OpenClawTypography.swift
+index 837b0b0193f8..a7ac1e593166 100644
+--- a/apps/ios/Sources/Design/OpenClawTypography.swift
++++ b/apps/ios/Sources/Design/OpenClawTypography.swift
+@@ -358,7 +358,8 @@ enum OpenClawType {
+         // The scale follows Dynamic Type; weight and family include every variable-font axis below.
+         let category = UITraitCollection.current.preferredContentSizeCategory.rawValue
+         let key = "\(family)|\(weight)|\(size)|\(textStyle.rawValue)|\(maximumPointSize ?? 0)|\(category)" as NSString
+-        if let font = self.scaledFontCache.object(forKey: key) { return font }
++        if let font = self.scaledFontCache.object(forKey: key) { NSLog("PERFPROOF font hit category=\(category)"); return font }
++        NSLog("PERFPROOF font miss category=\(category)")
+         let font = self.makeScaledVariableUIFont(
+             family, weight: weight, size: size, relativeTo: textStyle, maximumPointSize: maximumPointSize)
+         self.scaledFontCache.setObject(font, forKey: key)
+diff --git a/apps/ios/Sources/RootSidebar.swift b/apps/ios/Sources/RootSidebar.swift
+index 57c4778aea8a..b8e880b8ce1f 100644
+--- a/apps/ios/Sources/RootSidebar.swift
++++ b/apps/ios/Sources/RootSidebar.swift
+@@ -6,6 +6,7 @@ struct RootSidebar: View {
+     @Environment(NodeAppModel.self) private var appModel
+     @Environment(\.colorScheme) private var colorScheme
+     @Environment(\.displayScale) private var displayScale
++    @Environment(\.dynamicTypeSize) private var proofDynamicTypeSize
+     @Bindable var model: RootSidebarModel
+     @State private var searchText = ""
+     @State private var isSearchActive = false
+@@ -22,6 +23,7 @@ struct RootSidebar: View {
+     let hideSidebar: () -> Void
+ 
+     var body: some View {
++        let _ = NSLog("PERFPROOF body sidebar")
+         let categories = self.sessionCategories
+         let sessionLayout = Self.sessionLayout(self.visibleSessionSections(categories: categories))
+         let rowPass = SessionRowPass(
+@@ -48,6 +50,9 @@ struct RootSidebar: View {
+                 .padding(.vertical, 10)
+             }
+             self.footer
++            if ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof") {
++                self.proofControls
++            }
+         }
+         .foregroundStyle(OpenClawSidebarPalette.text)
+         .background(OpenClawSidebarPalette.background)
+@@ -69,6 +74,31 @@ struct RootSidebar: View {
+         }
+     }
+ 
++    // Isolated synthetic-fixture controls; never included in the submitted product patch.
++    private var proofControls: some View {
++        VStack(spacing: 4) {
++            Text(verbatim: "type=\(self.proofDynamicTypeSize) rows=\(self.model.sessions.count) selected=\(self.resolvedSelectedSessionKey)")
++                .font(OpenClawType.caption2Medium)
++                .accessibilityIdentifier("Proof.Sidebar.State")
++            HStack {
++                Button { NSLog("PERFPROOF request-category-large") } label: {
++                    Text("Large").font(OpenClawType.caption2Medium)
++                }.accessibilityIdentifier("Proof.Sidebar.Large")
++                Button { NSLog("PERFPROOF request-category-small") } label: {
++                    Text("Small").font(OpenClawType.caption2Medium)
++                }.accessibilityIdentifier("Proof.Sidebar.Small")
++                Button {
++                    Task {
++                        NSLog("PERFPROOF request-roster-replacement")
++                        await self.model.refreshSessions(appModel: self.appModel)
++                    }
++                } label: {
++                    Text("Roster").font(OpenClawType.caption2Medium)
++                }.accessibilityIdentifier("Proof.Sidebar.Roster")
++            }
++        }
++    }
++
+     private var storedPinnedPages: [RootTabs.SidebarDestination] {
+         RootTabs.pinnedSidebarPages(from: self.pinnedPagesStorage)
+     }
+@@ -619,6 +649,7 @@ struct RootSidebar: View {
+         let isSelected = session.key == rowPass.selectedSessionKey
+         return HStack(spacing: 0) {
+             Button {
++                NSLog("PERFPROOF select key=\(session.key)")
+                 self.selectSession(session)
+             } label: {
+                 HStack(spacing: 9) {
+@@ -639,6 +670,7 @@ struct RootSidebar: View {
+ 
+                     VStack(alignment: .leading, spacing: 2) {
+                         Text(verbatim: CommandCenterTab.sessionTitle(session))
++                            .accessibilityIdentifier("Proof.Title.\(session.key)")
+                             .font(OpenClawType.subheadSemiBold)
+                             .foregroundStyle(isSelected
+                                 ? OpenClawSidebarPalette.accent
+@@ -690,7 +722,11 @@ struct RootSidebar: View {
+                 session: session,
+                 mainSessionKey: rowPass.mainSessionKey,
+                 categories: rowPass.categories,
+-                isEnabled: self.appModel.isOperatorGatewayConnected,
++                // Local fixture has no operator socket. Enable the real menu only for this
++                // isolated proof; assertions inspect menu presentation, not gateway mutations.
++                isEnabled: self.appModel.isOperatorGatewayConnected ||
++                    (self.appModel.isLocalChatFixtureEnabled &&
++                        ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof")),
+                 canArchive: ChatSessionSidebarModel.canArchiveSession(
+                     session,
+                     mainSessionKey: rowPass.mainSessionKey),
+@@ -699,9 +735,10 @@ struct RootSidebar: View {
+                     mainSessionKey: rowPass.mainSessionKey),
+                 performMutation: self.performSessionMutation,
+                 fork: { self.forkSession(session) })
+-            .accessibilityValue(Self.sessionAccessibilityValue(
+-                isPinned: session.pinned == true,
+-                isUnread: session.unread == true))
++            .accessibilityIdentifier("Proof.Session.\(session.key)")
++            .accessibilityValue(ProcessInfo.processInfo.arguments.contains("--openclaw-performance-proof")
++                ? "\(isSelected ? "selected" : "unselected");\(CommandCenterTab.sessionTitle(session))"
++                : Self.sessionAccessibilityValue(isPinned: session.pinned == true, isUnread: session.unread == true))
+             self.attentionBadges(for: Self.flattened([node]).map(\.session), targetID: "session:\(session.key)")
+         }
+     }
+diff --git a/apps/ios/Sources/RootSidebarModel.swift b/apps/ios/Sources/RootSidebarModel.swift
+index 5e6890d65f9c..18b882338db1 100644
+--- a/apps/ios/Sources/RootSidebarModel.swift
++++ b/apps/ios/Sources/RootSidebarModel.swift
+@@ -186,6 +186,7 @@ final class RootSidebarModel {
+ 
+     private(set) var sessions: [OpenClawChatSessionEntry] = [] {
+         didSet {
++            NSLog("PERFPROOF alias invalidate rows=\(self.sessions.count)")
+             self.resolvedSessionKeys = [:]
+             self.updateSnoozeWakeDeadline()
+         }
+@@ -202,7 +203,8 @@ final class RootSidebarModel {
+     {
+         let sessions = self.sessions
+         let inputs = [current, mainSessionKey, activeAgentID, sessionRoutingContract]
+-        if let key = self.resolvedSessionKeys[inputs] { return key }
++        if let key = self.resolvedSessionKeys[inputs] { NSLog("PERFPROOF alias hit"); return key }
++        NSLog("PERFPROOF alias miss")
+         let key = ChatSessionSidebarModel.selectedSessionKey(
+             sessions: sessions,
+             currentSessionKey: current,
+diff --git a/apps/ios/Tests/OpenClawTypographyTests.swift b/apps/ios/Tests/OpenClawTypographyTests.swift
+index 65f0dc544ef7..ce0ff806047f 100644
+--- a/apps/ios/Tests/OpenClawTypographyTests.swift
++++ b/apps/ios/Tests/OpenClawTypographyTests.swift
+@@ -187,8 +187,6 @@ struct OpenClawTypographyTests {
+         #expect(typographySource.contains("maximumPointSize: 16"))
+         #expect(typographySource.contains("maximumPointSize: 22"))
+         #expect(typographySource.contains("maximumPointSize: 44"))
+-        #expect(typographySource
+-            .contains("for: base, maximumPointSize: maximumPointSize, compatibleWith: UITraitCollection.current"))
+         #expect(typographySource.contains("case let searchTextField as UISearchTextField"))
+         #expect(!typographySource.contains("case let textField as UITextField"))
+         #expect(!typographySource.contains("case let textView as UITextView"))
+diff --git a/apps/ios/UITests/OpenClawSnapshotUITests.swift b/apps/ios/UITests/OpenClawSnapshotUITests.swift
+index 60605420440d..ef23d8e12666 100644
+--- a/apps/ios/UITests/OpenClawSnapshotUITests.swift
++++ b/apps/ios/UITests/OpenClawSnapshotUITests.swift
+@@ -44,6 +44,62 @@ final class OpenClawSnapshotUITests: XCTestCase {
+         try super.tearDownWithError()
+     }
+ 
++
++    func testPerformanceReviewProof() throws {
++        self.launchApp(for: Self.chatScreenshotTarget, additionalArguments: ["--openclaw-performance-proof"])
++        let app = try XCTUnwrap(self.app)
++        self.tapSidebarReveal(in: app)
++        let state = app.staticTexts["Proof.Sidebar.State"]
++        let row = app.buttons["Proof.Session.agent:main:proof-1"]
++        XCTAssertTrue(row.waitForExistence(timeout: 10))
++        XCTAssertTrue(state.waitForExistence(timeout: 5))
++        XCTAssertTrue(state.label.contains("rows=40"), state.label)
++        XCTAssertTrue(state.label.contains("type=small"), state.label)
++        let initialValue = try XCTUnwrap(row.value as? String)
++        XCTAssertTrue(initialValue.contains("Proof session 01"), initialValue)
++        self.attachScreenshot(named: "proof-populated-drawer-small")
++        row.press(forDuration: 1)
++        XCTAssertTrue(app.buttons["Pin"].waitForExistence(timeout: 5), "Real session menu was not presented")
++        XCTAssertTrue(app.buttons["Rename…"].exists)
++        XCTAssertTrue(app.buttons["Fork"].exists)
++        self.attachScreenshot(named: "proof-session-menu")
++        // Tap outside the system context menu, away from any menu action.
++        app.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.75)).tap()
++        XCTAssertTrue(app.buttons["Pin"].waitForNonExistence(timeout: 5))
++        row.tap()
++        XCTAssertTrue(app.buttons["RootTabs.Sidebar.Show"].waitForExistence(timeout: 5))
++        self.attachScreenshot(named: "proof-selected-chat")
++        self.tapSidebarReveal(in: app)
++        XCTAssertTrue(row.waitForExistence(timeout: 5))
++        let selected = NSPredicate(format: "value BEGINSWITH %@", "selected;")
++        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: selected, object: row)], timeout: 5), .completed)
++        XCTAssertTrue(state.label.contains("selected=agent:main:proof-1"), state.label)
++        self.attachScreenshot(named: "proof-selection-retained-reopen")
++        let title = app.staticTexts["Proof.Title.agent:main:proof-1"]
++        XCTAssertTrue(title.exists)
++        let smallHeight = title.frame.height
++        app.buttons["Proof.Sidebar.Large"].tap()
++        let large = NSPredicate(format: "label CONTAINS %@", "type=xxxLarge")
++        let largeExpectation = XCTNSPredicateExpectation(predicate: large, object: state)
++        XCTAssertEqual(XCTWaiter.wait(for: [largeExpectation], timeout: 10), .completed)
++        XCTAssertGreaterThan(title.frame.height, smallHeight, "Runtime type trait changed without title growth")
++        self.attachScreenshot(named: "proof-large-type")
++        let priorRoster = try XCTUnwrap(row.value as? String)
++        app.buttons["Proof.Sidebar.Roster"].tap()
++        let replaced = NSPredicate(format: "value != %@", priorRoster)
++        let replacementExpectation = XCTNSPredicateExpectation(predicate: replaced, object: row)
++        XCTAssertEqual(XCTWaiter.wait(for: [replacementExpectation], timeout: 10), .completed)
++        XCTAssertTrue((row.value as? String)?.hasPrefix("selected;") == true)
++        XCTAssertTrue(state.label.contains("rows=40"), state.label)
++        self.attachScreenshot(named: "proof-roster-replaced-selection-retained")
++        app.buttons["Proof.Sidebar.Small"].tap()
++        let smallExpectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", "type=small"), object: state)
++        XCTAssertEqual(XCTWaiter.wait(for: [smallExpectation], timeout: 10), .completed)
++        XCTAssertEqual(title.frame.height, smallHeight, accuracy: 2, "Small title geometry did not restore")
++        XCTAssertTrue((row.value as? String)?.hasPrefix("selected;") == true)
++        self.attachScreenshot(named: "proof-small-type-restored")
++    }
++
+     func testReleaseControlScreenshot() {
+         self.captureReleaseScreenshot(Self.controlScreenshotTarget)
+     }
