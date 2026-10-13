@@ -80,10 +80,6 @@ type InternalReadOptions = {
   ) => boolean | Promise<boolean>;
 };
 
-function listResolvedIncludePaths(includeFilePathsForWatch: ReadonlySet<string>): string[] {
-  return [...includeFilePathsForWatch].toSorted();
-}
-
 export async function readConfigFileSnapshotInternal(
   context: ConfigIoContext,
   options: InternalReadOptions = {},
@@ -140,7 +136,7 @@ async function readConfigSnapshotWithPreparation(
     }
     return createConfigFileSnapshot({
       path: configPath,
-      includedPaths: listResolvedIncludePaths(includeFilePathsForWatch),
+      includedPaths: [...includeFilePathsForWatch].toSorted(),
       exists: true,
       raw: fallbackRaw,
       parsed: fallbackParsed,
@@ -300,7 +296,7 @@ async function readConfigSnapshotWithPreparation(
           : options.prepareValidation
             ? prepareConfigSnapshotValidation(validationRequest)
             : withSynchronousArtifactPreservingStateSnapshot(() => {
-                const pending = context.resolveDeferredPluginMigrations();
+                const pending = context.options.deferredPluginMigrations;
                 return {
                   deferredPluginMigrations: pending,
                   validated: validateConfigObjectWithPlugins(effectiveConfigRaw, {
@@ -316,7 +312,7 @@ async function readConfigSnapshotWithPreparation(
     );
     const snapshotSource = () => ({
       path: configPath,
-      includedPaths: listResolvedIncludePaths(includeFilePathsForWatch),
+      includedPaths: [...includeFilePathsForWatch].toSorted(),
       exists: true,
       raw,
       parsed: effectiveParsed,

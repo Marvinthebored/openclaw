@@ -139,7 +139,7 @@ struct MacGatewayChatTransportMappingTests {
         try await self.withSessionTransport(capabilities: ["progress-card-agent-scope-v1"]) { base, recorder in
             let transport = MacGatewayChatTransport(connection: base.connection, outboxGatewayID: "fixture")
             try await transport.clearProgressCard(sessionKey: "global", agentID: "agent-a", expectedRevision: 3)
-            try await transport.refreshProgressCard(
+            _ = try await transport.refreshProgressCard(
                 sessionKey: "agent:agent-a:main", agentID: "agent-a", idempotencyKey: "refresh-1")
             let frames = try await recorder.snapshot().map {
                 try #require(JSONSerialization.jsonObject(with: $0) as? [String: Any])
@@ -162,7 +162,7 @@ struct MacGatewayChatTransportMappingTests {
                     sessionKey: "agent:main:main", agentID: "main", expectedRevision: 3)
             }
             await #expect(throws: OpenClawChatTransportSendError.notDispatched) {
-                try await retired.refreshProgressCard(
+                _ = try await retired.refreshProgressCard(
                     sessionKey: "agent:main:main", agentID: "main", idempotencyKey: "refresh-2")
             }
             await #expect(throws: OpenClawChatTransportSendError.notDispatched) {
@@ -216,6 +216,7 @@ struct MacGatewayChatTransportMappingTests {
                         #""agentRuntime":{"id":"pi","source":"agent"}},"sessions":[]}"#
                 case "sessions.search": #"{"results":[],"sessions":[]}"#
                 case "chat.send": #"{"runId":"native-send","status":"ok"}"#
+                case "progressCard.refresh": #"{"runId":"fixture-refresh","status":"accepted","revision":3}"#
                 default: #"{"ok":true}"#
                 }
                 socket.emitReceiveSuccess(.data(Data(

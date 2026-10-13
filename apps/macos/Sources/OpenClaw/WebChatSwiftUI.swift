@@ -218,12 +218,17 @@ struct MacGatewayChatTransport: OpenClawChatGatewayTransport {
             expectedRevision: expectedRevision))
     }
 
-    func refreshProgressCard(sessionKey: String, agentID: String?, idempotencyKey: String) async throws {
+    func refreshProgressCard(
+        sessionKey: String,
+        agentID: String?,
+        idempotencyKey: String) async throws -> OpenClawChatProgressCardRefreshResult
+    {
         let target = self.sessionTarget(for: sessionKey, overrideAgentID: agentID)
-        _ = try await self.progressCardRequest(OpenClawChatGatewayRequests.progressCardRefresh(
+        let data = try await self.progressCardRequest(OpenClawChatGatewayRequests.progressCardRefresh(
             sessionKey: target.sessionKey,
             agentID: target.agentID,
             idempotencyKey: idempotencyKey))
+        return try OpenClawChatGatewayPayloadCodec.decodeProgressCardRefresh(data)
     }
 
     private func progressCardRequest(_ request: OpenClawChatGatewayRequest) async throws -> Data {

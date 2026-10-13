@@ -18,14 +18,23 @@ private final class ProgressCardActionTestTransport: @unchecked Sendable, OpenCl
     private var clearsStorage: [ClearCall] = []
     private var refreshKeysStorage: [String] = []
     private let refreshSignals = AsyncStream<Void>.makeStream()
+    private let acceptanceSignals = AsyncStream<Void>.makeStream()
+    private var refreshBaselines: [String: Int] = [:]
+    private let holdsAcceptance: Bool
     private var refreshErrorStorage: Error?
     private let advertisesRefresh: Bool
     private let clearFails: Bool
 
-    init(card: ProgressCard, advertisesRefresh: Bool = true, clearFails: Bool = false) {
+    init(
+        card: ProgressCard,
+        advertisesRefresh: Bool = true,
+        clearFails: Bool = false,
+        holdsAcceptance: Bool = false)
+    {
         self.cardStorage = card
         self.advertisesRefresh = advertisesRefresh
         self.clearFails = clearFails
+        self.holdsAcceptance = holdsAcceptance
     }
 
     var clears: [ClearCall] {
@@ -41,7 +50,9 @@ private final class ProgressCardActionTestTransport: @unchecked Sendable, OpenCl
         var error: Error?
         if fails, terminal {
             error = GatewayResponseError(
-                method: "progressCard.refresh", code: "UNAVAILABLE", message: "refresh ended",
+                method: "progressCard.refresh",
+                code: "UNAVAILABLE",
+                message: "refresh ended",
                 details: ["code": AnyCodable("PROGRESS_CARD_REFRESH_TERMINAL")])
         } else if fails {
             error = NSError(domain: "ProgressCardActionTestTransport", code: 2)
@@ -56,6 +67,10 @@ private final class ProgressCardActionTestTransport: @unchecked Sendable, OpenCl
         for await _ in self.refreshSignals.stream where self.refreshKeys.count >= count {
             return
         }
+    }
+
+    func releaseAcceptance() {
+        self.acceptanceSignals.continuation.yield()
     }
 
     func setCard(_ card: ProgressCard?) {
@@ -105,19 +120,32 @@ private final class ProgressCardActionTestTransport: @unchecked Sendable, OpenCl
                 sessionKey: sessionKey,
                 agentID: agentID,
                 expectedRevision: expectedRevision))
-            if !self.clearFails { self.cardStorage = nil }
+            if !self.clearFails, self.cardStorage?.revision == expectedRevision { self.cardStorage = nil }
             return self.clearFails
         }
         if failed { throw NSError(domain: "ProgressCardActionTestTransport", code: 2) }
     }
 
-    func refreshProgressCard(sessionKey _: String, agentID _: String?, idempotencyKey: String) async throws {
-        let error = self.lock.withLock {
+    func refreshProgressCard(
+        sessionKey _: String,
+        agentID _: String?,
+        idempotencyKey: String) async throws -> OpenClawChatProgressCardRefreshResult
+    {
+        let (error, baseline) = self.lock.withLock {
             self.refreshKeysStorage.append(idempotencyKey)
-            return self.refreshErrorStorage
+            let baseline = self.refreshBaselines[idempotencyKey] ?? self.cardStorage?.revision ?? 1
+            self.refreshBaselines[idempotencyKey] = baseline
+            return (self.refreshErrorStorage, baseline)
         }
         self.refreshSignals.continuation.yield()
         if let error { throw error }
+        if self.holdsAcceptance {
+            for await _ in self.acceptanceSignals.stream {
+                break
+            }
+        }
+        return try OpenClawChatGatewayPayloadCodec.decodeProgressCardRefresh(Data(
+            "{\"runId\":\"fixture-refresh\",\"status\":\"accepted\",\"revision\":\(baseline)}".utf8))
     }
 }
 
@@ -221,6 +249,77 @@ struct ChatViewModelProgressCardActionTests {
         await transport.refreshes(atLeast: 2)
         #expect(Set(transport.refreshKeys).count == 2)
         vm.progressCardRefreshTask?.cancel()
+    }
+
+    @Test func `a preexisting saved revision cannot settle the accepted refresh baseline`() async throws {
+        let transport = ProgressCardActionTestTransport(card: progressCard(revision: 7))
+        let vm = try await loadedViewModel(transport)
+        defer { vm.clearProgressCard() }
+        // Another viewer wrote8 before this request; its event never reached displayed7.
+        transport.setCard(progressCard(revision: 8))
+        vm.requestProgressCardRefresh()
+        await transport.refreshes(atLeast: 1)
+        await vm.handleTransportEvent(.progressCardChanged(ProgressCardChangedEvent(
+            sessionkey: "agent:main:main", revision: AnyCodable(8))))?.value
+        #expect(vm.progressCard?.revision == 8)
+        #expect(vm.progressCardRefreshPending)
+        #expect(transport.refreshKeys.count == 1)
+        transport.setCard(progressCard(revision: 9))
+        await vm.handleTransportEvent(.progressCardChanged(ProgressCardChangedEvent(
+            sessionkey: "agent:main:main", revision: AnyCodable(9))))?.value
+        await waitForObservedState { !vm.progressCardRefreshPending }
+        #expect(vm.progressCard?.revision == 9)
+    }
+
+    @Test func `a newer card read before acceptance settles only after the receipt`() async throws {
+        let transport = ProgressCardActionTestTransport(card: progressCard(revision: 7), holdsAcceptance: true)
+        let vm = try await loadedViewModel(transport)
+        defer { vm.clearProgressCard()
+            transport.releaseAcceptance()
+        }
+        vm.requestProgressCardRefresh()
+        await transport.refreshes(atLeast: 1)
+        transport.setCard(progressCard(revision: 8))
+        await vm.handleTransportEvent(.progressCardChanged(ProgressCardChangedEvent(
+            sessionkey: "agent:main:main", revision: AnyCodable(8))))?.value
+        #expect(vm.progressCard?.revision == 8)
+        #expect(vm.progressCardRefreshPending)
+        transport.releaseAcceptance()
+        await waitForObservedState { !vm.progressCardRefreshPending }
+        #expect(transport.refreshKeys.count == 1)
+    }
+
+    @Test func `a stale clear leaves the newer saved card visible`() async throws {
+        let transport = ProgressCardActionTestTransport(card: progressCard(revision: 7))
+        let vm = try await loadedViewModel(transport)
+        transport.setCard(progressCard(revision: 8))
+        vm.clearSavedProgressCard()
+        await waitForObservedState { vm.progressCard?.revision == 8 }
+        #expect(transport.clears == [.init(sessionKey: "agent:main:main", agentID: "main", expectedRevision: 7)])
+    }
+
+    @Test func `retiring the presentation cancels its refresh owner`() async throws {
+        let transport = ProgressCardActionTestTransport(card: progressCard(revision: 7), holdsAcceptance: true)
+        let vm = try await loadedViewModel(transport)
+        vm.requestProgressCardRefresh()
+        await transport.refreshes(atLeast: 1)
+        let task = try #require(vm.progressCardRefreshTask)
+        vm.detachTransport()
+        transport.releaseAcceptance()
+        await task.value
+        #expect(!vm.progressCardRefreshPending)
+        #expect(vm.progressCardRefreshIntent == nil)
+    }
+
+    @Test(arguments: [
+        "{\"runId\":\"r\",\"status\":\"queued\",\"revision\":8}",
+        "{\"runId\":\"\",\"status\":\"accepted\",\"revision\":8}",
+        "{\"runId\":\"r\",\"status\":\"accepted\",\"revision\":0}",
+    ])
+    func `malformed refresh receipts are rejected`(_ json: String) {
+        #expect(throws: Error.self) {
+            try OpenClawChatGatewayPayloadCodec.decodeProgressCardRefresh(Data(json.utf8))
+        }
     }
 
     @Test(arguments: [false, true])

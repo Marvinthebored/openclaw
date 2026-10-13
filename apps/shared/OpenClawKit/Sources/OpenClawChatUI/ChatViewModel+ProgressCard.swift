@@ -3,6 +3,12 @@ import OpenClawKit
 import OpenClawProtocol
 
 extension OpenClawChatViewModel {
+    private struct ProgressCardRequest {
+        let session: SessionSnapshot
+        let id: UInt64
+        let generation: UInt64
+    }
+
     @discardableResult
     func handleProgressCardChanged(_ event: ProgressCardChangedEvent) -> Task<Void, Never>? {
         let session = self.currentSessionSnapshot()
@@ -29,27 +35,22 @@ extension OpenClawChatViewModel {
         let session = session ?? self.currentSessionSnapshot()
         guard self.isCurrentSession(session) else { return nil }
         self.lastIssuedProgressCardRequestID &+= 1
-        let requestID = self.lastIssuedProgressCardRequestID
-        let generation = self.progressCardGeneration
+        let request = ProgressCardRequest(
+            session: session,
+            id: self.lastIssuedProgressCardRequestID,
+            generation: self.progressCardGeneration)
         return Task { [weak self] in
             guard let self else { return }
             let storeAvailable = await self.transport.gatewayAdvertisesMethod("progressCard.get")
             let refreshAvailable = await self.transport.gatewayAdvertisesMethod("progressCard.refresh")
-            guard self.isCurrentProgressCardRequest(
-                session: session,
-                generation: generation,
-                requestID: requestID)
-            else { return }
+            guard self.isCurrentProgressCardRequest(request) else { return }
             self.progressCardStoreAvailable = storeAvailable
             self.progressCardRefreshAvailable = refreshAvailable == true
             // Gateways without the durable store reject the fetch outright
             // (2026.7.x: "missing scope: operator.admin"); the legacy
             // stream:"plan" fallback owns the card there.
             guard storeAvailable != false else { return }
-            await self.fetchProgressCard(
-                for: session,
-                generation: generation,
-                requestID: requestID)
+            await self.fetchProgressCard(request)
         }
     }
 
@@ -109,18 +110,28 @@ extension OpenClawChatViewModel {
         self.progressCardRefreshPending = true
         // A refresh whose answer never came may still be running. Until a new card settles it, a retry
         // repeats the same key so the Gateway does not start the work twice. The web client does the same.
-        let retry = self.progressCardRefreshKey != nil
-        let key = self.progressCardRefreshKey ?? UUID().uuidString
-        self.progressCardRefreshKey = key
+        let retry = self.progressCardRefreshIntent != nil
+        var intent = self.progressCardRefreshIntent ?? (
+            key: UUID().uuidString, baseline: self.progressCard?.revision ?? 0, accepted: false)
+        intent.accepted = false
+        self.progressCardRefreshIntent = intent
+        let key = intent.key
         // A repeated request is only acknowledged again: it does not replay a change event that was missed,
         // so the saved card is read to let a newer revision settle the refresh.
         if retry { self.scheduleProgressCardFetch(for: session) }
         self.progressCardRefreshTask = Task { [weak self] in
             do {
-                try await self?.transport.refreshProgressCard(
+                let receipt = try await self?.transport.refreshProgressCard(
                     sessionKey: target.sessionKey,
                     agentID: owner,
                     idempotencyKey: key)
+                guard let receipt, !Task.isCancelled, self?.progressCardRefreshIntent?.key == key else { return }
+                self?.progressCardRefreshIntent?.baseline = max(
+                    self?.progressCardRefreshIntent?.baseline ?? 0, receipt.revision)
+                self?.progressCardRefreshIntent?.accepted = true
+                // A change read can beat acceptance; only a post-baseline card settles this intent.
+                self?.reconcileProgressCardRefresh()
+                guard self?.progressCardRefreshPending == true else { return }
                 // Stop waiting where the web client does.
                 try await Task.sleep(nanoseconds: 120 * 1_000_000_000)
             } catch {
@@ -130,7 +141,7 @@ extension OpenClawChatViewModel {
                     if (error as? GatewayResponseError)?.details["code"]?.value as? String
                         == "PROGRESS_CARD_REFRESH_TERMINAL"
                     {
-                        self?.progressCardRefreshKey = nil
+                        self?.progressCardRefreshIntent = nil
                     }
                     self?.errorText = String(localized: "Could not refresh the plan.")
                 }
@@ -139,11 +150,18 @@ extension OpenClawChatViewModel {
         }
     }
 
+    private func reconcileProgressCardRefresh() {
+        guard let intent = self.progressCardRefreshIntent, intent.accepted,
+              let revision = self.progressCard?.revision, revision > intent.baseline
+        else { return }
+        self.finishProgressCardRefresh()
+    }
+
     private func finishProgressCardRefresh() {
         self.progressCardRefreshTask?.cancel()
         self.progressCardRefreshTask = nil
         self.progressCardRefreshPending = false
-        self.progressCardRefreshKey = nil
+        self.progressCardRefreshIntent = nil
     }
 
     func clearProgressCard() {
@@ -164,11 +182,8 @@ extension OpenClawChatViewModel {
         return OpenClawChatSessionTarget(sessionKey: "global", agentID: owner)
     }
 
-    private func fetchProgressCard(
-        for session: SessionSnapshot,
-        generation: UInt64,
-        requestID: UInt64) async
-    {
+    private func fetchProgressCard(_ request: ProgressCardRequest) async {
+        let session = request.session
         guard let target = self.progressCardTarget(for: session), let owner = target.agentID else {
             self.logDiagnostic("chat.ui progress card waits for canonical history identity")
             return
@@ -178,11 +193,7 @@ extension OpenClawChatViewModel {
             let card = try await self.transport.fetchProgressCard(
                 sessionKey: target.sessionKey,
                 agentID: owner)
-            guard self.isCurrentProgressCardRequest(
-                session: session,
-                generation: generation,
-                requestID: requestID)
-            else { return }
+            guard self.isCurrentProgressCardRequest(request) else { return }
             if let card, card.sessionkey != expectedKey {
                 self.logDiagnostic("chat.ui progress card response rejected: session identity changed")
                 return
@@ -192,11 +203,7 @@ extension OpenClawChatViewModel {
                 self.errorText = nil
             }
         } catch {
-            guard self.isCurrentProgressCardRequest(
-                session: session,
-                generation: generation,
-                requestID: requestID)
-            else { return }
+            guard self.isCurrentProgressCardRequest(request) else { return }
             if let response = error as? GatewayResponseError,
                response.details["code"]?.stringValue == "SESSION_PARTICIPATION_REQUIRED"
             {
@@ -213,14 +220,10 @@ extension OpenClawChatViewModel {
         }
     }
 
-    private func isCurrentProgressCardRequest(
-        session: SessionSnapshot,
-        generation: UInt64,
-        requestID: UInt64) -> Bool
-    {
-        self.progressCardGeneration == generation &&
-            self.lastIssuedProgressCardRequestID == requestID &&
-            self.isCurrentSession(session)
+    private func isCurrentProgressCardRequest(_ request: ProgressCardRequest) -> Bool {
+        self.progressCardGeneration == request.generation &&
+            self.lastIssuedProgressCardRequestID == request.id &&
+            self.isCurrentSession(request.session)
     }
 
     func applyProgressCard(_ card: ProgressCard?) {
@@ -232,10 +235,8 @@ extension OpenClawChatViewModel {
             self.progressCard?.sessionkey != normalized?.sessionkey ||
             self.progressCard?.revision != normalized?.revision
         else { return }
-        if self.progressCard?.revision != normalized?.revision {
-            self.finishProgressCardRefresh()
-        }
         self.progressCard = normalized
+        self.reconcileProgressCardRefresh()
         if presentationChanged {
             self.markTimelineChanged()
         }

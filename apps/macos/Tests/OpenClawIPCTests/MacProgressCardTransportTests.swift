@@ -104,7 +104,10 @@ private final class ProgressCardGatewayFixture {
                         ? GatewayWebSocketTestSupport.connectOkData(
                             id: id,
                             capabilities: ["progress-card-agent-scope-v1"])
-                        : GatewayWebSocketTestSupport.okResponseData(id: id)
+                        : GatewayWebSocketTestSupport.okResponseData(
+                            id: id,
+                            payload: frame["method"] as? String == "progressCard.refresh"
+                                ? #"{"runId":"fixture-refresh","status":"accepted","revision":3}"# : #"{"ok":true}"#)
                     self.send(response, on: connection)
                     self.changes.notify()
                 }
@@ -128,8 +131,10 @@ struct MacProgressCardTransportTests {
             var transport = MacGatewayChatTransport(connection: connection, outboxGatewayID: pin)
             transport._testUsesPrimaryAppRuntime = true
             try await transport.clearProgressCard(sessionKey: "global", agentID: "research", expectedRevision: 3)
-            try await transport.refreshProgressCard(
+            let receipt = try await transport.refreshProgressCard(
                 sessionKey: "global", agentID: "research", idempotencyKey: "refresh-1")
+            #expect(receipt.runId == "fixture-refresh")
+            #expect(receipt.revision == 3)
             #expect(a.cardRequests.map { $0["method"] as? String } == ["progressCard.put", "progressCard.refresh"])
             let clear = try #require(a.cardRequests.first?["params"] as? [String: Any])
             #expect(NSDictionary(dictionary: clear).isEqual(to: [
@@ -176,7 +181,7 @@ struct MacProgressCardTransportTests {
                         agentID: "research",
                         expectedRevision: 3)
                 } else {
-                    try await transport.refreshProgressCard(
+                    _ = try await transport.refreshProgressCard(
                         sessionKey: "global", agentID: "research", idempotencyKey: "refresh-stale")
                 }
             }
