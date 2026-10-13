@@ -517,7 +517,8 @@ private actor LocalFixtureChatStore {
     }
 
     func history(sessionKey: String) throws -> OpenClawChatHistoryPayload {
-        let owner = ScreenshotFixtureMode.progressBarEnabled ? self.fixture.defaultAgentID : nil
+        let owner = ScreenshotFixtureMode.progressCardEnabled || ScreenshotFixtureMode.progressBarEnabled
+            ? self.fixture.defaultAgentID : nil
         let normalizedSessionKey = Self.normalizedSessionKey(sessionKey, fallback: self.fixture.sessionKey)
         var startupSnapshot: OpenClawChatInFlightRun?
         if ProcessInfo.processInfo.arguments.contains("--openclaw-startup-status-fixture"),

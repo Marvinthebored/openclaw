@@ -187,7 +187,9 @@ struct ChatViewModelProgressCardActionTests {
 
         vm.clearSavedProgressCard()
 
-        await waitForObservedState { vm.errorText == "Could not clear the saved plan." }
+        await waitForObservedState {
+            vm.errorText == "Could not clear the saved plan. Retry or dismiss it locally."
+        }
         #expect(transport.clears.count == 1)
         #expect(vm.progressCard?.revision == 7)
     }
@@ -223,7 +225,7 @@ struct ChatViewModelProgressCardActionTests {
 
         vm.requestProgressCardRefresh()
         await waitForObservedState {
-            !vm.progressCardRefreshPending && vm.errorText == "Could not refresh the plan."
+            !vm.progressCardRefreshPending && vm.errorText == "Could not refresh the plan. Try Refresh again."
         }
         // The request may have been accepted before it failed to answer, so the retry must not look new.
         transport.setRefreshFails(false)
@@ -242,7 +244,7 @@ struct ChatViewModelProgressCardActionTests {
 
         vm.requestProgressCardRefresh()
         await waitForObservedState {
-            !vm.progressCardRefreshPending && vm.errorText == "Could not refresh the plan."
+            !vm.progressCardRefreshPending && vm.errorText == "Could not refresh the plan. Try Refresh again."
         }
         transport.setRefreshFails(false)
         vm.requestProgressCardRefresh()

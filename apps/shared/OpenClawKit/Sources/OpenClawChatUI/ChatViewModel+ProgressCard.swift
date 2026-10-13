@@ -96,7 +96,7 @@ extension OpenClawChatViewModel {
                 self?.scheduleProgressCardFetch(for: session)
             } catch {
                 guard let self, self.isCurrentSession(session), !(error is CancellationError) else { return }
-                self.errorText = String(localized: "Could not clear the saved plan.")
+                self.errorText = String(localized: "Could not clear the saved plan. Retry or dismiss it locally.")
             }
         }
     }
@@ -125,10 +125,12 @@ extension OpenClawChatViewModel {
                     sessionKey: target.sessionKey,
                     agentID: owner,
                     idempotencyKey: key)
-                guard let receipt, !Task.isCancelled, self?.progressCardRefreshIntent?.key == key else { return }
-                self?.progressCardRefreshIntent?.baseline = max(
-                    self?.progressCardRefreshIntent?.baseline ?? 0, receipt.revision)
-                self?.progressCardRefreshIntent?.accepted = true
+                guard let receipt, !Task.isCancelled,
+                      var acceptedIntent = self?.progressCardRefreshIntent, acceptedIntent.key == key else { return }
+                // Copy before mutation so tuple writeback cannot overlap a property read.
+                acceptedIntent.baseline = max(acceptedIntent.baseline, receipt.revision)
+                acceptedIntent.accepted = true
+                self?.progressCardRefreshIntent = acceptedIntent
                 // A change read can beat acceptance; only a post-baseline card settles this intent.
                 self?.reconcileProgressCardRefresh()
                 guard self?.progressCardRefreshPending == true else { return }
@@ -143,7 +145,7 @@ extension OpenClawChatViewModel {
                     {
                         self?.progressCardRefreshIntent = nil
                     }
-                    self?.errorText = String(localized: "Could not refresh the plan.")
+                    self?.errorText = String(localized: "Could not refresh the plan. Try Refresh again.")
                 }
             }
             self?.progressCardRefreshPending = false
