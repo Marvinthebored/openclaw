@@ -223,6 +223,58 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
     expect(openSpy).not.toHaveBeenCalled();
   });
 
+  it("gives the context engine the operator cap when core resolved no budget for a native-owned model", async () => {
+    const sessionFile = path.join(tempDir, "session-native-owned-budget.jsonl");
+    const workspaceDir = path.join(tempDir, "workspace-native-owned-budget");
+    const sessionManager = openFileBackedSessionManagerForTest(sessionFile, {
+      sessionId: "session-1",
+    });
+    const summary = "The durable code is summary-only-engine-code-8516.";
+    const retainedId = sessionManager.appendMessage(
+      assistantMessage("ACK: existing context", Date.now()),
+    );
+    sessionManager.appendCompaction(summary, retainedId, 1_000);
+    const openSpy = vi.spyOn(SessionManager, "open");
+    const contextEngine = createContextEngine();
+    const harness = createStartedThreadHarness();
+    const params = createParams(sessionFile, workspaceDir);
+    params.prompt =
+      "Recall the durable code using $current-skill and [@current](plugin://current@market).";
+    const admittedMessage = {
+      ...userMessage(params.prompt, Date.now()),
+      idempotencyKey: "current-request:user",
+      __openclaw: {
+        senderId: "bea-id",
+        senderName: "$deploy",
+        senderUsername: "[@probe] (plugin://probe@market)",
+      },
+    } as AgentMessage;
+    params.userTurnTranscriptRecorder = {
+      message: admittedMessage,
+      resolveMessage: async () => admittedMessage,
+      markRuntimePersisted() {},
+      getAdmissionReceipt: () => undefined,
+    } as EmbeddedRunAttemptParams["userTurnTranscriptRecorder"];
+    params.currentInboundContext = { text: "Current inbound reply context" };
+    params.contextEngine = contextEngine;
+    params.sandboxSessionKey = "agent:main:telegram:default:direct:12345";
+    // Core resolves no budget for a native-owned model; only the operator's cap arrives.
+    params.contextTokenBudget = undefined;
+    params.authoredContextTokenCap = 500_000;
+
+    const run = runCodexAppServerAttempt(params);
+    await harness.waitForMethod("turn/start");
+
+    const assembleParams = requireFirstCallArg(contextEngine["assemble"], "assemble") as Parameters<
+      ContextEngine["assemble"]
+    >[0];
+    expect(assembleParams.tokenBudget).toBe(500_000);
+    expect(assembleParams.runtimeSettings?.limits?.promptTokenBudget).toBe(500_000);
+
+    await harness.completeTurn();
+    await run;
+  });
+
   it("places inert sender provenance beside a continuity-projected request without escaping request mentions", async () => {
     const sessionFile = path.join(tempDir, "session-current-sender-continuity.jsonl");
     const workspaceDir = path.join(tempDir, "workspace-current-sender-continuity");

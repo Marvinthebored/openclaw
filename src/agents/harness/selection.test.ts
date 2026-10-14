@@ -1144,6 +1144,57 @@ describe("runAgentHarnessAttempt", () => {
     },
   );
 
+  it.each([
+    { name: "the window the harness reported", reported: 475_000, cap: 500_000, budget: 475_000 },
+    { name: "the operator cap when nothing was reported", reported: undefined, cap: 500_000, budget: 500_000 },
+    { name: "no budget when neither exists", reported: undefined, cap: undefined, budget: undefined },
+  ] as const)(
+    "gives the context engine $name for a native-owned model",
+    async ({ reported, cap, budget }) => {
+      const admission = {
+        ...createTranscriptAnchor("user-1", 1, 0),
+        logicalTurnId: "native-owned-turn",
+        role: "user" as const,
+      };
+      const terminal = createTranscriptAnchor("assistant-1", 2, 1);
+      const onContextEngineTurnCandidate = vi.fn();
+      const params = createAttemptParams(providerRuntimeConfig("codex", "codex"));
+      registerHarness({
+        runAttempt: async () => ({
+          ...createAttemptResult("session-1"),
+          ...(reported === undefined
+            ? {}
+            : { contextTokens: reported, contextTokensSource: "runtime" as const }),
+          contextEngineTerminalAnchor: terminal,
+        }),
+      });
+      params.agentHarnessRuntimeOverride = "codex";
+      params.sessionKey = admission.sessionKey;
+      params.sessionTarget = {
+        agentId: admission.agentId,
+        sessionId: admission.sessionId,
+        sessionKey: admission.sessionKey,
+        storePath: admission.storePath,
+      };
+      // A native-owned model: placeholder window, no resolved budget.
+      params.modelContextWindow = 200_000;
+      params.contextTokenBudget = undefined;
+      params.authoredContextTokenCap = cap;
+      params.userTurnTranscriptRecorder = createTranscriptRecorder(admission);
+      params.onContextEngineTurnCandidate = onContextEngineTurnCandidate;
+
+      await runAgentHarnessAttempt(params);
+
+      expect(onContextEngineTurnCandidate).toHaveBeenCalledOnce();
+      expect(onContextEngineTurnCandidate.mock.calls[0]?.[0]?.runtimeContext).toEqual({
+        provider: params.provider,
+        modelId: params.modelId,
+        modelContextWindow: reported ?? 200_000,
+        tokenBudget: budget,
+      });
+    },
+  );
+
   it("drains pending context-engine turns before pinning a plugin harness", async () => {
     const order: string[] = [];
     const configuredEngine = createContextEngineRequiringAssembly();

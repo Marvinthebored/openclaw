@@ -116,9 +116,14 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
   const effectiveContextWindowInfo = usesSupervisionConnection
     ? undefined
     : params.contextWindowInfo;
+  // Core resolves no budget for a native-owned model. The window Codex reported for
+  // this session's thread, then the operator's cap, are the sizes Codex itself runs
+  // with; without one the context engine and the projection fall back to small defaults.
   const effectiveContextTokenBudget = usesSupervisionConnection
     ? undefined
-    : params.contextTokenBudget;
+    : (params.contextTokenBudget ??
+      mutable.startupContextTokens ??
+      params.authoredContextTokenCap);
   const effectiveRuntimeProviderId = usesSupervisionConnection
     ? (mutable.startupBinding?.modelProvider ?? "codex")
     : params.provider;
