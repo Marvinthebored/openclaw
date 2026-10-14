@@ -1145,12 +1145,41 @@ describe("runAgentHarnessAttempt", () => {
   );
 
   it.each([
-    { name: "the window the harness reported", reported: 475_000, cap: 500_000, budget: 475_000 },
-    { name: "the operator cap when nothing was reported", reported: undefined, cap: 500_000, budget: 500_000 },
-    { name: "no budget when neither exists", reported: undefined, cap: undefined, budget: undefined },
+    {
+      name: "the window the harness reported",
+      reported: 475_000,
+      source: "runtime",
+      cap: 500_000,
+      budget: 475_000,
+      window: 475_000,
+    },
+    {
+      name: "the operator cap when nothing was reported",
+      reported: undefined,
+      source: undefined,
+      cap: 500_000,
+      budget: 500_000,
+      window: 200_000,
+    },
+    {
+      name: "no budget when neither exists",
+      reported: undefined,
+      source: undefined,
+      cap: undefined,
+      budget: undefined,
+      window: 200_000,
+    },
+    {
+      name: "no budget from a startup estimate the turn never refreshed",
+      reported: 380_000,
+      source: "resolved",
+      cap: undefined,
+      budget: undefined,
+      window: 200_000,
+    },
   ] as const)(
     "gives the context engine $name for a native-owned model",
-    async ({ reported, cap, budget }) => {
+    async ({ reported, source, cap, budget, window }) => {
       const admission = {
         ...createTranscriptAnchor("user-1", 1, 0),
         logicalTurnId: "native-owned-turn",
@@ -1164,7 +1193,7 @@ describe("runAgentHarnessAttempt", () => {
           ...createAttemptResult("session-1"),
           ...(reported === undefined
             ? {}
-            : { contextTokens: reported, contextTokensSource: "runtime" as const }),
+            : { contextTokens: reported, contextTokensSource: source }),
           contextEngineTerminalAnchor: terminal,
         }),
       });
@@ -1189,11 +1218,50 @@ describe("runAgentHarnessAttempt", () => {
       expect(onContextEngineTurnCandidate.mock.calls[0]?.[0]?.runtimeContext).toEqual({
         provider: params.provider,
         modelId: params.modelId,
-        modelContextWindow: reported ?? 200_000,
+        modelContextWindow: window,
         tokenBudget: budget,
       });
     },
   );
+
+  it("keeps a resolved host budget ahead of the window the harness reported", async () => {
+    const admission = {
+      ...createTranscriptAnchor("user-1", 1, 0),
+      logicalTurnId: "host-budget-turn",
+      role: "user" as const,
+    };
+    const onContextEngineTurnCandidate = vi.fn();
+    const params = createAttemptParams(providerRuntimeConfig("codex", "codex"));
+    registerHarness({
+      runAttempt: async () => ({
+        ...createAttemptResult("session-1"),
+        contextTokens: 475_000,
+        contextTokensSource: "runtime" as const,
+        contextEngineTerminalAnchor: createTranscriptAnchor("assistant-1", 2, 1),
+      }),
+    });
+    params.agentHarnessRuntimeOverride = "codex";
+    params.sessionKey = admission.sessionKey;
+    params.sessionTarget = {
+      agentId: admission.agentId,
+      sessionId: admission.sessionId,
+      sessionKey: admission.sessionKey,
+      storePath: admission.storePath,
+    };
+    params.modelContextWindow = 272_000;
+    params.contextTokenBudget = 180_000;
+    params.userTurnTranscriptRecorder = createTranscriptRecorder(admission);
+    params.onContextEngineTurnCandidate = onContextEngineTurnCandidate;
+
+    await runAgentHarnessAttempt(params);
+
+    expect(onContextEngineTurnCandidate.mock.calls[0]?.[0]?.runtimeContext).toEqual({
+      provider: params.provider,
+      modelId: params.modelId,
+      modelContextWindow: 272_000,
+      tokenBudget: 180_000,
+    });
+  });
 
   it("drains pending context-engine turns before pinning a plugin harness", async () => {
     const order: string[] = [];

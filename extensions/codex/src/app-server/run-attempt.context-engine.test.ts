@@ -623,11 +623,14 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
   );
 
   it.each([
-    ["the model that reported it", "gpt-5.4-codex", 258_400],
-    ["a different model on the same thread", "gpt-5.4-codex-mini", undefined],
+    ["the thread's model", "gpt-5.4-codex", false, 258_400],
+    ["the thread's model, provider-qualified", "openai/gpt-5.4-codex", false, 258_400],
+    ["a thread bound to a different model", "gpt-5.4-codex-mini", false, undefined],
+    // The binding already names the running model, but that newer turn never reported.
+    ["a newer turn that reported nothing", "gpt-5.4-codex", true, undefined],
   ] as const)(
     "uses the thread's reported window as the budget only for %s",
-    async (_case, bindingModel, expectedBudget) => {
+    async (_case, bindingModel, newerUnreportedTurn, expectedBudget) => {
       const sessionFile = path.join(tempDir, "session.jsonl");
       const workspaceDir = path.join(tempDir, "workspace");
       const agentDir = path.join(tempDir, "agent");
@@ -646,12 +649,21 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       await fs.mkdir(rolloutDir, { recursive: true });
       await fs.writeFile(
         path.join(rolloutDir, "rollout-thread-reported-window.jsonl"),
-        `${JSON.stringify({
-          payload: {
-            type: "token_count",
-            info: { last_token_usage: { total_tokens: 20_000 }, model_context_window: 258_400 },
+        [
+          { type: "turn_context", payload: { model: "gpt-5.4-codex" } },
+          {
+            type: "event_msg",
+            payload: {
+              type: "token_count",
+              info: { last_token_usage: { total_tokens: 20_000 }, model_context_window: 258_400 },
+            },
           },
-        })}\n`,
+          ...(newerUnreportedTurn
+            ? [{ type: "turn_context", payload: { model: "gpt-5.4-codex" } }]
+            : []),
+        ]
+          .map((line) => `${JSON.stringify(line)}\n`)
+          .join(""),
       );
       const contextEngine = createContextEngine();
       const params = createParams(sessionFile, workspaceDir);

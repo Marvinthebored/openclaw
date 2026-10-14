@@ -452,6 +452,13 @@ export async function runAgentHarnessAttempt(
     admission &&
     result.contextEngineTerminalAnchor
   ) {
+    // Only a window the harness observed during this turn; "resolved" is a startup
+    // estimate and may describe the thread's previous model.
+    const reportedContextTokens =
+      result.contextTokensSource === "runtime" ||
+      result.contextTokensSource === "runtime-configured"
+        ? result.contextTokens
+        : undefined;
     internalParams.onContextEngineTurnCandidate({
       boundary: {
         admission,
@@ -483,11 +490,11 @@ export async function runAgentHarnessAttempt(
               // the window its harness reported is the size the turn actually ran with.
               modelContextWindow:
                 internalParams.contextTokenBudget === undefined
-                  ? (result.contextTokens ?? internalParams.modelContextWindow)
+                  ? (reportedContextTokens ?? internalParams.modelContextWindow)
                   : internalParams.modelContextWindow,
               tokenBudget:
                 internalParams.contextTokenBudget ??
-                result.contextTokens ??
+                reportedContextTokens ??
                 internalParams.authoredContextTokenCap,
             },
     });

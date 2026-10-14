@@ -142,6 +142,8 @@ async function listCodexAppServerRolloutFilesForThread(
 type CodexAppServerRolloutTokenSnapshot = {
   totalTokens?: number;
   modelContextWindow?: number;
+  // A turn started after the latest window was reported and never reported its own.
+  windowSupersededByNewerTurn?: boolean;
 };
 
 async function readCodexAppServerRolloutTokenSnapshot(
@@ -159,6 +161,16 @@ async function readCodexAppServerRolloutTokenSnapshot(
     let position = (await handle.stat()).size;
     const partialLineFragments: Buffer[] = [];
     const applySnapshotLine = (line: string): boolean => {
+      // Walking backward, a turn_context seen before any window belongs to a newer turn
+      // that reported nothing (e.g. a failed model switch). Costs no extra reads.
+      if (
+        snapshot?.modelContextWindow === undefined &&
+        isCodexAppServerRolloutTurnContextLine(line)
+      ) {
+        snapshot ??= {};
+        snapshot.windowSupersededByNewerTurn = true;
+        return false;
+      }
       const lineSnapshot = readCodexAppServerRolloutTokenSnapshotLine(line);
       if (lineSnapshot === undefined) {
         return false;
@@ -209,6 +221,18 @@ async function readCodexAppServerRolloutTokenSnapshot(
     await handle.close();
   }
   return snapshot;
+}
+
+function isCodexAppServerRolloutTurnContextLine(line: string): boolean {
+  if (!line.includes('"turn_context"')) {
+    return false;
+  }
+  try {
+    const parsed = JSON.parse(line) as JsonValue;
+    return isJsonObject(parsed) && parsed.type === "turn_context";
+  } catch {
+    return false;
+  }
 }
 
 function readCodexAppServerRolloutTokenSnapshotLine(
@@ -395,6 +419,9 @@ export async function rotateOversizedCodexAppServerStartupBinding(params: {
   }
   return {
     binding,
-    ...(nativeModelContextWindow ? { startupContextTokens: nativeModelContextWindow } : {}),
+    ...(nativeModelContextWindow &&
+    !nativeTokenSnapshots.some((snapshot) => snapshot?.windowSupersededByNewerTurn)
+      ? { startupContextTokens: nativeModelContextWindow }
+      : {}),
   };
 }

@@ -125,18 +125,18 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
   // Core resolves no budget for a native-owned model. The window Codex reported for
   // this session's thread, then the operator's cap, are the sizes Codex itself runs
   // with; without one the context engine and the projection fall back to small defaults.
-  // The reported window belongs to the thread's last model, and a same-generation model
-  // switch keeps the thread, so it only counts when that model is still the one running.
-  const threadReportedContextTokens =
-    mutable.startupBinding?.model?.trim().toLowerCase() ===
-    effectiveRuntimeModelId.trim().toLowerCase()
-      ? mutable.startupContextTokens
-      : undefined;
+  // A same-generation model switch keeps the thread, so the reported window only counts
+  // when the thread's model is the one running now. The startup reader already drops a
+  // window that a newer, unreported turn (e.g. a failed switch) has superseded.
+  const threadReportedContextTokens = isSameCodexModelId(
+    mutable.startupBinding?.model,
+    effectiveRuntimeModelId,
+  )
+    ? mutable.startupContextTokens
+    : undefined;
   const effectiveContextTokenBudget = usesSupervisionConnection
     ? undefined
-    : (params.contextTokenBudget ??
-      threadReportedContextTokens ??
-      params.authoredContextTokenCap);
+    : (params.contextTokenBudget ?? threadReportedContextTokens ?? params.authoredContextTokenCap);
   const {
     authProfileId: _outerAuthProfileId,
     authoredContextTokenCap: _outerAuthoredContextTokenCap,
@@ -424,3 +424,13 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
 }
 
 export type CodexAttemptRuntime = Awaited<ReturnType<typeof prepareCodexAttemptRuntime>>;
+
+// Codex stores the unqualified model ("gpt-5.5") while OpenClaw may run "openai/gpt-5.5".
+function isSameCodexModelId(a: string | undefined, b: string | undefined): boolean {
+  const left = a?.trim().toLowerCase();
+  const right = b?.trim().toLowerCase();
+  if (!left || !right) {
+    return false;
+  }
+  return left === right || left.endsWith(`/${right}`) || right.endsWith(`/${left}`);
+}
