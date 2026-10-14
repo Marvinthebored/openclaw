@@ -1,0 +1,13 @@
+REENTRY_R7 launch_epoch=1791976944.531812
+REENTRY_R7 capture=r7-first-page-direct-before-queries epoch_before=1791976954.362541 epoch_after=1791976954.458056
+REENTRY_R7 stage=first-page epoch=1791976960.200111 exists=true hittable=true reply=(35.0, 519.0416666666497, 339.0, 70.0) viewport=(6.0, 122.0, 390.0, 575.3333333333358) window=(0.0, 0.0, 402.0, 874.0)
+REENTRY_R7 capture=r7-first-page-finite epoch_before=1791976963.164495 epoch_after=1791976963.247789
+REENTRY_R7 capture=r7-away-other-chat epoch_before=1791976986.194458 epoch_after=1791976986.295874
+REENTRY_R7 reentry_tap_epoch=1791976996.766001
+REENTRY_R7 capture=r7-cached-reentry-before-queries epoch_before=1791976999.6060581 epoch_after=1791976999.696011
+REENTRY_R7 stage=latest-returned-from-cache epoch=1791977005.274265 exists=true hittable=true reply=(34.50000000000001, 519.0, 340.6666666666667, 70.0) viewport=(5.666666666666667, 122.0, 391.3333333333333, 575.3333333333358) window=(0.0, 0.0, 402.0, 874.0)
+REENTRY_R7 capture=r7-cached-latest-finite epoch_before=1791977007.434268 epoch_after=1791977007.519823
+REENTRY_R7 stage=latest-after-metadata-refresh epoch=1791977042.706311 exists=true hittable=true reply=(35.0, 519.0416666666497, 339.0, 70.0) viewport=(6.0, 122.0, 390.0, 575.3333333333358) window=(0.0, 0.0, 402.0, 874.0)
+REENTRY_R7 capture=r7-reader-after-refresh epoch_before=1791977045.490438 epoch_after=1791977045.576112
+REENTRY_R7 completed: direct geometry and rendered content, real away/back, latest reply stable; recording timing review required
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testHistoryFirstPageAppearsBeforeOptionalMetadataCompletes]' passed (102.244 seconds).

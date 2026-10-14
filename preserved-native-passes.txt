@@ -1,0 +1,2 @@
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testEarlierHistoryButtonWorksBeforeMetadataCompletes]' passed (28.542 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testStreamingReplyKeepsQuestionAnchorAfterKeyboardDismissedSend]' passed (19.956 seconds).
