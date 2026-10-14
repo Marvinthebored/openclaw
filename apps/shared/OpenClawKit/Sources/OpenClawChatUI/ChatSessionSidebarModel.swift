@@ -156,10 +156,6 @@ public enum ChatSessionSidebarModel {
         }
     }
 
-    public static func rows(_ nodes: [Node], depth: Int = 0) -> [Row] {
-        nodes.flatMap { [Row(node: $0, depth: depth)] + self.rows($0.children, depth: depth + 1) }
-    }
-
     /// Rows with a parent's sub-sessions left out unless `showsChildren` says they are open.
     public static func rows(_ nodes: [Node], depth: Int = 0, showsChildren: (Node) -> Bool) -> [Row] {
         nodes.flatMap { node in
