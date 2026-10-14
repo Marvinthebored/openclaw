@@ -1,0 +1,30 @@
+REUSE_FINAL_CHECKOUT_EXACT_HASHES=PASS
+CANDIDATE_HASHES_AND_LINT_CONFIG_UNCHANGED=PASS
+RUN restore-stock
+EXIT restore-stock 0
+RUN stock-main-red
+EXIT stock-main-red 1
+HISTORY_BANDWIDTH requests= 13 full= 13 delta= 0 responseBytes= 11391
+✘ Test run with 1 test in 1 suite failed after 0.021 seconds with 1 issue.
+STOCK_MAIN_RED_RESTORE_CMP=PASS
+RUN current-main-green-kit
+EXIT current-main-green-kit 0
+HISTORY_BANDWIDTH requests= 13 full= 1 delta= 12 responseBytes= 2824
+HISTORY_SCRIPT total= 12 full= 1 delta= 11 responseBytes= 2738
+✔ Test run with 653 tests in 19 suites passed after 2.611 seconds.
+RUN version
+EXIT version 0
+RUN filelist
+EXIT filelist 0
+RUN xcodegen
+EXIT xcodegen 0
+RUN sim-create
+EXIT sim-create 0
+SCRATCH_GRAPH_EXCLUDES_WATCH=PASS ['OpenClaw', 'OpenClawActivityWidget', 'OpenClawLogicTests', 'OpenClawShareExtension', 'OpenClawTests']
+RUN ios-simulator-build
+EXIT ios-simulator-build 0
+RUN ios-transport-tests
+EXIT ios-transport-tests 0
+✔ Test run with 34 tests in 1 suite passed after 0.200 seconds.
+RUN mac-build
+EXIT mac-build 0
