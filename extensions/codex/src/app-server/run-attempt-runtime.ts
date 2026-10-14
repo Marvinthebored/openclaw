@@ -134,9 +134,13 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
   )
     ? mutable.startupContextTokens
     : undefined;
+  // A cap lowered after the thread reported its window still bounds the budget.
   const effectiveContextTokenBudget = usesSupervisionConnection
     ? undefined
-    : (params.contextTokenBudget ?? threadReportedContextTokens ?? params.authoredContextTokenCap);
+    : (params.contextTokenBudget ??
+      (threadReportedContextTokens !== undefined && params.authoredContextTokenCap !== undefined
+        ? Math.min(threadReportedContextTokens, params.authoredContextTokenCap)
+        : (threadReportedContextTokens ?? params.authoredContextTokenCap)));
   const {
     authProfileId: _outerAuthProfileId,
     authoredContextTokenCap: _outerAuthoredContextTokenCap,

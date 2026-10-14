@@ -623,14 +623,16 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
   );
 
   it.each([
-    ["the thread's model", "gpt-5.4-codex", false, 258_400],
-    ["the thread's model, provider-qualified", "openai/gpt-5.4-codex", false, 258_400],
-    ["a thread bound to a different model", "gpt-5.4-codex-mini", false, undefined],
+    ["the thread's model", "gpt-5.4-codex", false, undefined, 258_400],
+    ["the thread's model, provider-qualified", "openai/gpt-5.4-codex", false, undefined, 258_400],
+    ["a thread bound to a different model", "gpt-5.4-codex-mini", false, undefined, undefined],
     // The binding already names the running model, but that newer turn never reported.
-    ["a newer turn that reported nothing", "gpt-5.4-codex", true, undefined],
+    ["a newer turn that reported nothing", "gpt-5.4-codex", true, undefined, undefined],
+    // The operator lowered the cap after the thread reported its window.
+    ["the thread's model, capped below the window", "gpt-5.4-codex", false, 32_000, 32_000],
   ] as const)(
     "uses the thread's reported window as the budget only for %s",
-    async (_case, bindingModel, newerUnreportedTurn, expectedBudget) => {
+    async (_case, bindingModel, newerUnreportedTurn, authoredCap, expectedBudget) => {
       const sessionFile = path.join(tempDir, "session.jsonl");
       const workspaceDir = path.join(tempDir, "workspace");
       const agentDir = path.join(tempDir, "agent");
@@ -669,9 +671,9 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       const params = createParams(sessionFile, workspaceDir);
       params.agentDir = agentDir;
       params.contextEngine = contextEngine;
-      // Core resolves no budget for a native-owned model, and no operator cap is set.
+      // Core resolves no budget for a native-owned model, so only the thread's window and the operator cap apply.
       params.contextTokenBudget = undefined;
-      params.authoredContextTokenCap = undefined;
+      params.authoredContextTokenCap = authoredCap;
       const harness = createStartedThreadHarness();
 
       const run = runCodexAppServerAttempt(params);
