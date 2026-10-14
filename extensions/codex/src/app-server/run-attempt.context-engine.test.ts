@@ -622,6 +622,60 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
     },
   );
 
+  it.each([
+    ["the model that reported it", "gpt-5.4-codex", 258_400],
+    ["a different model on the same thread", "gpt-5.4-codex-mini", undefined],
+  ] as const)(
+    "uses the thread's reported window as the budget only for %s",
+    async (_case, bindingModel, expectedBudget) => {
+      const sessionFile = path.join(tempDir, "session.jsonl");
+      const workspaceDir = path.join(tempDir, "workspace");
+      const agentDir = path.join(tempDir, "agent");
+      await writeCodexAppServerBinding(sessionFile, {
+        ...makeThreadBootstrapBinding({
+          threadId: "thread-reported-window",
+          cwd: workspaceDir,
+          policyFingerprint:
+            '{"schemaVersion":1,"engineId":"lossless-claw","ownsCompaction":true,"projectionMaxChars":24000}',
+          epoch: "epoch-1",
+        }),
+        model: bindingModel,
+        modelProvider: "openai",
+      });
+      const rolloutDir = path.join(agentDir, "codex-home", "sessions");
+      await fs.mkdir(rolloutDir, { recursive: true });
+      await fs.writeFile(
+        path.join(rolloutDir, "rollout-thread-reported-window.jsonl"),
+        `${JSON.stringify({
+          payload: {
+            type: "token_count",
+            info: { last_token_usage: { total_tokens: 20_000 }, model_context_window: 258_400 },
+          },
+        })}\n`,
+      );
+      const contextEngine = createContextEngine();
+      const params = createParams(sessionFile, workspaceDir);
+      params.agentDir = agentDir;
+      params.contextEngine = contextEngine;
+      // Core resolves no budget for a native-owned model, and no operator cap is set.
+      params.contextTokenBudget = undefined;
+      params.authoredContextTokenCap = undefined;
+      const harness = createStartedThreadHarness();
+
+      const run = runCodexAppServerAttempt(params);
+      await harness.waitForMethod("turn/start");
+
+      const assembleParams = requireFirstCallArg(
+        contextEngine["assemble"],
+        "assemble",
+      ) as Parameters<ContextEngine["assemble"]>[0];
+      expect(assembleParams.tokenBudget).toBe(expectedBudget);
+
+      await harness.completeTurn();
+      await run;
+    },
+  );
+
   it("keeps mirrored history when an inactive per-turn context-engine binding starts fresh", async () => {
     const sessionFile = path.join(tempDir, "session.jsonl");
     const workspaceDir = path.join(tempDir, "workspace");

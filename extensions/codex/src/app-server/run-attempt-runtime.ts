@@ -116,20 +116,27 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
   const effectiveContextWindowInfo = usesSupervisionConnection
     ? undefined
     : params.contextWindowInfo;
-  // Core resolves no budget for a native-owned model. The window Codex reported for
-  // this session's thread, then the operator's cap, are the sizes Codex itself runs
-  // with; without one the context engine and the projection fall back to small defaults.
-  const effectiveContextTokenBudget = usesSupervisionConnection
-    ? undefined
-    : (params.contextTokenBudget ??
-      mutable.startupContextTokens ??
-      params.authoredContextTokenCap);
   const effectiveRuntimeProviderId = usesSupervisionConnection
     ? (mutable.startupBinding?.modelProvider ?? "codex")
     : params.provider;
   const effectiveRuntimeModelId = usesSupervisionConnection
     ? (mutable.startupBinding?.model ?? "codex-native")
     : (connection.options.runtimeModelId ?? params.modelId);
+  // Core resolves no budget for a native-owned model. The window Codex reported for
+  // this session's thread, then the operator's cap, are the sizes Codex itself runs
+  // with; without one the context engine and the projection fall back to small defaults.
+  // The reported window belongs to the thread's last model, and a same-generation model
+  // switch keeps the thread, so it only counts when that model is still the one running.
+  const threadReportedContextTokens =
+    mutable.startupBinding?.model?.trim().toLowerCase() ===
+    effectiveRuntimeModelId.trim().toLowerCase()
+      ? mutable.startupContextTokens
+      : undefined;
+  const effectiveContextTokenBudget = usesSupervisionConnection
+    ? undefined
+    : (params.contextTokenBudget ??
+      threadReportedContextTokens ??
+      params.authoredContextTokenCap);
   const {
     authProfileId: _outerAuthProfileId,
     authoredContextTokenCap: _outerAuthoredContextTokenCap,
