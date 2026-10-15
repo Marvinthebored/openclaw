@@ -522,15 +522,14 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       );
       const params = createParams(sessionFile, workspaceDir);
       params.agentDir = agentDir;
+      const assemble = vi.fn<ContextEngine["assemble"]>(async ({ prompt }) => ({
+        messages: [assistantMessage("reprojected context", 10), userMessage(prompt ?? "", 11)],
+        estimatedTokens: 42,
+        systemPromptAddition: "context-engine system",
+        contextProjection: { mode: "thread_bootstrap" as const, epoch: "epoch-1" },
+      }));
       if (active) {
-        params.contextEngine = createContextEngine({
-          assemble: vi.fn(async ({ prompt }) => ({
-            messages: [assistantMessage("reprojected context", 10), userMessage(prompt ?? "", 11)],
-            estimatedTokens: 42,
-            systemPromptAddition: "context-engine system",
-            contextProjection: { mode: "thread_bootstrap" as const, epoch: "epoch-1" },
-          })),
-        });
+        params.contextEngine = createContextEngine({ assemble });
       } else {
         const manager = openFileBackedSessionManagerForTest(sessionFile, {
           sessionId: "session-1",
@@ -569,9 +568,7 @@ describe("runCodexAppServerAttempt context-engine lifecycle", () => {
       const inputText = getRequestInputText(harness);
       if (resumed) {
         expect(inputText).toBe("hello");
-        expect(params.contextEngine?.assemble).toHaveBeenCalledWith(
-          expect.objectContaining({ tokenBudget: 258_400 }),
-        );
+        expect(assemble).toHaveBeenCalledWith(expect.objectContaining({ tokenBudget: 258_400 }));
       } else if (active) {
         expect(inputText).toContain("OpenClaw assembled context for this turn:");
         expect(inputText).toContain("reprojected context");

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import type { HarnessContextEngine as ContextEngine } from "openclaw/plugin-sdk/agent-harness-runtime";
 import { describe, expect, it, vi } from "vitest";
 import { setupRunAttemptTestHooks, tempDir } from "./run-attempt-test-harness.js";
 import {
@@ -69,7 +70,11 @@ describe("runCodexAppServerAttempt native context budget", () => {
             .join(""),
         );
       }
-      const contextEngine = createContextEngine();
+      const assemble = vi.fn<ContextEngine["assemble"]>(async () => ({
+        messages: [],
+        estimatedTokens: 0,
+      }));
+      const contextEngine = createContextEngine({ assemble });
       const params = createParams(sessionFile, workspaceDir);
       params.agentDir = agentDir;
       params.contextEngine = contextEngine;
@@ -80,8 +85,8 @@ describe("runCodexAppServerAttempt native context budget", () => {
       const run = runCodexAppServerAttempt(params);
       await harness.waitForMethod("turn/start");
 
-      expect(contextEngine.assemble).toHaveBeenCalledOnce();
-      expect(vi.mocked(contextEngine.assemble).mock.calls[0]?.[0]).toMatchObject({
+      expect(assemble).toHaveBeenCalledOnce();
+      expect(assemble.mock.calls[0]?.[0]).toMatchObject({
         tokenBudget: expectedBudget,
         runtimeSettings: { limits: { promptTokenBudget: expectedBudget ?? null } },
       });
