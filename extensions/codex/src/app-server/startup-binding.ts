@@ -228,7 +228,7 @@ function isCodexAppServerRolloutTurnContextLine(line: string): boolean {
     return false;
   }
   try {
-    const parsed = JSON.parse(line) as JsonValue;
+    const parsed: unknown = JSON.parse(line);
     return isJsonObject(parsed) && parsed.type === "turn_context";
   } catch {
     return false;
