@@ -145,7 +145,6 @@ struct OpenClawChatComposer: View {
     @State private var fileImporterOwner: OpenClawChatAttachmentCaptureOwner?
     #if canImport(UIKit)
     @State private var cameraEncodingTask: Task<Void, Never>?
-    @State private var cameraEncodingGeneration = UUID()
     @State private var cameraCaptureOwner: OpenClawChatAttachmentCaptureOwner?
     #endif
     @FocusState private var isFocused: Bool
@@ -225,18 +224,6 @@ struct OpenClawChatComposer: View {
         self.isDesktopLayout && self.composerChrome == .clean
         #else
         false
-        #endif
-    }
-
-    /// The phone reaches sign-in from its model menu, as the desktop does, so the row under the
-    /// composer is kept for a selected model that cannot send without it. Composers without that
-    /// menu keep the row.
-    private var showsModelSignInRow: Bool {
-        #if os(iOS)
-        guard self.composerChrome == .clean else { return true }
-        return self.viewModel.composerModelAvailabilityMessage != nil
-        #else
-        !self.usesDesktopModelMenu
         #endif
     }
 
@@ -1487,8 +1474,6 @@ extension OpenClawChatComposer {
         let fileName = "camera-\(UUID().uuidString.prefix(8)).jpg"
         let viewModel = owner.viewModel
         let session = owner.session
-        let generation = UUID()
-        self.cameraEncodingGeneration = generation
         // Pin routing before JPEG encoding suspends so an external agent or
         // session update cannot adopt this camera result under a new owner.
         viewModel.beginAttachmentStaging()
@@ -1498,7 +1483,6 @@ extension OpenClawChatComposer {
                 sendableImage.value.jpegData(compressionQuality: 0.92)
             }.value
             guard !Task.isCancelled,
-                  self.cameraEncodingGeneration == generation,
                   self.viewModel === viewModel,
                   viewModel.isCurrentSession(session),
                   self.isAttachmentInputEnabled,
@@ -1527,7 +1511,6 @@ extension OpenClawChatComposer {
 
     private func cancelActiveCameraEncoding() {
         #if canImport(UIKit)
-        self.cameraEncodingGeneration = UUID()
         self.cameraEncodingTask?.cancel()
         self.cameraEncodingTask = nil
         #endif

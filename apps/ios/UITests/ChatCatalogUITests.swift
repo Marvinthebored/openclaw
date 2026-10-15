@@ -119,7 +119,7 @@ final class ChatCatalogUITests: XCTestCase {
         XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 3))
 
         self.assertGuestInlineModel(
-            inlineModel, value: "primary", failureID: "guest-model-policy:permitted:current-selection")
+            inlineModel, app: app, value: "primary", failureID: "guest-model-policy:permitted:current-selection")
         self.capture(app, named: "guest-model-permitted-inline")
         let permitted = self.openPolicyActions(app)
         self.expandPolicyProvider(permitted)
@@ -136,7 +136,7 @@ final class ChatCatalogUITests: XCTestCase {
         _ = try await self.policyRequest(fixtureURL, path: "null", method: "POST")
         _ = try await self.policyRequest(fixtureURL, path: "await-catalog")
         self.assertGuestInlineModel(
-            inlineModel, value: "Default", failureID: "guest-model-policy:null:current-selection")
+            inlineModel, app: app, value: "Default", failureID: "guest-model-policy:null:current-selection")
         self.capture(app, named: "guest-model-null-inline")
         let opened = self.openPolicyActions(app)
         self.expandPolicyProvider(opened)
@@ -161,7 +161,7 @@ final class ChatCatalogUITests: XCTestCase {
         let loadError = app.staticTexts["Model choices could not load. Reconnect and try again."]
         XCTAssertTrue(loadError.waitForExistence(timeout: 3))
         self.assertGuestInlineModel(
-            inlineModel, value: "Default", failureID: "guest-model-policy:failed:current-selection")
+            inlineModel, app: app, value: "Default", failureID: "guest-model-policy:failed:current-selection")
         XCTAssertEqual(input.value as? String, draft)
         XCTAssertTrue(history.exists)
         self.capture(app, named: "guest-model-failed-inline")
@@ -176,7 +176,7 @@ final class ChatCatalogUITests: XCTestCase {
         _ = try await self.policyRequest(fixtureURL, path: "recover", method: "POST")
         let recovered = try await self.policyRequest(fixtureURL, path: "await-catalog")
         self.assertGuestInlineModel(
-            inlineModel, value: "primary", failureID: "guest-model-policy:recovered:current-selection")
+            inlineModel, app: app, value: "primary", failureID: "guest-model-policy:recovered:current-selection")
         XCTAssertTrue(loadError.waitForNonExistence(timeout: 3))
         XCTAssertEqual(input.value as? String, draft)
         XCTAssertTrue(history.exists)
@@ -222,12 +222,29 @@ final class ChatCatalogUITests: XCTestCase {
         app.buttons["Go to Chat"].tap()
     }
 
-    private func assertGuestInlineModel(_ element: XCUIElement, value: String, failureID: String) {
-        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", value), object: element)
+    private func assertGuestInlineModel(
+        _ element: XCUIElement,
+        app: XCUIApplication,
+        value: String,
+        failureID: String)
+    {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", value),
+            object: element)
         XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 3), .completed, failureID)
-        // Current iOS gates the inline menu on operator.write. This proves the
-        // Guest's visible label without granting a broader scope to open it.
-        XCTAssertFalse(element.isEnabled)
+        // Browsing sign-in does not grant model mutation; every visible choice stays disabled.
+        XCTAssertTrue(element.isEnabled)
+        element.tap()
+        XCTAssertTrue(app.buttons["chat-model-sign-in"].waitForExistence(timeout: 3))
+        let choices = app.buttons.matching(NSPredicate(
+            format: "label BEGINSWITH %@ OR label == %@ OR label BEGINSWITH %@",
+            "fixture/",
+            "Default",
+            "Default: "))
+        for choice in choices.allElementsBoundByIndex {
+            XCTAssertFalse(choice.isEnabled, failureID)
+        }
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.5)).tap()
     }
 
     private func openPolicyActions(_ app: XCUIApplication) -> XCUIElement {
