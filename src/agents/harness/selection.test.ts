@@ -1145,56 +1145,28 @@ describe("runAgentHarnessAttempt", () => {
   );
 
   it.each([
-    {
-      name: "the window the harness reported",
-      reported: 475_000,
-      source: "runtime",
-      cap: 500_000,
-      budget: 475_000,
-      window: 475_000,
-    },
-    {
-      name: "the operator cap when nothing was reported",
-      reported: undefined,
-      source: undefined,
-      cap: 500_000,
-      budget: 500_000,
-      window: 200_000,
-    },
-    {
-      name: "no budget when neither exists",
-      reported: undefined,
-      source: undefined,
-      cap: undefined,
-      budget: undefined,
-      window: 200_000,
-    },
-    {
-      name: "no budget from a startup estimate the turn never refreshed",
-      reported: 380_000,
-      source: "resolved",
-      cap: undefined,
-      budget: undefined,
-      window: 200_000,
-    },
+    ["observed window", 475_000, "runtime", 500_000, undefined, 475_000, 475_000],
+    ["configured observation", 475_000, "runtime-configured", 500_000, undefined, 475_000, 475_000],
+    ["authored cap", undefined, undefined, 500_000, undefined, 500_000, 200_000],
+    ["unknown window", undefined, undefined, undefined, undefined, undefined, 200_000],
+    ["unrefreshed estimate", 380_000, "resolved", undefined, undefined, undefined, 200_000],
+    ["resolved host budget", 475_000, "runtime", undefined, 180_000, 180_000, 200_000],
   ] as const)(
-    "gives the context engine $name for a native-owned model",
-    async ({ reported, source, cap, budget, window }) => {
+    "records context-engine completion capacity for %s",
+    async (_case, reported, source, cap, resolvedBudget, budget, window) => {
       const admission = {
         ...createTranscriptAnchor("user-1", 1, 0),
         logicalTurnId: "native-owned-turn",
         role: "user" as const,
       };
-      const terminal = createTranscriptAnchor("assistant-1", 2, 1);
       const onContextEngineTurnCandidate = vi.fn();
       const params = createAttemptParams(providerRuntimeConfig("codex", "codex"));
       registerHarness({
         runAttempt: async () => ({
           ...createAttemptResult("session-1"),
-          ...(reported === undefined
-            ? {}
-            : { contextTokens: reported, contextTokensSource: source }),
-          contextEngineTerminalAnchor: terminal,
+          contextTokens: reported,
+          contextTokensSource: source,
+          contextEngineTerminalAnchor: createTranscriptAnchor("assistant-1", 2, 1),
         }),
       });
       params.agentHarnessRuntimeOverride = "codex";
@@ -1205,9 +1177,8 @@ describe("runAgentHarnessAttempt", () => {
         sessionKey: admission.sessionKey,
         storePath: admission.storePath,
       };
-      // A native-owned model: placeholder window, no resolved budget.
       params.modelContextWindow = 200_000;
-      params.contextTokenBudget = undefined;
+      params.contextTokenBudget = resolvedBudget;
       params.authoredContextTokenCap = cap;
       params.userTurnTranscriptRecorder = createTranscriptRecorder(admission);
       params.onContextEngineTurnCandidate = onContextEngineTurnCandidate;
@@ -1223,45 +1194,6 @@ describe("runAgentHarnessAttempt", () => {
       });
     },
   );
-
-  it("keeps a resolved host budget ahead of the window the harness reported", async () => {
-    const admission = {
-      ...createTranscriptAnchor("user-1", 1, 0),
-      logicalTurnId: "host-budget-turn",
-      role: "user" as const,
-    };
-    const onContextEngineTurnCandidate = vi.fn();
-    const params = createAttemptParams(providerRuntimeConfig("codex", "codex"));
-    registerHarness({
-      runAttempt: async () => ({
-        ...createAttemptResult("session-1"),
-        contextTokens: 475_000,
-        contextTokensSource: "runtime" as const,
-        contextEngineTerminalAnchor: createTranscriptAnchor("assistant-1", 2, 1),
-      }),
-    });
-    params.agentHarnessRuntimeOverride = "codex";
-    params.sessionKey = admission.sessionKey;
-    params.sessionTarget = {
-      agentId: admission.agentId,
-      sessionId: admission.sessionId,
-      sessionKey: admission.sessionKey,
-      storePath: admission.storePath,
-    };
-    params.modelContextWindow = 272_000;
-    params.contextTokenBudget = 180_000;
-    params.userTurnTranscriptRecorder = createTranscriptRecorder(admission);
-    params.onContextEngineTurnCandidate = onContextEngineTurnCandidate;
-
-    await runAgentHarnessAttempt(params);
-
-    expect(onContextEngineTurnCandidate.mock.calls[0]?.[0]?.runtimeContext).toEqual({
-      provider: params.provider,
-      modelId: params.modelId,
-      modelContextWindow: 272_000,
-      tokenBudget: 180_000,
-    });
-  });
 
   it("drains pending context-engine turns before pinning a plugin harness", async () => {
     const order: string[] = [];

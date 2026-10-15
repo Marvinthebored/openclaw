@@ -502,8 +502,6 @@ export async function runAgentHarnessAttempt(
           : {
               provider: internalParams.provider,
               modelId: internalParams.modelId,
-              // A native-owned model has no OpenClaw budget and a placeholder window;
-              // the window its harness reported is the size the turn actually ran with.
               modelContextWindow:
                 internalParams.contextTokenBudget === undefined
                   ? (reportedContextTokens ?? internalParams.modelContextWindow)

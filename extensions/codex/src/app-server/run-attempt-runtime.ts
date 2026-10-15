@@ -122,12 +122,7 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
   const effectiveRuntimeModelId = usesSupervisionConnection
     ? (mutable.startupBinding?.model ?? "codex-native")
     : (connection.options.runtimeModelId ?? params.modelId);
-  // Core resolves no budget for a native-owned model. The window Codex reported for
-  // this session's thread, then the operator's cap, are the sizes Codex itself runs
-  // with; without one the context engine and the projection fall back to small defaults.
-  // A same-generation model switch keeps the thread, so the reported window only counts
-  // when the thread's model is the one running now. The startup reader already drops a
-  // window that a newer, unreported turn (e.g. a failed switch) has superseded.
+  // Same-generation model switches reuse the thread, but not its observed window.
   const threadReportedContextTokens = isSameCodexModelId(
     mutable.startupBinding?.model,
     effectiveRuntimeModelId,
@@ -141,6 +136,7 @@ export async function prepareCodexAttemptRuntime(connection: CodexAttemptConnect
       (threadReportedContextTokens !== undefined && params.authoredContextTokenCap !== undefined
         ? Math.min(threadReportedContextTokens, params.authoredContextTokenCap)
         : (threadReportedContextTokens ?? params.authoredContextTokenCap)));
+  // Keep observed capacity out of runtimeParams: it is not a thread policy change.
   const {
     authProfileId: _outerAuthProfileId,
     authoredContextTokenCap: _outerAuthoredContextTokenCap,

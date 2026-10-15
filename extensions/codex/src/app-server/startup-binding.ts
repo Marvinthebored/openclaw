@@ -161,21 +161,15 @@ async function readCodexAppServerRolloutTokenSnapshot(
     let position = (await handle.stat()).size;
     const partialLineFragments: Buffer[] = [];
     const applySnapshotLine = (line: string): boolean => {
-      // Walking backward, a turn_context seen before any window belongs to a newer turn
-      // that reported nothing (e.g. a failed model switch). Costs no extra reads.
-      if (
-        snapshot?.modelContextWindow === undefined &&
-        isCodexAppServerRolloutTurnContextLine(line)
-      ) {
-        snapshot ??= {};
-        snapshot.windowSupersededByNewerTurn = true;
-        return false;
-      }
       const lineSnapshot = readCodexAppServerRolloutTokenSnapshotLine(line);
       if (lineSnapshot === undefined) {
         return false;
       }
       snapshot ??= {};
+      // A newer turn without a window must not borrow an earlier model's observation.
+      if (snapshot.modelContextWindow === undefined && lineSnapshot.windowSupersededByNewerTurn) {
+        snapshot.windowSupersededByNewerTurn = true;
+      }
       snapshot.totalTokens ??= lineSnapshot.totalTokens;
       snapshot.modelContextWindow ??= lineSnapshot.modelContextWindow;
       return snapshot.totalTokens !== undefined && snapshot.modelContextWindow !== undefined;
@@ -223,18 +217,6 @@ async function readCodexAppServerRolloutTokenSnapshot(
   return snapshot;
 }
 
-function isCodexAppServerRolloutTurnContextLine(line: string): boolean {
-  if (!line.includes('"turn_context"')) {
-    return false;
-  }
-  try {
-    const parsed: unknown = JSON.parse(line);
-    return isJsonObject(parsed) && parsed.type === "turn_context";
-  } catch {
-    return false;
-  }
-}
-
 function readCodexAppServerRolloutTokenSnapshotLine(
   line: string,
 ): CodexAppServerRolloutTokenSnapshot | undefined {
@@ -243,6 +225,9 @@ function readCodexAppServerRolloutTokenSnapshotLine(
   }
   try {
     const parsed = JSON.parse(line) as JsonValue;
+    if (isJsonObject(parsed) && parsed.type === "turn_context") {
+      return { windowSupersededByNewerTurn: true };
+    }
     const payload = isJsonObject(parsed) ? parsed.payload : undefined;
     const info =
       isJsonObject(payload) && payload.type === "token_count" && isJsonObject(payload.info)
