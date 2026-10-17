@@ -225,10 +225,12 @@ describe("restricted CLI tool preparation", () => {
     },
   );
 
-  it("retains native file tools when the agent disables global workspace-only policy", async () => {
+  it("retains selected native file tools when the agent disables global workspace-only policy", async () => {
     const context = await fixture.prepare({
       provider: "claude-cli",
       sessionKey: "agent:main:main",
+      // Default managed turns are mediated; an explicit native selection keeps its contract.
+      cliToolAvailability: { native: ["Read"], openClaw: [] },
       config: {
         session: { store: fixture.session.sessionTarget.storePath },
         tools: { fs: { workspaceOnly: true }, exec: { security: "full", ask: "off" } },
