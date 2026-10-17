@@ -1,7 +1,7 @@
 import type { ResolvedCliBackend } from "../cli-backends.js";
 import { prepareConversationCapabilityProfile } from "../conversation-capability-profile.js";
-import { resolveEffectiveToolFsWorkspaceOnly } from "../tool-fs-policy.js";
 import { resolveExecConfigState } from "../exec-defaults.js";
+import { resolveEffectiveToolFsWorkspaceOnly } from "../tool-fs-policy.js";
 import { expandToolGroups, normalizeToolPolicyName } from "../tool-policy.js";
 import type { RunCliAgentParams } from "./types.js";
 
