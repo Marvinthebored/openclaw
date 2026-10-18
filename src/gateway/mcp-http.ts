@@ -316,6 +316,9 @@ async function startMcpLoopbackServer(
                   ...(boundClientGrant?.skillLibraryAuthoring
                     ? { skillLibraryAuthoring: boundClientGrant.skillLibraryAuthoring }
                     : {}),
+                  ...(boundClientGrant?.bundledTools
+                    ? { bundledTools: boundClientGrant.bundledTools }
+                    : {}),
                 }),
             );
           } catch (error) {

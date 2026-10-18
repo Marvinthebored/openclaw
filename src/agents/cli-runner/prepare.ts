@@ -133,6 +133,7 @@ import {
 import { isClaudeCliBackendId, normalizeCliModel } from "./helpers.js";
 import { prepareCliHistoryBoundary } from "./history-boundary.js";
 import { cliBackendLog } from "./log.js";
+import { prepareCliLoopbackBundleMcp } from "./loopback-bundle-mcp.js";
 import { mintCliMcpClientGrant } from "./mcp-client-grant.js";
 import { buildCliMcpGrantContext } from "./mcp-grant-context.js";
 import { resolveCliCatalogCapabilities } from "./model-capabilities.js";
@@ -742,6 +743,35 @@ async function prepareCliRunContextWithinReadFence(
       }
     : undefined;
   params.assertCurrent?.();
+  // Exclusive runs cannot hand configured MCP servers to the CLI. Serve them
+  // through the loopback bridge so every turn lists the same tools.
+  await using loopbackBundleMcp =
+    mcpLoopbackRuntime &&
+    mcpContextBase &&
+    (params.cliToolAvailability !== undefined ||
+      shouldMaterializeRuntimePolicy ||
+      promptBuildRestrictsTools)
+      ? await prepareCliLoopbackBundleMcp({
+          run: params,
+          config: runConfig,
+          workspaceDir,
+          agentId: sessionAgentId,
+          agentDir,
+          resolveCapabilityProfile: () =>
+            mcp.resolveCliNativeMcpPolicy(params, {
+              config: runConfig,
+              policySessionKey,
+              policyAgentId,
+              modelProvider,
+              modelId,
+              workspaceDir,
+              cwd,
+              runtimeToolsAllowPolicy,
+            }),
+          runtimeToolsAllow: runtimeToolsAllowPolicy,
+        })
+      : undefined;
+  params.assertCurrent?.();
   const mcpProjection = mcpContextBase
     ? await mcp.prepareCliMcpToolProjection(params, {
         agentId: workspaceResolution.agentId,
@@ -751,6 +781,7 @@ async function prepareCliRunContextWithinReadFence(
         scope: {
           cfg: runConfig,
           ...(skillLibraryAuthoring ? { skillLibraryAuthoring } : {}),
+          ...(loopbackBundleMcp ? { bundledTools: loopbackBundleMcp.tools } : {}),
           ...(mcpToolAuth ? { authProfileStore: mcpToolAuth.store } : {}),
           ...(mcpToolAuth?.agentDir ? { authProfileStoreAgentDir: mcpToolAuth.agentDir } : {}),
         },
@@ -952,12 +983,17 @@ async function prepareCliRunContextWithinReadFence(
             bindQuestionAnswerAuthority: (assertActive) =>
               bindQuestionAnswerAuthorityForSession(mcpGrant.context.sessionKey, assertActive),
             ...(skillLibraryAuthoring ? { skillLibraryAuthoring } : {}),
+            ...(loopbackBundleMcp ? { bundledTools: loopbackBundleMcp.tools } : {}),
             ...(mcpToolAuth ? { toolAuth: mcpToolAuth } : {}),
           })
         : undefined;
     const mcpClientGrant = mcpClient?.grant;
     // The grant's cleanup also releases the memory audience leased for this turn.
-    const cleanupMcpClientGrant = mcpClient?.cleanup;
+    // Configured MCP tools close only after their grant can no longer reach them.
+    const cleanupMcpClientGrant = sequenceCliCleanups(
+      mcpClient?.cleanup,
+      loopbackBundleMcp?.takeCleanup(),
+    );
     cleanupPreparedResources = cleanupMcpClientGrant;
     const bindMcpClientGrantAdmission = (
       admittedRunContext: NonNullable<RunCliAgentParams["admittedRunContext"]>,
