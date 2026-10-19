@@ -113,6 +113,7 @@ final class OpenClawSnapshotUITests: XCTestCase {
 
         let stop = app.buttons["Stop response"]
         XCTAssertTrue(stop.waitForExistence(timeout: 5))
+        self.waitForEnabled(stop)
         stop.tap()
         XCTAssertTrue(stop.waitForNonExistence(timeout: 8))
         self.attachScreenshot(named: "dup-filter-settled")
@@ -156,7 +157,9 @@ final class OpenClawSnapshotUITests: XCTestCase {
         let showsWaiting = waiting.waitForExistence(timeout: 5)
         self.attachScreenshot(named: "startup-status-waiting")
         XCTAssertTrue(showsWaiting, "STARTUP_STATUS_MISSING: waiting run has no Gateway startup label")
-        app.buttons["Stop response"].tap()
+        let stop = app.buttons["Stop response"]
+        self.waitForEnabled(stop)
+        stop.tap()
         XCTAssertTrue(waiting.waitForNonExistence(timeout: 5))
     }
 
@@ -701,6 +704,51 @@ final class OpenClawSnapshotUITests: XCTestCase {
         self.attachScreenshot(named: "chat-composer-paste-image")
     }
 
+    func testStopIgnoresTapsForAMomentAfterItReplacesSend() throws {
+        self.launchApp(
+            for: ScreenshotTarget(
+                initialTab: "chat",
+                initialDestination: "chat",
+                name: "chat-stop-guard"),
+            additionalArguments: ["--openclaw-hold-initial-chat-run", "-openClawChatStopGuardMs", "8000"])
+
+        let app = try XCTUnwrap(self.app)
+        let input = self.chatMessageInput(in: app)
+        XCTAssertTrue(input.waitForExistence(timeout: 8))
+        input.tap()
+        input.typeText("Keep this response running.")
+
+        let send = app.buttons["chat-send-message"]
+        XCTAssertTrue(send.waitForExistence(timeout: 5))
+        self.waitForEnabled(send)
+        send.tap()
+
+        // Stop takes Send's place under the finger, so the second tap of a double tap lands on Stop.
+        let stop = app.buttons["Stop response"]
+        XCTAssertTrue(stop.waitForExistence(timeout: 8))
+        let isInertAfterSend = !stop.isEnabled
+        self.attachScreenshot(named: "stop-guard-after-send")
+        XCTAssertTrue(isInertAfterSend, "STOP_GUARD_MISSING: Stop is live the moment it replaces Send")
+        stop.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertFalse(
+            stop.waitForNonExistence(timeout: 1.5),
+            "STOP_GUARD_MISSING: a tap right after Stop appeared stopped the response")
+
+        // Stop leaves while a draft is typed and is inert again when it returns.
+        input.tap()
+        input.typeText("x")
+        XCTAssertTrue(stop.waitForNonExistence(timeout: 5))
+        self.clearTextField(input)
+        XCTAssertTrue(stop.waitForExistence(timeout: 5))
+        XCTAssertFalse(stop.isEnabled, "STOP_GUARD_MISSING: Stop is live the moment it reappears")
+
+        // A deliberate tap once Stop is armed still stops the response.
+        self.waitForEnabled(stop, timeout: 12)
+        self.attachScreenshot(named: "stop-guard-armed")
+        stop.tap()
+        XCTAssertTrue(stop.waitForNonExistence(timeout: 8))
+    }
+
     func testVoiceNoteDraftKeepsStopAvailableDuringActiveResponse() throws {
         try XCTSkipIf(UIDevice.current.userInterfaceIdiom != .phone, "Phone voice-note composer proof only")
         self.launchApp(
@@ -723,7 +771,7 @@ final class OpenClawSnapshotUITests: XCTestCase {
 
         let stop = app.buttons["Stop response"]
         XCTAssertTrue(stop.waitForExistence(timeout: 8))
-        XCTAssertTrue(stop.isEnabled)
+        self.waitForEnabled(stop)
 
         let microphone = app.buttons["chat-dictation-control"]
         XCTAssertTrue(microphone.waitForExistence(timeout: 5))
@@ -740,7 +788,7 @@ final class OpenClawSnapshotUITests: XCTestCase {
         let voiceNote = app.staticTexts["Voice note"]
         XCTAssertTrue(voiceNote.waitForExistence(timeout: 8))
         XCTAssertTrue(stop.waitForExistence(timeout: 5))
-        XCTAssertTrue(stop.isEnabled)
+        self.waitForEnabled(stop)
         self.attachScreenshot(named: "voice-note-stop-active-response")
 
         stop.tap()
@@ -2108,8 +2156,8 @@ extension OpenClawSnapshotUITests {
         return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 
-    private func waitForEnabled(_ element: XCUIElement) {
-        XCTAssertTrue(element.wait(for: \.isEnabled, toEqual: true, timeout: 5))
+    private func waitForEnabled(_ element: XCUIElement, timeout: TimeInterval = 5) {
+        XCTAssertTrue(element.wait(for: \.isEnabled, toEqual: true, timeout: timeout))
     }
 
     private func waitForHittable(_ isHittable: Bool, of element: XCUIElement) {
