@@ -8,10 +8,12 @@ import {
 import { replaceSessionEntrySync } from "../../config/sessions/session-accessor.js";
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import type { mintMcpLoopbackClientGrant as MintMcpLoopbackClientGrant } from "../../gateway/mcp-grant-store.js";
+import { handleMcpJsonRpc } from "../../gateway/mcp-http.handlers.js";
 import {
   resolveMcpLoopbackPolicyTools,
   resolveMcpLoopbackScopedTools,
 } from "../../gateway/mcp-http.runtime.js";
+import { buildMcpToolSchema } from "../../gateway/mcp-http.schema.js";
 import type { CliBackendPlugin } from "../../plugins/cli-backend.types.js";
 import { createTestGatewayScheduler } from "../../test-utils/gateway-scheduler-clock.js";
 import { setSessionMcpRuntimeScheduler } from "../agent-bundle-mcp-manager-api.js";
@@ -46,6 +48,84 @@ const claudeBackend: CliBackendPlugin & { pluginId: string } = {
     sessionMode: "existing",
   },
 };
+
+async function startProbeServer() {
+  const state = { calls: 0 };
+  const server = http.createServer((request, response) => {
+    void (async () => {
+      if (request.method !== "POST") {
+        response.writeHead(request.method === "DELETE" ? 200 : 405).end();
+        return;
+      }
+      const chunks: Buffer[] = [];
+      for await (const chunk of request) {
+        chunks.push(Buffer.from(chunk));
+      }
+      const message = JSON.parse(Buffer.concat(chunks).toString()) as {
+        id?: number;
+        method: string;
+        params?: { protocolVersion?: string; arguments?: { word?: string } };
+      };
+      if (message.method === "tools/call") {
+        state.calls += 1;
+      }
+      const result =
+        message.method === "initialize"
+          ? {
+              protocolVersion: message.params?.protocolVersion,
+              capabilities: { tools: {} },
+              serverInfo: { name: "probe", version: "1" },
+            }
+          : message.method === "tools/list"
+            ? {
+                tools: [
+                  {
+                    name: "echo",
+                    description: "Echo a word.",
+                    inputSchema: { type: "object", properties: { word: { type: "string" } } },
+                  },
+                ],
+              }
+            : message.method === "tools/call"
+              ? {
+                  content: [{ type: "text", text: `probe:${message.params?.arguments?.word}` }],
+                }
+              : undefined;
+      if (!result) {
+        response.writeHead(202).end();
+        return;
+      }
+      response.setHeader("content-type", "application/json");
+      response.end(JSON.stringify({ jsonrpc: "2.0", id: message.id, result }));
+    })().catch(() => response.writeHead(500).end());
+  });
+  await new Promise<void>((resolve) => {
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const address = server.address();
+  if (!address || typeof address === "string") {
+    throw new Error("MCP probe server did not acquire a loopback port");
+  }
+  return {
+    port: address.port,
+    get calls() {
+      return state.calls;
+    },
+    close: async () => {
+      server.closeAllConnections();
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+      });
+    },
+  };
+}
+
+function expectDefinedGrant<T>(grant: T | undefined): T {
+  if (!grant) {
+    throw new Error("CLI preparation did not mint a loopback grant");
+  }
+  return grant;
+}
 
 describe("configured MCP servers on exclusive CLI turns", () => {
   let fixture: ReturnType<typeof createCliRunnerPrepareFixture>;
@@ -98,62 +178,7 @@ describe("configured MCP servers on exclusive CLI turns", () => {
     "serves $name configured MCP servers through the loopback on every turn",
     async ({ allow, deny, childAllow }) => {
       const { sessionTarget } = fixture.session;
-      let serverCalls = 0;
-      const server = http.createServer((request, response) => {
-        void (async () => {
-          if (request.method !== "POST") {
-            response.writeHead(request.method === "DELETE" ? 200 : 405).end();
-            return;
-          }
-          const chunks: Buffer[] = [];
-          for await (const chunk of request) {
-            chunks.push(Buffer.from(chunk));
-          }
-          const message = JSON.parse(Buffer.concat(chunks).toString()) as {
-            id?: number;
-            method: string;
-            params?: { protocolVersion?: string; arguments?: { word?: string } };
-          };
-          if (message.method === "tools/call") {
-            serverCalls += 1;
-          }
-          const result =
-            message.method === "initialize"
-              ? {
-                  protocolVersion: message.params?.protocolVersion,
-                  capabilities: { tools: {} },
-                  serverInfo: { name: "probe", version: "1" },
-                }
-              : message.method === "tools/list"
-                ? {
-                    tools: [
-                      {
-                        name: "echo",
-                        description: "Echo a word.",
-                        inputSchema: { type: "object", properties: { word: { type: "string" } } },
-                      },
-                    ],
-                  }
-                : message.method === "tools/call"
-                  ? {
-                      content: [{ type: "text", text: `probe:${message.params?.arguments?.word}` }],
-                    }
-                  : undefined;
-          if (!result) {
-            response.writeHead(202).end();
-            return;
-          }
-          response.setHeader("content-type", "application/json");
-          response.end(JSON.stringify({ jsonrpc: "2.0", id: message.id, result }));
-        })().catch(() => response.writeHead(500).end());
-      });
-      await new Promise<void>((resolve) => {
-        server.listen(0, "127.0.0.1", resolve);
-      });
-      const address = server.address();
-      if (!address || typeof address === "string") {
-        throw new Error("MCP probe server did not acquire a loopback port");
-      }
+      const probeServer = await startProbeServer();
       const childSessionKey = "agent:main:subagent:configured-mcp";
       replaceSessionEntrySync(
         { storePath: sessionTarget.storePath, sessionKey: childSessionKey },
@@ -172,7 +197,10 @@ describe("configured MCP servers on exclusive CLI turns", () => {
         tools: { allow, deny },
         mcp: {
           servers: {
-            probe: { transport: "streamable-http", url: `http://127.0.0.1:${address.port}/mcp` },
+            probe: {
+              transport: "streamable-http",
+              url: `http://127.0.0.1:${probeServer.port}/mcp`,
+            },
           },
         },
       };
@@ -239,10 +267,7 @@ describe("configured MCP servers on exclusive CLI turns", () => {
       } finally {
         await disposeAllSessionMcpRuntimes();
         await scheduler.stop();
-        server.closeAllConnections();
-        await new Promise<void>((resolve, reject) => {
-          server.close((error) => (error ? reject(error) : resolve()));
-        });
+        await probeServer.close();
       }
       const expectedTools = deny.length > 0 ? ["read"] : ["probe__echo", "read"];
       expect(turns[0]).toEqual({
@@ -262,7 +287,75 @@ describe("configured MCP servers on exclusive CLI turns", () => {
           : turns[0],
       );
       expect(turns[2]).toEqual(turns[0]);
-      expect(serverCalls).toBe(deny.length > 0 ? 0 : childAllow ? 2 : 3);
+      expect(probeServer.calls).toBe(deny.length > 0 ? 0 : childAllow ? 2 : 3);
     },
   );
+  it("rechecks loopback grant authority at configured-server I/O", async () => {
+    const { sessionTarget } = fixture.session;
+    const probeServer = await startProbeServer();
+    const config: OpenClawConfig = {
+      session: { store: sessionTarget.storePath },
+      plugins: { enabled: false },
+      tools: { allow: ["read", "probe__*"] },
+      mcp: {
+        servers: {
+          probe: { transport: "streamable-http", url: `http://127.0.0.1:${probeServer.port}/mcp` },
+        },
+      },
+    };
+    const scheduler = createTestGatewayScheduler();
+    const outcomes: string[] = [];
+    try {
+      await setSessionMcpRuntimeScheduler(scheduler);
+      const context = await fixture.prepare({
+        sessionKey: sessionTarget.sessionKey,
+        sessionId: sessionTarget.sessionId,
+        provider: "claude-cli",
+        model: "opus",
+        modelHasVision: false,
+        sourceReplyDeliveryMode: "automatic",
+        config,
+      });
+      try {
+        const minted = expectDefinedGrant(mintGrant.mock.lastCall?.[0]);
+        const { tools } = await resolveMcpLoopbackScopedTools({
+          cfg: config,
+          context: minted.context,
+          admittedRunContext: context.params.admittedRunContext,
+          ...(minted.bundledTools ? { bundledTools: minted.bundledTools } : {}),
+        });
+        const call = async (authorizeToolCall: () => boolean) => {
+          const response = (await handleMcpJsonRpc({
+            message: {
+              jsonrpc: "2.0",
+              id: 1,
+              method: "tools/call",
+              params: { name: "probe__echo", arguments: { word: "pong" } },
+            },
+            tools,
+            toolSchema: buildMcpToolSchema(tools),
+            authorizeToolCall,
+          })) as { result: { content: Array<{ text: string }>; isError: boolean } };
+          const text = response.result.content[0]?.text ?? "";
+          outcomes.push(
+            `${response.result.isError}:${text.includes("Tool call authorization expired") ? "expired" : text}`,
+          );
+        };
+        await call(() => true);
+        // Revoked (or lineage reassigned) after the handler's pre-call check:
+        // the configured-server session wait ends without reaching the server.
+        const authorize = vi.fn<() => boolean>().mockReturnValueOnce(true).mockReturnValue(false);
+        await call(authorize);
+        expect(authorize.mock.calls.length).toBeGreaterThan(1);
+      } finally {
+        await context.preparedBackend.cleanup?.();
+      }
+    } finally {
+      await disposeAllSessionMcpRuntimes();
+      await scheduler.stop();
+      await probeServer.close();
+    }
+    expect(outcomes).toEqual(["false:probe:pong", "true:expired"]);
+    expect(probeServer.calls).toBe(1);
+  });
 });

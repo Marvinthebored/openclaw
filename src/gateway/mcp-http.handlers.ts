@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import type { ContentBlock } from "@modelcontextprotocol/client";
 import { ContentBlockSchema } from "@modelcontextprotocol/core";
 import { isRecord } from "@openclaw/normalization-core/record-coerce";
+import { runWithSessionMcpToolCallAuthority } from "../agents/agent-bundle-mcp-request-context.js";
 import { runBeforeToolCallHook, type HookContext } from "../agents/agent-tools.before-tool-call.js";
 import { extractToolErrorMessage } from "../agents/embedded-agent-tool-results.js";
 import { runAgentHarnessAfterToolCallHook } from "../agents/harness/hook-helpers.js";
@@ -210,7 +211,16 @@ export async function handleMcpJsonRpc(params: {
         }
         let result: Awaited<ReturnType<typeof tool.execute>>;
         try {
-          result = await tool.execute(toolCallId, finalizedToolArgs, params.signal);
+          const { authorizeToolCall } = params;
+          result = await runWithSessionMcpToolCallAuthority(
+            authorizeToolCall &&
+              (() => {
+                if (!authorizeToolCall()) {
+                  throw new Error("Tool call authorization expired");
+                }
+              }),
+            () => tool.execute(toolCallId, finalizedToolArgs, params.signal),
+          );
         } catch (error) {
           throw tool.resultContentSource === "network"
             ? protectNetworkToolExecutionError(error, "tool execution failed", params.signal)

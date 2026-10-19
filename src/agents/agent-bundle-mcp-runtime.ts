@@ -17,6 +17,7 @@ import {
 import {
   getSessionMcpRequestSignal,
   runWithSessionMcpRequestSignal,
+  getSessionMcpToolCallAuthority,
 } from "./agent-bundle-mcp-request-context.js";
 import type { loadSessionMcpConfig } from "./agent-bundle-mcp-runtime-config.js";
 import { createSessionMcpRuntimeParts } from "./agent-bundle-mcp-runtime-parts.js";
@@ -766,12 +767,22 @@ function createServerMcpRuntime(
       lastUsedAt = Date.now();
     },
     async callTool(requestedServer, toolName, input, options) {
+      // Captured before any wait: a loopback caller's grant must still be live
+      // when the server is reached, including after a reconnection.
+      const callerAuthority = getSessionMcpToolCallAuthority();
+      const assertCurrent =
+        callerAuthority && options?.assertCurrent
+          ? () => {
+              callerAuthority();
+              options.assertCurrent?.();
+            }
+          : (callerAuthority ?? options?.assertCurrent);
       const session = await getActiveSession(requestedServer);
       const validateResult = session.toolMetadata?.validatorForCall(toolName);
       const result = await runGuardedMcpRequest(session, (signal, holdForHumanInput) => {
-        options?.assertCurrent?.();
+        assertCurrent?.();
         const call = () =>
-          withGuardedFetchRequestAuthority(options?.assertCurrent, () =>
+          withGuardedFetchRequestAuthority(assertCurrent, () =>
             session.client.request(
               {
                 method: "tools/call",

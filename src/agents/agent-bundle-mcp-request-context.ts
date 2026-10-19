@@ -22,3 +22,21 @@ export function runWithSessionMcpRequestSignal<T>(
 ): T {
   return signal ? requestSignals.run(signal, run) : run();
 }
+
+const CALL_AUTHORITY_KEY = Symbol.for("openclaw.sessionMcpToolCallAuthority");
+const callAuthorities = resolveGlobalSingleton<AsyncLocalStorage<() => void>>(
+  CALL_AUTHORITY_KEY,
+  () => new AsyncLocalStorage(),
+);
+
+/** Caller-owned liveness check that MCP tools/call re-runs immediately before server I/O. */
+export function getSessionMcpToolCallAuthority(): (() => void) | undefined {
+  return callAuthorities.getStore();
+}
+
+export function runWithSessionMcpToolCallAuthority<T>(
+  assertCurrent: (() => void) | undefined,
+  run: () => T,
+): T {
+  return assertCurrent ? callAuthorities.run(assertCurrent, run) : run();
+}
