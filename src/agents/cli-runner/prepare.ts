@@ -157,6 +157,7 @@ import {
   resolveAutoCliSessionReseedHistoryChars,
 } from "./session-history.js";
 import { resolveCliSkillsPrompt } from "./skills-prompt.js";
+import { resolveStableCliSkillAuthoring } from "./stable-skill-authoring.js";
 import { captureCliRunToolAuthority } from "./tool-authority.js";
 import {
   captureCliRunStartTime,
@@ -718,9 +719,12 @@ async function prepareCliRunContextWithinReadFence(
   const shouldMaterializeRuntimePolicy =
     runtimeToolsAllowPolicy !== undefined && canUseGatewayTools && params.disableTools !== true;
   const skillLibraryAuthoring: RunCliAgentParams["skillLibraryAuthoring"] =
-    nodeWorkshopEnabled && params.skillLibraryAuthoring
-      ? { ...params.skillLibraryAuthoring, defaultTarget: "personal" }
-      : params.skillLibraryAuthoring;
+    resolveStableCliSkillAuthoring(
+      params.sessionKey,
+      nodeWorkshopEnabled && params.skillLibraryAuthoring
+        ? { ...params.skillLibraryAuthoring, defaultTarget: "personal" }
+        : params.skillLibraryAuthoring,
+    );
   const mcpContextBase =
     mcpLoopbackRuntime || shouldMaterializeRuntimePolicy || nodeWorkshopEnabled
       ? buildCliMcpGrantContext({
