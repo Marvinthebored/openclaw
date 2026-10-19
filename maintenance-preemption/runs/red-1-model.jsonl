@@ -1,0 +1,12 @@
+{"ts":"2026-10-19T04:20:27.390Z","ms":1792383627391,"event":"server-ready","pid":55721,"port":63390}
+{"ts":"2026-10-19T04:22:40.033Z","ms":1792383760033,"event":"request-received","id":1,"url":"/v1/chat/completions","maintenance":false,"turn":1,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T04:22:40.035Z","ms":1792383760035,"event":"response-sent","id":1,"maintenance":false,"turn":1}
+{"ts":"2026-10-19T04:22:42.470Z","ms":1792383762470,"event":"request-received","id":2,"url":"/v1/chat/completions","maintenance":true,"turn":null,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T04:22:42.470Z","ms":1792383762470,"event":"stall-active","id":2}
+{"ts":"2026-10-19T04:23:22.544Z","ms":1792383802544,"event":"release-observed","id":2}
+{"ts":"2026-10-19T04:23:22.545Z","ms":1792383802545,"event":"response-sent","id":2,"maintenance":true,"turn":null}
+{"ts":"2026-10-19T04:23:23.318Z","ms":1792383803318,"event":"request-received","id":3,"url":"/v1/chat/completions","maintenance":false,"turn":2,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T04:23:23.318Z","ms":1792383803318,"event":"response-sent","id":3,"maintenance":false,"turn":2}
+{"ts":"2026-10-19T04:23:23.370Z","ms":1792383803370,"event":"request-received","id":4,"url":"/v1/chat/completions","maintenance":true,"turn":null,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T04:23:23.370Z","ms":1792383803370,"event":"response-sent","id":4,"maintenance":true,"turn":null}
+{"ts":"2026-10-19T04:23:23.676Z","ms":1792383803676,"event":"server-stopping","pid":55721}

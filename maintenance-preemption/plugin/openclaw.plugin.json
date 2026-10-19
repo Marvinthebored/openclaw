@@ -1,0 +1,9 @@
+{
+  "id": "maint-preempt-fixture",
+  "kind": "context-engine",
+  "name": "Isolated Maintenance Probe",
+  "configSchema": {
+    "type": "object",
+    "properties": {}
+  }
+}

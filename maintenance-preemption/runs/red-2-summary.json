@@ -1,0 +1,22 @@
+{
+  "tree": "stock",
+  "run": "2",
+  "commit": "ecb279c9b54a335803b4bda5f8753403790bfd4d",
+  "endingCommit": "ecb279c9b54a335803b4bda5f8753403790bfd4d",
+  "workingTreeDirty": false,
+  "sourceDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sourceStable": true,
+  "sent2Ms": 1792383921724,
+  "sent2Ts": "2026-10-19T04:25:21.724Z",
+  "admissionMs": 1792383963987,
+  "admissionTs": "2026-10-19T04:26:03.987Z",
+  "admissionLatencyMs": 42263,
+  "replyLatencyMs": 42521,
+  "maintenanceRequestTs": "2026-10-19T04:25:21.700Z",
+  "aborted": false,
+  "abortTs": null,
+  "abortBeforeAdmission": false,
+  "disposeTs": "2026-10-19T04:26:01.992Z",
+  "disposeBeforeAdmission": true,
+  "stockCapHit": true
+}

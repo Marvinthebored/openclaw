@@ -1,0 +1,11 @@
+{"ts":"2026-10-19T04:58:28.727Z","ms":1792385908728,"event":"server-ready","pid":89104,"port":58587}
+{"ts":"2026-10-19T05:00:09.385Z","ms":1792386009385,"event":"request-received","id":1,"url":"/v1/chat/completions","maintenance":false,"turn":1,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T05:00:09.387Z","ms":1792386009387,"event":"response-sent","id":1,"maintenance":false,"turn":1}
+{"ts":"2026-10-19T05:00:11.498Z","ms":1792386011498,"event":"request-received","id":2,"url":"/v1/chat/completions","maintenance":true,"turn":null,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T05:00:11.498Z","ms":1792386011498,"event":"stall-active","id":2}
+{"ts":"2026-10-19T05:00:11.587Z","ms":1792386011587,"event":"client-disconnected","id":2,"maintenance":true,"turn":null}
+{"ts":"2026-10-19T05:00:11.913Z","ms":1792386011913,"event":"request-received","id":3,"url":"/v1/chat/completions","maintenance":false,"turn":2,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T05:00:11.913Z","ms":1792386011913,"event":"response-sent","id":3,"maintenance":false,"turn":2}
+{"ts":"2026-10-19T05:00:12.002Z","ms":1792386012002,"event":"request-received","id":4,"url":"/v1/chat/completions","maintenance":true,"turn":null,"stream":true,"model":"local-fixture"}
+{"ts":"2026-10-19T05:00:12.002Z","ms":1792386012002,"event":"stall-active","id":4}
+{"ts":"2026-10-19T05:00:12.436Z","ms":1792386012436,"event":"server-stopping","pid":89104}

@@ -1,0 +1,22 @@
+{
+  "tree": "patched",
+  "run": "final2",
+  "commit": "47b064249d41a5d09e1ebe28e03d307d0ad326c3",
+  "endingCommit": "47b064249d41a5d09e1ebe28e03d307d0ad326c3",
+  "workingTreeDirty": false,
+  "sourceDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sourceStable": true,
+  "sent2Ms": 1792386011538,
+  "sent2Ts": "2026-10-19T05:00:11.538Z",
+  "admissionMs": 1792386011913,
+  "admissionTs": "2026-10-19T05:00:11.913Z",
+  "admissionLatencyMs": 375,
+  "replyLatencyMs": 460,
+  "maintenanceRequestTs": "2026-10-19T05:00:11.498Z",
+  "aborted": true,
+  "abortTs": "2026-10-19T05:00:11.587Z",
+  "abortBeforeAdmission": true,
+  "disposeTs": "2026-10-19T05:00:11.599Z",
+  "disposeBeforeAdmission": true,
+  "stockCapHit": false
+}
