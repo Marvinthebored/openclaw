@@ -42,7 +42,11 @@ import {
 import { applyMcpConnectionOverride } from "./mcp-connection-resolver.js";
 import { isMcpMethodNotFoundError, redactMcpDiagnosticError } from "./mcp-error.js";
 import { createMcpJsonSchemaValidator } from "./mcp-json-schema-validator.js";
-import { buildMcpClientCapabilities, summarizeServerCapabilities } from "./mcp-metadata.js";
+import {
+  buildMcpClientCapabilities,
+  sanitizeMcpMetadataText,
+  summarizeServerCapabilities,
+} from "./mcp-metadata.js";
 import {
   mcpCallToolResultSchema,
   mcpGetPromptResultSchema,
@@ -586,6 +590,7 @@ function createServerMcpRuntime(
           capabilities,
           serverVersion: session.client.getServerVersion(),
           serverCapabilities: session.client.getServerCapabilities(),
+          instructions: sanitizeMcpMetadataText(session.client.getInstructions()),
           pluginId: loaded.pluginIdsByServer?.[serverName],
           connection: resolved,
         });

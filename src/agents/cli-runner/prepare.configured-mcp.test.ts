@@ -16,6 +16,7 @@ import {
 import { buildMcpToolSchema } from "../../gateway/mcp-http.schema.js";
 import type { CliBackendPlugin } from "../../plugins/cli-backend.types.js";
 import { createTestGatewayScheduler } from "../../test-utils/gateway-scheduler-clock.js";
+import { resolveBundleMcpServerInstructions } from "../agent-bundle-mcp-instructions.js";
 import { setSessionMcpRuntimeScheduler } from "../agent-bundle-mcp-manager-api.js";
 import { disposeAllSessionMcpRuntimes } from "../agent-bundle-mcp-tools.js";
 import { testing as cliBackendsTesting } from "../cli-backends.test-support.js";
@@ -75,6 +76,7 @@ async function startProbeServer() {
               protocolVersion: message.params?.protocolVersion,
               capabilities: { tools: {} },
               serverInfo: { name: "probe", version: "1" },
+              instructions: "PROBE_GUIDANCE: echo one word per call.",
             }
           : message.method === "tools/list"
             ? {
@@ -253,9 +255,19 @@ describe("configured MCP servers on exclusive CLI turns", () => {
                 })
               : { tools: [] };
             const probe = scoped.tools.find((tool) => tool.name === "probe__echo");
+            const initialized = (await handleMcpJsonRpc({
+              message: { jsonrpc: "2.0", id: 1, method: "initialize", params: {} },
+              tools: scoped.tools,
+              toolSchema: buildMcpToolSchema(scoped.tools),
+              serverInstructions: resolveBundleMcpServerInstructions(
+                minted?.bundledTools,
+                new Set(buildMcpToolSchema(scoped.tools).map((entry) => entry.name)),
+              ),
+            })) as { result: { instructions?: string } };
             turns.push({
               toolsAllow: minted?.context.toolsAllow?.toSorted(),
               listed: scoped.tools.map((tool) => tool.name).toSorted(),
+              instructions: initialized.result.instructions,
               result: probe
                 ? getTextContent(await probe.execute("configured-mcp", { word: "pong" }))
                 : undefined,
@@ -273,6 +285,10 @@ describe("configured MCP servers on exclusive CLI turns", () => {
       expect(turns[0]).toEqual({
         toolsAllow: expectedTools,
         listed: expectedTools,
+        // Native Claude saw the server's guidance; the bridge keeps it, unless
+        // the server has no listed tools.
+        instructions:
+          deny.length > 0 ? undefined : "## probe\nPROBE_GUIDANCE: echo one word per call.",
         result: deny.length > 0 ? undefined : "probe:pong",
       });
       // One catalog for ordinary and completion turns keeps the Claude prefix stable.

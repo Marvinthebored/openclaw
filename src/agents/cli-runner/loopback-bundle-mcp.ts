@@ -1,5 +1,6 @@
 import type { OpenClawConfig } from "../../config/types.openclaw.js";
 import { getPluginToolMeta } from "../../plugins/tool-metadata.js";
+import { setBundleMcpToolServerInstructions } from "../agent-bundle-mcp-instructions.js";
 import { TOOL_NAME_SEPARATOR } from "../agent-bundle-mcp-names.js";
 import { loadSessionMcpConfig } from "../agent-bundle-mcp-runtime-config.js";
 import {
@@ -102,6 +103,15 @@ export async function prepareCliLoopbackBundleMcp(params: {
       ...acquisition,
       agentId: params.agentId,
     });
+    // Claude received server instructions over its native connection; keep
+    // them with the bridged tools so the loopback can serve them.
+    const servers = acquisition.runtime.peekCatalog()?.servers ?? {};
+    for (const tool of materialized.tools) {
+      const serverName = getPluginToolMeta(tool)?.mcp?.serverName;
+      if (serverName && Object.hasOwn(servers, serverName)) {
+        setBundleMcpToolServerInstructions(tool, serverName, servers[serverName]?.instructions);
+      }
+    }
   } catch (error) {
     cliBackendLog.warn(`configured MCP servers unavailable for this CLI run: ${String(error)}`);
     return undefined;

@@ -66,6 +66,8 @@ export async function handleMcpJsonRpc(params: {
   message: JsonRpcRequest;
   tools: McpLoopbackTool[];
   toolSchema: McpToolSchemaEntry[];
+  /** Upstream guidance for bridged configured MCP servers, sent on initialize. */
+  serverInstructions?: string;
   hookContext?: HookContext;
   signal?: AbortSignal;
   /** Revalidate short-lived client authority immediately before side effects. */
@@ -97,6 +99,7 @@ export async function handleMcpJsonRpc(params: {
           name: MCP_LOOPBACK_SERVER_NAME,
           version: MCP_LOOPBACK_SERVER_VERSION,
         },
+        ...(params.serverInstructions ? { instructions: params.serverInstructions } : {}),
       });
     }
     case "notifications/initialized":
