@@ -15,9 +15,10 @@ const shapes = new Map<string, SkillAuthoringShape>();
  * Only human turns receive personal-library authority, so completion and other
  * internal turns would otherwise publish a different skill_workshop schema and
  * break the native prompt cache. Those turns reuse the session's last shape
- * with an expired grant: the definition matches and every call is refused,
- * including Workshop calls routed through the workspace-default wrapper, so a
- * sandboxed internal turn cannot reach Workshop through this definition.
+ * with an expired grant: the definition matches and personal-library calls are
+ * refused. Workshop calls through the workspace-default wrapper keep the
+ * ordinary no-grant rule (unsandboxed runs only), so this definition neither
+ * revokes nor widens workspace access.
  */
 export function resolveStableCliSkillAuthoring(
   sessionKey: string | undefined,
@@ -52,8 +53,13 @@ export function resolveStableCliSkillAuthoring(
     defaultTarget: shape.defaultTarget,
     multipleProfiles: shape.multipleProfiles,
     bind: () => {},
-    assertWorkspaceCurrent: () => {
-      throw expired();
+    assertWorkspaceCurrent: (run) => {
+      if (run?.sandboxed !== false) {
+        throw new SkillLibraryError(
+          "FORBIDDEN",
+          "Workshop is unavailable in a sandboxed run without library-authoring authority.",
+        );
+      }
     },
     invoke: async () => {
       throw expired();
