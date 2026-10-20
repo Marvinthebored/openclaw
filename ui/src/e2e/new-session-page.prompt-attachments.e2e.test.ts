@@ -131,7 +131,7 @@ suite.define(() => {
     }
   });
 
-  it("grows the first prompt downward with a ten-line floor, then scrolls at the pane limit", async () => {
+  it("grows the first prompt downward past ten lines, then scrolls at the pane limit", async () => {
     await withNewSessionPage(async (page) => {
       const gateway = await installMockGateway(page);
       await page.emulateMedia({ reducedMotion: "reduce" });
