@@ -16,11 +16,16 @@
 }
 
 .agent-chat__composer-shell {
+  --chat-composer-inline-inset: 18px;
+
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: end;
   gap: 6px;
+  /* Overrides the shared width above with the draggable composer width. */
+  width: calc(100% - 2 * var(--chat-composer-inline-inset));
+  max-width: var(--chat-thread-drag-width, var(--chat-thread-max-width, 48rem));
   margin-block: var(--chat-composer-top-margin, 8px) var(--chat-composer-bottom-gap, 14px);
 }
 .agent-chat__composer-notices {
@@ -1246,7 +1251,6 @@
 
   /* New Session can load composer styles before the chat layout defaults. */
   .chat-thread-inner,
-  .agent-chat__composer-shell,
   .new-session-page__blocked-submit.agent-chat__composer-status,
   .chat-footer > openclaw-plugin-view > .chat-footer__context {
     /* Physical insets belong to the app; every route centers inside that
@@ -1257,6 +1261,7 @@
   }
 
   .agent-chat__composer-shell {
+    --chat-composer-inline-inset: var(--chat-mobile-edge-inset);
     --chat-composer-bottom-gap: 6px;
 
     margin-block: var(--chat-composer-top-margin, 0px) var(--chat-composer-bottom-gap);

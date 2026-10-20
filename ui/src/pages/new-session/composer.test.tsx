@@ -495,16 +495,25 @@ describe("new-session composer sizing lifecycle", () => {
   });
 
   it("keeps its sizing observers across controlled updates and remeasures programmatic drafts", async () => {
-    const observe = vi.fn();
-    const disconnect = vi.fn();
-    const resizeObserverConstructed = vi.fn();
-    class TestResizeObserver {
+    const observers = new Set<TestResizeObserver>();
+    class TestResizeObserver implements ResizeObserver {
+      readonly targets = new Set<Element>();
       constructor() {
-        resizeObserverConstructed();
+        observers.add(this);
       }
-      observe = observe;
-      disconnect = disconnect;
+      observe = (target: Element) => this.targets.add(target);
+      unobserve = (target: Element) => this.targets.delete(target);
+      disconnect = () => this.targets.clear();
     }
+    const observedTargets = () => {
+      const targets = new Set<Element>();
+      for (const observer of observers) {
+        for (const target of observer.targets) {
+          targets.add(target);
+        }
+      }
+      return targets;
+    };
     vi.stubGlobal("ResizeObserver", TestResizeObserver);
     const composerTextarea = createNewSessionComposerTextarea();
     const onInput = vi.fn();
@@ -520,9 +529,12 @@ describe("new-session composer sizing lifecycle", () => {
       },
     });
     // The shared layout attaches after Solid, then schedules the initial cap.
-    await Promise.resolve();
-    await Promise.resolve();
+    await waitForFast(() =>
+      expect(first.container.querySelector('[role="separator"]')).not.toBeNull(),
+    );
     const readsAfterAttach = scrollHeightReads;
+    const targetsAfterAttach = observedTargets();
+    expect(targetsAfterAttach.has(textarea)).toBe(true);
 
     textarea.value = "typed";
     textarea.dispatchEvent(new InputEvent("input", { bubbles: true }));
@@ -532,8 +544,7 @@ describe("new-session composer sizing lifecycle", () => {
     await Promise.resolve();
 
     expect(first.container.querySelector("textarea")).toBe(textarea);
-    expect(resizeObserverConstructed).toHaveBeenCalledTimes(2);
-    expect(disconnect).not.toHaveBeenCalled();
+    expect(observedTargets()).toEqual(targetsAfterAttach);
     expect(scrollHeightReads).toBe(readsAfterInput);
 
     first.rerenderWithMessage("restored programmatically");
@@ -541,13 +552,16 @@ describe("new-session composer sizing lifecycle", () => {
 
     expect(scrollHeightReads).toBeGreaterThan(readsAfterInput);
     expect(readsAfterAttach).toBeGreaterThan(0);
-    expect(resizeObserverConstructed).toHaveBeenCalledTimes(2);
-    expect(disconnect).not.toHaveBeenCalled();
+    expect(observedTargets()).toEqual(targetsAfterAttach);
     composerTextarea.disconnect();
-    expect(disconnect).toHaveBeenCalledOnce();
+    expect(composerTextarea.getTextarea()).toBeNull();
     first.unmount();
-    expect(disconnect).toHaveBeenCalledTimes(2);
+    expect(observedTargets().size).toBe(0);
     expect(first.container.querySelector('[role="separator"]')).toBeNull();
+    const readsAfterUnmount = scrollHeightReads;
+    composerTextarea.syncDraft("late restore");
+    await Promise.resolve();
+    expect(scrollHeightReads).toBe(readsAfterUnmount);
     first.container.remove();
   });
 });

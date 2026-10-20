@@ -1,5 +1,6 @@
 import { t } from "../../../i18n/index.ts";
 import { listen } from "../../../lib/reactive/listener.ts";
+import type { createPointerDrag } from "../../../lib/reactive/pointer-drag.ts";
 import { scheduleTextareaHeightAdjustment } from "./chat-composer-dom.ts";
 
 export type ComposerLayoutOptions = {
@@ -28,6 +29,8 @@ export class ComposerLayout {
   private measurementFrame: number | null = null;
   private active = false;
   private measure: (() => void) | null = null;
+
+  constructor(private readonly drag: ReturnType<typeof createPointerDrag>) {}
 
   update(element: HTMLElement, options: ComposerLayoutOptions) {
     if (this.events && this.element !== element) {
@@ -218,15 +221,16 @@ export class ComposerLayout {
     const shell = this.element!.closest<HTMLElement>(".agent-chat__composer-shell")!;
     const region = this.region(shell);
     const style = getComputedStyle(region);
-    const inset =
-      Number.parseFloat(getComputedStyle(shell).getPropertyValue("--chat-composer-side-inset")) ||
-      36;
+    // CSS owns the responsive gutter; use the same per-side token as its width rule.
+    const inset = Number.parseFloat(
+      getComputedStyle(shell).getPropertyValue("--chat-composer-inline-inset"),
+    );
     return Math.max(
       0,
       region.clientWidth -
         Number.parseFloat(style.paddingLeft) -
         Number.parseFloat(style.paddingRight) -
-        inset,
+        2 * inset,
     );
   }
 
@@ -255,53 +259,33 @@ export class ComposerLayout {
     const origin = event.clientX;
     let width = start;
     let moved = false;
-    const events = new AbortController();
     const finish = (save: boolean) => {
-      events.abort();
       this.cancelDrag = null;
       root.style.removeProperty("--chat-thread-drag-width");
       edge.classList.remove("agent-chat__composer-width-edge--dragging");
-      if (edge.hasPointerCapture(event.pointerId)) {
-        edge.releasePointerCapture(event.pointerId);
-      }
       if (save && moved && Math.abs(width - start) >= 3) {
         this.commit(`${width}px`);
       }
     };
-    this.cancelDrag = () => finish(false);
-    edge.setPointerCapture(event.pointerId);
-    edge.classList.add("agent-chat__composer-width-edge--dragging");
-    const options = { signal: events.signal };
-    listen(window, "blur", () => finish(false), options);
-    listen(
-      edge,
-      "pointermove",
-      (next) => {
-        if (next.pointerId !== event.pointerId) {
-          return;
-        }
-        const delta = next.clientX - origin;
-        if (!moved && Math.abs(delta) < 3) {
-          return;
-        }
-        moved = true;
-        width = this.clampWidth(start - 2 * delta);
-        root.style.setProperty("--chat-thread-drag-width", `${width}px`);
-      },
-      options,
-    );
-    for (const type of ["pointerup", "pointercancel", "lostpointercapture"] as const) {
-      listen(
-        edge,
-        type,
-        (next) => {
-          if (next.pointerId === event.pointerId) {
-            finish(type === "pointerup");
+    if (
+      !this.drag.start(event, edge, {
+        move: (next) => {
+          const delta = next.clientX - origin;
+          if (!moved && Math.abs(delta) < 3) {
+            return;
           }
+          moved = true;
+          width = this.clampWidth(start - 2 * delta);
+          root.style.setProperty("--chat-thread-drag-width", `${width}px`);
         },
-        options,
-      );
+        end: () => finish(true),
+        cancel: () => finish(false),
+      })
+    ) {
+      return;
     }
+    this.cancelDrag = this.drag.cancel;
+    edge.classList.add("agent-chat__composer-width-edge--dragging");
   }
 
   disconnect() {

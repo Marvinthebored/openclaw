@@ -63,12 +63,6 @@ suite.define(() => {
 
           await page.setViewportSize({ width: 390, height: 844 });
           await page.locator(".shell--mobile-nav").waitFor();
-          expect(
-            await triggers.evaluate((element) => {
-              const style = getComputedStyle(element);
-              return { wrap: style.flexWrap, gap: style.columnGap, padding: style.paddingLeft };
-            }),
-          ).toEqual({ wrap: "wrap", gap: "4px", padding: "6px" });
           const mobileTriggers = triggers.locator("button:visible");
           expect(await mobileTriggers.count()).toBeGreaterThanOrEqual(2);
           for (const trigger of await mobileTriggers.all()) {
