@@ -494,7 +494,7 @@ describe("new-session composer sizing lifecycle", () => {
     expect(textarea.style.height).toBe("150px");
   });
 
-  it("keeps one observer across controlled updates and remeasures programmatic drafts", async () => {
+  it("keeps its sizing observers across controlled updates and remeasures programmatic drafts", async () => {
     const observe = vi.fn();
     const disconnect = vi.fn();
     const resizeObserverConstructed = vi.fn();
@@ -519,6 +519,8 @@ describe("new-session composer sizing lifecycle", () => {
         return 42;
       },
     });
+    // The shared layout attaches after Solid, then schedules the initial cap.
+    await Promise.resolve();
     await Promise.resolve();
     const readsAfterAttach = scrollHeightReads;
 
@@ -530,7 +532,7 @@ describe("new-session composer sizing lifecycle", () => {
     await Promise.resolve();
 
     expect(first.container.querySelector("textarea")).toBe(textarea);
-    expect(resizeObserverConstructed).toHaveBeenCalledOnce();
+    expect(resizeObserverConstructed).toHaveBeenCalledTimes(2);
     expect(disconnect).not.toHaveBeenCalled();
     expect(scrollHeightReads).toBe(readsAfterInput);
 
@@ -539,10 +541,13 @@ describe("new-session composer sizing lifecycle", () => {
 
     expect(scrollHeightReads).toBeGreaterThan(readsAfterInput);
     expect(readsAfterAttach).toBeGreaterThan(0);
-    expect(resizeObserverConstructed).toHaveBeenCalledOnce();
+    expect(resizeObserverConstructed).toHaveBeenCalledTimes(2);
     expect(disconnect).not.toHaveBeenCalled();
     composerTextarea.disconnect();
     expect(disconnect).toHaveBeenCalledOnce();
+    first.unmount();
+    expect(disconnect).toHaveBeenCalledTimes(2);
+    expect(first.container.querySelector('[role="separator"]')).toBeNull();
     first.container.remove();
   });
 });

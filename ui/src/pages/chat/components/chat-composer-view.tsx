@@ -29,6 +29,7 @@ import "../../../styles/chat/emoji-menu.css";
 import "../../../styles/chat/mention-menu.css";
 import { focusComposerFromChrome, paneDomId } from "./chat-composer-dom.ts";
 import type { createChatComposerContext } from "./chat-composer-frame.ts";
+import { createComposerLayoutRef } from "./chat-composer-layout-ref.ts";
 import { createComposerMobileInteraction } from "./chat-composer-mobile-interaction.tsx";
 import { ChatComposerPlusMenu } from "./chat-composer-plus-menu.tsx";
 import { ComposerQuestionDock } from "./chat-composer-question.tsx";
@@ -199,6 +200,16 @@ export function renderChatComposerView(
   const showComposerInput = createMemo(
     () => context().showComposer && props.disabledBanner?.kind !== "composer-replacement",
   );
+  let layoutContext: HTMLDivElement | undefined;
+  const layoutRef = createComposerLayoutRef(
+    () => ({
+      width: props.chatMessageMaxWidth,
+      onWidthChange: props.onComposerWidthChange,
+      getEditor: () => state.composerTextarea,
+      getContext: () => layoutContext,
+    }),
+    () => showComposerInput(),
+  );
   const disabledReasonId = () => paneDomId(props.paneId, "disabled-reason");
   const composerAlerts = createMemo(() =>
     showComposerInput() ? (
@@ -291,6 +302,7 @@ export function renderChatComposerView(
           shell = element;
         },
         elementRef(props.onComposerShellRef),
+        layoutRef.shell,
       ]}
       data-mobile-composer={props.mobileComposer ? "true" : undefined}
       data-composer-editing={mobileEditing() ? "true" : "false"}
@@ -299,7 +311,7 @@ export function renderChatComposerView(
     >
       {lifecycle}
       <div class="agent-chat__composer-float" ref={[elementRef(props.onComposerFloatRef)]}>
-        <div class="chat-footer__context">
+        <div class="chat-footer__context" ref={(node) => (layoutContext = node)}>
           {props.footerContent}
           <div class="agent-chat__composer-notices">
             {props.notices} {composerStatus()} {composerAlerts()} {fallbackStatus()}
@@ -433,6 +445,7 @@ export function renderChatComposerView(
                 };
               }),
               createBackgroundLayoutRef("composer"),
+              layoutRef,
             ]}
           >
             {context().menus.slashMenuVisible ? (

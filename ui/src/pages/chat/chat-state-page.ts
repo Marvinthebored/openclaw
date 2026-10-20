@@ -304,6 +304,7 @@ export function createPageState(
       chatSendShortcut: next.chatSendShortcut,
       chatBubbleSessionKeys: next.chatBubbleSessionKeys,
       chatBubbleDisabledSessionKeys: next.chatBubbleDisabledSessionKeys,
+      ...("chatMessageMaxWidth" in patch ? { chatMessageMaxWidth: patch.chatMessageMaxWidth } : {}),
     });
   };
   attachChatRealtimeActions(

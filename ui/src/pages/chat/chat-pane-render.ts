@@ -24,7 +24,7 @@ import { resolveChatModelSetup } from "./chat-model-setup.ts";
 import { ChatPaneLayoutRender } from "./chat-pane-layout-render.ts";
 import { synchronizeChatPanePublication } from "./chat-pane-publication.ts";
 import { createChatPaneRails } from "./chat-pane-rails.ts";
-import { chatPaneResourceProps } from "./chat-pane-resource-presentation.ts";
+import { chatPaneResourceProps, composerWidthProps } from "./chat-pane-resource-presentation.ts";
 import {
   createChatPaneQueuedEditProps,
   createChatPaneSessionActionCallbacks,
@@ -661,7 +661,7 @@ export class ChatPaneRuntime extends ChatPaneLayoutRender {
       ...userPresentation,
       personActivity: personActivityRouting(this.context),
       ...chatPaneResourceProps(state, this.context),
-      chatMessageMaxWidth: state.settings.chatMessageMaxWidth,
+      ...composerWidthProps(state),
       chatBubbleMode: isChatBubbleMode(
         state.settings,
         state.sessionKey,

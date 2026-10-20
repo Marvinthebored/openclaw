@@ -41,3 +41,13 @@ export function chatPaneResourceProps(
     resourceBasePath: state.resourceBasePath,
   };
 }
+
+/** Read and persist the message width the composer border drag adjusts. */
+export function composerWidthProps(
+  state: ChatPageHost,
+): Pick<ChatProps, "chatMessageMaxWidth" | "onComposerWidthChange"> {
+  return {
+    chatMessageMaxWidth: state.settings.chatMessageMaxWidth,
+    onComposerWidthChange: (value) => state.applySettings({ chatMessageMaxWidth: value }),
+  };
+}
