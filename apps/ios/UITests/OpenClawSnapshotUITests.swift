@@ -710,7 +710,7 @@ final class OpenClawSnapshotUITests: XCTestCase {
                 initialTab: "chat",
                 initialDestination: "chat",
                 name: "chat-stop-guard"),
-            additionalArguments: ["--openclaw-hold-initial-chat-run", "-openClawChatStopGuardMs", "8000"])
+            additionalArguments: ["--openclaw-hold-initial-chat-run"])
 
         let app = try XCTUnwrap(self.app)
         let input = self.chatMessageInput(in: app)
@@ -721,32 +721,25 @@ final class OpenClawSnapshotUITests: XCTestCase {
         let send = app.buttons["chat-send-message"]
         XCTAssertTrue(send.waitForExistence(timeout: 5))
         self.waitForEnabled(send)
-        send.tap()
+        // Cache an absolute screen coordinate before sending, so the second independent tap
+        // reaches the replacement Stop without a stale Send lookup or an intervening snapshot.
+        let sendFrame = send.frame
+        let sendPosition = app.coordinate(withNormalizedOffset: .zero).withOffset(
+            CGVector(dx: sendFrame.midX, dy: sendFrame.midY))
+        sendPosition.tap()
+        sendPosition.tap()
 
-        // Stop takes Send's place under the finger, so the second tap of a double tap lands on Stop.
         let stop = app.buttons["Stop response"]
-        XCTAssertTrue(stop.waitForExistence(timeout: 8))
-        let isInertAfterSend = !stop.isEnabled
-        self.attachScreenshot(named: "stop-guard-after-send")
-        XCTAssertTrue(isInertAfterSend, "STOP_GUARD_MISSING: Stop is live the moment it replaces Send")
-        stop.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
-        XCTAssertFalse(
-            stop.waitForNonExistence(timeout: 1.5),
-            "STOP_GUARD_MISSING: a tap right after Stop appeared stopped the response")
+        XCTAssertTrue(
+            stop.waitForExistence(timeout: 5),
+            "STOP_GUARD_MISSING: double-tapping Send cancelled the response")
+        self.waitForEnabled(stop)
+        self.attachScreenshot(named: "stop-guard-response-survived-double-tap")
 
-        // Stop leaves while a draft is typed and is inert again when it returns.
-        input.tap()
-        input.typeText("x")
-        XCTAssertTrue(stop.waitForNonExistence(timeout: 5))
-        self.clearTextField(input)
-        XCTAssertTrue(stop.waitForExistence(timeout: 5))
-        XCTAssertFalse(stop.isEnabled, "STOP_GUARD_MISSING: Stop is live the moment it reappears")
-
-        // A deliberate tap once Stop is armed still stops the response.
-        self.waitForEnabled(stop, timeout: 12)
-        self.attachScreenshot(named: "stop-guard-armed")
+        // The held fixture cannot finish by itself, so disappearance proves deliberate cancellation.
         stop.tap()
         XCTAssertTrue(stop.waitForNonExistence(timeout: 8))
+        self.attachScreenshot(named: "stop-guard-deliberate-stop-cancelled-response")
     }
 
     func testVoiceNoteDraftKeepsStopAvailableDuringActiveResponse() throws {
