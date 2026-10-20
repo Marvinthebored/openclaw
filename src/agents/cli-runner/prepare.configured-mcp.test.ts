@@ -122,13 +122,6 @@ async function startProbeServer() {
   };
 }
 
-function expectDefinedGrant<T>(grant: T | undefined): T {
-  if (!grant) {
-    throw new Error("CLI preparation did not mint a loopback grant");
-  }
-  return grant;
-}
-
 describe("configured MCP servers on exclusive CLI turns", () => {
   let fixture: ReturnType<typeof createCliRunnerPrepareFixture>;
   const mintGrant = vi.fn<typeof MintMcpLoopbackClientGrant>();
@@ -306,72 +299,4 @@ describe("configured MCP servers on exclusive CLI turns", () => {
       expect(probeServer.calls).toBe(deny.length > 0 ? 0 : childAllow ? 2 : 3);
     },
   );
-  it("rechecks loopback grant authority at configured-server I/O", async () => {
-    const { sessionTarget } = fixture.session;
-    const probeServer = await startProbeServer();
-    const config: OpenClawConfig = {
-      session: { store: sessionTarget.storePath },
-      plugins: { enabled: false },
-      tools: { allow: ["read", "probe__*"] },
-      mcp: {
-        servers: {
-          probe: { transport: "streamable-http", url: `http://127.0.0.1:${probeServer.port}/mcp` },
-        },
-      },
-    };
-    const scheduler = createTestGatewayScheduler();
-    const outcomes: string[] = [];
-    try {
-      await setSessionMcpRuntimeScheduler(scheduler);
-      const context = await fixture.prepare({
-        sessionKey: sessionTarget.sessionKey,
-        sessionId: sessionTarget.sessionId,
-        provider: "claude-cli",
-        model: "opus",
-        modelHasVision: false,
-        sourceReplyDeliveryMode: "automatic",
-        config,
-      });
-      try {
-        const minted = expectDefinedGrant(mintGrant.mock.lastCall?.[0]);
-        const { tools } = await resolveMcpLoopbackScopedTools({
-          cfg: config,
-          context: minted.context,
-          admittedRunContext: context.params.admittedRunContext,
-          ...(minted.bundledTools ? { bundledTools: minted.bundledTools } : {}),
-        });
-        const call = async (authorizeToolCall: () => boolean) => {
-          const response = (await handleMcpJsonRpc({
-            message: {
-              jsonrpc: "2.0",
-              id: 1,
-              method: "tools/call",
-              params: { name: "probe__echo", arguments: { word: "pong" } },
-            },
-            tools,
-            toolSchema: buildMcpToolSchema(tools),
-            authorizeToolCall,
-          })) as { result: { content: Array<{ text: string }>; isError: boolean } };
-          const text = response.result.content[0]?.text ?? "";
-          outcomes.push(
-            `${response.result.isError}:${text.includes("Tool call authorization expired") ? "expired" : text}`,
-          );
-        };
-        await call(() => true);
-        // Revoked (or lineage reassigned) after the handler's pre-call check:
-        // the configured-server session wait ends without reaching the server.
-        const authorize = vi.fn<() => boolean>().mockReturnValueOnce(true).mockReturnValue(false);
-        await call(authorize);
-        expect(authorize.mock.calls.length).toBeGreaterThan(1);
-      } finally {
-        await context.preparedBackend.cleanup?.();
-      }
-    } finally {
-      await disposeAllSessionMcpRuntimes();
-      await scheduler.stop();
-      await probeServer.close();
-    }
-    expect(outcomes).toEqual(["false:probe:pong", "true:expired"]);
-    expect(probeServer.calls).toBe(1);
-  });
 });

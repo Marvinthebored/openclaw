@@ -1,4 +1,5 @@
 import "../test-utils/prepare-compiled-subprocesses.js";
+import fs from "node:fs/promises";
 import http from "node:http";
 import { expectDefined } from "@openclaw/normalization-core/expect";
 import { afterAll, beforeAll, expect, it } from "vitest";
@@ -193,7 +194,17 @@ beforeAll(async () => {
         skipBootstrap: true,
         model: { primary: "claude-cli/sonnet" },
       },
-      entries: { main: { workspace: state.workspaceDir } },
+      entries: {
+        main: { workspace: state.workspaceDir },
+        // Same workspace, but every session runs sandboxed.
+        sbx: { workspace: state.workspaceDir, sandbox: { mode: "all" } },
+        // Sandboxed, with Workshop admitted by the sandbox tool policy.
+        sbxw: {
+          workspace: state.workspaceDir,
+          sandbox: { mode: "all" },
+          tools: { sandbox: { tools: { alsoAllow: ["skill_workshop"] } } },
+        },
+      },
     },
     plugins: { enabled: false },
     skills: { load: { watch: false } },
@@ -260,10 +271,11 @@ async function prepareTurn(
   completion: boolean,
   signal: AbortSignal,
   skillLibraryAuthoring?: SkillLibraryAuthoringCapability,
+  agentId = "main",
 ) {
   const sessionId = "configured-" + name;
-  const sessionKey = "agent:main:" + sessionId;
-  const childSessionKey = "agent:main:subagent:" + sessionId;
+  const sessionKey = "agent:" + agentId + ":" + sessionId;
+  const childSessionKey = "agent:" + agentId + ":subagent:" + sessionId;
   const childEntry = (spawnedBy: string) => ({
     sessionId: sessionId + "-child",
     updatedAt: Date.now(),
@@ -278,28 +290,25 @@ async function prepareTurn(
     sessionStartedAt: Date.now(),
     permissionMode: "full" as const,
   };
-  await replaceSessionEntry({ agentId: "main", sessionKey }, entry);
+  await replaceSessionEntry({ agentId, sessionKey }, entry);
   if (completion) {
-    await replaceSessionEntry(
-      { agentId: "main", sessionKey: childSessionKey },
-      childEntry(sessionKey),
-    );
+    await replaceSessionEntry({ agentId, sessionKey: childSessionKey }, childEntry(sessionKey));
   }
   const runId = sessionId + "-run";
-  const admission = prepareSystemAgentRunAdmission(config, runId, "main", "configured-mcp-test");
+  const admission = prepareSystemAgentRunAdmission(config, runId, agentId, "configured-mcp-test");
   admissions.push(admission);
   const context = await prepareCliRunContext({
     preparedRunAdmission: admission,
     config,
-    agentId: "main",
+    agentId,
     sessionKey,
     sessionId,
     sessionEntry: entry,
     sessionTarget: {
-      agentId: "main",
+      agentId,
       sessionKey,
       sessionId,
-      storePath: resolveSessionStorePathCore(config.session?.store, { agentId: "main" }),
+      storePath: resolveSessionStorePathCore(config.session?.store, { agentId }),
     },
     sessionFile: state.path(sessionId + ".jsonl"),
     workspaceDir: state.workspaceDir,
@@ -373,8 +382,8 @@ async function prepareTurn(
     // The child's persisted completion lineage moves to a different requester.
     reassign: async () => {
       await replaceSessionEntry(
-        { agentId: "main", sessionKey: childSessionKey },
-        childEntry("agent:main:someone-else"),
+        { agentId, sessionKey: childSessionKey },
+        childEntry("agent:" + agentId + ":someone-else"),
       );
     },
   };
@@ -481,5 +490,52 @@ it.for(["personal", "workspace"] as const)(
       // Unsandboxed workspace Workshop calls keep the ordinary no-grant rule.
       expect((await completionTurn.call("skill_workshop", { action: "list" })).isError).toBe(false);
     }
+  },
+);
+
+it.for([
+  { agentId: "sbx", policy: "default sandbox tool policy", listed: false },
+  { agentId: "sbxw", policy: "sandbox policy admitting skill_workshop", listed: true },
+])(
+  "refuses a sandboxed completion's workspace Workshop write under the $policy",
+  async ({ agentId, listed }, { signal }) => {
+    const human: SkillLibraryAuthoringCapability = {
+      target: "personal",
+      defaultTarget: "workspace",
+      multipleProfiles: false,
+      bind: () => {},
+      invoke: async () => {
+        throw new Error("the human grant must not be reached");
+      },
+    };
+    const create = {
+      action: "create",
+      name: "sandbox-probe",
+      content: "---\nname: sandbox-probe\ndescription: Probe\n---\n\n1. Run it.\n",
+    };
+    const snapshot = async () =>
+      (await fs.readdir(state.workspaceDir, { recursive: true })).map(String).toSorted();
+    const workshopDefinition = async (turn: Awaited<ReturnType<typeof prepareTurn>>) => {
+      const result = (await turn.rpc("tools/list")).body.result as {
+        tools: Array<{ name: string; description?: string; inputSchema?: unknown }>;
+      };
+      return result.tools.find((tool) => tool.name === "skill_workshop");
+    };
+    const before = await snapshot();
+    const name = "workshop-" + agentId;
+    const humanDefinition = await workshopDefinition(
+      await prepareTurn(name, false, signal, human, agentId),
+    );
+    const completionTurn = await prepareTurn(name, true, signal, undefined, agentId);
+    // Human and completion turns list the same Workshop surface.
+    expect(await workshopDefinition(completionTurn)).toEqual(humanDefinition);
+    expect(humanDefinition !== undefined).toBe(listed);
+    expect(await completionTurn.call("skill_workshop", create)).toEqual({
+      isError: true,
+      text: listed
+        ? expect.stringContaining("Workshop is unavailable in a sandboxed run")
+        : "Tool not available: skill_workshop",
+    });
+    expect(await snapshot()).toEqual(before);
   },
 );
