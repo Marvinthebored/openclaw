@@ -14482,8 +14482,6 @@ struct ChatTranscriptRevisionTests {
         model.appendMessage(Self.readerMessage(role: "assistant"))
         #expect(model.liveUserTurnRevision == 1)
     }
-
-
 }
 
 private func pagedHistory(
