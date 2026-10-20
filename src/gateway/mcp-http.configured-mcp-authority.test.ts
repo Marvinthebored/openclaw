@@ -47,8 +47,8 @@ type McpResponse = {
 };
 
 type ProbeMessage = {
-  id?: number;
-  method: string;
+  id?: number | string;
+  method?: string;
   params?: {
     protocolVersion?: string;
     arguments?: { word?: string };
@@ -100,6 +100,9 @@ async function startProbeServer() {
   const counts: Record<string, number> = {};
   const state: { onToolsList?: () => Promise<void> } = {};
   const streams = new Set<http.ServerResponse>();
+  // Client responses to server-initiated pings, keyed by request id.
+  const pendingPings = new Map<string, () => void>();
+  let pingId = 0;
   const server = http.createServer((request, response) => {
     void (async () => {
       if (request.method === "GET") {
@@ -119,6 +122,12 @@ async function startProbeServer() {
         chunks.push(Buffer.from(chunk));
       }
       const message = JSON.parse(Buffer.concat(chunks).toString()) as ProbeMessage;
+      if (message.method === undefined) {
+        // Response to a server-initiated request.
+        pendingPings.get(String(message.id))?.();
+        response.writeHead(202).end();
+        return;
+      }
       counts[message.method] = (counts[message.method] ?? 0) + 1;
       if (message.id === undefined) {
         response.writeHead(202).end();
@@ -150,19 +159,29 @@ async function startProbeServer() {
     port: address.port,
     counts,
     state,
-    /** Server-initiated tools/list_changed: OpenClaw refreshes before the next call. */
+    /**
+     * Server-initiated tools/list_changed: OpenClaw refreshes before the next call.
+     * A ping follows on each stream; a client handles stream messages in order,
+     * so every ping reply proves that client consumed the notification.
+     */
     notifyToolsChanged: async () => {
       expect(streams.size).toBeGreaterThan(0);
-      for (const stream of streams) {
-        stream.write(
-          "event: message\ndata: " +
-            JSON.stringify({ jsonrpc: "2.0", method: "notifications/tools/list_changed" }) +
-            "\n\n",
-        );
-      }
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, 200);
-      });
+      await Promise.all(
+        [...streams].map(async (stream) => {
+          const id = "probe-ping-" + ++pingId;
+          const answered = new Promise<void>((resolve) => {
+            pendingPings.set(id, resolve);
+          });
+          for (const frame of [
+            { jsonrpc: "2.0", method: "notifications/tools/list_changed" },
+            { jsonrpc: "2.0", id, method: "ping" },
+          ]) {
+            stream.write("event: message\ndata: " + JSON.stringify(frame) + "\n\n");
+          }
+          await answered;
+          pendingPings.delete(id);
+        }),
+      );
     },
     close: async () => {
       server.closeAllConnections();
