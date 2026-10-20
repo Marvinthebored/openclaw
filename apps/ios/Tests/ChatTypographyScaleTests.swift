@@ -2,8 +2,8 @@ import Testing
 import UIKit
 @testable import OpenClawChatUI
 
-@MainActor
-struct ChatTypographyScaleTests {
+extension OpenClawTypographyTests {
+    @MainActor
     @Test func `composer uses the accepted baseline at the current Dynamic Type category`() throws {
         let category = UIApplication.shared.preferredContentSizeCategory
         let base = try #require(
