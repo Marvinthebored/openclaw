@@ -169,7 +169,10 @@ remain available on managed turns. The CLI does not connect to them directly;
 OpenClaw serves their tools through its loopback bridge as `<safe-server>__<safe-tool>`,
 so ordinary and completion turns list the same tools. `tools.allow` and
 `tools.deny` decide what is listed; a turn's narrower cap, such as a completion's
-requester cap, refuses the call before it reaches the server.
+requester cap, refuses the call before it reaches the server. Every request to a
+configured server (tool calls, resource reads, prompt fetches) rechecks the turn's
+grant just before it is sent. Each listed server's `initialize` instructions are
+passed to the CLI whole, in server-name order.
 Requester-scoped servers need a verified sender and are not offered on these turns.
 
 Existing sessions that stored the implicit automatic policy also retain continuity.

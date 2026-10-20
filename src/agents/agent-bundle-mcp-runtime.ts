@@ -17,7 +17,7 @@ import {
 import {
   getSessionMcpRequestSignal,
   runWithSessionMcpRequestSignal,
-  getSessionMcpToolCallAuthority,
+  withSessionMcpCallerAuthority,
 } from "./agent-bundle-mcp-request-context.js";
 import type { loadSessionMcpConfig } from "./agent-bundle-mcp-runtime-config.js";
 import { createSessionMcpRuntimeParts } from "./agent-bundle-mcp-runtime-parts.js";
@@ -42,11 +42,7 @@ import {
 import { applyMcpConnectionOverride } from "./mcp-connection-resolver.js";
 import { isMcpMethodNotFoundError, redactMcpDiagnosticError } from "./mcp-error.js";
 import { createMcpJsonSchemaValidator } from "./mcp-json-schema-validator.js";
-import {
-  buildMcpClientCapabilities,
-  sanitizeMcpMetadataText,
-  summarizeServerCapabilities,
-} from "./mcp-metadata.js";
+import { buildMcpClientCapabilities, summarizeServerCapabilities } from "./mcp-metadata.js";
 import {
   mcpCallToolResultSchema,
   mcpGetPromptResultSchema,
@@ -307,14 +303,20 @@ function createServerMcpRuntime(
     session: BundleMcpSession,
     request: (signal: AbortSignal, holdForHumanInput: () => () => void) => Promise<T>,
     options?: McpRequestOptions,
-  ) => runGuardedServerRequest(session, () => requests.run(session, request), options);
+  ) =>
+    runGuardedServerRequest(
+      session,
+      () => requests.run(session, withSessionMcpCallerAuthority(request)),
+      options,
+    );
   const collectServerItems = (session: BundleMcpSession, kind: "prompts" | "resources") =>
     listMcpServerItems(kind, {
       client: session.client,
       timeoutMs: session.requestTimeoutMs,
       signal: lifecycleAbortController.signal,
       callerSignal: getSessionMcpRequestSignal(),
-      runRequest: (request, signal) => requests.run(session, request, signal),
+      runRequest: (request, signal) =>
+        requests.run(session, withSessionMcpCallerAuthority(request), signal),
     });
 
   const loadCatalog = async (
@@ -590,7 +592,8 @@ function createServerMcpRuntime(
           capabilities,
           serverVersion: session.client.getServerVersion(),
           serverCapabilities: session.client.getServerCapabilities(),
-          instructions: sanitizeMcpMetadataText(session.client.getInstructions()),
+          // Served whole, as Claude's native connection received them.
+          instructions: session.client.getInstructions()?.trim() || undefined,
           pluginId: loaded.pluginIdsByServer?.[serverName],
           connection: resolved,
         });
@@ -772,22 +775,12 @@ function createServerMcpRuntime(
       lastUsedAt = Date.now();
     },
     async callTool(requestedServer, toolName, input, options) {
-      // Captured before any wait: a loopback caller's grant must still be live
-      // when the server is reached, including after a reconnection.
-      const callerAuthority = getSessionMcpToolCallAuthority();
-      const assertCurrent =
-        callerAuthority && options?.assertCurrent
-          ? () => {
-              callerAuthority();
-              options.assertCurrent?.();
-            }
-          : (callerAuthority ?? options?.assertCurrent);
       const session = await getActiveSession(requestedServer);
       const validateResult = session.toolMetadata?.validatorForCall(toolName);
       const result = await runGuardedMcpRequest(session, (signal, holdForHumanInput) => {
-        assertCurrent?.();
+        options?.assertCurrent?.();
         const call = () =>
-          withGuardedFetchRequestAuthority(assertCurrent, () =>
+          withGuardedFetchRequestAuthority(options?.assertCurrent, () =>
             session.client.request(
               {
                 method: "tools/call",

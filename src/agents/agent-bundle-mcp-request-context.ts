@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { withGuardedFetchRequestAuthority } from "../infra/net/fetch-request-authority.js";
 import { getAsyncWorkSignal } from "../shared/async-work-scope.js";
 import { resolveGlobalSingleton } from "../shared/global-singleton.js";
 
@@ -39,4 +40,21 @@ export function runWithSessionMcpToolCallAuthority<T>(
   run: () => T,
 ): T {
   return assertCurrent ? callAuthorities.run(assertCurrent, run) : run();
+}
+
+/**
+ * Binds a configured-server request to the loopback caller's grant: it is
+ * rechecked at the request boundary, including after reconnection or catalog
+ * refresh waits, and carried into guarded fetches.
+ */
+export function withSessionMcpCallerAuthority<A extends unknown[], T>(
+  request: (...args: A) => Promise<T>,
+): (...args: A) => Promise<T> {
+  const callerAuthority = getSessionMcpToolCallAuthority();
+  return callerAuthority
+    ? (...args) => {
+        callerAuthority();
+        return withGuardedFetchRequestAuthority(callerAuthority, () => request(...args));
+      }
+    : request;
 }
