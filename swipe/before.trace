@@ -1,0 +1,279 @@
+OpenClawChatView: @self, @identity, _scenePhase, _isDesktopLayout, _contentWidth, _scrollerBottomID, _scrollCommand, _dismissedProgressCards, _scrollPosition, _historyScrollGeometry, _hasPerformedInitialScroll, _lastTurnStartID, _lastLiveUserTurnRevision, _hasNewerContentBelow, _followTarget, _isAtLiveEdge, _isUserScrolling, _isAtHistoryStart, _readerInteractionRevision, _isKeyboardVisible, _hoveredMessageID, _restoresLiveEdgeAfterKeyboardTransition, _expandedUserMessageIDs, _searchMessageID, _isSearchPresented, _transcriptMemo, _composerFocusRequest, _fullMessageRequest, _reactionPickerMessage, _selectTextMessage, _turnRecapResolver, _turnRecap, _turnRecapSessionKey changed.
+TRACE body 3360416.4286382506
+TRACE phase idle 3360416.616922626
+OpenClawChatView: @self changed.
+TRACE body 3360416.654223334
+OpenClawChatView: @self, _scenePhase changed.
+TRACE body 3360416.976731584
+OpenClawChatView: \OpenClawChatViewModel.timelineRevision, @self changed.
+TRACE body 3360417.1263657506
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360417.642026126
+OpenClawChatView: \OpenClawChatViewModel.pendingRuns, _scrollCommand changed.
+TRACE body 3360417.9740767926
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360418.0305196675
+OpenClawChatView: \OpenClawChatViewModel.sessionDefaults, @self changed.
+TRACE body 3360418.1677297507
+OpenClawChatView: \OpenClawChatViewModel.isLoading changed.
+TRACE body 3360418.2589991675
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360418.3147144173
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360418.3787546256
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360418.4359825426
+OpenClawChatView: @self changed.
+TRACE body 3360418.7768146256
+OpenClawChatView: @self changed.
+TRACE body 3360419.0199892926
+OpenClawChatView: @self changed.
+TRACE body 3360419.1535532926
+TRACE phase interacting 3360430.636129126
+OpenClawChatView: _scrollPosition, _followTarget, _isUserScrolling changed.
+TRACE body 3360430.6409494593
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360430.708397792
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360430.765933876
+TRACE phase decelerating 3360430.826541126
+OpenClawChatView: _isAtLiveEdge changed.
+TRACE body 3360430.827730209
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360430.885920959
+TRACE phase decelerating 3360430.9690657924
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360430.970790334
+TRACE phase idle 3360433.169661459
+OpenClawChatView: _hasNewerContentBelow, _isUserScrolling changed.
+TRACE body 3360433.1712969593
+TRACE phase interacting 3360434.585047834
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360434.5868931673
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360434.6514427923
+TRACE phase decelerating 3360434.731902709
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360434.7333830423
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360434.7961206674
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360434.8612111257
+TRACE phase decelerating 3360434.9358296674
+TRACE phase idle 3360437.069536459
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360437.071097167
+TRACE phase interacting 3360438.5883158343
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360438.589976334
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360438.655046126
+TRACE phase decelerating 3360438.741350459
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360438.742758709
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360438.8087017923
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360438.8762879176
+TRACE phase idle 3360441.069979959
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360441.0720529174
+TRACE phase interacting 3360442.5367525006
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360442.5383042507
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360442.6026294176
+TRACE phase decelerating 3360442.690845334
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360442.6923146676
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360442.7555782506
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360442.8190031676
+TRACE phase idle 3360445.0202775006
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360445.021822209
+TRACE phase interacting 3360446.5019204174
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360446.5035482924
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360446.5628495426
+TRACE phase decelerating 3360446.6389590423
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360446.640212084
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360446.695250959
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360446.7495096675
+TRACE phase decelerating 3360446.818677126
+TRACE phase idle 3360449.000806126
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360449.0021353755
+TRACE phase interacting 3360450.1183602507
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360450.1196625843
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360450.1653792923
+TRACE phase decelerating 3360450.238730459
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360450.239483751
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360450.2876186674
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360450.334091584
+TRACE phase idle 3360452.651113709
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360452.6529728756
+TRACE phase interacting 3360453.7684280425
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360453.769782084
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360453.8181448756
+TRACE phase decelerating 3360453.905136251
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360453.905784959
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360453.951714584
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360453.9962821673
+TRACE phase idle 3360456.317606584
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360456.3198418343
+TRACE phase interacting 3360457.3682519174
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360457.3694651257
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360457.415805251
+TRACE phase decelerating 3360457.5222062925
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360457.523046959
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360457.5701540424
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360457.617654876
+TRACE phase idle 3360459.9529661257
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360459.954105834
+TRACE phase interacting 3360460.9850006676
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360460.9861795423
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360461.0317516676
+TRACE phase decelerating 3360461.122209084
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360461.1231854176
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360461.1681741676
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360461.2116284175
+TRACE phase idle 3360463.536417209
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360463.537675959
+TRACE phase interacting 3360464.5683786673
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360464.5695555005
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360464.6159562506
+TRACE phase decelerating 3360464.696085251
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360464.696942709
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360464.741984626
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360464.7857251675
+TRACE phase idle 3360467.117998751
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360467.119436584
+TRACE phase interacting 3360468.1381226676
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360468.1391015425
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360468.184200876
+TRACE phase decelerating 3360468.283201584
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360468.2841880424
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360468.3299097507
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360468.376186542
+TRACE phase idle 3360470.718101709
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360470.7198092923
+TRACE phase interacting 3360471.7184196673
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360471.7195456675
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360471.764705417
+TRACE phase decelerating 3360471.8714706255
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360471.872148084
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360471.9172067926
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360471.961434334
+TRACE phase idle 3360474.302531834
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360474.303754334
+TRACE phase interacting 3360475.321205959
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360475.3219838343
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360475.3669810006
+TRACE phase decelerating 3360475.464912834
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360475.465868626
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360475.510804001
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360475.555152626
+TRACE phase idle 3360477.8858681675
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360477.8869615425
+TRACE phase interacting 3360478.921025126
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360478.921834584
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360478.9679125007
+TRACE phase decelerating 3360479.073798084
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360479.075010584
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360479.122998792
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360479.168553959
+TRACE phase idle 3360481.502244334
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360481.5032077506
+TRACE phase interacting 3360482.5181552093
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360482.519579834
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360482.5652647093
+TRACE phase decelerating 3360482.656783792
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360482.657543209
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360482.701778584
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360482.746753501
+TRACE phase idle 3360485.0844607507
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360485.0859781676
+TRACE phase interacting 3360486.0854677507
+OpenClawChatView: _isUserScrolling changed.
+TRACE body 3360486.0869397507
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360486.135088709
+OpenClawChatView: _isAtLiveEdge changed.
+TRACE body 3360486.208492584
+TRACE phase decelerating 3360486.2644922505
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360486.2656821674
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360486.311054376
+OpenClawChatView: _scrollPosition changed.
+TRACE body 3360486.356199459
+TRACE phase decelerating 3360486.418844001
+TRACE phase idle 3360486.9856551676
+OpenClawChatView: _hasNewerContentBelow, _followTarget, _isUserScrolling changed.
+TRACE body 3360486.9868431673

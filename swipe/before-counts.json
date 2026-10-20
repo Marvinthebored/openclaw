@@ -1,0 +1,190 @@
+{
+  "totalBodies": 113,
+  "outsideSwipeBodies": 31,
+  "phaseLines": 53,
+  "swipes": [
+    {
+      "start": 3360430.636129126,
+      "bodies": 6,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2533.532
+    },
+    {
+      "start": 3360434.585047834,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2484.489
+    },
+    {
+      "start": 3360438.5883158343,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2481.664
+    },
+    {
+      "start": 3360442.5367525006,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2483.525
+    },
+    {
+      "start": 3360446.5019204174,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2498.886
+    },
+    {
+      "start": 3360450.1183602507,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2532.753
+    },
+    {
+      "start": 3360453.7684280425,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2549.179
+    },
+    {
+      "start": 3360457.3682519174,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2584.714
+    },
+    {
+      "start": 3360460.9850006676,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2551.417
+    },
+    {
+      "start": 3360464.5683786673,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2549.62
+    },
+    {
+      "start": 3360468.1381226676,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2579.979
+    },
+    {
+      "start": 3360471.7184196673,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2584.112
+    },
+    {
+      "start": 3360475.321205959,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2564.662
+    },
+    {
+      "start": 3360478.921025126,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2581.219
+    },
+    {
+      "start": 3360482.5181552093,
+      "bodies": 5,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 2566.306
+    },
+    {
+      "start": 3360486.0854677507,
+      "bodies": 6,
+      "phases": [
+        "interacting",
+        "decelerating",
+        "decelerating",
+        "idle"
+      ],
+      "durationMs": 900.187
+    }
+  ],
+  "counts": [
+    6,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    5,
+    6
+  ],
+  "unfinishedSwipe": null
+}

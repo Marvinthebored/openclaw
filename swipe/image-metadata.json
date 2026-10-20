@@ -1,0 +1,202 @@
+[
+  {
+    "image": "before-screenshot-00.png",
+    "sha256": "6884bb9592a2e9ed176fa6b9d73f9c506d96c2b6f0640f06e9ce25508e22f420",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-01.png",
+    "sha256": "ca447e3bdd4e8386134369eb757c89064aefb13eb89eda2b526c0b8564115f7f",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-02.png",
+    "sha256": "781730f90dd1dde9c279db2841f74ca7b0cee7d1785b05adb2baa5b09df47c45",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-03.png",
+    "sha256": "b3a8a12fa8e31553ba1aaa95c217a428376d6bb5f3126b05681f1ae69f995ef0",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-04.png",
+    "sha256": "ad001b8a22c310955555ed7b0303a8d97acd54b6c4c2f2b335bffa63f5fe4659",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-05.png",
+    "sha256": "9bf59ec227e3baa5f07de84557c2c503e5799435a7c298eb7767953006c6b46c",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-06.png",
+    "sha256": "c588a7e8372c85b580bd15a276e29449e32c937305084b7eba5b51e5a0e51993",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-07.png",
+    "sha256": "8fe30aa522be1cb3ee6a80e8e77985033fbdfee214d0419ddb2f4a38bfdaf693",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-08.png",
+    "sha256": "88957e241843fd865255bc1bc407137e9d9de230c07cb0a4878b9d6ed6ed3285",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-09.png",
+    "sha256": "8f925f5996f087a049492c85cfeaba31c820572c0abc79db035080d671b766f9",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-10.png",
+    "sha256": "60fdb4afec3948da91232013602e714df92235508672e378bb67bf2a9831918e",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-11.png",
+    "sha256": "f08ef1c874460efaac2ea36984a71f07070360bfe5f6d98f007efbf98c0d8ddb",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-12.png",
+    "sha256": "636687e8bfeb18ceebb4d9569a35cce90a253149ac66193fbde1e80198f2348a",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-13.png",
+    "sha256": "07d4615d4e77d9cbc89c8cf8e3134853da1e6349caa1b8bdea5bdf522857ae4d",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-14.png",
+    "sha256": "f6721e3e8e5e7177101607807ba150d7c7c71336d1f22bab8b945d4c0e8aee7f",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-screenshot-15.png",
+    "sha256": "c55b6a0659ca4ea0d34fdf5a1d1b8fdafa263a70a6cda0c06b8528e804bcaade",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-00.png",
+    "sha256": "9676a4fd504645ca6460fc9cc09f19bc9c6121e6eb2f4d3802eab57c4e8f6d9f",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-01.png",
+    "sha256": "284490fbd1f9e2be0c5750f1118247e709c81cf14f681a81d6523f12f023cf07",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-02.png",
+    "sha256": "bdaf103590bc7ed006b8049df699bcdc9dc0deef78aaaa7c654b1bf2a6a2e031",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-03.png",
+    "sha256": "c58fc29e3c31f2a5019dea7896dbad609c3f8d17403a91677a4a4c929d6bd566",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-04.png",
+    "sha256": "f43d20ea9197b78bfc8b06c1bcd0c2b2a788ebf537374c3d7670411c2734c059",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-05.png",
+    "sha256": "b2de86cda001a9620c7317b432202fd3a3334be763856c6531e3ef269dfa26c8",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-06.png",
+    "sha256": "81ee5170e2ea1dbd1d737cbfa7ee2c46face094e57f6540d97cfcea8705ffb29",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-07.png",
+    "sha256": "bed4a111b51a6a26cedb9ae67887505dede413622e21c4380d6b5eb8e885039c",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-08.png",
+    "sha256": "dd9e5f02a06dea5160b68116f53fb1800dd049718980e2d0c38c54cf6187831f",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-09.png",
+    "sha256": "928b3430b9c10e66ca54601f11968ee2f05b25c9991a56812e0b6036fb4f900e",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-10.png",
+    "sha256": "28a07d022395a49020e7cc6aa40292f4aa4d50b33c575aa124bc3c510dffc218",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-11.png",
+    "sha256": "33a853403123d56b5ac59952b0996d8e5707b632b11553070cec5bfa85719ca4",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-12.png",
+    "sha256": "43520d5414c8d442cf518143ced86a9f1c5b9c323cf367e09da0f9fa6c1a8977",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-13.png",
+    "sha256": "42a501cce357dad7357dbdf97d7cc2981382d7db344fda31826d7f68b1ac2411",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-14.png",
+    "sha256": "cf1e828162d230c15cae575e36aa44207e20cf2c8a7b4017792598497faf13a4",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-screenshot-15.png",
+    "sha256": "c9992a235154da90ef6a4afa2ec8ec7e3217da2126e802e883f013fac34bde54",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-retained-screenshot-00.png",
+    "sha256": "fe6c4bc88dbdbe22475cacc66a865745155af695d5427e8c966f376dad0422ce",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-retained-screenshot-01.png",
+    "sha256": "fb3ecc88f435d78a08a0f725577e830b1474bea5e76a72a6fdcf7de120c20987",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-retained-screenshot-02.png",
+    "sha256": "b12ad4b7119b2e6199927d2fe2ba9228191215ff9d68302dcd497e8d469d109e",
+    "metadataRemoved": true
+  },
+  {
+    "image": "before-retained-screenshot-03.png",
+    "sha256": "063ffeb7f926867d9b89dde3c44122f665b82e02571b1cdf5540333271c2827b",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-retained-screenshot-00.png",
+    "sha256": "6bb90e92325e1e9524abbdcd703fd6aeb6e9c655b8b389ed10173a85f00f9cce",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-retained-screenshot-01.png",
+    "sha256": "c66b1976e6aad6aa28f4e4c7e86924e39fcac163a9cf12eb05b39684164e663b",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-retained-screenshot-02.png",
+    "sha256": "ae4707724096821253817db8e9e8c0a251e6ae911276829c627b884dcd87ca1f",
+    "metadataRemoved": true
+  },
+  {
+    "image": "after-retained-screenshot-03.png",
+    "sha256": "3ea1034ba8e96818c90d8561ab9600c0873f09818fe9ebe79b359af6359c7f71",
+    "metadataRemoved": true
+  }
+]

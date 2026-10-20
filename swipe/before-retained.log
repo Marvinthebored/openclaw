@@ -1,0 +1,9 @@
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testLoadingEarlierHistoryPreservesReadingPosition]' passed (17.144 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testManualReaderDoesNotJumpDuringToolStream]' passed (39.981 seconds).
+Test Suite 'OpenClawSnapshotUITests' passed at 2026-10-20 22:40:49.362.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 57.125 (57.126) seconds
+Test Suite 'OpenClawUITests.xctest' passed at 2026-10-20 22:40:49.362.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 57.125 (57.127) seconds
+Test Suite 'Selected tests' passed at 2026-10-20 22:40:49.362.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 57.125 (57.127) seconds
+** TEST EXECUTE SUCCEEDED **

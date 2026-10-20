@@ -1,0 +1,439 @@
+{
+  "passed": true,
+  "heads": {
+    "before": "d4df45278320bcb9553d181972b7f88318a9a07e",
+    "after": "556d0afc32a88717e60389e6c8ef2e4d33da0c46"
+  },
+  "steps": {
+    "bundle-verify": 0,
+    "fetch": 0,
+    "after-checkout": 0,
+    "tool-versions": 0,
+    "format": 0,
+    "lint-ChatView": 0,
+    "lint-ChatScrollCommand": 0,
+    "focused-tests": 0,
+    "sim-create": 0,
+    "before-checkout": 0,
+    "before-version": 0,
+    "before-filelist": 0,
+    "before-xcodegen": 0,
+    "before-instrumentation": 0,
+    "before-build": 0,
+    "before-sim-erase": 0,
+    "before-ui": 0,
+    "before-historical-analysis": 0,
+    "before-export-shots": 0,
+    "before-retained": 0,
+    "before-sim-shutdown": 149,
+    "before-restore": 0,
+    "after-version": 0,
+    "after-filelist": 0,
+    "after-xcodegen": 0,
+    "after-instrumentation": 0,
+    "after-build": 0,
+    "after-sim-erase": 0,
+    "after-ui": 0,
+    "after-historical-analysis": 0,
+    "after-export-shots": 0,
+    "after-retained": 0,
+    "after-sim-shutdown": 149,
+    "after-restore": 0,
+    "cleanup-restore": 0,
+    "cleanup-status": 0
+  },
+  "results": {
+    "after": {
+      "mermaid": {
+        "mermaid.min.js": "581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8",
+        "index.html": "5c41941e491295479ae7e00c7a30acb85c17d8d2510968b91ceac9f7fb6fe87e",
+        "native.js": "b3ce5f2febd96ac9f7bbbe4ed6895adcf44d4a47782f13853b178713fde90852",
+        "NOTICE.txt": "650328942a90e7b7705d1dc17e2046242d6927502f16b7ac7073381cd11f0a87",
+        "frame.js": "2adac5d9c51f6597685c379af75477a9d9ed41542cf9cde6789c2bbbac9bd606"
+      },
+      "totalBodies": 15,
+      "outsideSwipeBodies": 15,
+      "phaseLines": 49,
+      "swipes": [
+        {
+          "start": 3360650.513578709,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2571.165
+        },
+        {
+          "start": 3360655.051934376,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.36
+        },
+        {
+          "start": 3360659.3527651257,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2584.045
+        },
+        {
+          "start": 3360663.785107459,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2583.013
+        },
+        {
+          "start": 3360667.6514986255,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.643
+        },
+        {
+          "start": 3360671.235264709,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.163
+        },
+        {
+          "start": 3360674.7685787505,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.201
+        },
+        {
+          "start": 3360678.3180257925,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.788
+        },
+        {
+          "start": 3360681.885015792,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2566.049
+        },
+        {
+          "start": 3360685.418695001,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.783
+        },
+        {
+          "start": 3360688.9683993342,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.385
+        },
+        {
+          "start": 3360692.5020005843,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2584.387
+        },
+        {
+          "start": 3360696.0850215424,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2549.229
+        },
+        {
+          "start": 3360699.6030449173,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.047
+        },
+        {
+          "start": 3360703.151950834,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.657
+        },
+        {
+          "start": 3360706.6851816676,
+          "bodies": 0,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2582.308
+        }
+      ],
+      "counts": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "unfinishedSwipe": null
+    },
+    "before": {
+      "mermaid": {
+        "mermaid.min.js": "581ed7d74bd9048d0e3a91363927d72ef22942d7722546b27f7cc29e35390eb8",
+        "index.html": "5c41941e491295479ae7e00c7a30acb85c17d8d2510968b91ceac9f7fb6fe87e",
+        "native.js": "b3ce5f2febd96ac9f7bbbe4ed6895adcf44d4a47782f13853b178713fde90852",
+        "NOTICE.txt": "650328942a90e7b7705d1dc17e2046242d6927502f16b7ac7073381cd11f0a87",
+        "frame.js": "2adac5d9c51f6597685c379af75477a9d9ed41542cf9cde6789c2bbbac9bd606"
+      },
+      "totalBodies": 113,
+      "outsideSwipeBodies": 31,
+      "phaseLines": 53,
+      "swipes": [
+        {
+          "start": 3360430.636129126,
+          "bodies": 6,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2533.532
+        },
+        {
+          "start": 3360434.585047834,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2484.489
+        },
+        {
+          "start": 3360438.5883158343,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2481.664
+        },
+        {
+          "start": 3360442.5367525006,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2483.525
+        },
+        {
+          "start": 3360446.5019204174,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2498.886
+        },
+        {
+          "start": 3360450.1183602507,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2532.753
+        },
+        {
+          "start": 3360453.7684280425,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2549.179
+        },
+        {
+          "start": 3360457.3682519174,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2584.714
+        },
+        {
+          "start": 3360460.9850006676,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2551.417
+        },
+        {
+          "start": 3360464.5683786673,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2549.62
+        },
+        {
+          "start": 3360468.1381226676,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2579.979
+        },
+        {
+          "start": 3360471.7184196673,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2584.112
+        },
+        {
+          "start": 3360475.321205959,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2564.662
+        },
+        {
+          "start": 3360478.921025126,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2581.219
+        },
+        {
+          "start": 3360482.5181552093,
+          "bodies": 5,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 2566.306
+        },
+        {
+          "start": 3360486.0854677507,
+          "bodies": 6,
+          "phases": [
+            "interacting",
+            "decelerating",
+            "decelerating",
+            "idle"
+          ],
+          "durationMs": 900.187
+        }
+      ],
+      "counts": [
+        6,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        6
+      ],
+      "unfinishedSwipe": null
+    }
+  },
+  "phoneTouched": false,
+  "lockReleased": true
+}

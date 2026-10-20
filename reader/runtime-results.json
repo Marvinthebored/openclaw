@@ -1,0 +1,45 @@
+{
+  "source_head": "d4df45278320bcb9553d181972b7f88318a9a07e",
+  "ui_tests": [
+    {
+      "name": "testEarlierHistoryButtonWorksBeforeMetadataCompletes",
+      "passed": true,
+      "seconds": 27.144
+    },
+    {
+      "name": "testStreamingReplyKeepsQuestionAnchorAfterKeyboardDismissedSend",
+      "passed": true,
+      "seconds": 20.87
+    },
+    {
+      "name": "testHistoryFirstPageAppearsBeforeOptionalMetadataCompletes",
+      "passed": true,
+      "seconds": 95.931
+    }
+  ],
+  "kit": {
+    "tests": 515,
+    "suites": 13,
+    "test_seconds": 6.751,
+    "passed": true
+  },
+  "native_viewport": {
+    "tests": 2,
+    "failures": 0
+  },
+  "native_i18n_verify": true,
+  "scoped_source_swiftlint": "pass",
+  "first_page_capture_before_metadata_completion_seconds": 18.832874,
+  "cached_return": {
+    "sqlite_rows": 200,
+    "cache_read_after_tap_seconds": 0.223067,
+    "first_cached_capture_after_tap_seconds": 3.330765,
+    "finite_cached_capture_after_tap_seconds": 10.984765,
+    "live_history_after_tap_seconds": 20.726769,
+    "metadata_after_tap_seconds": 42.62159,
+    "refreshed_capture_after_tap_seconds": 48.580765,
+    "cached_latest_y": 537.6666666666642,
+    "refreshed_latest_y": 537.7083333333139,
+    "delta_y_points": 0.041667
+  }
+}

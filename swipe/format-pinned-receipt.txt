@@ -1,0 +1,6 @@
+0.63.1
+136d4a990a7c63f313baa9081ffa451cb1988eacac3128e810564ca1efbf3083  swiftformat
+Running SwiftFormat...
+(lint mode - no files will be changed.)
+SwiftFormat completed in 0.29s.
+0/2 files require formatting.

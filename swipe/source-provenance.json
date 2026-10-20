@@ -1,0 +1,24 @@
+{
+  "heads": {
+    "before": "d4df45278320bcb9553d181972b7f88318a9a07e",
+    "after": "556d0afc32a88717e60389e6c8ef2e4d33da0c46"
+  },
+  "sha256": {
+    "before": {
+      "apps/ios/UITests/OpenClawSnapshotUITests.swift": "a4105cfcfd24e50f2f8920f13dfb3e2e1c70413f5d5a997026d2b83e915d0857",
+      "apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift": "f3c6820acaa4d100f8369e06b067f48f0cc46e7348b3472c7e0179d3c921ae1a",
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift": "0c29233949f8055ad7b56e02a7ab7a42091e2407bbccc5df4687a3715eb84751",
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatScrollCommand.swift": "bb7a62580ef369e52d5762f81676b6c9168a8d1d226da5d6e5641341154e23c0"
+    },
+    "after": {
+      "apps/ios/UITests/OpenClawSnapshotUITests.swift": "a4105cfcfd24e50f2f8920f13dfb3e2e1c70413f5d5a997026d2b83e915d0857",
+      "apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift": "f3c6820acaa4d100f8369e06b067f48f0cc46e7348b3472c7e0179d3c921ae1a",
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift": "aca995e5b9c9086d5abee407bad1df51051a4ca61db502fdb1d1db510aa934fc",
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatScrollCommand.swift": "4472b39ff7ac3ad2aa809a9d57a1e19d4bcbe3a922433f780d8dd6c65725ed6b"
+    }
+  },
+  "diffFiles": [
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatScrollCommand.swift",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift"
+  ]
+}

@@ -1,0 +1,79 @@
+OpenClawChatView: @self, @identity, _scenePhase, _isDesktopLayout, _contentWidth, _scrollerBottomID, _scrollCommand, _dismissedProgressCards, _scroll, _historyScrollGeometry, _hasPerformedInitialScroll, _lastTurnStartID, _lastLiveUserTurnRevision, _isAtHistoryStart, _readerInteractionRevision, _isKeyboardVisible, _hoveredMessageID, _restoresLiveEdgeAfterKeyboardTransition, _expandedUserMessageIDs, _searchMessageID, _isSearchPresented, _transcriptMemo, _composerFocusRequest, _fullMessageRequest, _reactionPickerMessage, _selectTextMessage, _turnRecapResolver, _turnRecap, _turnRecapSessionKey changed.
+TRACE body 3360637.2527709175
+TRACE phase idle 3360637.4559411258
+OpenClawChatView: @self changed.
+TRACE body 3360637.494950542
+OpenClawChatView: @self, _scenePhase changed.
+TRACE body 3360637.843015751
+OpenClawChatView: \OpenClawChatViewModel.timelineRevision, @self changed.
+TRACE body 3360637.991294251
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360638.525437834
+OpenClawChatView: \RootSidebarModel.isRefreshing, _scrollCommand changed.
+TRACE body 3360638.8555476256
+OpenClawChatView: \OpenClawChatViewModel.sessionDefaults, @self changed.
+TRACE body 3360638.958557667
+OpenClawChatView: \OpenClawChatViewModel.isLoading changed.
+TRACE body 3360639.047324459
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360639.102285167
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360639.161376251
+OpenClawChatView: @self changed.
+TRACE body 3360639.542281626
+OpenClawChatView: @self changed.
+TRACE body 3360639.734164459
+OpenClawChatView: @self changed.
+TRACE body 3360639.8044265006
+TRACE phase interacting 3360650.513578709
+TRACE phase decelerating 3360650.658171626
+TRACE phase idle 3360653.0847441675
+TRACE phase interacting 3360655.051934376
+TRACE phase decelerating 3360655.192674459
+TRACE phase idle 3360657.6342941676
+TRACE phase interacting 3360659.3527651257
+TRACE phase decelerating 3360659.5115826256
+TRACE phase idle 3360661.936810501
+TRACE phase interacting 3360663.785107459
+TRACE phase decelerating 3360663.943165834
+TRACE phase idle 3360666.368120584
+TRACE phase interacting 3360667.6514986255
+TRACE phase decelerating 3360667.807236584
+TRACE phase idle 3360670.234141959
+TRACE phase interacting 3360671.235264709
+TRACE phase decelerating 3360671.3888391675
+TRACE phase idle 3360673.8174277507
+TRACE phase interacting 3360674.7685787505
+TRACE phase decelerating 3360674.922085751
+TRACE phase idle 3360677.350779834
+TRACE phase interacting 3360678.3180257925
+TRACE phase decelerating 3360678.472262334
+TRACE phase idle 3360680.9008136257
+TRACE phase interacting 3360681.885015792
+TRACE phase decelerating 3360682.0223163343
+TRACE phase idle 3360684.451065084
+TRACE phase interacting 3360685.418695001
+TRACE phase decelerating 3360685.572687084
+TRACE phase idle 3360688.0014785007
+TRACE phase interacting 3360688.9683993342
+TRACE phase decelerating 3360689.1227862923
+TRACE phase idle 3360691.550783959
+TRACE phase interacting 3360692.5020005843
+TRACE phase decelerating 3360692.656263001
+TRACE phase idle 3360695.086387334
+TRACE phase interacting 3360696.0850215424
+TRACE phase decelerating 3360696.222209626
+TRACE phase idle 3360698.634250959
+TRACE phase interacting 3360699.6030449173
+TRACE phase decelerating 3360699.755656459
+TRACE phase idle 3360702.1850915425
+TRACE phase interacting 3360703.151950834
+TRACE phase decelerating 3360703.3048153343
+TRACE phase idle 3360705.734607459
+TRACE phase interacting 3360706.6851816676
+TRACE phase decelerating 3360706.838919709
+TRACE phase idle 3360709.267489709
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360710.0608908758
+OpenClawChatView: _scrollCommand changed.
+TRACE body 3360710.1227050424

@@ -1,0 +1,32 @@
+Test Suite 'OpenClawKitPackageTests.xctest' passed at 2026-10-20 22:34:32.484.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'Selected tests' passed at 2026-10-20 22:34:32.484.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test run started.
+✔ Test "idle alone does not release following" passed after 0.001 seconds.
+✔ Test "reader departure cancels the queued command" passed after 0.001 seconds.
+✔ Test "a repeated target supersedes the earlier queued command" passed after 0.001 seconds.
+✔ Test "prepend restores lazy frame refinements until reader departure and ignores stale geometry" passed after 0.001 seconds.
+✔ Test "newer content below the viewport offers a latest jump" passed after 0.001 seconds.
+✔ Test "only user removal clears the user baseline" passed after 0.001 seconds.
+✔ Test "an empty page retains the reading offset for the next page" passed after 0.001 seconds.
+✔ Test "streaming at the live edge never offers a latest jump" passed after 0.001 seconds.
+✔ Test "late first history row is not a new turn" passed after 0.001 seconds.
+✔ Test "reader departure or session change cancels post-layout preservation" passed after 0.001 seconds.
+✔ Test "a live user anchors even when narration adds a later boundary" passed after 0.001 seconds.
+✔ Test "clearing a search or removing a turn cancels its queued target" passed after 0.001 seconds.
+✔ Test "touch down cancels following before a streaming tick can move the reader" passed after 0.001 seconds.
+✔ Test "invalidating another target preserves a newer jump to latest" passed after 0.001 seconds.
+✔ Test "optimistic turn removal keeps the older user as the baseline" passed after 0.001 seconds.
+✔ Test "new user after the existing baseline starts a turn" passed after 0.001 seconds.
+✔ Test "assistant or transient content after the user offers a latest jump" passed after 0.001 seconds.
+✔ Test "a command cannot cross a session or agent change" with 2 test cases passed after 0.001 seconds.
+✔ Test "history hydration after opening is not a new turn" passed after 0.001 seconds.
+✔ Test "macOS initially restores to the latest turn" passed after 0.001 seconds.
+✔ Test "a command is consumed before scrolling and cannot replay" passed after 0.001 seconds.
+✔ Test "removed transient content does not offer a latest jump" passed after 0.001 seconds.
+✔ Test "drags and system animated scrolls release the follow target" passed after 0.001 seconds.
+✔ Test "a removed history row cannot arm deferred preservation" passed after 0.001 seconds.
+✔ Test "loading and empty transcripts suppress the latest jump" passed after 0.001 seconds.
+✔ Test "a replaced history window discards its stale paging geometry" passed after 0.001 seconds.
+✔ Test run with 26 tests in 2 suites passed after 0.001 seconds.

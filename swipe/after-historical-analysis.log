@@ -1,0 +1,19 @@
+  2571 ms  0 bodies  int>dec>idl  | 
+  2582 ms  0 bodies  int>dec>idl  | 
+  2584 ms  0 bodies  int>dec>idl  | 
+  2583 ms  0 bodies  int>dec>idl  | 
+  2583 ms  0 bodies  int>dec>idl  | 
+  2582 ms  0 bodies  int>dec>idl  | 
+  2582 ms  0 bodies  int>dec>idl  | 
+  2583 ms  0 bodies  int>dec>idl  | 
+  2566 ms  0 bodies  int>dec>idl  | 
+  2583 ms  0 bodies  int>dec>idl  | 
+  2582 ms  0 bodies  int>dec>idl  | 
+  2584 ms  0 bodies  int>dec>idl  | 
+  2549 ms  0 bodies  int>dec>idl  | 
+  2582 ms  0 bodies  int>dec>idl  | 
+  2583 ms  0 bodies  int>dec>idl  | 
+  2582 ms  0 bodies  int>dec>idl  | 
+
+16 swipes, 0.0 body evaluations per swipe. Causes:
+Between swipes: {'_scrollCommand': 5, '@self': 4, '@self, @identity, _scenePhase, _isDesktopLayout, _contentWidth, _scrollerBottomID, _scrollCommand, _dismissedProgressCards, _scroll, _historyScrollGeometry, _hasPerformedInitialScroll, _lastTurnStartID, _lastLiveUserTurnRevision, _isAtHistoryStart, _readerInteractionRevision, _isKeyboardVisible, _hoveredMessageID, _restoresLiveEdgeAfterKeyboardTransition, _expandedUserMessageIDs, _searchMessageID, _isSearchPresented, _transcriptMemo, _composerFocusRequest, _fullMessageRequest, _reactionPickerMessage, _selectTextMessage, _turnRecapResolver, _turnRecap, _turnRecapSessionKey': 1, '@self, _scenePhase': 1, '\\OpenClawChatViewModel.timelineRevision, @self': 1, '\\RootSidebarModel.isRefreshing, _scrollCommand': 1, '\\OpenClawChatViewModel.sessionDefaults, @self': 1, '\\OpenClawChatViewModel.isLoading': 1}

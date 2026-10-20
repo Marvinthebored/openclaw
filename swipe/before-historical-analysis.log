@@ -1,0 +1,23 @@
+  2534 ms  6 bodies  int>dec>dec>idl  | _scrollPosition, _followTarget, _isUserScrolling ; _scrollPosition ; _scrollPosition ; _isAtLiveEdge ; _scrollPosition ; _scrollPosition
+  2484 ms  5 bodies  int>dec>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2482 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2484 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2499 ms  5 bodies  int>dec>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2533 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2549 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2585 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2551 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2550 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2580 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2584 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2565 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2581 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+  2566 ms  5 bodies  int>dec>idl  | _isUserScrolling ; _scrollPosition ; _scrollPosition ; _scrollPosition ; _scrollPosition
+   900 ms  6 bodies  int>dec>dec>idl  | _isUserScrolling ; _scrollPosition ; _isAtLiveEdge ; _scrollPosition ; _scrollPosition ; _scrollPosition
+
+16 swipes, 5.1 body evaluations per swipe. Causes:
+  64   4.0/swipe  _scrollPosition
+  15   0.9/swipe  _isUserScrolling
+   2   0.1/swipe  _isAtLiveEdge
+   1   0.1/swipe  _scrollPosition, _followTarget, _isUserScrolling
+Between swipes: {'_isUserScrolling': 14, '@self': 4, '_scrollCommand': 3, '_scrollPosition': 2, '@self, @identity, _scenePhase, _isDesktopLayout, _contentWidth, _scrollerBottomID, _scrollCommand, _dismissedProgressCards, _scrollPosition, _historyScrollGeometry, _hasPerformedInitialScroll, _lastTurnStartID, _lastLiveUserTurnRevision, _hasNewerContentBelow, _followTarget, _isAtLiveEdge, _isUserScrolling, _isAtHistoryStart, _readerInteractionRevision, _isKeyboardVisible, _hoveredMessageID, _restoresLiveEdgeAfterKeyboardTransition, _expandedUserMessageIDs, _searchMessageID, _isSearchPresented, _transcriptMemo, _composerFocusRequest, _fullMessageRequest, _reactionPickerMessage, _selectTextMessage, _turnRecapResolver, _turnRecap, _turnRecapSessionKey': 1, '@self, _scenePhase': 1, '\\OpenClawChatViewModel.timelineRevision, @self': 1, '\\OpenClawChatViewModel.pendingRuns, _scrollCommand': 1}
