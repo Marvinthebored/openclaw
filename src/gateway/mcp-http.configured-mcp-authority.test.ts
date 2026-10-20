@@ -23,6 +23,7 @@ import { replaceSessionEntry } from "../config/sessions/session-accessor.js";
 import type { OpenClawConfig } from "../config/types.openclaw.js";
 import { createEmptyPluginRegistry } from "../plugins/registry-empty.js";
 import { setActivePluginRegistry } from "../plugins/runtime.js";
+import type { SkillLibraryAuthoringCapability } from "../skills/library/authoring.js";
 import { openOpenClawStateDatabase } from "../state/openclaw-state-db.js";
 import { createTestGatewayScheduler } from "../test-utils/gateway-scheduler-clock.js";
 import {
@@ -196,7 +197,11 @@ beforeAll(async () => {
     },
     plugins: { enabled: false },
     skills: { load: { watch: false } },
-    tools: { allow: ["read", "probe__*"], codeMode: false, toolSearch: false },
+    tools: {
+      allow: ["read", "probe__*", "skill_workshop"],
+      codeMode: false,
+      toolSearch: false,
+    },
     mcp: {
       servers: {
         probe: { transport: "streamable-http", url: "http://127.0.0.1:" + probe.port + "/mcp" },
@@ -250,7 +255,12 @@ afterAll(async () => {
 });
 
 /** Prepares a real CLI turn and returns a client bound to its loopback grant. */
-async function prepareTurn(name: string, completion: boolean, signal: AbortSignal) {
+async function prepareTurn(
+  name: string,
+  completion: boolean,
+  signal: AbortSignal,
+  skillLibraryAuthoring?: SkillLibraryAuthoringCapability,
+) {
   const sessionId = "configured-" + name;
   const sessionKey = "agent:main:" + sessionId;
   const childSessionKey = "agent:main:subagent:" + sessionId;
@@ -260,7 +270,7 @@ async function prepareTurn(name: string, completion: boolean, signal: AbortSigna
     spawnedBy,
     spawnDepth: 1,
     inheritedToolPolicyVersion: 1 as const,
-    inheritedToolAllow: ["read", "probe__*"],
+    inheritedToolAllow: ["read", "probe__*", "skill_workshop"],
   });
   const entry = {
     sessionId,
@@ -300,6 +310,7 @@ async function prepareTurn(name: string, completion: boolean, signal: AbortSigna
     prompt: "Use the probe server.",
     skillsSnapshot: { prompt: "", skills: [] },
     senderIsOwner: true,
+    ...(skillLibraryAuthoring ? { skillLibraryAuthoring } : {}),
     runId,
     timeoutMs: 60_000,
     abortSignal: signal,
@@ -426,5 +437,49 @@ it.for(
     // The refresh ran; the refused request never reached the server.
     expect(probe.counts["tools/list"]).toBe((before["tools/list"] ?? 0) + 1);
     expect(probe.counts[operation.method]).toBe(before[operation.method]);
+  },
+);
+
+it.for(["personal", "workspace"] as const)(
+  "keeps a %s-default Workshop definition on a completion turn without its authority",
+  async (defaultTarget, { signal }) => {
+    const personalCalls: unknown[] = [];
+    const human: SkillLibraryAuthoringCapability = {
+      target: "personal",
+      defaultTarget,
+      multipleProfiles: true,
+      bind: () => {},
+      invoke: async (input) => {
+        personalCalls.push(input);
+        return { skills: [] } as never;
+      },
+    };
+    const name = "workshop-" + defaultTarget;
+    const workshopDefinition = async (turn: Awaited<ReturnType<typeof prepareTurn>>) => {
+      const listed = await turn.rpc("tools/list");
+      expect(listed.status).toBe(200);
+      const result = listed.body.result as {
+        tools: Array<{ name: string; description?: string; inputSchema?: unknown }>;
+      };
+      return result.tools.find((tool) => tool.name === "skill_workshop");
+    };
+    const humanTurn = await prepareTurn(name, false, signal, human);
+    const humanDefinition = await workshopDefinition(humanTurn);
+    const completionTurn = await prepareTurn(name, true, signal);
+    expect(humanDefinition).toBeDefined();
+    // Same definition on the completion turn keeps Claude's cached prefix.
+    expect(await workshopDefinition(completionTurn)).toEqual(humanDefinition);
+    // Personal-library calls need a fresh human message; the live grant is not reached.
+    expect(
+      await completionTurn.call("skill_workshop", { action: "list", target: "personal" }),
+    ).toEqual({
+      isError: true,
+      text: expect.stringContaining("needs a fresh message from the person"),
+    });
+    expect(personalCalls).toEqual([]);
+    if (defaultTarget === "workspace") {
+      // Unsandboxed workspace Workshop calls keep the ordinary no-grant rule.
+      expect((await completionTurn.call("skill_workshop", { action: "list" })).isError).toBe(false);
+    }
   },
 );
