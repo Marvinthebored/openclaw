@@ -5,7 +5,7 @@ import OpenClawProtocol
 public enum OpenClawChatTransportEvent: Sendable {
     case health(ok: Bool)
     case tick
-    case chatMetadataChanged
+    case chatMetadataChanged(modelCatalogChanged: Bool = true, agentID: String? = nil)
     case modelSelectionChanged
     case sessionsChanged(OpenClawChatSessionsChangedEvent)
     case sessionObserver(SessionObserverDigest)
@@ -19,6 +19,20 @@ public enum OpenClawChatTransportEvent: Sendable {
     case routeChanged
     case reconnected
     case seqGap
+
+    public func refreshesModelCatalog(forAgentID agentID: String?) -> Bool {
+        switch self {
+        case let .chatMetadataChanged(modelCatalogChanged, changedAgentID):
+            guard modelCatalogChanged else { return false }
+            guard let changedAgentID = ChatPayloadDecoding.trimmedNonEmptyString(changedAgentID),
+                  let agentID = ChatPayloadDecoding.trimmedNonEmptyString(agentID) else { return true }
+            return changedAgentID.lowercased() == agentID.lowercased()
+        case .modelSelectionChanged:
+            return true
+        default:
+            return false
+        }
+    }
 }
 
 public struct OpenClawQuestionResolvedEvent: Codable, Sendable {
@@ -652,10 +666,6 @@ public enum OpenClawChatRunObservation: Sendable, Equatable {
 public struct OpenClawChatMetadataCapabilities: Codable, Sendable, Equatable {
     public let swarmEnabled: Bool
 
-    private enum CodingKeys: String, CodingKey {
-        case swarmEnabled
-    }
-
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.swarmEnabled = if container.contains(.swarmEnabled) {
@@ -801,6 +811,11 @@ public protocol OpenClawChatTransport: Sendable {
     func gatewayAdvertisesMethod(_ method: String) async -> Bool?
     func attachmentLimits() async -> GatewayAttachmentLimits?
     func fetchProgressCard(sessionKey: String, agentID: String?) async throws -> ProgressCard?
+    func clearProgressCard(sessionKey: String, agentID: String?, expectedRevision: Int) async throws
+    func refreshProgressCard(
+        sessionKey: String,
+        agentID: String?,
+        idempotencyKey: String) async throws -> OpenClawChatProgressCardRefreshResult
     func acquireReactionsRouteLease() async -> OpenClawChatReactionsRouteLease?
     func requestFullMessage(sessionKey: String, messageID: String) async throws -> OpenClawChatMessage?
     func listModels(agentID: String?) async throws -> [OpenClawChatModelChoice]
@@ -969,6 +984,18 @@ extension OpenClawChatTransport {
 
     public func fetchProgressCard(sessionKey _: String, agentID _: String?) async throws -> ProgressCard? {
         nil
+    }
+
+    public func clearProgressCard(sessionKey _: String, agentID _: String?, expectedRevision _: Int) async throws {
+        throw CancellationError()
+    }
+
+    public func refreshProgressCard(
+        sessionKey _: String,
+        agentID _: String?,
+        idempotencyKey _: String) async throws -> OpenClawChatProgressCardRefreshResult
+    {
+        throw CancellationError()
     }
 
     public func acquireReactionsRouteLease() async -> OpenClawChatReactionsRouteLease? {

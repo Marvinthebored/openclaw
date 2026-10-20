@@ -177,9 +177,7 @@ extension OpenClawChatComposer {
                     }
                 }
             }
-            .disabled(
-                !self.viewModel.composerModelMutationAvailable ||
-                    self.viewModel.isUpdatingSessionSettings)
+            .disabled(self.cleanModelChoicesDisabled)
             #if os(macOS)
             if self.viewModel.modelSelectionID != OpenClawChatViewModel.defaultModelSelectionID {
                 Divider()
@@ -195,6 +193,9 @@ extension OpenClawChatComposer {
                 Divider()
                 self.modelSignInButton
             }
+            #elseif os(iOS)
+            Divider()
+            self.modelSignInButton
             #endif
         } label: {
             self.cleanInlineModelLabel(compact: compact)
@@ -205,13 +206,14 @@ extension OpenClawChatComposer {
         // Mac session settings remain editable during a response; pinning is
         // local and stays available while a Gateway settings save is pending.
         .fixedSize()
-        #else
+        #elseif !os(iOS)
         .disabled(
             !self.viewModel.showsModelPicker ||
                 !self.viewModel.composerModelMutationAvailable ||
                 self.viewModel.isUpdatingSessionSettings ||
                 self.viewModel.hasActiveRunForComposerSettings)
         #endif
+        // Sign-in stays reachable even when choosing a model is unavailable.
         .help(self.cleanInlineModelDisabledHint ?? self.viewModel.composerInlineModelLabel)
         .accessibilityLabel("Model")
         .accessibilityValue(self.viewModel.composerInlineModelLabel)
@@ -237,9 +239,9 @@ extension OpenClawChatComposer {
         .frame(width: compact ? 104 : 160, height: self.cleanControlHeight)
         .contentShape(Rectangle())
         #else
-        if compact {
+        if compact || self.dynamicTypeSize.isAccessibilitySize {
             Image(systemName: "cpu")
-                .font(OpenClawChatTypography.display(size: 16, weight: .semibold, relativeTo: .body))
+                .font(.system(size: OpenClawChatTypography.scaled(16), weight: .semibold))
                 .foregroundStyle(.secondary)
                 .frame(
                     width: CleanChatComposerMetrics.compactModelWidth,
@@ -331,10 +333,31 @@ extension OpenClawChatComposer {
         #endif
     }
 
+    /// Keep recovery visible when authentication blocks send or capture UI replaces the model menu.
+    var showsModelSignInRow: Bool {
+        #if os(iOS)
+        guard self.composerChrome == .clean else { return true }
+        return self.viewModel.composerModelAvailabilityMessage != nil || self.cleanShowsCameraFlip ||
+            self.voiceNoteControl?.recorder.isRecording == true
+        #else
+        !self.usesDesktopModelMenu
+        #endif
+    }
+
+    private var cleanModelChoicesDisabled: Bool {
+        let unavailable = !self.viewModel.composerModelMutationAvailable ||
+            self.viewModel.isUpdatingSessionSettings
+        #if os(iOS)
+        return unavailable || !self.viewModel.showsModelPicker || self.viewModel.hasActiveRunForComposerSettings
+        #else
+        return unavailable
+        #endif
+    }
+
     private var cleanInlineModelDisabledHint: String? {
         #if os(iOS)
         if self.viewModel.hasActiveRunForComposerSettings {
-            return String(localized: "Available after the current response finishes.")
+            return String(localized: "Model changes are available after the current response finishes.")
         }
         #endif
         if !self.viewModel.composerModelMutationAvailable {

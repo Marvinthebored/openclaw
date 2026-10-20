@@ -1,4 +1,3 @@
-// ClawRouter provider catalog maps credential-scoped routes to OpenClaw transports.
 import type { ProviderRuntimeModel } from "openclaw/plugin-sdk/plugin-entry";
 import {
   getCachedLiveProviderModelRows,
@@ -19,7 +18,9 @@ import {
 const CLAWROUTER_DEFAULT_BASE_URL = "https://clawrouter.openclaw.ai";
 
 const PROVIDER_ID = "clawrouter";
-const CATALOG_CACHE_TTL_MS = 60_000;
+// Inventory changes infrequently; inference still enforces current grants and budgets.
+// Explicit catalog refresh bypasses this response cache at the acquisition owner.
+const CATALOG_CACHE_TTL_MS = 60 * 60_000;
 const ROUTE_METADATA_KEY = "clawrouterRoute";
 const DEFAULT_CONTEXT_WINDOW = 200_000;
 const DEFAULT_MAX_TOKENS = 32_768;
@@ -344,7 +345,7 @@ export async function buildClawRouterProviderConfig(params: {
   discoveryApiKey?: string;
   baseUrl?: string;
   fetchGuard?: LiveModelCatalogFetchGuard;
-}): Promise<ModelProviderConfig> {
+}): Promise<ModelProviderConfig & { api: "openai-responses"; baseUrl: string }> {
   const rootUrl = normalizeClawRouterRootUrl(params.baseUrl);
   const rows = await getCachedLiveProviderModelRows({
     providerId: PROVIDER_ID,
@@ -354,7 +355,6 @@ export async function buildClawRouterProviderConfig(params: {
     fetchGuard: params.fetchGuard,
     readRows: readCatalogRows,
     ttlMs: CATALOG_CACHE_TTL_MS,
-    shouldCacheRows: (providers) => providers.length > 0,
     auditContext: "clawrouter-model-discovery",
   });
   const providers = rows

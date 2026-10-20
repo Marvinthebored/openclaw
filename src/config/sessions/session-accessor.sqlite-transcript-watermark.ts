@@ -7,7 +7,6 @@ import {
   getNodeSqliteKysely,
   prepareSqliteQueryTakeFirstSync,
 } from "../../infra/kysely-sync.js";
-import { runSqliteDeferredTransactionSync } from "../../infra/sqlite-transaction.js";
 import {
   withOpenClawAgentDatabaseReadOnly,
   type OpenClawAgentReadOnlyDatabase,
@@ -19,6 +18,8 @@ import {
   toDatabaseOptions,
 } from "./session-accessor.sqlite-scope.js";
 import type { SessionTranscriptWatermark } from "./session-accessor.sqlite-transcript-watermark-read.js";
+import { readSessionActorTransactionState } from "./session-actor-transaction.js";
+import { readTranscriptContextFacts } from "./session-transcript-context-facts.js";
 
 const retainedWatermarkQuery = createSqliteQueryCache((database) => {
   const db = getNodeSqliteKysely<DB>(database);
@@ -54,6 +55,14 @@ export function readSessionTranscriptWatermarkInDatabase(
   database: OpenClawAgentReadOnlyDatabase,
   sessionId: string,
 ): SessionTranscriptWatermark {
+  const actor = readSessionActorTransactionState(database, { sessionId });
+  if (actor) {
+    return { ...actor.hot.transcript.watermark };
+  }
+  const context = readTranscriptContextFacts(database, sessionId);
+  if (context) {
+    return { generation: context.version.generation, maxSeq: context.version.rawSeq };
+  }
   const row = retainedWatermarkQuery(database.db)(sessionId);
   return { generation: row?.generation ?? null, maxSeq: row?.max_seq ?? null };
 }
@@ -64,12 +73,7 @@ export function readSessionTranscriptWatermark(
 ): SessionTranscriptWatermark {
   const resolved = resolveSqliteTranscriptReadScope(scope);
   const result = withOpenClawAgentDatabaseReadOnly(
-    (database) =>
-      runSqliteDeferredTransactionSync(
-        database.db,
-        () => readSessionTranscriptWatermarkInDatabase(database, resolved.sessionId),
-        { databaseLabel: database.path, operationLabel: "session transcript watermark read" },
-      ),
+    (database) => readSessionTranscriptWatermarkInDatabase(database, resolved.sessionId),
     toDatabaseOptions(resolved),
   );
   return result.found ? result.value : { generation: null, maxSeq: null };

@@ -1,4 +1,5 @@
-import type { MainRestartRecoveryState, RestartRecoveryRun } from "../../config/sessions.js";
+import type { MainRestartRecoveryState } from "../../config/sessions/main-session-recovery.types.js";
+import type { RestartRecoveryRun } from "../../config/sessions/types.js";
 
 type MainSessionRecoveryExecutionIdentity = NonNullable<
   MainRestartRecoveryState["executionIdentity"]
@@ -71,7 +72,6 @@ export type MainSessionRecoveryCommand =
       cycleId: string;
       now: number;
       runs?: RestartRecoveryRun[];
-      resetRuntime?: boolean;
     }
   | {
       kind: "observe";
@@ -110,6 +110,8 @@ export type MainSessionRecoveryCommand =
   | ({
       kind: "mark_admitted_recovery_interrupted";
       now: number;
+      /** Refuse an attempt whose runtime turn already started. */
+      unstartedOnly?: true;
     } & AdmittedRecoveryAttempt)
   | ({ kind: "claim_foreground" } & MainSessionRecoveryOwnerClaim)
   | { kind: "bind_foreground_run"; claim: MainSessionRecoveryOwnerClaim; runId: string }
@@ -122,6 +124,7 @@ export type MainSessionRecoveryCommand =
       reason: string;
     }
   | { kind: "doctor_repair"; now: number }
+  | { kind: "interrupt_owed"; now: number }
   | { kind: "clear" };
 
 export type MainSessionRecoveryTransitionResult =
