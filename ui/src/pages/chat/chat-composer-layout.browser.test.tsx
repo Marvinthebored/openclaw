@@ -1,5 +1,7 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { createRoot } from "solid-js";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import { page } from "vitest/browser";
+import { createPointerDrag } from "../../lib/reactive/pointer-drag.ts";
 import {
   createComposerContainer,
   createComposerProps,
@@ -44,12 +46,11 @@ describe("content-sized composer with border width control", () => {
 
   function fixture() {
     let width: string | undefined = "1081px";
-    const props = createComposerProps({
-      onComposerWidthChange: (value) => {
-        width = value;
-        draw();
-      },
+    const onWidthChange = vi.fn((value: string | undefined) => {
+      width = value;
+      draw();
     });
+    const props = createComposerProps({ onComposerWidthChange: onWidthChange });
     function draw() {
       props.chatMessageMaxWidth = width;
       let root = container.closest<HTMLElement>(".chat");
@@ -71,6 +72,7 @@ describe("content-sized composer with border width control", () => {
     return {
       props,
       draw,
+      onWidthChange,
       width: () => width,
       setWidth: (value: string) => {
         width = value;
@@ -116,6 +118,22 @@ describe("content-sized composer with border width control", () => {
       expect(f.input().getBoundingClientRect().height).toBe(initial.height);
     },
   );
+
+  it("does not shrink or save when widening a full-width mobile composer", async () => {
+    await page.viewport(390, 844);
+    const f = fixture();
+    await settled();
+    const shell = f.input().closest<HTMLElement>(".agent-chat__composer-shell")!;
+    const initial = shell.getBoundingClientRect().width;
+    expect(initial).toBeGreaterThan(0);
+    f.edge().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    await settled();
+    expect.soft(shell.getBoundingClientRect().width).toBe(initial);
+    expect.soft(f.onWidthChange).not.toHaveBeenCalled();
+    await page.viewport(1440, 900);
+    await settled();
+    expect(shell.getBoundingClientRect().width).toBe(1081);
+  });
 
   it("resets width to the opening preference and leaves no observer-owned handle after unmount", async () => {
     await page.viewport(1440, 900);
@@ -207,7 +225,10 @@ describe("content-sized composer with border width control", () => {
       input
         .closest(".agent-chat__composer-shell")!
         .querySelector<HTMLElement>('[role="separator"]')!;
-    const layout = new ComposerLayout();
+    const layout = createRoot((dispose) => {
+      onTestFinished(dispose);
+      return new ComposerLayout(createPointerDrag());
+    });
     const widths: (string | undefined)[] = [];
     const bind = (width: string) => {
       root.style.setProperty("--chat-thread-max-width", width);
@@ -255,6 +276,39 @@ describe("content-sized composer with border width control", () => {
     layout.disconnect();
     container.innerHTML = "";
   });
+
+  it.each(["pointercancel", "lostpointercapture", "blur"] as const)(
+    "cancels a width preview on %s without saving or handling later pointer input",
+    async (reason) => {
+      await page.viewport(1440, 900);
+      const f = fixture();
+      await settled();
+      const edge = f.edge();
+      const root = container.closest<HTMLElement>(".chat")!;
+      edge.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          pointerId: 7,
+          isPrimary: true,
+          button: 0,
+          clientX: 300,
+          bubbles: true,
+        }),
+      );
+      window.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: 330 }));
+      expect(root.style.getPropertyValue("--chat-thread-drag-width")).toBe("1021px");
+      if (reason === "blur") {
+        window.dispatchEvent(new Event("blur"));
+      } else {
+        edge.dispatchEvent(new PointerEvent(reason, { pointerId: 7, bubbles: true }));
+      }
+      window.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: 350 }));
+      window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 7 }));
+      expect(root.style.getPropertyValue("--chat-thread-drag-width")).toBe("");
+      expect(edge.classList.contains("agent-chat__composer-width-edge--dragging")).toBe(false);
+      expect(f.onWidthChange).not.toHaveBeenCalled();
+      expect(f.input().getBoundingClientRect().width).toBe(1081);
+    },
+  );
 
   it("retires the edge when a replacement banner hides the input", async () => {
     await page.viewport(1440, 900);
