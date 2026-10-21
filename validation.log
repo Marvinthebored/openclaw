@@ -1,0 +1,7 @@
+## test.log
+REAL_APP_GATEWAY_HISTORY_PASS before=13 after=13 append=11 unchanged activeRun gapRecovery final resetRecovery
+✔ Test run with 35 tests in 2 suites passed after 19.715 seconds.
+## kit.log
+✔ Test run with 665 tests in 19 suites passed after 10.092 seconds.
+## mac-build.log
+Build of product 'OpenClaw' complete! (228.34s)
