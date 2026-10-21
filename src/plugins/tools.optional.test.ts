@@ -1889,7 +1889,11 @@ describe("resolvePluginTools optional tools", () => {
         content: [{ type: "text", text: "2:same" }],
       });
       expect(nextFactory).toHaveBeenCalledTimes(2);
-      expect(resolvePluginTools({ ...nextParams, clientCaps: [] })).toEqual([]);
+      const unavailable = resolvePluginTools({ ...nextParams, clientCaps: [] });
+      expect(unavailable[0]?.parameters).toEqual(next[0]?.parameters);
+      expect((await unavailable[0]!.execute("denied", {}, undefined)).details).toMatchObject({
+        gated: true,
+      });
       expect(nextFactory).toHaveBeenCalledTimes(3);
       expect(loadOpenClawPluginsMock).not.toHaveBeenCalled();
     },

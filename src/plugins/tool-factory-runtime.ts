@@ -1,5 +1,9 @@
 /** Invokes current-context plugin tool factories and reports one assembly's timings. */
 import { isPromiseLike } from "@openclaw/normalization-core/promise-like";
+import {
+  copyAgentToolAvailability,
+  isAgentToolExecutionAvailable,
+} from "../agents/agent-tool-availability.js";
 import type { AnyAgentTool } from "../agents/tools/common.js";
 import { isInvalidConfigError } from "../config/io.invalid-config.js";
 import { racePromiseWithAbortSignal } from "../infra/abort-signal.js";
@@ -85,6 +89,7 @@ export function bindPluginToolCallbacks(
     execute: async (...args: Parameters<AnyAgentTool["execute"]>) => {
       const [toolCallId, params, signal, onUpdate] = args;
       const pending =
+        isAgentToolExecutionAvailable(tool) &&
         memoryAudience &&
         resolveMemoryCapabilityRegistration(registry.memoryCapabilities)?.pluginId ===
           entry.pluginId
@@ -156,6 +161,7 @@ export function bindPluginToolCallbacks(
     preventExtensions: () => false,
   });
   copyPluginToolMeta(tool, wrapped);
+  copyAgentToolAvailability(tool, wrapped);
   return wrapped;
 }
 
