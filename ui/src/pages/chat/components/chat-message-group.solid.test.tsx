@@ -753,13 +753,14 @@ it("renders source previews cited before the final split slice", () => {
     role: "assistant",
     stopReason: "stop",
     content: [
-      { type: "text", text: "See [earlier source](https://example.test/earlier)." },
+      { type: "thinking", thinking: "Find sources" },
+      { type: "text", text: "See https://example.test/earlier." },
       { type: "thinking", thinking: "Compare sources" },
-      { type: "text", text: "Final slice without citation." },
     ],
     __openclaw: { id: "cited-source", runId: "run" },
   };
   const parts = splitMixedWorkGroup(createMessageGroup(message, "assistant", { runId: "run" }));
+  expect(parts).toHaveLength(3);
   const search = createMessageGroup(
     {
       role: "toolResult",
