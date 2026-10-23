@@ -7,6 +7,7 @@ import {
   extractToolCardsCached,
   extractToolBlockCardsCached,
   resolveToolCardOutcome,
+  resolveToolCardDisplay,
 } from "../../lib/chat/tool-cards.ts";
 import { groupMessages } from "./chat-thread-grouping.ts";
 import { collapseCompletedTurnWork } from "./chat-turn-presentation.ts";
@@ -417,6 +418,14 @@ it("preserves a skipped recorded outcome without duplicating output or details",
     "Skipped to process an incoming message.",
   ]);
   expect(cards[0]?.details).toBeUndefined();
+  const dispatched = { ...cards[0]!, name: "tool_call", args: { id: "read", args: {} } };
+  const displayed = resolveToolCardDisplay(dispatched);
+  expect(displayed).not.toBe(dispatched);
+  expect(resolveToolCardOutcome(displayed, false)).toBe("skipped");
+  expect(resolveToolCardOutcome({ ...displayed, outputText: undefined }, false)).toBe("skipped");
+  expect(
+    cards.map((card) => resolveToolCardOutcome({ ...resolveToolCardDisplay(card) }, false)),
+  ).toEqual(["skipped", "skipped"]);
   const blockCards = parts.flatMap(({ message: value }) => {
     const record = value as Record<string, unknown>;
     return (record.content as Record<string, unknown>[]).flatMap((block) =>

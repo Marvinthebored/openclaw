@@ -100,11 +100,12 @@ function readToolExitCode(...values: unknown[]): number | undefined {
   return undefined;
 }
 
-// Call-only fragments retain their recorded classifier input, not result payloads.
-const recordedToolCardOutcomes = new WeakMap<ToolCard, ToolCard>();
+// Symbol metadata follows display spreads without exposing result payloads in serialization.
+const recordedToolCardOutcome = Symbol("recordedToolCardOutcome");
+type RecordedToolCard = ToolCard & { [recordedToolCardOutcome]?: ToolCard };
 
 export function isToolCardSkipped(input: ToolCard): boolean {
-  const card = recordedToolCardOutcomes.get(input) ?? input;
+  const card = (input as RecordedToolCard)[recordedToolCardOutcome] ?? input;
   if (card.activity) {
     return card.activity.status === "skipped";
   }
@@ -117,7 +118,7 @@ export function isToolCardSkipped(input: ToolCard): boolean {
 }
 
 export function isToolCardError(input: ToolCard): boolean {
-  const card = recordedToolCardOutcomes.get(input) ?? input;
+  const card = (input as RecordedToolCard)[recordedToolCardOutcome] ?? input;
   if (isToolCardSkipped(card)) {
     return false;
   }
@@ -133,7 +134,7 @@ export function resolveToolCardOutcome(
   input: ToolCard,
   runActive: boolean | undefined,
 ): ToolCardOutcome {
-  const card = recordedToolCardOutcomes.get(input) ?? input;
+  const card = (input as RecordedToolCard)[recordedToolCardOutcome] ?? input;
   if (isToolCardSkipped(card)) {
     return "skipped";
   }
@@ -527,12 +528,12 @@ function projectEnvelopeCards(message: object, cards: ToolCard[]): ToolCard[] {
     // result's original position rather than appearing twice.
     const projected = {
       ...card,
+      [recordedToolCardOutcome]: paired,
       completed: paired.completed,
       isError: isToolCardError(paired),
       exitCode: paired.exitCode,
       toolOutput: paired.toolOutput,
     };
-    recordedToolCardOutcomes.set(projected, paired);
     return projected;
   });
 }
