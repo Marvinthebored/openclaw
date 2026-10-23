@@ -6,7 +6,7 @@ Removed the iOS-only inline Message Actions control below assistant replies. The
 
 ## Validation
 
-Validated the exact two-file patch on source base `2abd386a6dbc3ab12b87d93d464441a6ea60bcc9`; the two changed source files are unchanged between that base and the current upstream tip used for PR preparation.
+Validated the two-file Swift patch on source base `2abd386a6dbc3ab12b87d93d464441a6ea60bcc9`; both Swift files are unchanged between that base and the current upstream tip used for PR preparation. After validation, an adversarial review identified one outdated iOS documentation sentence describing the removed menu, so that sentence was corrected in `docs/platforms/ios.md`. The documentation-only edit does not change the tested Swift source.
 
 - Repository-configured SwiftFormat lint: passed.
 - Strict SwiftLint on changed production source: passed.
