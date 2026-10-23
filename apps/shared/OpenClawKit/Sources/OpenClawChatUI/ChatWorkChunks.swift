@@ -108,8 +108,9 @@ extension OpenClawChatMessage {
         // Keep Markdown parser context across folded work. Plain narration can
         // still bound independent work; syntax-sensitive envelopes stay whole.
         if chunks.filter({ !$0.isWork }).count > 1,
-           text.range(of: #"[`*_~\[\]<>\\$|#:]|(?:^|\n)(?: {4}|\t|\s*(?:[-+=]|\d+[.)]\s))"#,
-                      options: .regularExpression) != nil
+           text.range(
+               of: #"[`*_~\[\]<>\\$|#:]|(?:^|\n)(?: {4}|\t|\s*(?:[-+=]|\d+[.)]\s))"#,
+               options: .regularExpression) != nil
         { return [self] }
         return chunks.map { chunk in
             var part = self
