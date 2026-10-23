@@ -1,0 +1,142 @@
+[
+  {
+    "file": "README.md",
+    "bytes": 5449,
+    "sha256": "48dc123a43db94ee0600be44018b31d7d22bfb6005a664f29842ebe51f28942c"
+  },
+  {
+    "file": "caller-boundaries.json",
+    "bytes": 2922,
+    "sha256": "188ebcc8f7a28956a53d80416e91a169435cadd29e51ab711c33756ce7b6d746"
+  },
+  {
+    "file": "caller-testConnectedCallerConsumesDeferredOnce.log",
+    "bytes": 356,
+    "sha256": "49e5bee9eeefc4097723d5d1527352f98340c56dfb1f181832403b50263efaaa"
+  },
+  {
+    "file": "caller-testEarlierHistoryContinuesPastEmptyProjectedPage.log",
+    "bytes": 823,
+    "sha256": "7d12f68902a85140c7073f430b89f8e1e001b25735f8e7df7b10dfeeb68cdc0b"
+  },
+  {
+    "file": "caller-testMissingAnchorCallerRestoresReader.log",
+    "bytes": 528,
+    "sha256": "b6b9865847025e650e5ea08a3d85cbb2eef331b9ba7505fdc48abacb5cbc4116"
+  },
+  {
+    "file": "connected-499-after.png",
+    "bytes": 1116273,
+    "sha256": "0492e772cf0d8c1bc960802799704b030d38787c1d3b965133285114fe8e7cc8"
+  },
+  {
+    "file": "connected-499-before.png",
+    "bytes": 1167084,
+    "sha256": "d7eb03eb12c195f917dc731e89d8ee41f139059238d4b8daa5308a54472e3215"
+  },
+  {
+    "file": "controlled-testMissingAnchorCallerRestoresReader.log",
+    "bytes": 1461,
+    "sha256": "8ecb40e1bbb8e7aef13fa75ff62df2140d54a96bc0b4a1834a680302527d1808"
+  },
+  {
+    "file": "fallback-controlled-398-after.png",
+    "bytes": 1151013,
+    "sha256": "ae8f76761c1f412f64e195727b0028370498f3d5aa1f74bd50c3893ee5351666"
+  },
+  {
+    "file": "fallback-controlled-398-before.png",
+    "bytes": 1162242,
+    "sha256": "0e524790c09044708a02e212a76c07db06ed8620639a818dbe58d644ba6d803a"
+  },
+  {
+    "file": "fallback-controlled-499-after.png",
+    "bytes": 1116235,
+    "sha256": "e92a479141260a03327d1072dbdaad57f55b81f5c874b8c7bd81a645c8d87f95"
+  },
+  {
+    "file": "fallback-controlled-499-before.png",
+    "bytes": 1166343,
+    "sha256": "e8a8b4feb6ed970fad0995d509516b5d2d11a95f485bbe40313559327c79f054"
+  },
+  {
+    "file": "image-inspection.json",
+    "bytes": 2368,
+    "sha256": "eab9edd5f564d7013107ddefaeb6367045b17df7f4183cf085efcfdaf422d28d"
+  },
+  {
+    "file": "ipad-completed-work-collapsed-again.png",
+    "bytes": 3208284,
+    "sha256": "75c825d50d78b7c406cd028be2ca6d7c723f861ba89f48c4d6c1cd65be06f4a9"
+  },
+  {
+    "file": "ipad-completed-work-expanded.png",
+    "bytes": 2595398,
+    "sha256": "65467a358464433daa11ab2dac6d8a47576c3fe4f3b53ef1d1d9fa7308119790"
+  },
+  {
+    "file": "ipad-completed-work-initial.png",
+    "bytes": 3208284,
+    "sha256": "75c825d50d78b7c406cd028be2ca6d7c723f861ba89f48c4d6c1cd65be06f4a9"
+  },
+  {
+    "file": "ipad-presentation-summary.txt",
+    "bytes": 504,
+    "sha256": "90752a6129d75099762eb83c3a74fab970b68210c3551cb50ff1efcba7cf5428"
+  },
+  {
+    "file": "iphone-completed-work-collapsed-again.png",
+    "bytes": 1446893,
+    "sha256": "3a421282ad4ba717634e181d7bd8009cc709c778c77bed6885d7546b1e0d6c51"
+  },
+  {
+    "file": "iphone-completed-work-expanded.png",
+    "bytes": 1028486,
+    "sha256": "45ea1ef5b25debb7d13a27c36fb1cf0907c91079f3eb92d7ae01d193722e4030"
+  },
+  {
+    "file": "iphone-completed-work-initial.png",
+    "bytes": 1446893,
+    "sha256": "3a421282ad4ba717634e181d7bd8009cc709c778c77bed6885d7546b1e0d6c51"
+  },
+  {
+    "file": "iphone-presentation-summary.txt",
+    "bytes": 504,
+    "sha256": "34d7d3b6ce29d4ecd7d0946a81398b1a851b2311a6ad2df134a592086ce4f70d"
+  },
+  {
+    "file": "landing-trace.json",
+    "bytes": 2185,
+    "sha256": "003998c484dfb4013f4b163f76e07149ecfde81982205967e60435018507a339"
+  },
+  {
+    "file": "measure-landing.py",
+    "bytes": 1770,
+    "sha256": "6bcdacae8d7062d97bae3c7dd2337f4a052975d2ec02d32523872fdf1b00c1a0"
+  },
+  {
+    "file": "pixel-alignment.json",
+    "bytes": 1213,
+    "sha256": "7bc6c77cbd5c9e4e71ff17e1c88fa66377a88887cc0205cec3cf9a9fa96b50ff"
+  },
+  {
+    "file": "presentation-results.json",
+    "bytes": 793,
+    "sha256": "98dd5dabffe72995c467b9604320f01c2af9066381bcb28e9576562604a7f668"
+  },
+  {
+    "file": "presentation-swift-manifest.json",
+    "bytes": 118027,
+    "sha256": "2da530c0e37663e69e7131b2bccf60562cd4a74239d565ecd9b2d3f557fed232"
+  },
+  {
+    "file": "product-provenance.json",
+    "bytes": 981,
+    "sha256": "fca5db16fcd7ed7f91fad426fe03694be80464120d6f0cfa226eb037e2955428"
+  },
+  {
+    "file": "results.json",
+    "bytes": 15911,
+    "sha256": "bcef20ef1335a684ada57879c8e4cf17d929f19ea5e572efc73914dd7aba96ef"
+  }
+]

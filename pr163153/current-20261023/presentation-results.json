@@ -1,0 +1,33 @@
+{
+  "source_head": "c243a3ea9efe549209f3550946ecfc93f56a5f3e",
+  "steps": {
+    "copy": 0,
+    "restore-current-swift": 0,
+    "ipad-boot": 0,
+    "ipad-bootstatus": 0,
+    "ipad-build": 0,
+    "ipad-presentation": 0,
+    "ipad-export": 0,
+    "ipad-shutdown": 0,
+    "iphone-boot": 0,
+    "iphone-bootstatus": 0,
+    "iphone-build": 0,
+    "iphone-presentation": 0,
+    "iphone-export": 0,
+    "iphone-shutdown": 0
+  },
+  "runs": {
+    "ipad": {
+      "exit": 0,
+      "device": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB"
+    },
+    "iphone": {
+      "exit": 0,
+      "device": "com.apple.CoreSimulator.SimDeviceType.iPhone-17"
+    }
+  },
+  "swift_count": 841,
+  "swift_mismatches": [],
+  "ipad_device": "iPad Pro 13-inch (M5) (16GB)",
+  "finished": 1792748969.185039
+}

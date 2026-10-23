@@ -1,0 +1,95 @@
+{
+  "inspected_images": [
+    {
+      "file": "fallback-controlled-499-before.png",
+      "source_variant": "controlled",
+      "removed_chunks": []
+    },
+    {
+      "file": "fallback-controlled-499-after.png",
+      "source_variant": "controlled",
+      "removed_chunks": []
+    },
+    {
+      "file": "fallback-controlled-398-before.png",
+      "source_variant": "controlled",
+      "removed_chunks": []
+    },
+    {
+      "file": "fallback-controlled-398-after.png",
+      "source_variant": "controlled",
+      "removed_chunks": []
+    },
+    {
+      "file": "connected-499-before.png",
+      "source_variant": "caller",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ]
+    },
+    {
+      "file": "connected-499-after.png",
+      "source_variant": "caller",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ]
+    },
+    {
+      "file": "ipad-completed-work-collapsed-again.png",
+      "source_variant": "current uninstrumented Swift",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ],
+      "timestamp": 1792748893.281
+    },
+    {
+      "file": "ipad-completed-work-expanded.png",
+      "source_variant": "current uninstrumented Swift",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ],
+      "timestamp": 1792748890.686
+    },
+    {
+      "file": "ipad-completed-work-initial.png",
+      "source_variant": "current uninstrumented Swift",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ],
+      "timestamp": 1792748887.372
+    },
+    {
+      "file": "iphone-completed-work-collapsed-again.png",
+      "source_variant": "current uninstrumented Swift",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ],
+      "timestamp": 1792748963.847
+    },
+    {
+      "file": "iphone-completed-work-expanded.png",
+      "source_variant": "current uninstrumented Swift",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ],
+      "timestamp": 1792748956.029
+    },
+    {
+      "file": "iphone-completed-work-initial.png",
+      "source_variant": "current uninstrumented Swift",
+      "removed_chunks": [
+        "eXIf",
+        "iTXt"
+      ],
+      "timestamp": 1792748952.201
+    }
+  ],
+  "privacy_check": "Inspected every published PNG: synthetic fixture text only; no IPs, keys, phone numbers or non-public endpoints. Metadata stripped while preserving PNG IDAT."
+}

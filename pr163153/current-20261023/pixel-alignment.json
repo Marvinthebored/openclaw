@@ -1,0 +1,43 @@
+{
+  "method": "Vertical template alignment of unchanged rendered row interior in native1206x2622 PNG captures; sampled RGB absolute error, +/-45px search. UIKit point scale3. No frame/DOM inference.",
+  "results": [
+    {
+      "row": 499,
+      "before": "fallback-controlled-499-before.png",
+      "after": "fallback-controlled-499-after.png",
+      "roi_pixels": [
+        100,
+        590,
+        800,
+        1100
+      ],
+      "sample_stride_pixels": 4,
+      "samples": 22400,
+      "best_y_shift_pixels": -2,
+      "pixels_per_point": 3,
+      "visible_drift_points": -0.6666666666666666,
+      "mean_channel_abs_error": 0.0,
+      "next_best_error": 3.462514880952381,
+      "within_4pt": true
+    },
+    {
+      "row": 398,
+      "before": "fallback-controlled-398-before.png",
+      "after": "fallback-controlled-398-after.png",
+      "roi_pixels": [
+        420,
+        590,
+        1000,
+        950
+      ],
+      "sample_stride_pixels": 4,
+      "samples": 13050,
+      "best_y_shift_pixels": -2,
+      "pixels_per_point": 3,
+      "visible_drift_points": -0.6666666666666666,
+      "mean_channel_abs_error": 0.0,
+      "next_best_error": 2.728020434227331,
+      "within_4pt": true
+    }
+  ]
+}

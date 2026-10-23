@@ -1,0 +1,15 @@
+2026-10-23 12:20:20.871 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF first-scroll t=1792729220.870548
+2026-10-23 12:21:41.420 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF capture y=0.000000
+2026-10-23 12:21:41.424 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF preserve offset=Optional(-51.33333333333151)
+2026-10-23 12:21:41.424 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF preserve settled=0.000000
+2026-10-23 12:21:41.463 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF request
+2026-10-23 12:22:08.276 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF reject y=0.000000
+2026-10-23 12:22:08.276 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF rejected deferred=0
+2026-10-23 12:22:08.276 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF restore
+2026-10-23 12:24:06.122 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF capture y=0.000000
+2026-10-23 12:24:06.122 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF preserve offset=Optional(-51.33333333333697)
+2026-10-23 12:24:06.122 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF preserve settled=0.000000
+2026-10-23 12:24:06.201 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF request
+2026-10-23 12:24:32.290 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF reject y=0.000000
+2026-10-23 12:24:32.290 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF rejected deferred=0
+2026-10-23 12:24:32.290 Df OpenClaw[43847:8b38934] (Foundation) NATIVEPROOF restore

@@ -1,0 +1,11 @@
+{
+  "source_head": "c243a3ea9efe549209f3550946ecfc93f56a5f3e",
+  "base_head": "776b11e50db1edd1504680ba8830a0ec7ba734de",
+  "product_patch_sha256": "98bbc439cbdb46a08abb8e8ea7c25a3fc66d916c336e350d39a92f137d1a207d",
+  "verification": "product.patch is byte-identical to git diff c243a3ea9ef^ c243a3ea9ef",
+  "variants": {
+    "caller": "Final three-file product delta, with scratch-only native logging, forced-marker/deferred-state harness. Original 5-second fixture; first connected landing shown, whole test fails second-page precondition.",
+    "controlled": "Final three-file product delta, with scratch-only native offset logging, forced nil marker and seeded deferred request. Page delay 25 seconds to obtain a valid pre-arrival sample. Whole two-page/return-to-latest test passes.",
+    "r2": "Intermediate candidate: final viewport and tests, before the two-line caller correction. Its results are retained and explicitly not represented as full-current-head tests."
+  }
+}

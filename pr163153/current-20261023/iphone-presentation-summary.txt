@@ -1,0 +1,6 @@
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureKeepsFinalReplyVisible]' started.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureKeepsFinalReplyVisible]' passed (22.882 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 22.882 (22.884) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 22.882 (22.885) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 22.882 (22.888) seconds
+** TEST EXECUTE SUCCEEDED **

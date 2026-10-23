@@ -1,0 +1,60 @@
+{
+  "testMissingAnchorCallerRestoresReader": {
+    "pid": "26346",
+    "native_events": [
+      "2026-10-23 11:54:38.037 Df OpenClaw[26346:8b0d210] (Foundation) NATIVEPROOF request",
+      "2026-10-23 11:54:43.366 Df OpenClaw[26346:8b0d210] (Foundation) NATIVEPROOF rejected deferred=0",
+      "2026-10-23 11:54:43.367 Df OpenClaw[26346:8b0d210] (Foundation) NATIVEPROOF restore",
+      "2026-10-23 11:58:24.965 Df OpenClaw[26346:8b0d210] (Foundation) NATIVEPROOF request",
+      "2026-10-23 11:58:30.254 Df OpenClaw[26346:8b0d210] (Foundation) NATIVEPROOF rejected deferred=0",
+      "2026-10-23 11:58:30.254 Df OpenClaw[26346:8b0d210] (Foundation) NATIVEPROOF restore"
+    ],
+    "request_count": 2,
+    "rejected_count": 2,
+    "landed_with_deferred_count": 0,
+    "restore_count": 2,
+    "test_counts": [
+      "Executed 1 test, with 1 failure (0 unexpected) in 351.462 (351.465) seconds"
+    ],
+    "failures": [
+      "apps/ios/UITests/OpenClawSnapshotUITests.swift:3392: error: -[OpenClawUITests.OpenClawSnapshotUITests testMissingAnchorCallerRestoresReader] : XCTAssertTrue failed"
+    ]
+  },
+  "testConnectedCallerConsumesDeferredOnce": {
+    "pid": "29102",
+    "native_events": [
+      "2026-10-23 12:01:29.516 Df OpenClaw[29102:8b16be9] (Foundation) NATIVEPROOF request",
+      "2026-10-23 12:01:38.080 Df OpenClaw[29102:8b16be9] (Foundation) NATIVEPROOF landed deferred=1",
+      "2026-10-23 12:05:12.039 Df OpenClaw[29102:8b16be9] (Foundation) NATIVEPROOF request",
+      "2026-10-23 12:05:20.670 Df OpenClaw[29102:8b16be9] (Foundation) NATIVEPROOF landed deferred=1"
+    ],
+    "request_count": 2,
+    "rejected_count": 0,
+    "landed_with_deferred_count": 2,
+    "restore_count": 0,
+    "test_counts": [
+      "Executed 1 test, with 1 failure (0 unexpected) in 371.860 (371.865) seconds"
+    ],
+    "failures": [
+      "apps/ios/UITests/OpenClawSnapshotUITests.swift:3442: error: -[OpenClawUITests.OpenClawSnapshotUITests testConnectedCallerConsumesDeferredOnce] : XCTAssertTrue failed - Pull-down must load the next 101 messages"
+    ]
+  },
+  "testEarlierHistoryContinuesPastEmptyProjectedPage": {
+    "pid": "33186",
+    "native_events": [
+      "2026-10-23 12:06:29.591 Df OpenClaw[33186:8b220a2] (Foundation) NATIVEPROOF first-scroll t=1792728389.607455",
+      "2026-10-23 12:06:35.270 Df OpenClaw[33186:8b220a2] (Foundation) NATIVEPROOF request",
+      "2026-10-23 12:06:35.298 Df OpenClaw[33186:8b220a2] (Foundation) NATIVEPROOF rejected deferred=0",
+      "2026-10-23 12:06:35.299 Df OpenClaw[33186:8b220a2] (Foundation) NATIVEPROOF request",
+      "2026-10-23 12:06:37.603 Df OpenClaw[33186:8b220a2] (Foundation) NATIVEPROOF landed deferred=0"
+    ],
+    "request_count": 2,
+    "rejected_count": 1,
+    "landed_with_deferred_count": 0,
+    "restore_count": 0,
+    "test_counts": [
+      "Executed 1 test, with 0 failures (0 unexpected) in 53.925 (53.936) seconds"
+    ],
+    "failures": []
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "coordinate_space": "Top of the first rendered label glyph, measured from top of native screenshot, in UIKit points (3 pixels/point). These are raster-measured row landmarks, not accessibility frame values or UIScrollView contentOffset. Before images show the pending-page spinner; after images show inserted older content.",
+  "native_receipts": "controlled-testMissingAnchorCallerRestoresReader.log and caller-testConnectedCallerConsumesDeferredOnce.log",
+  "rows": [
+    {
+      "route": "connected",
+      "row_id": "HISTORY_ANCHOR_499",
+      "offset_before_page_arrival_pt": 187.33333333333334,
+      "offset_after_landing_pt": 187.33333333333334,
+      "drift_pt": 0.0,
+      "captures": [
+        {
+          "file": "connected-499-before.png",
+          "label_top_pixel": 562,
+          "label_top_point": 187.33333333333334
+        },
+        {
+          "file": "connected-499-after.png",
+          "label_top_pixel": 562,
+          "label_top_point": 187.33333333333334
+        }
+      ]
+    },
+    {
+      "route": "fallback-controlled",
+      "row_id": "HISTORY_ANCHOR_499",
+      "offset_before_page_arrival_pt": 187.33333333333334,
+      "offset_after_landing_pt": 186.66666666666666,
+      "drift_pt": -0.6666666666666856,
+      "captures": [
+        {
+          "file": "fallback-controlled-499-before.png",
+          "label_top_pixel": 562,
+          "label_top_point": 187.33333333333334
+        },
+        {
+          "file": "fallback-controlled-499-after.png",
+          "label_top_pixel": 560,
+          "label_top_point": 186.66666666666666
+        }
+      ]
+    },
+    {
+      "route": "fallback-controlled",
+      "row_id": "HISTORY_ANCHOR_398",
+      "offset_before_page_arrival_pt": 187.33333333333334,
+      "offset_after_landing_pt": 186.66666666666666,
+      "drift_pt": -0.6666666666666856,
+      "captures": [
+        {
+          "file": "fallback-controlled-398-before.png",
+          "label_top_pixel": 562,
+          "label_top_point": 187.33333333333334
+        },
+        {
+          "file": "fallback-controlled-398-after.png",
+          "label_top_pixel": 560,
+          "label_top_point": 186.66666666666666
+        }
+      ]
+    }
+  ]
+}
