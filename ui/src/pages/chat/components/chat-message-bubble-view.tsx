@@ -125,7 +125,13 @@ export function GroupedMessage(props: GroupedMessageProps) {
     <Show
       when={state().workspaceConflict}
       fallback={
-        <Show when={!state().empty}>
+        <Show
+          when={
+            !state().empty ||
+            (props.options.ownsTerminalStatus === true &&
+              assistantMessageIsInterrupted(state().message))
+          }
+        >
           {(_visible) => {
             const entryRef = messageElements?.forKey(initialMessageKey);
             const bindEntry = elementRef((element) => {
@@ -181,6 +187,7 @@ export function GroupedMessage(props: GroupedMessageProps) {
                   </Switch>
                   <Show
                     when={
+                      props.options.ownsTerminalStatus !== false &&
                       state().sourceRole === "assistant" &&
                       assistantMessageIsInterrupted(state().message)
                     }
