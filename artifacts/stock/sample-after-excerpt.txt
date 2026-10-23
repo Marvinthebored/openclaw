@@ -1,0 +1,90 @@
+Analysis of sampling node (pid 39005) every 1 millisecond
+Process:         node [39005]
+Path:            /opt/homebrew/*/node
+Load Address:    0x100fd0000
+Identifier:      node
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  Python [37615]
+Target Type:     live task
+
+Date/Time:       2026-10-23 20:42:54.587 +0800
+Launch Time:     2026-10-23 20:41:23.328 +0800
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         2.4G
+Physical footprint (peak):  3.0G
+Idle exit:                  untracked
+----
+
+Call graph:
+    3646 Thread_205527289   DispatchQueue_1: com.apple.main-thread  (serial)
+
+--- Complete observed thread-header inventory ---
+    3646 Thread_205527289   DispatchQueue_1: com.apple.main-thread  (serial)
+    3646 Thread_205527309: DelayedTaskSchedulerWorker
+    3646 Thread_205527310: node-V8Worker
+    3646 Thread_205527311: node-V8Worker
+    3646 Thread_205527312: node-V8Worker
+    3646 Thread_205527313: node-V8Worker
+    3646 Thread_205527315: SignalInspector
+    3646 Thread_205527317: WorkerThread
+    3646 Thread_205527341
+    3646 Thread_205527613: libuv-worker
+    3646 Thread_205527614: libuv-worker
+    3646 Thread_205527833: WorkerThread
+    3646 Thread_205527834: WorkerThread
+    3646 Thread_205528014: WorkerThread
+    3646 Thread_205528015: WorkerThread
+    3646 Thread_205528396: WorkerThread
+    3646 Thread_205528397: WorkerThread
+    3646 Thread_205528398: WorkerThread
+    3646 Thread_205528399: WorkerThread
+    3646 Thread_205528417: WorkerThread
+    3646 Thread_205528422: WorkerThread
+    3646 Thread_205528512: WorkerThread
+    3646 Thread_205529574: v8:ProfEvntProc
+    3646 Thread_205529779: WorkerThread
+    3646 Thread_205529782: WorkerThread
+    3646 Thread_205530333: WorkerThread
+    3646 Thread_205530334: WorkerThread
+    3646 Thread_205530335: WorkerThread
+    3646 Thread_205530336: fs-safe-watch
+    3646 Thread_205530695: WorkerThread
+    3646 Thread_205530703: WorkerThread
+    3646 Thread_205530739: WorkerThread
+    3646 Thread_205530742: WorkerThread
+
+--- Profiler-thread stack context, when present ---
+    +               3646 kevent  (in libsystem_kernel.dylib) + 8  [0x1860f5fc4]
+    3646 Thread_205529574: v8:ProfEvntProc
+    + 3646 thread_start  (in libsystem_pthread.dylib) + 8  [0x18612ec1c]
+    +   3646 _pthread_start  (in libsystem_pthread.dylib) + 136  [0x186133c58]
+    +     3646 v8::base::ThreadEntry(void*)  (in libnode.147.dylib) + 152  [0x105b029a8]
+    +       3607 v8::internal::SamplingEventsProcessor::Run()  (in libnode.147.dylib) + 236  [0x1054af510]
+    +       ! 3603 v8::base::ConditionVariable::WaitFor(v8::base::Mutex*, v8::base::TimeDelta const&)  (in libnode.147.dylib) + 144  [0x105afe530]
+    +       ! : 3599 absl::lts_20260817::CondVar::WaitCommon(absl::lts_20260817::Mutex*, absl::lts_20260817::synchronization_internal::KernelTimeout)  (in libabsl_synchronization.2608.0.0.dylib) + 188  [0x1014b3d80]
+    +       ! : | 3599 AbslInternalPerThreadSemWait_lts_20260817  (in libabsl_synchronization.2608.0.0.dylib) + 76  [0x1014b0720]
+    +       ! : |   3599 absl::lts_20260817::synchronization_internal::PthreadWaiter::Wait(absl::lts_20260817::synchronization_internal::KernelTimeout)  (in libabsl_synchronization.2608.0.0.dylib) + 80  [0x1014b0850]
+    +       ! : |     3598 absl::lts_20260817::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260817::synchronization_internal::KernelTimeout)  (in libabsl_synchronization.2608.0.0.dylib) + 84  [0x1014b07f0]
+    +       ! : |     + 3597 _pthread_cond_wait  (in libsystem_pthread.dylib) + 1024  [0x186134154]
+    +       ! : |     + ! 3596 __psynch_cvwait  (in libsystem_kernel.dylib) + 8  [0x1860f350c]
+    +       ! : |     + ! 1 __psynch_cvwait  (in libsystem_kernel.dylib) + 28  [0x1860f3520]
+    +       ! : |     + !   1 cerror_nocancel  (in libsystem_kernel.dylib) + 20  [0x1860f0608]
+    +       ! : |     + 1 _pthread_cond_wait  (in libsystem_pthread.dylib) + 1088  [0x186134194]
+    +       ! : |     +   1 _pthread_cond_updateval  (in libsystem_pthread.dylib) + 184  [0x186130cf4]
+    +       ! : |     1 absl::lts_20260817::synchronization_internal::PthreadWaiter::TimedWait(absl::lts_20260817::synchronization_internal::KernelTimeout)  (in libabsl_synchronization.2608.0.0.dylib) + 84  [0x1014b07f0]
+    +       ! : 2 absl::lts_20260817::CondVar::WaitCommon(absl::lts_20260817::Mutex*, absl::lts_20260817::synchronization_internal::KernelTimeout)  (in libabsl_synchronization.2608.0.0.dylib) + 204  [0x1014b3d90]
+    +       ! : | 2 absl::lts_20260817::CondVar::Remove(absl::lts_20260817::base_internal::PerThreadSynch*)  (in libabsl_synchronization.2608.0.0.dylib) + 28  [0x1014b2cd8]
+    +       ! : |   1 absl::lts_20260817::base_internal::CurrentThreadIdentityIfPresent()  (in libabsl_base.2608.0.0.dylib) + 24  [0x1015b6668]
+    +       ! : |   + 1 _tlv_get_addr  (in libdyld.dylib) + 0  [0x185d30388]
+    +       ! : |   1 absl::lts_20260817::base_internal::CurrentThreadIdentityIfPresent()  (in libabsl_base.2608.0.0.dylib) + 0  [0x1015b6650]
+    +       ! : 1 absl::lts_20260817::CondVar::WaitCommon(absl::lts_20260817::Mutex*, absl::lts_20260817::synchronization_internal::KernelTimeout)  (in libabsl_synchronization.2608.0.0.dylib) + 144  [0x1014b3d54]
+    +       ! : | 1 std::chrono::steady_clock::now()  (in libc++.1.dylib) + 0  [0x1860486d4]
+    +       ! : 1 absl::lts_20260817::CondVar::WaitCommon(absl::lts_20260817::Mutex*, absl::lts_20260817::synchronization_internal::KernelTimeout)  (in libabsl_synchronization.2608.0.0.dylib) + 188  [0x1014b3d80]
+    +       ! 2 v8::base::ConditionVariable::WaitFor(v8::base::Mutex*, v8::base::TimeDelta const&)  (in libnode.147.dylib) + 128  [0x105afe520]
+
+Search of full raw sample for v8:ProfEvntProc: 1 matches.

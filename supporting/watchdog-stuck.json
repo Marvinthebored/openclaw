@@ -1,0 +1,26 @@
+{
+  "name": "watchdog-stuck",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-u",
+    "-c",
+    "import time; print('{\"event\":\"progress\",\"perThread\":[0]}',flush=True); time.sleep(60)"
+  ],
+  "trigger": "no-progress",
+  "lastCounts": [
+    0
+  ],
+  "captures": [
+    {
+      "exitCode": 0,
+      "bytes": 65939
+    },
+    {
+      "exitCode": 0,
+      "bytes": 65939
+    }
+  ],
+  "exitCode": -9,
+  "elapsedSeconds": 16.02,
+  "status": "suspected-stall"
+}

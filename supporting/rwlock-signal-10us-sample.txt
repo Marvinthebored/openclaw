@@ -1,0 +1,137 @@
+Analysis of sampling signal-lock-probe (pid 92990) every 1 millisecond
+Process:         signal-lock-probe [92990]
+Path:            /Users/USER/*/signal-lock-probe
+Load Address:    0x10409c000
+Identifier:      signal-lock-probe
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  Python [92078]
+Target Type:     live task
+
+Date/Time:       2026-10-23 11:48:31.231 +0800
+Launch Time:     2026-10-23 11:48:24.785 +0800
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         1296K
+Physical footprint (peak):  1296K
+Idle exit:                  untracked
+----
+
+Call graph:
+    28 Thread_203134863   DispatchQueue_1: com.apple.main-thread  (serial)
+    + 28 start  (in dyld) + 6992  [0x185d684e4]
+    +   27 main  (in signal-lock-probe) + 912  [0x10409c988]  signal-lock-probe.cc:70
+    +   ! 27 std::this_thread::sleep_for(std::chrono::duration<long long, std::ratio<1l, 1000000000l>> const&)  (in libc++.1.dylib) + 84  [0x18604bf14]
+    +   !   27 nanosleep  (in libsystem_c.dylib) + 220  [0x185fcecc0]
+    +   !     27 __semwait_signal  (in libsystem_kernel.dylib) + 8  [0x1860f3308]
+    +   1 main  (in signal-lock-probe) + 920  [0x10409c990]  signal-lock-probe.cc:71
+    +     1 printf  (in libsystem_c.dylib) + 80  [0x185fed9b4]
+    +       1 vfprintf_l  (in libsystem_c.dylib) + 144  [0x185fd2ff4]
+    +         1 __vfprintf  (in libsystem_c.dylib) + 11648  [0x185fc57c8]
+    +           1 __sfvwrite  (in libsystem_c.dylib) + 380  [0x185fc5d58]
+    +             1 _platform_memmove  (in libsystem_platform.dylib) + 424  [0x18613d508]
+    28 Thread_203134864
+    + 28 thread_start  (in libsystem_pthread.dylib) + 8  [0x18612ec1c]
+    +   28 _pthread_start  (in libsystem_pthread.dylib) + 136  [0x186133c58]
+    +     28 std::__thread_proxy[abi:nqe210106]<std::tuple<std::unique_ptr<std::__thread_struct>, main::$_0>>(void*)  (in signal-lock-probe) + 324  [0x10409cd90]  thread.h:168
+    +       28 _pthread_rwlock_lock_slow  (in libsystem_pthread.dylib) + 656  [0x1861304a0]
+    +         28 _pthread_rwlock_lock_wait  (in libsystem_pthread.dylib) + 80  [0x186132344]
+    +           21 __psynch_rw_wrlock  (in libsystem_kernel.dylib) + 8  [0x1860f521c]
+    +           6 _sigtramp  (in libsystem_platform.dylib) + 0  [0x18613d70c]
+    +           1 _sigtramp  (in libsystem_platform.dylib) + 56  [0x18613d744]
+    +             1 on_signal(int)  (in signal-lock-probe) + 12  [0x10409c5dc]  signal-lock-probe.cc:23
+    28 Thread_203134865
+    + 28 thread_start  (in libsystem_pthread.dylib) + 8  [0x18612ec1c]
+    +   28 _pthread_start  (in libsystem_pthread.dylib) + 136  [0x186133c58]
+    +     28 std::__thread_proxy[abi:nqe210106]<std::tuple<std::unique_ptr<std::__thread_struct>, main::$_0>>(void*)  (in signal-lock-probe) + 324  [0x10409cd90]  thread.h:168
+    +       28 _pthread_rwlock_lock_slow  (in libsystem_pthread.dylib) + 656  [0x1861304a0]
+    +         28 _pthread_rwlock_lock_wait  (in libsystem_pthread.dylib) + 80  [0x186132344]
+    +           20 __psynch_rw_wrlock  (in libsystem_kernel.dylib) + 8  [0x1860f521c]
+    +           7 _sigtramp  (in libsystem_platform.dylib) + 0  [0x18613d70c]
+    +           1 _sigtramp  (in libsystem_platform.dylib) + 56  [0x18613d744]
+    +             1 on_signal(int)  (in signal-lock-probe) + 12  [0x10409c5dc]  signal-lock-probe.cc:23
+    28 Thread_203134866
+    + 28 thread_start  (in libsystem_pthread.dylib) + 8  [0x18612ec1c]
+    +   28 _pthread_start  (in libsystem_pthread.dylib) + 136  [0x186133c58]
+    +     28 std::__thread_proxy[abi:nqe210106]<std::tuple<std::unique_ptr<std::__thread_struct>, main::$_0>>(void*)  (in signal-lock-probe) + 324  [0x10409cd90]  thread.h:168
+    +       28 _pthread_rwlock_lock_slow  (in libsystem_pthread.dylib) + 656  [0x1861304a0]
+    +         28 _pthread_rwlock_lock_wait  (in libsystem_pthread.dylib) + 80  [0x186132344]
+    +           20 __psynch_rw_wrlock  (in libsystem_kernel.dylib) + 8  [0x1860f521c]
+    +           8 _sigtramp  (in libsystem_platform.dylib) + 0  [0x18613d70c]
+    28 Thread_203134867
+    + 28 thread_start  (in libsystem_pthread.dylib) + 8  [0x18612ec1c]
+    +   28 _pthread_start  (in libsystem_pthread.dylib) + 136  [0x186133c58]
+    +     28 std::__thread_proxy[abi:nqe210106]<std::tuple<std::unique_ptr<std::__thread_struct>, main::$_0>>(void*)  (in signal-lock-probe) + 324  [0x10409cd90]  thread.h:168
+    +       28 _pthread_rwlock_lock_slow  (in libsystem_pthread.dylib) + 656  [0x1861304a0]
+    +         28 _pthread_rwlock_lock_wait  (in libsystem_pthread.dylib) + 80  [0x186132344]
+    +           19 __psynch_rw_wrlock  (in libsystem_kernel.dylib) + 8  [0x1860f521c]
+    +           8 _sigtramp  (in libsystem_platform.dylib) + 0  [0x18613d70c]
+    +           1 _sigtramp  (in libsystem_platform.dylib) + 56  [0x18613d744]
+    +             1 on_signal(int)  (in signal-lock-probe) + 12  [0x10409c5dc]  signal-lock-probe.cc:23
+    28 Thread_203134868
+      28 thread_start  (in libsystem_pthread.dylib) + 8  [0x18612ec1c]
+        28 _pthread_start  (in libsystem_pthread.dylib) + 136  [0x186133c58]
+          28 std::__thread_proxy[abi:nqe210106]<std::tuple<std::unique_ptr<std::__thread_struct>, main::$_1>>(void*)  (in signal-lock-probe) + 244  [0x10409cf98]  thread.h:168
+            28 std::this_thread::sleep_for(std::chrono::duration<long long, std::ratio<1l, 1000000000l>> const&)  (in libc++.1.dylib) + 84  [0x18604bf14]
+              28 nanosleep  (in libsystem_c.dylib) + 220  [0x185fcecc0]
+                28 __semwait_signal  (in libsystem_kernel.dylib) + 8,16  [0x1860f3308,0x1860f3310]
+
+Total number in stack (recursive counted multiple, when >=5):
+        5       _pthread_start  (in libsystem_pthread.dylib) + 136  [0x186133c58]
+        5       thread_start  (in libsystem_pthread.dylib) + 8  [0x18612ec1c]
+
+Sort by top of stack, same collapsed (when >= 5):
+        __psynch_rw_wrlock  (in libsystem_kernel.dylib)        80
+        __semwait_signal  (in libsystem_kernel.dylib)        55
+        _sigtramp  (in libsystem_platform.dylib)        29
+
+Binary Images:
+       0x10409c000 -        0x10409d443 +signal-lock-probe (0) <D24B862B-BD12-36E2-9ABC-1394D74A46B6> /Users/*/signal-lock-probe
+       0x185cc0000 -        0x185d12b4b  libobjc.A.dylib (951.7) <40277974-D20C-3EC8-B25C-43AE30D8CC60> /usr/lib/libobjc.A.dylib
+       0x185d13000 -        0x185d47d58  libdyld.dylib (1387) <634959D0-592E-349C-B549-B91F2FF09858> /usr/lib/system/libdyld.dylib
+       0x185d48000 -        0x185dfb4ff  dyld (1.0.0 - 1387) <DF42DD9D-AD11-33A7-8849-9AD5DF30A274> /usr/lib/dyld
+       0x185dfc000 -        0x185dff228  libsystem_blocks.dylib (96) <A712B95E-BCEE-3F12-9F9B-58E6C2060E53> /usr/lib/system/libsystem_blocks.dylib
+       0x185e00000 -        0x185e5455f  libxpc.dylib (3102.160.5) <40BBE226-77D4-332E-9DA8-F0B5BACFB86D> /usr/lib/system/libxpc.dylib
+       0x185e55000 -        0x185e759ff  libsystem_trace.dylib (1861.160.4) <E043667E-AD01-3228-837F-A381F32F2B30> /usr/lib/system/libsystem_trace.dylib
+       0x185e76000 -        0x185f245f7  libcorecrypto.dylib (1922.160.10) <D54389FC-4078-370D-A863-9FEF16E00DFD> /usr/lib/system/libcorecrypto.dylib
+       0x185f25000 -        0x185f75257  libsystem_malloc.dylib (812.160.5) <971CDCFE-4D20-300E-A1D6-EC8672FDD258> /usr/lib/system/libsystem_malloc.dylib
+       0x185f76000 -        0x185fbd23f  libdispatch.dylib (1542.160.2) <243E06A0-7BFF-3C3F-8A9B-D7732729B361> /usr/lib/system/libdispatch.dylib
+       0x185fbe000 -        0x185fc0ffb  libsystem_featureflags.dylib (103) <5E7CDBD5-44AB-34C0-A0F5-FC72F6116CDC> /usr/lib/system/libsystem_featureflags.dylib
+       0x185fc1000 -        0x1860421e7  libsystem_c.dylib (1752.160.4) <FDC4E366-5C14-3A1E-BC35-D933D28CDCF3> /usr/lib/system/libsystem_c.dylib
+       0x186043000 -        0x1860d3ae7  libc++.1.dylib (2100.43) <C6DC2145-7B94-3E01-ADE5-96A6C2D078BC> /usr/lib/libc++.1.dylib
+       0x1860d4000 -        0x1860ee75f  libc++abi.dylib (2100.43) <DDE77B06-5E25-380B-85B7-BA1A27D09021> /usr/lib/libc++abi.dylib
+       0x1860ef000 -        0x18612c2e7  libsystem_kernel.dylib (12377.161.13) <7CFB3A10-ADB2-32C4-99B5-922A111B3224> /usr/lib/system/libsystem_kernel.dylib
+       0x18612d000 -        0x186139b3b  libsystem_pthread.dylib (539.100.4) <12342372-0084-37A5-9EA6-2E4DC940C685> /usr/lib/system/libsystem_pthread.dylib
+       0x18613a000 -        0x186142963  libsystem_platform.dylib (375.120.2) <4C6BD0FE-25F2-38D8-BE5C-24DAC1DEDCFB> /usr/lib/system/libsystem_platform.dylib
+       0x186143000 -        0x1861726eb  libsystem_info.dylib (600) <7402662E-F235-3F48-BB65-F64C8CF0F2BB> /usr/lib/system/libsystem_info.dylib
+       0x18a110000 -        0x18a119e5f  libsystem_darwin.dylib (1752.160.4) <A095E4FE-0EE1-34DF-B00A-7D349FBC55E0> /usr/lib/system/libsystem_darwin.dylib
+       0x18a57b000 -        0x18a58d1b6  libsystem_notify.dylib (348.160.3) <F9B1BAFF-4D09-3A1F-839B-189C21EB5FBB> /usr/lib/system/libsystem_notify.dylib
+       0x18c84c000 -        0x18c866f7b  libsystem_networkextension.dylib (2226.160.6) <01D14A9E-16DC-372C-8AA8-CC7AD39E797F> /usr/lib/system/libsystem_networkextension.dylib
+       0x18c8e9000 -        0x18c900fdf  libsystem_asl.dylib (406) <FF57F6FA-F3A1-343D-815D-57B769D31445> /usr/lib/system/libsystem_asl.dylib
+       0x18e4a2000 -        0x18e4aa387  libsystem_symptoms.dylib (2169.160.3) <CE07A0DF-31B6-3528-B7CE-91CAD89AA519> /usr/lib/system/libsystem_symptoms.dylib
+       0x192747000 -        0x19277f5b7  libsystem_containermanager.dylib (725.160.3) <2E14025A-52C2-361D-8A8F-5DD45825A2C9> /usr/lib/system/libsystem_containermanager.dylib
+       0x193b59000 -        0x193b5d5d7  libsystem_configuration.dylib (1405.160.3) <A14ED142-2F56-33A6-A23C-EEB8417DC90E> /usr/lib/system/libsystem_configuration.dylib
+       0x193b5e000 -        0x193b6499f  libsystem_sandbox.dylib (2680.160.6) <6592D3CE-38C6-3C08-9EA5-75D64F37993F> /usr/lib/system/libsystem_sandbox.dylib
+       0x1951b9000 -        0x1951bc1fb  libquarantine.dylib (196.160.2) <78C5B827-8152-358D-90E9-B02F02A68B17> /usr/lib/system/libquarantine.dylib
+       0x195958000 -        0x19595ed03  libsystem_coreservices.dylib (191.5.1) <F335DA14-69E8-336E-85A3-11EE239255F0> /usr/lib/system/libsystem_coreservices.dylib
+       0x195ee7000 -        0x195f24a77  libsystem_m.dylib (3312.100.1) <3739A40F-2C17-3503-92D6-098141E56E89> /usr/lib/system/libsystem_m.dylib
+       0x195f26000 -        0x195f29527  libmacho.dylib (1387) <3E43AF47-AD89-3BB4-82B9-A9533F4334DF> /usr/lib/system/libmacho.dylib
+       0x195f43000 -        0x195f503a7  libcommonCrypto.dylib (600035) <72D94140-1281-3886-971B-37C810403C03> /usr/lib/system/libcommonCrypto.dylib
+       0x195f51000 -        0x195f5aca3  libunwind.dylib (2100.2) <B21A1015-83D4-31D8-BA41-88688962D9A6> /usr/lib/system/libunwind.dylib
+       0x195f63000 -        0x195f6dbef  libcopyfile.dylib (240.160.2.0.1) <58F425CF-7D4F-34FD-9620-706A2A7F8BDC> /usr/lib/system/libcopyfile.dylib
+       0x195f6e000 -        0x195f71987  libcompiler_rt.dylib (103.3) <D60A9B54-A909-3FD5-93B9-3F38BE0A2BE8> /usr/lib/system/libcompiler_rt.dylib
+       0x195f72000 -        0x195f7678b  libsystem_collections.dylib (1752.160.4) <BDA28F78-F479-3C22-B9C7-4ABCB6801592> /usr/lib/system/libsystem_collections.dylib
+       0x195f77000 -        0x195f7a4cf  libsystem_secinit.dylib (168.100.7) <C85AF062-AA9B-35BB-904C-C055B2C21602> /usr/lib/system/libsystem_secinit.dylib
+       0x195f7b000 -        0x195f7dbf7  libremovefile.dylib (85.100.6) <DA9C2B48-7A9C-32EA-888D-6C7AEB5250E6> /usr/lib/system/libremovefile.dylib
+       0x195f7e000 -        0x195f7ef27  libkeymgr.dylib (31) <18EFA1CE-C535-3EAC-BC2C-7955593B7382> /usr/lib/system/libkeymgr.dylib
+       0x195f7f000 -        0x195f87e37  libsystem_dnssd.dylib (2881.160.4) <2C4C3043-008E-3BD8-BC29-AB9AD235DBA9> /usr/lib/system/libsystem_dnssd.dylib
+       0x195f88000 -        0x195f8d09b  libcache.dylib (95) <EA7C2E0B-52BF-3D45-9A33-38F54A535452> /usr/lib/system/libcache.dylib
+       0x195f8e000 -        0x195f8fce3  libSystem.B.dylib (1356) <4CC4CAD6-45A6-361E-9343-DE636A0B5C02> /usr/lib/libSystem.B.dylib
+       0x289f37000 -        0x289f3e349  libRosetta.dylib (367.9) <F41D814B-FE1F-311A-A778-5F0699628188> /usr/lib/libRosetta.dylib
+       0x28bb4a000 -        0x28bb4da4b  libsystem_darwindirectory.dylib (122) <6C03D78B-BFAB-3C7A-B713-50881791EE08> /usr/lib/system/libsystem_darwindirectory.dylib
+       0x28bb4e000 -        0x28bb5839b  libsystem_eligibility.dylib (319.160.17) <A279E124-8499-3FFC-A788-655070028F97> /usr/lib/system/libsystem_eligibility.dylib
+       0x28bb59000 -        0x28bb6088b  libsystem_sanitizers.dylib (26.1) <C92FAEE5-DAED-3340-96B3-0C42B005ADF9> /usr/lib/system/libsystem_sanitizers.dylib
+       0x28bb61000 -        0x28bb61bb7  libsystem_trial.dylib (474.2.18.2) <2FF186A6-F448-38CD-9A30-8B5B1AEFCA10> /usr/lib/system/libsystem_trial.dylib

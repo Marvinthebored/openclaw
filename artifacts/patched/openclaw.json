@@ -1,0 +1,41 @@
+{
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "port": 55506,
+    "auth": {
+      "mode": "token",
+      "token": "<synthetic-token>"
+    },
+    "controlUi": {
+      "enabled": false
+    }
+  },
+  "update": {
+    "checkOnStart": false
+  },
+  "discovery": {
+    "mdns": {
+      "mode": "off"
+    }
+  },
+  "cron": {
+    "enabled": false
+  },
+  "browser": {
+    "enabled": false
+  },
+  "plugins": {
+    "enabled": false
+  },
+  "agents": {
+    "ownership": "explicit",
+    "defaults": {
+      "workspace": "<PROOF_RUN_DIR>/gateway-r2-patched/workspace",
+      "skipBootstrap": true
+    },
+    "entries": {
+      "main": {}
+    }
+  }
+}

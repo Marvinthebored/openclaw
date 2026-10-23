@@ -1,0 +1,136 @@
+[test] starting test/vitest/vitest.gateway.config.ts
+
+ RUN  v5.0.3 <PATCHED_TREE>
+
+[vitest-workers] local cache miss after 3466ms
+node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/resolve-evaluate-options.js (48:0) [33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "" in "node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/resolve-evaluate-options.js" may not be preserved when bundling.
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/resolve-evaluate-options.js:48:1 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m48 │[0m ''
+ [38;5;240m   │[0m ─┬  
+ [38;5;240m   │[0m  ╰── module level directive may not be preserved
+ [38;5;240m   │[0m 
+ [38;5;240m   │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m────╯[0m
+
+node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/estree-util-create.js (6:0) [33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "" in "node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/estree-util-create.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/estree-util-create.js:6:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m6 │[0m ''
+ [38;5;240m  │[0m ─┬  
+ [38;5;240m  │[0m  ╰── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/estree-util-is-declaration.js (11:0) [33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "" in "node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/estree-util-is-declaration.js" may not be preserved when bundling.
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/.pnpm/@mdx-js+mdx@3.1.1_supports-color@10.2.2/node_modules/@mdx-js/mdx/lib/util/estree-util-is-declaration.js:11:1 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m11 │[0m ''
+ [38;5;240m   │[0m ─┬  
+ [38;5;240m   │[0m  ╰── module level directive may not be preserved
+ [38;5;240m   │[0m 
+ [38;5;240m   │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m────╯[0m
+
+node_modules/.pnpm/hast-util-to-estree@3.1.3_supports-color@10.2.2/node_modules/hast-util-to-estree/lib/handlers/text.js (9:0) [33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "" in "node_modules/.pnpm/hast-util-to-estree@3.1.3_supports-color@10.2.2/node_modules/hast-util-to-estree/lib/handlers/text.js" may not be preserved when bundling.
+   [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/.pnpm/hast-util-to-estree@3.1.3_supports-color@10.2.2/node_modules/hast-util-to-estree/lib/handlers/text.js:9:1 [38;5;246m][0m
+   [38;5;246m│[0m
+ [38;5;246m9 │[0m ''
+ [38;5;240m  │[0m ─┬  
+ [38;5;240m  │[0m  ╰── module level directive may not be preserved
+ [38;5;240m  │[0m 
+ [38;5;240m  │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m───╯[0m
+
+node_modules/.pnpm/hast-util-to-estree@3.1.3_supports-color@10.2.2/node_modules/hast-util-to-estree/lib/handlers/comment.js (12:0) [33m[MODULE_LEVEL_DIRECTIVE] [0mThe semantics of the module level directive "" in "node_modules/.pnpm/hast-util-to-estree@3.1.3_supports-color@10.2.2/node_modules/hast-util-to-estree/lib/handlers/comment.js" may not be preserved when bundling.
+    [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m node_modules/.pnpm/hast-util-to-estree@3.1.3_supports-color@10.2.2/node_modules/hast-util-to-estree/lib/handlers/comment.js:12:1 [38;5;246m][0m
+    [38;5;246m│[0m
+ [38;5;246m12 │[0m ''
+ [38;5;240m   │[0m ─┬  
+ [38;5;240m   │[0m  ╰── module level directive may not be preserved
+ [38;5;240m   │[0m 
+ [38;5;240m   │[0m [38;5;115mHelp[0m: For more information, see https://rolldown.rs/in-depth/directives#other-directives
+[38;5;246m────╯[0m
+
+[vitest] still running with no output for 30000ms.
+[vitest-workers] prepared 422b3561f1b7 in 37557ms (16820 inputs, 21917 outputs)
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > aligns idle sampling within ten seconds and resumes full sampling with work 33ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > detects a late idle wake with separate wall and elapsed clocks 3ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > keeps idle callback stalls and resumes one-second sampling after degradation 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > logs the blocking scheduler job once when its callback also contains the overdue sample 5ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > exports a 250 ms scheduler stall once without exposing public events 3ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > classifies load with 20 ms delay: [] 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > classifies load with 30 ms delay: [ 'cpu' ] 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > classifies load with 30 ms delay: [ 'event_loop_utilization' ] 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > classifies load with 30 ms delay: [ 'event_loop_utilization', 'cpu' ] 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > retains sub-second blocking co-evidence before the native timer catches up 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > keeps overdue reads passive before the first sample under load 3ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > tracks persistent degradation at completed samples and clears on recovery 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > discards the pending interval and rate baselines only for an explicit host-thaw reset 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > createGatewayEventLoopHealthMonitor > releases its only timer and cached observation when stopped 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > event-loop measurement telemetry > advances an idle window when telemetry gains interest without resetting or replaying it 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > event-loop measurement telemetry > records each sampling window once without needing a reader or inheriting reader context 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > event-loop measurement telemetry > keeps diagnostics-disabled sampling active without emitting telemetry 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > event-loop measurement telemetry > does not emit exporter windows with only no listener 2ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > event-loop measurement telemetry > does not emit exporter windows with only stability recorder 1ms
+ ✓ |gateway-core| src/gateway/server/event-loop-health.test.ts > event-loop measurement telemetry > does not emit exporter windows with only skill tracking 3ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  20:35:02
+   Duration  41.23s (transform 98%, worker 1%, setup 1%)
+
+[test] starting test/vitest/vitest.logging.config.ts
+
+ RUN  v5.0.3 <PATCHED_TREE>
+
+stderr | unknown test
+[sqlite-test-lifecycle] src/logging/diagnostic-stall-flight-recorder.test.ts: retiring openclaw.agentDatabaseReaders
+
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > rotates without a sampling gap and reports recent stall frames on linux 40ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > rotates without a sampling gap and reports recent stall frames on win32 3ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > redacts untrusted script without losing safe frames 3ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > redacts raw function name without losing safe frames 2ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > keeps trusted caller attribution when native script names contain "quoted\"file.js" 3ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > keeps trusted caller attribution when native script names contain "windows\\file.js" 2ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > keeps trusted caller attribution when native script names contain "line\nbreak.js" 3ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > keeps trusted caller attribution when native script names contain "json-{\"key\":\"value\"}-file.js" 2ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > caps oversized windows and disables failed capture without failing the sampler 3ms
+ × |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > never starts the automatic native sampler on macOS 4ms
+   → expected 'windowMs=1600 samples=2 intervalMs=10…' to be undefined
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > leaves an unsupported or conflicting runtime alone 2ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > leaves an unsupported or conflicting profiler alone 1ms
+ ✓ |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > leaves an unsupported or conflicting worker alone 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |logging| src/logging/diagnostic-stall-flight-recorder.test.ts > never starts the automatic native sampler on macOS
+AssertionError: expected 'windowMs=1600 samples=2 intervalMs=10…' to be undefined
+
+- Expected:
+undefined
+
++ Received:
+"windowMs=1600 samples=2 intervalMs=10 truncated=false inclusive=[[\"work1@node:timers:10\",2]]"
+
+ ❯ src/logging/diagnostic-stall-flight-recorder.test.ts:162:27
+    160|   const { recorder, sampleAt, warn } = fixture();
+    161|   expect(sampleAt(5_000, 0)).toBeUndefined();
+    162|   expect(sampleAt(6_500)).toBeUndefined();
+       |                           ^
+    163|   recorder.stop();
+    164|   expect(sampleAt(12_000)).toBeUndefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed (13)
+   Start at  20:35:44
+   Duration  1.00s (worker 44%, setup 26%, transform 19%, tests 10%, import 1%)
+
+[vitest-workers] verifying completed generation before cleanup
+[vitest-workers] retained completed compiler outputs for reuse
+[test] failed 2 Vitest shards in 49.78s
+[test] FAILED (exit 1)

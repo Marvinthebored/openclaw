@@ -1,0 +1,184 @@
+[
+  {
+    "label": "patched",
+    "head": "00d27c442c5d8b8886f6e40c22b41b241f366c96",
+    "startupSeconds": 60.89,
+    "warningCount": 1,
+    "nativeSamples": {
+      "before": {
+        "profilerThreadHeaders": 0,
+        "allThreadHeaders": 34,
+        "sampleExitCode": 0
+      },
+      "after": {
+        "profilerThreadHeaders": 0,
+        "allThreadHeaders": 32,
+        "sampleExitCode": 0
+      }
+    },
+    "stallLog": [
+      "2026-10-23T20:40:51.573+08:00 [event-loop] main-thread stall: elapsedMs=1500 task=\"proof.synthetic-cpu-block\" taskMs=1500"
+    ],
+    "stallHealth": {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 29337,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 1790,
+          "reasons": [
+            "event_loop_delay",
+            "cpu"
+          ],
+          "intervalMs": 1789.8257500000036,
+          "delayP99Ms": 1517.3,
+          "delayMaxMs": 1517.3,
+          "utilization": 0.85,
+          "cpuCoreRatio": 2.228,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.83,
+            "hostUtilization": 0.941,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.782,
+            "otherThreadsCoreRatio": 0.616
+          }
+        }
+      },
+      "elapsedMs": 1250.57,
+      "atSeconds": 69.08
+    },
+    "finalHealth": {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 58360,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 9877.51108299999,
+          "delayP99Ms": 0,
+          "delayMaxMs": 46.16212500000256,
+          "utilization": 0.051,
+          "cpuCoreRatio": 0.038,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.01,
+            "hostUtilization": 0.476,
+            "hostCpuCount": 10
+          }
+        }
+      },
+      "elapsedMs": 4.36
+    },
+    "liveness": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "status": "live"
+      },
+      "elapsedMs": 1.14
+    },
+    "exitCode": 0,
+    "cleanup": "SIGTERM exited",
+    "shutdownLog": [
+      "2026-10-23T20:41:20.840+08:00 [shutdown] completed cleanly in 162ms"
+    ]
+  },
+  {
+    "label": "stock",
+    "head": "ded4d430df859f35599fbb4d0ef32d8dec31e3b5",
+    "startupSeconds": 59.75,
+    "warningCount": 0,
+    "nativeSamples": {
+      "before": {
+        "profilerThreadHeaders": 1,
+        "allThreadHeaders": 35,
+        "sampleExitCode": 0
+      },
+      "after": {
+        "profilerThreadHeaders": 1,
+        "allThreadHeaders": 33,
+        "sampleExitCode": 0
+      }
+    },
+    "stallLog": [
+      "2026-10-23T20:42:31.003+08:00 [event-loop] main-thread stall: elapsedMs=1500 task=\"proof.synthetic-cpu-block\" taskMs=1500"
+    ],
+    "stallHealth": {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 29450,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 0,
+          "reasons": [
+            "event_loop_delay",
+            "cpu"
+          ],
+          "intervalMs": 2292.6211669999975,
+          "delayP99Ms": 1509.9,
+          "delayMaxMs": 1509.9,
+          "utilization": 0.827,
+          "cpuCoreRatio": 2.096,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.659,
+            "hostUtilization": 0.86,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.825,
+            "otherThreadsCoreRatio": 0.612
+          }
+        }
+      },
+      "elapsedMs": 1190.47,
+      "atSeconds": 67.69
+    },
+    "finalHealth": {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 58381,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 4.81
+    },
+    "liveness": {
+      "status": 200,
+      "body": {
+        "ok": true,
+        "status": "live"
+      },
+      "elapsedMs": 1.14
+    },
+    "exitCode": 0,
+    "cleanup": "SIGTERM exited",
+    "shutdownLog": [
+      "2026-10-23T20:43:00.667+08:00 [shutdown] completed cleanly in 568ms"
+    ]
+  }
+]

@@ -1,0 +1,65 @@
+{
+  "head": "00d27c442c5d8b8886f6e40c22b41b241f366c96",
+  "base": "ded4d430df859f35599fbb4d0ef32d8dec31e3b5",
+  "os": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.1\nBuildVersion:\t\t25G76\n",
+  "uname": "Darwin macos-proof-host 25.6.0 Darwin Kernel Version 25.6.0: Sat Jul 11 15:26:21 PDT 2026; root:xnu-12377.161.13~4/RELEASE_ARM64_T6000 arm64\n",
+  "versions": {
+    "node": "26.12.1",
+    "acorn": "8.19.0",
+    "ada": "4.0.0",
+    "amaro": "1.1.11",
+    "ares": "1.34.9",
+    "brotli": "1.2.1",
+    "cldr": "48.0",
+    "icu": "78.3",
+    "libffi": "3.8.0",
+    "llhttp": "9.4.3",
+    "merve": "1.2.2",
+    "modules": "147",
+    "napi": "10",
+    "nbytes": "0.1.4",
+    "ncrypto": "0.0.1",
+    "nghttp2": "1.70.0",
+    "nghttp3": "",
+    "ngtcp2": "",
+    "openssl": "4.0.3",
+    "simdjson": "5.0.5",
+    "simdutf": "9.3.2",
+    "sqlite": "3.54.1",
+    "tz": "2026a",
+    "undici": "8.12.2",
+    "unicode": "17.0",
+    "uv": "1.53.0",
+    "uvwasi": "0.0.23",
+    "v8": "14.6.202.34-node.40",
+    "zlib": "1.2.12",
+    "zstd": "1.5.7"
+  },
+  "loadStart": [
+    29.54833984375,
+    20.0048828125,
+    14.41845703125
+  ],
+  "command": [
+    "/opt/homebrew/bin/node",
+    "scripts/run-vitest.mjs",
+    "src/logging/diagnostic-stall-flight-recorder.test.ts",
+    "src/gateway/server/event-loop-health.test.ts",
+    "--maxWorkers=1"
+  ],
+  "green": {
+    "exitCode": 0,
+    "elapsedSeconds": 51.72
+  },
+  "stash": "a53545e3811de9673ee0075dc97b025ad6a3ee30",
+  "red": {
+    "exitCode": 1,
+    "elapsedSeconds": 50.64
+  },
+  "statusAfter": "",
+  "loadEnd": [
+    17.78515625,
+    18.25341796875,
+    14.361328125
+  ]
+}

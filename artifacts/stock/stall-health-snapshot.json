@@ -1,0 +1,31 @@
+{
+  "status": 200,
+  "body": {
+    "ready": true,
+    "coreReady": true,
+    "failing": [],
+    "uptimeMs": 29450,
+    "eventLoop": {
+      "degraded": true,
+      "degradedSinceMs": 0,
+      "reasons": [
+        "event_loop_delay",
+        "cpu"
+      ],
+      "intervalMs": 2292.6211669999975,
+      "delayP99Ms": 1509.9,
+      "delayMaxMs": 1509.9,
+      "utilization": 0.827,
+      "cpuCoreRatio": 2.096,
+      "cpuBreakdown": {
+        "mainThreadCoreRatio": 0.659,
+        "hostUtilization": 0.86,
+        "hostCpuCount": 10,
+        "workerCoreRatio": 0.825,
+        "otherThreadsCoreRatio": 0.612
+      }
+    }
+  },
+  "elapsedMs": 1190.47,
+  "atSeconds": 67.69
+}

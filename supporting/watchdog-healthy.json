@@ -1,0 +1,15 @@
+{
+  "name": "watchdog-healthy",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "-u",
+    "-c",
+    "print('{\"event\":\"complete\"}',flush=True)"
+  ],
+  "summary": {
+    "event": "complete"
+  },
+  "exitCode": 0,
+  "elapsedSeconds": 0.156,
+  "status": "completed"
+}

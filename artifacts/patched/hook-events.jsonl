@@ -1,0 +1,3 @@
+{"at":"2026-10-23T12:39:42.645Z","pid":37617,"event":"hook-loaded","platform":"darwin","node":"v26.12.1"}
+{"at":"2026-10-23T12:40:50.070Z","pid":37617,"event":"synthetic-stall-start","requestedMs":1500}
+{"at":"2026-10-23T12:40:51.570Z","pid":37617,"event":"synthetic-stall-end","elapsedMs":1500.267000000007}

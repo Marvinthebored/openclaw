@@ -1,0 +1,1408 @@
+{
+  "label": "stock",
+  "head": "ded4d430df859f35599fbb4d0ef32d8dec31e3b5",
+  "port": 55765,
+  "command": [
+    "/opt/homebrew/bin/node",
+    "--import",
+    "<STOCK_TREE>/scripts/tsx.mjs",
+    "--import",
+    "<PROOF_RUN_DIR>/gateway-hook.mjs",
+    "<STOCK_TREE>/src/entry.ts",
+    "gateway",
+    "run",
+    "--port",
+    "55765",
+    "--bind",
+    "loopback"
+  ],
+  "environment": {
+    "PATH": "/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "HOME": "<PROOF_RUN_DIR>/gateway-r2-stock/home",
+    "TMPDIR": "<PROOF_RUN_DIR>/gateway-r2-stock/tmp",
+    "USER": "isolated-proof",
+    "LOGNAME": "isolated-proof",
+    "XDG_CACHE_HOME": "<PROOF_RUN_DIR>/gateway-r2-stock/cache",
+    "XDG_DATA_HOME": "<PROOF_RUN_DIR>/gateway-r2-stock/data",
+    "XDG_CONFIG_HOME": "<PROOF_RUN_DIR>/gateway-r2-stock/config",
+    "OPENCLAW_HOME": "<PROOF_RUN_DIR>/gateway-r2-stock/home",
+    "OPENCLAW_STATE_DIR": "<PROOF_RUN_DIR>/gateway-r2-stock/state",
+    "OPENCLAW_CONFIG_PATH": "<PROOF_RUN_DIR>/gateway-r2-stock/openclaw.json",
+    "OPENCLAW_NO_RESPAWN": "1",
+    "OPENCLAW_NODE_OPTIONS_READY": "1",
+    "OPENCLAW_SKIP_CHANNELS": "1",
+    "OPENCLAW_SKIP_GMAIL_WATCHER": "1",
+    "OPENCLAW_SKIP_CRON": "1",
+    "OPENCLAW_SKIP_CANVAS_HOST": "1",
+    "OPENCLAW_SKIP_BROWSER_CONTROL_SERVER": "1",
+    "OPENCLAW_SKIP_PROVIDERS": "1",
+    "OPENCLAW_DISABLE_BUNDLED_PLUGINS": "1",
+    "OPENCLAW_DISABLE_BONJOUR": "1",
+    "OPENCLAW_SKIP_UPDATE_CHECK": "1",
+    "NODE_COMPILE_CACHE": "<PROOF_RUN_DIR>/gateway-r2-stock/cache/node",
+    "NO_COLOR": "1",
+    "TERM": "dumb",
+    "PROOF_RUN_ROOT": "<PROOF_RUN_DIR>/gateway-r2-stock",
+    "PROOF_TREE": "<STOCK_TREE>",
+    "GOMAXPROCS": "2",
+    "RAYON_NUM_THREADS": "2",
+    "UV_THREADPOOL_SIZE": "2",
+    "OPENCLAW_VITEST_RUNTIME": "node"
+  },
+  "loadStart": [
+    20.36181640625,
+    20.37890625,
+    16.677734375
+  ],
+  "health": [
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 27758,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1004.7773329999982,
+          "delayP99Ms": 22.3,
+          "delayMaxMs": 22.3,
+          "utilization": 0.465,
+          "cpuCoreRatio": 1.506,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.027,
+            "hostUtilization": 0.801,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.809,
+            "otherThreadsCoreRatio": 0.67
+          }
+        }
+      },
+      "elapsedMs": 5.36,
+      "atSeconds": 65.99
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 29450,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 0,
+          "reasons": [
+            "event_loop_delay",
+            "cpu"
+          ],
+          "intervalMs": 2292.6211669999975,
+          "delayP99Ms": 1509.9,
+          "delayMaxMs": 1509.9,
+          "utilization": 0.827,
+          "cpuCoreRatio": 2.096,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.659,
+            "hostUtilization": 0.86,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.825,
+            "otherThreadsCoreRatio": 0.612
+          }
+        }
+      },
+      "elapsedMs": 1190.47,
+      "atSeconds": 67.69
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 29954,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 0,
+          "reasons": [
+            "event_loop_delay",
+            "cpu"
+          ],
+          "intervalMs": 2292.6211669999975,
+          "delayP99Ms": 1509.9,
+          "delayMaxMs": 1509.9,
+          "utilization": 0.827,
+          "cpuCoreRatio": 2.096,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.659,
+            "hostUtilization": 0.86,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.825,
+            "otherThreadsCoreRatio": 0.612
+          }
+        }
+      },
+      "elapsedMs": 1.71,
+      "atSeconds": 68.19
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 30461,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1023.036082999999,
+          "delayP99Ms": 22.1,
+          "delayMaxMs": 22.1,
+          "utilization": 0.473,
+          "cpuCoreRatio": 1.338,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.014,
+            "hostUtilization": 0.829,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.798,
+            "otherThreadsCoreRatio": 0.526
+          }
+        }
+      },
+      "elapsedMs": 2.02,
+      "atSeconds": 68.7
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 30965,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1023.036082999999,
+          "delayP99Ms": 22.1,
+          "delayMaxMs": 22.1,
+          "utilization": 0.473,
+          "cpuCoreRatio": 1.338,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.014,
+            "hostUtilization": 0.829,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.798,
+            "otherThreadsCoreRatio": 0.526
+          }
+        }
+      },
+      "elapsedMs": 2.55,
+      "atSeconds": 69.2
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 31475,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 0,
+          "reasons": [
+            "cpu"
+          ],
+          "intervalMs": 1000.775667000009,
+          "delayP99Ms": 33.1,
+          "delayMaxMs": 33.1,
+          "utilization": 0.484,
+          "cpuCoreRatio": 1.456,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.012,
+            "hostUtilization": 0.886,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.874,
+            "otherThreadsCoreRatio": 0.57
+          }
+        }
+      },
+      "elapsedMs": 7.26,
+      "atSeconds": 69.71
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 31987,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 0,
+          "reasons": [
+            "cpu"
+          ],
+          "intervalMs": 1000.775667000009,
+          "delayP99Ms": 33.1,
+          "delayMaxMs": 33.1,
+          "utilization": 0.484,
+          "cpuCoreRatio": 1.456,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.012,
+            "hostUtilization": 0.886,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.874,
+            "otherThreadsCoreRatio": 0.57
+          }
+        }
+      },
+      "elapsedMs": 8.64,
+      "atSeconds": 70.23
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 32504,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 1002,
+          "reasons": [
+            "cpu"
+          ],
+          "intervalMs": 1002.3599580000009,
+          "delayP99Ms": 41.1,
+          "delayMaxMs": 41.1,
+          "utilization": 0.447,
+          "cpuCoreRatio": 1.66,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.035,
+            "hostUtilization": 0.912,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.976,
+            "otherThreadsCoreRatio": 0.649
+          }
+        }
+      },
+      "elapsedMs": 2.97,
+      "atSeconds": 70.74
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 33281,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 1002,
+          "reasons": [
+            "cpu"
+          ],
+          "intervalMs": 1002.3599580000009,
+          "delayP99Ms": 41.1,
+          "delayMaxMs": 41.1,
+          "utilization": 0.447,
+          "cpuCoreRatio": 1.66,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.035,
+            "hostUtilization": 0.912,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.976,
+            "otherThreadsCoreRatio": 0.649
+          }
+        }
+      },
+      "elapsedMs": 268.72,
+      "atSeconds": 71.52
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 34859,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 2005,
+          "reasons": [
+            "cpu"
+          ],
+          "intervalMs": 1002.1498749999882,
+          "delayP99Ms": 371.7,
+          "delayMaxMs": 371.7,
+          "utilization": 0.695,
+          "cpuCoreRatio": 1.548,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.293,
+            "hostUtilization": 0.845,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.525,
+            "otherThreadsCoreRatio": 0.73
+          }
+        }
+      },
+      "elapsedMs": 1065.99,
+      "atSeconds": 73.1
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 35369,
+        "eventLoop": {
+          "degraded": true,
+          "degradedSinceMs": 3416,
+          "reasons": [
+            "cpu"
+          ],
+          "intervalMs": 1411.3466250000056,
+          "delayP99Ms": 829.4,
+          "delayMaxMs": 829.4,
+          "utilization": 0.872,
+          "cpuCoreRatio": 0.953,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.38,
+            "hostUtilization": 0.843,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.091,
+            "otherThreadsCoreRatio": 0.482
+          }
+        }
+      },
+      "elapsedMs": 2.03,
+      "atSeconds": 73.61
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 35883,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1001.6994169999962,
+          "delayP99Ms": 102.2,
+          "delayMaxMs": 102.2,
+          "utilization": 0.595,
+          "cpuCoreRatio": 0.41,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.138,
+            "hostUtilization": 0.557,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.055,
+            "otherThreadsCoreRatio": 0.217
+          }
+        }
+      },
+      "elapsedMs": 7.63,
+      "atSeconds": 74.12
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 36399,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1001.6994169999962,
+          "delayP99Ms": 102.2,
+          "delayMaxMs": 102.2,
+          "utilization": 0.595,
+          "cpuCoreRatio": 0.41,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.138,
+            "hostUtilization": 0.557,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.055,
+            "otherThreadsCoreRatio": 0.217
+          }
+        }
+      },
+      "elapsedMs": 1.69,
+      "atSeconds": 74.64
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 36912,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1001.6994169999962,
+          "delayP99Ms": 102.2,
+          "delayMaxMs": 102.2,
+          "utilization": 0.595,
+          "cpuCoreRatio": 0.41,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.138,
+            "hostUtilization": 0.557,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.055,
+            "otherThreadsCoreRatio": 0.217
+          }
+        }
+      },
+      "elapsedMs": 3.76,
+      "atSeconds": 75.15
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 37426,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1001.6994169999962,
+          "delayP99Ms": 102.2,
+          "delayMaxMs": 102.2,
+          "utilization": 0.595,
+          "cpuCoreRatio": 0.41,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.138,
+            "hostUtilization": 0.557,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.055,
+            "otherThreadsCoreRatio": 0.217
+          }
+        }
+      },
+      "elapsedMs": 4.62,
+      "atSeconds": 75.66
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 37961,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 1001.6994169999962,
+          "delayP99Ms": 102.2,
+          "delayMaxMs": 102.2,
+          "utilization": 0.595,
+          "cpuCoreRatio": 0.41,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.138,
+            "hostUtilization": 0.557,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.055,
+            "otherThreadsCoreRatio": 0.217
+          }
+        }
+      },
+      "elapsedMs": 5.34,
+      "atSeconds": 76.2
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 38477,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 4.84,
+      "atSeconds": 76.71
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 38994,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 4.42,
+      "atSeconds": 77.23
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 39511,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 4.02,
+      "atSeconds": 77.75
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 40029,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 5.75,
+      "atSeconds": 78.27
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 40546,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 10.03,
+      "atSeconds": 78.79
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 41062,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 3.76,
+      "atSeconds": 79.3
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 41613,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 43.96,
+      "atSeconds": 79.85
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 42127,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 3.26,
+      "atSeconds": 80.36
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 42644,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 5.01,
+      "atSeconds": 80.88
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 43153,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 5.39,
+      "atSeconds": 81.39
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 43665,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 1.64,
+      "atSeconds": 81.9
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 44180,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 4.3,
+      "atSeconds": 82.42
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 44693,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 3.56,
+      "atSeconds": 82.93
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 45208,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 4.03,
+      "atSeconds": 83.45
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 45729,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 9.05,
+      "atSeconds": 83.97
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 46244,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 1.52,
+      "atSeconds": 84.48
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 46803,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 55.62,
+      "atSeconds": 85.04
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 47309,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 3.37,
+      "atSeconds": 85.55
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 47814,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 2.35,
+      "atSeconds": 86.05
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 48330,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 2579.343166000006,
+          "delayP99Ms": 0,
+          "delayMaxMs": 3.7550409999967087,
+          "utilization": 0.861,
+          "cpuCoreRatio": 0.045,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.007,
+            "hostUtilization": 0.581,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.01,
+            "otherThreadsCoreRatio": 0.028
+          }
+        }
+      },
+      "elapsedMs": 5.39,
+      "atSeconds": 86.57
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 48844,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 7.13,
+      "atSeconds": 87.08
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 49362,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 3.37,
+      "atSeconds": 87.6
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 49885,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 14.65,
+      "atSeconds": 88.12
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 50401,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 3.76,
+      "atSeconds": 88.64
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 50908,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 2.28,
+      "atSeconds": 89.14
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 51425,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 2.19,
+      "atSeconds": 89.66
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 51929,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 2.21,
+      "atSeconds": 90.17
+    },
+    {
+      "status": 200,
+      "body": {
+        "ready": true,
+        "coreReady": true,
+        "failing": [],
+        "uptimeMs": 52434,
+        "eventLoop": {
+          "degraded": false,
+          "degradedSinceMs": null,
+          "reasons": [],
+          "intervalMs": 10010.241083999994,
+          "delayP99Ms": 0,
+          "delayMaxMs": 16.623582999993232,
+          "utilization": 0.865,
+          "cpuCoreRatio": 0.182,
+          "cpuBreakdown": {
+            "mainThreadCoreRatio": 0.038,
+            "hostUtilization": 0.532,
+            "hostCpuCount": 10,
+            "workerCoreRatio": 0.017,
+            "otherThreadsCoreRatio": 0.127
+          }
+        }
+      },
+      "elapsedMs": 2.12,
+      "atSeconds": 90.67
+    }
+  ],
+  "pid": 39005,
+  "lastStartupHealth": {
+    "status": 503,
+    "body": "{\"ready\":false,\"coreReady\":false,\"failing\":[\"startup-sidecars\"],\"uptimeMs\":19523,\"eventLoop\":{\"degraded\":true,\"degradedSinceMs\":0,\"reasons\":[\"event_loop_delay\",\"cpu\"],\"intervalMs\":11071.939249999996,\"delayP99Ms\":0,\"delayMaxMs\":1074.1006249999991,\"utilization\":0.902,\"cpuCoreRatio\":1.286,\"cpuBreakdown\":{\"mainThreadCoreRatio\":0.328,\"hostUtilization\":0.635,\"hostCpuCount\":10}}}"
+  },
+  "startupSeconds": 59.75,
+  "startupHealth": {
+    "status": 200,
+    "body": {
+      "ready": true,
+      "coreReady": true,
+      "failing": [],
+      "uptimeMs": 21506,
+      "eventLoop": {
+        "degraded": true,
+        "degradedSinceMs": 1300,
+        "reasons": [
+          "cpu"
+        ],
+        "intervalMs": 1299.68275,
+        "delayP99Ms": 125.8,
+        "delayMaxMs": 125.8,
+        "utilization": 0.703,
+        "cpuCoreRatio": 1.963,
+        "cpuBreakdown": {
+          "mainThreadCoreRatio": 0.236,
+          "hostUtilization": 0.776,
+          "hostCpuCount": 10
+        }
+      }
+    },
+    "elapsedMs": 987.05
+  },
+  "sampleBefore": {
+    "exitCode": 0,
+    "bytes": 15700380,
+    "profilerThreadLines": [
+      "    +           ! :     2 v8::internal::CpuSampler::SampleStack(v8::RegisterState const&)  (in libnode.147.dylib) + 268  [0x1054b1520]",
+      "    +           ! :     1 v8::internal::CpuSampler::SampleStack(v8::RegisterState const&)  (in libnode.147.dylib) + 356  [0x1054b1578]",
+      "    +           ! : | +       !             :             |     + ! :   |                                     +   !           1 v8::internal::CpuSampler::SampleStack(v8::RegisterState const&)  (in libnode.147.dylib) + 268  [0x1054b1520]",
+      "    3368 Thread_205529574: v8:ProfEvntProc",
+      "    +         5 v8::sampler::Sampler::DoSample()  (in libnode.147.dylib) + 136  [0x105365980]"
+    ]
+  },
+  "sampleAfter": {
+    "exitCode": 0,
+    "bytes": 198617,
+    "profilerThreadLines": [
+      "    3646 Thread_205529574: v8:ProfEvntProc",
+      "    +       ! 7 v8::sampler::Sampler::DoSample()  (in libnode.147.dylib) + 136  [0x105365980]",
+      "    +       ! 2 v8::sampler::Sampler::DoSample()  (in libnode.147.dylib) + 52  [0x10536592c]",
+      "    +       ! 1 v8::sampler::Sampler::DoSample()  (in libnode.147.dylib) + 60  [0x105365934]",
+      "    +       ! 1 v8::sampler::Sampler::DoSample()  (in libnode.147.dylib) + 84  [0x10536594c]",
+      "    +       ! 1 v8::sampler::Sampler::DoSample()  (in libnode.147.dylib) + 0  [0x1053658f8]"
+    ]
+  },
+  "finalHealth": {
+    "status": 200,
+    "body": {
+      "ready": true,
+      "coreReady": true,
+      "failing": [],
+      "uptimeMs": 58381,
+      "eventLoop": {
+        "degraded": false,
+        "degradedSinceMs": null,
+        "reasons": [],
+        "intervalMs": 10010.241083999994,
+        "delayP99Ms": 0,
+        "delayMaxMs": 16.623582999993232,
+        "utilization": 0.865,
+        "cpuCoreRatio": 0.182,
+        "cpuBreakdown": {
+          "mainThreadCoreRatio": 0.038,
+          "hostUtilization": 0.532,
+          "hostCpuCount": 10,
+          "workerCoreRatio": 0.017,
+          "otherThreadsCoreRatio": 0.127
+        }
+      }
+    },
+    "elapsedMs": 4.81
+  },
+  "liveness": {
+    "status": 200,
+    "body": {
+      "ok": true,
+      "status": "live"
+    },
+    "elapsedMs": 1.14
+  },
+  "status": "completed",
+  "cleanup": "SIGTERM exited",
+  "exitCode": 0,
+  "loadEnd": [
+    15.41162109375,
+    18.2412109375,
+    16.224609375
+  ]
+}

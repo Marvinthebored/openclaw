@@ -1,0 +1,179 @@
+[
+  {
+    "name": "rwlock-signal-us-0",
+    "command": [
+      "<REDUCTION_DIR>/first-run/signal-lock-probe",
+      "rwlock",
+      "30",
+      "0"
+    ],
+    "summary": {
+      "event": "complete",
+      "lock": "rwlock",
+      "intervalUs": 0,
+      "operations": 374746843,
+      "signalsDelivered": 0
+    },
+    "exitCode": 0,
+    "elapsedSeconds": 30.844,
+    "status": "completed"
+  },
+  {
+    "name": "rwlock-signal-us-10000",
+    "command": [
+      "<REDUCTION_DIR>/first-run/signal-lock-probe",
+      "rwlock",
+      "30",
+      "10000"
+    ],
+    "trigger": "no-progress",
+    "lastCounts": [
+      1039501,
+      1010780,
+      1096609,
+      1128444
+    ],
+    "captures": [
+      {
+        "exitCode": 0,
+        "bytes": 11606
+      },
+      {
+        "exitCode": 0,
+        "bytes": 11933
+      }
+    ],
+    "exitCode": -9,
+    "elapsedSeconds": 15.707,
+    "status": "suspected-stall"
+  },
+  {
+    "name": "rwlock-signal-us-10",
+    "command": [
+      "<REDUCTION_DIR>/first-run/signal-lock-probe",
+      "rwlock",
+      "30",
+      "10"
+    ],
+    "trigger": "no-progress",
+    "lastCounts": [
+      51499,
+      38429,
+      8342,
+      21125
+    ],
+    "captures": [
+      {
+        "exitCode": 0,
+        "bytes": 12930
+      },
+      {
+        "exitCode": 0,
+        "bytes": 11916
+      }
+    ],
+    "exitCode": -9,
+    "elapsedSeconds": 17.48,
+    "status": "suspected-stall"
+  },
+  {
+    "name": "mutex-signal-us-10",
+    "command": [
+      "<REDUCTION_DIR>/first-run/signal-lock-probe",
+      "mutex",
+      "30",
+      "10"
+    ],
+    "summary": {
+      "event": "complete",
+      "lock": "mutex",
+      "intervalUs": 10,
+      "operations": 448480815,
+      "signalsDelivered": 13410
+    },
+    "exitCode": 0,
+    "elapsedSeconds": 30.317,
+    "status": "completed"
+  },
+  {
+    "name": "node-off",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "<REDUCTION_DIR>/kit/node-port-probe.mjs",
+      "off",
+      "30"
+    ],
+    "summary": {
+      "event": "complete",
+      "mode": "off",
+      "node": "v26.12.1",
+      "v8": "14.6.202.34-node.40",
+      "uv": "1.53.0",
+      "platform": "darwin",
+      "workers": 830,
+      "channels": 13280,
+      "closes": 13280,
+      "messages": 13280,
+      "rotations": 0,
+      "beats": 110,
+      "maxBeatGapMs": 829.7
+    },
+    "exitCode": 0,
+    "elapsedSeconds": 30.651,
+    "status": "completed"
+  },
+  {
+    "name": "node-rotating",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "<REDUCTION_DIR>/kit/node-port-probe.mjs",
+      "rotating",
+      "30"
+    ],
+    "summary": {
+      "event": "complete",
+      "mode": "rotating",
+      "node": "v26.12.1",
+      "v8": "14.6.202.34-node.40",
+      "uv": "1.53.0",
+      "platform": "darwin",
+      "workers": 655,
+      "channels": 10480,
+      "closes": 10480,
+      "messages": 10480,
+      "rotations": 5,
+      "beats": 109,
+      "maxBeatGapMs": 1001.5
+    },
+    "exitCode": 0,
+    "elapsedSeconds": 34.052,
+    "status": "completed"
+  },
+  {
+    "name": "node-single",
+    "command": [
+      "/opt/homebrew/bin/node",
+      "<REDUCTION_DIR>/kit/node-port-probe.mjs",
+      "single",
+      "30"
+    ],
+    "summary": {
+      "event": "complete",
+      "mode": "single",
+      "node": "v26.12.1",
+      "v8": "14.6.202.34-node.40",
+      "uv": "1.53.0",
+      "platform": "darwin",
+      "workers": 736,
+      "channels": 11776,
+      "closes": 11776,
+      "messages": 11776,
+      "rotations": 0,
+      "beats": 104,
+      "maxBeatGapMs": 1496.5
+    },
+    "exitCode": 0,
+    "elapsedSeconds": 31.381,
+    "status": "completed"
+  }
+]

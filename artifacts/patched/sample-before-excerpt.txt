@@ -1,0 +1,64 @@
+Analysis of sampling node (pid 37617) every 1 millisecond
+Process:         node [37617]
+Path:            /opt/homebrew/*/node
+Load Address:    0x102c34000
+Identifier:      node
+Version:         0
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  Python [37615]
+Target Type:     live task
+
+Date/Time:       2026-10-23 20:40:43.481 +0800
+Launch Time:     2026-10-23 20:39:42.508 +0800
+OS Version:      macOS 26.6.1 (25G76)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         2.8G
+Physical footprint (peak):  3.0G
+Idle exit:                  untracked
+----
+
+Call graph:
+    3432 Thread_205520617   DispatchQueue_1: com.apple.main-thread  (serial)
+
+--- Complete observed thread-header inventory ---
+    3432 Thread_205520617   DispatchQueue_1: com.apple.main-thread  (serial)
+    3432 Thread_205520620: DelayedTaskSchedulerWorker
+    3432 Thread_205520621: node-V8Worker
+    3432 Thread_205520622: node-V8Worker
+    3432 Thread_205520623: node-V8Worker
+    3432 Thread_205520624: node-V8Worker
+    3432 Thread_205520625: SignalInspector
+    3432 Thread_205520635: WorkerThread
+    3432 Thread_205520676
+    3432 Thread_205520937: libuv-worker
+    3432 Thread_205520938: libuv-worker
+    3432 Thread_205521171: WorkerThread
+    3432 Thread_205521172: WorkerThread
+    3432 Thread_205521280: WorkerThread
+    3432 Thread_205521281: WorkerThread
+    3432 Thread_205521927: WorkerThread
+    3432 Thread_205521928: WorkerThread
+    3432 Thread_205521930: WorkerThread
+    3432 Thread_205521931: WorkerThread
+    3432 Thread_205521949: WorkerThread
+    3432 Thread_205521953: WorkerThread
+    3432 Thread_205522079: WorkerThread
+    3432 Thread_205522702: WorkerThread
+    3432 Thread_205522704: WorkerThread
+    3432 Thread_205523573: WorkerThread
+    3432 Thread_205523587: WorkerThread
+    3432 Thread_205524365: WorkerThread
+    3432 Thread_205524366: WorkerThread
+    3432 Thread_205524367: fs-safe-watch
+    3432 Thread_205524368: WorkerThread
+    3432 Thread_205524754: WorkerThread
+    3432 Thread_205524755: WorkerThread
+    3432 Thread_205524819: WorkerThread
+    3432 Thread_205524820: WorkerThread
+
+--- Profiler-thread stack context, when present ---
+
+Search of full raw sample for v8:ProfEvntProc: 0 matches.
