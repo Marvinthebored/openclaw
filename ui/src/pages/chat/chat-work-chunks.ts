@@ -8,6 +8,7 @@ import type { MessageGroup } from "../../lib/chat/chat-types.ts";
 import { resolveMessageDisplayMarkdown } from "../../lib/chat/message-display.ts";
 import { normalizeMessage } from "../../lib/chat/message-normalizer.ts";
 import { resolveMessageVisibleContent } from "../../lib/chat/message-visibility.ts";
+import { rememberToolCardEnvelope } from "../../lib/chat/tool-cards.ts";
 import { stripThinkingTags } from "../../lib/strip-thinking-tags.ts";
 import { isProviderVoiceTranscript } from "./chat-assistant-reply.ts";
 import { assistantGroupIsIndependentBoundary, hasForwardedSource } from "./chat-turn-boundary.ts";
@@ -42,6 +43,10 @@ function isWorkBlock(block: unknown): boolean {
     isToolCallContentType(type) ||
     isToolResultContentType(type)
   );
+}
+
+function isTextBlock(block: unknown): boolean {
+  return ["text", "input_text", "output_text"].includes(String(asRecord(block)?.type));
 }
 
 /**
@@ -86,7 +91,10 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
         }
       }
       const last = stretches.at(-1);
-      if (work && last?.work) {
+      if (
+        last &&
+        (work ? last.work : !last.work && isTextBlock(block) && last.blocks.every(isTextBlock))
+      ) {
         last.blocks.push(block);
       } else {
         stretches.push({ work, blocks: [block], index });
@@ -113,14 +121,20 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
     const envelopeMarkdown = stripThinkingTags(
       resolveMessageDisplayMarkdown(source.message, normalizeMessage(source.message)),
     );
-    const splitMarkdown = stretches
-      .map(({ blocks }) => {
-        const part = { ...record, content: blocks };
+    const splitMarkdown = record.content
+      .map((block: unknown) => {
+        const part = { ...record, content: [block] };
         return resolveMessageDisplayMarkdown(part, normalizeMessage(part));
       })
       .filter((markdown) => markdown.trim())
       .join("\n");
-    if (stripThinkingTags(splitMarkdown).trim() !== envelopeMarkdown.trim()) {
+    // Markdown syntax can carry parser state across a folded stretch (fences,
+    // inline delimiters, references, lists, HTML, math). Keep that envelope as
+    // one renderer unit; plain narration can still bound independent work.
+    const crossWorkMarkdown =
+      stretches.filter((stretch) => !stretch.work).length > 1 &&
+      /[`*_~[\]<>\\$|#:]|(?:^|\n)(?: {4}|\t|\s*(?:[-+=]|\d+[.)]\s))/u.test(envelopeMarkdown);
+    if (crossWorkMarkdown || stripThinkingTags(splitMarkdown).trim() !== envelopeMarkdown.trim()) {
       return [
         {
           source,
@@ -155,6 +169,7 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
             : undefined,
       };
       copyLiveTerminalIdentity(source.message, message);
+      rememberToolCardEnvelope(message, source.message);
       const visibleContent = resolveMessageVisibleContent(message, normalizeMessage(message));
       return {
         source: {

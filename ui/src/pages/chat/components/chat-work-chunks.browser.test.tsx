@@ -6,6 +6,7 @@ import { flush, waitForSolid } from "../../../test-helpers/solid-settle.ts";
 import { coalesceAgentRunFrames } from "../chat-agent-run-grouping.ts";
 import { buildItems } from "../chat-thread.test-support.ts";
 import { coalesceActivityRuns, collapseCompletedTurnWork } from "../chat-turn-presentation.ts";
+import { splitMixedWorkGroup } from "../chat-work-chunks.ts";
 import { AgentRunFrame } from "./chat-agent-run-frame.tsx";
 import { MessageGroup } from "./chat-message-group-view.tsx";
 import "../../../styles.css";
@@ -79,7 +80,7 @@ it.each([1440, 1600])("renders in-place Anthropic work at %spx in both modes", a
                   <AgentRunFrame
                     frame={item as Extract<typeof item, { kind: "agent-run-frame" }>}
                     options={{
-                      streamOptions: { showReasoning: true, showToolCalls: true, bubbleMode },
+                      streamOptions: { bubbleMode },
                       renderGroupOptions: () => ({
                         showReasoning: true,
                         showToolCalls: true,
@@ -205,3 +206,48 @@ it.each([1440, 1600])("renders in-place Anthropic work at %spx in both modes", a
     }
   }
 });
+
+it.each([false, true])(
+  "renders one fenced code unit across text blocks (work between=%s)",
+  async (workBetween) => {
+    const thinking = { type: "thinking", thinking: "Recorded work" };
+    const source = msg(
+      "markdown",
+      "assistant",
+      [
+        text("```js\nconst a = 1;"),
+        ...(workBetween ? [thinking] : []),
+        text("const b = 2;\n```"),
+        ...(!workBetween ? [thinking] : []),
+      ],
+      1000,
+      { stopReason: "stop" },
+    );
+    const group = buildItems({ paneId: "markdown-context", sessionKey, messages: [source] }).find(
+      (item) => item.kind === "group",
+    );
+    if (!group || group.kind !== "group") {
+      throw new Error("Missing group");
+    }
+    const parts = splitMixedWorkGroup(group);
+    const view = mountSolid(() => (
+      <div class="chat-thread">
+        <For each={parts}>
+          {(part) => (
+            <MessageGroup group={part} options={{ showReasoning: false, showToolCalls: true }} />
+          )}
+        </For>
+      </div>
+    ));
+    try {
+      await waitForSolid(() => expect(view.container.querySelectorAll("pre")).toHaveLength(1));
+      const code = view.container.querySelector("pre code");
+      expect(code?.textContent).toContain("const a = 1;");
+      expect(code?.textContent).toContain("const b = 2;");
+      expect(view.container.querySelectorAll(".chat-text")).toHaveLength(1);
+      expect(view.container.querySelector(".chat-text")?.textContent).not.toContain("```");
+    } finally {
+      view.unmount();
+    }
+  },
+);

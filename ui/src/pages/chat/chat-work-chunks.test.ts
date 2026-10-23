@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { resolveMessageDisplayMarkdown } from "../../lib/chat/message-display.ts";
 import { normalizeMessage } from "../../lib/chat/message-normalizer.ts";
+import {
+  extractToolCardsCached,
+  extractToolBlockCardsCached,
+  resolveToolCardOutcome,
+} from "../../lib/chat/tool-cards.ts";
 import { groupMessages } from "./chat-thread-grouping.ts";
 import { collapseCompletedTurnWork } from "./chat-turn-presentation.ts";
 import {
@@ -14,6 +19,13 @@ import {
 const fixture = JSON.parse(
   readFileSync(new URL("../../../../test/fixtures/chat-work-chunks.json", import.meta.url), "utf8"),
 ) as {
+  markdownEnvelopes: {
+    name: string;
+    text: string[];
+    textType?: string;
+    workBetweenText: boolean;
+    expectedParts: number;
+  }[];
   cases: {
     name: string;
     live?: boolean;
@@ -295,3 +307,125 @@ it.each(["", "   ", "<think>filtered private text</think>"])(
     ).toHaveLength(1);
   },
 );
+
+describe("Markdown envelope context", () => {
+  it.each(fixture.markdownEnvelopes)(
+    "$name",
+    ({ text: values, textType, workBetweenText, expectedParts }) => {
+      const work = { type: "thinking", thinking: "Recorded work" };
+      const source = message(
+        "markdown",
+        "assistant",
+        [
+          ...values.flatMap((value, index) => [
+            ...(workBetweenText && index === 1 ? [work] : []),
+            { ...text(value), type: textType ?? "text" },
+          ]),
+          ...(!workBetweenText ? [work] : []),
+        ],
+        { stopReason: "stop" },
+      );
+      const group = groups([source])[0];
+      if (group?.kind !== "group") {
+        throw new Error("Missing group");
+      }
+      const parts = splitMixedWorkGroup(group);
+      expect(parts).toHaveLength(expectedParts);
+      expect(
+        parts
+          .flatMap((part) => part.messages)
+          .map(({ message: value }) =>
+            resolveMessageDisplayMarkdown(value, normalizeMessage(value)),
+          )
+          .filter(Boolean),
+      ).toEqual(expectedParts === 3 ? values : [values.join("\n")]);
+    },
+  );
+});
+
+it.each([false, true])(
+  "pairs separated call outcomes without duplicating output (failed=%s)",
+  (failed) => {
+    const source = message(
+      "paired",
+      "assistant",
+      [
+        tool("read-1"),
+        text("Finding"),
+        { type: "tool_result", tool_use_id: "read-1", content: "Recorded output", isError: failed },
+        text("Answer"),
+      ],
+      { stopReason: "stop" },
+    );
+    const group = groups([source])[0];
+    if (group?.kind !== "group") {
+      throw new Error("Missing group");
+    }
+    const parts = splitMixedWorkGroup(group).flatMap((part) => part.messages);
+    const cards = parts.flatMap(({ message: value }) => extractToolCardsCached(value));
+    expect(cards).toHaveLength(2);
+    expect(cards.map((card) => resolveToolCardOutcome(card, false))).toEqual([
+      failed ? "failed" : "succeeded",
+      failed ? "failed" : "succeeded",
+    ]);
+    expect(cards.map((card) => card.name)).toEqual(["read", "read"]);
+    expect(cards.map((card) => card.args)).toEqual([
+      { path: "synthetic.txt" },
+      { path: "synthetic.txt" },
+    ]);
+    expect(cards.map((card) => card.outputText)).toEqual([undefined, "Recorded output"]);
+    const blockCards = parts.flatMap(({ message: value }) => {
+      const record = value as Record<string, unknown>;
+      return (record.content as Record<string, unknown>[]).flatMap((block) =>
+        extractToolBlockCardsCached(record, block),
+      );
+    });
+    expect(blockCards.map((card) => card.outputText)).toEqual([undefined, "Recorded output"]);
+    expect(blockCards.map((card) => resolveToolCardOutcome(card, false))).toEqual(
+      cards.map((card) => resolveToolCardOutcome(card, false)),
+    );
+    expect(source.content).toHaveLength(4);
+  },
+);
+
+it("preserves a skipped recorded outcome without duplicating output or details", () => {
+  const source = message(
+    "skipped",
+    "assistant",
+    [
+      tool("skip"),
+      text("Finding"),
+      {
+        type: "tool_result",
+        tool_use_id: "skip",
+        content: "Skipped to process an incoming message.",
+        details: { status: "skipped", deniedReason: "steering" },
+      },
+      text("Answer"),
+    ],
+    { stopReason: "stop" },
+  );
+  const group = groups([source])[0];
+  if (group?.kind !== "group") {
+    throw new Error("Missing group");
+  }
+  const parts = splitMixedWorkGroup(group).flatMap((part) => part.messages);
+  const cards = parts.flatMap(({ message: value }) => extractToolCardsCached(value));
+  expect(cards.map((card) => resolveToolCardOutcome(card, false))).toEqual(["skipped", "skipped"]);
+  expect(cards.map((card) => card.outputText)).toEqual([
+    undefined,
+    "Skipped to process an incoming message.",
+  ]);
+  expect(cards[0]?.details).toBeUndefined();
+  const blockCards = parts.flatMap(({ message: value }) => {
+    const record = value as Record<string, unknown>;
+    return (record.content as Record<string, unknown>[]).flatMap((block) =>
+      extractToolBlockCardsCached(record, block),
+    );
+  });
+  expect(blockCards.map((card) => resolveToolCardOutcome(card, false))).toEqual([
+    "skipped",
+    "skipped",
+  ]);
+  expect(blockCards.map((card) => card.outputText)).toEqual(cards.map((card) => card.outputText));
+});

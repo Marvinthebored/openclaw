@@ -731,7 +731,7 @@ it.each(["aborted", "error", "live-aborted"])(
       <AgentRunFrame
         frame={frame}
         options={{
-          streamOptions: { showReasoning: true },
+          streamOptions: {},
           renderGroupOptions: () => ({ showReasoning: true }),
           isWorkExpanded: () => true,
           onToggleWork: () => {},
@@ -784,7 +784,7 @@ it("renders source previews cited before the final split slice", () => {
     <AgentRunFrame
       frame={frame}
       options={{
-        streamOptions: { showReasoning: true },
+        streamOptions: {},
         renderGroupOptions: () => ({ showReasoning: true }),
         isWorkExpanded: () => true,
         onToggleWork: () => {},
@@ -820,7 +820,7 @@ it("keeps one interrupted tail when the last split part is hidden reasoning", ()
     <AgentRunFrame
       frame={frame}
       options={{
-        streamOptions: { showReasoning: false },
+        streamOptions: {},
         renderGroupOptions: () => ({ showReasoning: false }),
         isWorkExpanded: () => true,
         onToggleWork: () => {},

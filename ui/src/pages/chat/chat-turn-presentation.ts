@@ -231,21 +231,33 @@ export function collapseCompletedTurnWork(
     }
     // Structural and forwarded boundaries cannot lend an answer to work in
     // another output segment, even though both belong to one user turn.
-    const segmentReplies = new Map<number, number>();
+    const segmentReplies = new Map<string, { reply: MessageGroup; index: number }>();
     let segmentStart = 0;
     const closeSegment = (end: number) => {
       const reply = turn.slice(segmentStart, end).findLast(isFinalReplyGroup);
       if (reply) {
-        const replyIndex = turn.lastIndexOf(reply);
+        const owner = { reply, index: turn.lastIndexOf(reply) };
         for (let index = segmentStart; index < end; index += 1) {
-          segmentReplies.set(index, replyIndex);
+          segmentReplies.set(turn[index]!.key, owner);
         }
       }
     };
+    let previousReplyIndex: number | undefined;
     for (let index = 0; index < turn.length; index += 1) {
-      if (!isTurnOutputGroup(turn[index]!)) {
+      const item = turn[index]!;
+      if (!isTurnOutputGroup(item)) {
         closeSegment(index);
         segmentStart = index + 1;
+        previousReplyIndex = undefined;
+      } else if (isFinalReplyGroup(item)) {
+        if (previousReplyIndex !== undefined) {
+          const previousReply = turn[previousReplyIndex];
+          if (previousReply?.kind === "group" && previousReply.runId !== item.runId) {
+            closeSegment(previousReplyIndex + 1);
+            segmentStart = previousReplyIndex + 1;
+          }
+        }
+        previousReplyIndex = index;
       }
     }
     closeSegment(turn.length);
@@ -254,14 +266,14 @@ export function collapseCompletedTurnWork(
     // Do not move even post-answer work across the visible answer.
     const handoff = turn.some((item) => item.kind === "notice" && item.handoffBoundary);
     const parts = turn.map((item, index) => {
-      const finalReplyIndex = segmentReplies.get(index);
+      const segmentReply = segmentReplies.get(item.key);
       const eligible =
-        finalReplyIndex !== undefined &&
+        segmentReply !== undefined &&
         !handoff &&
         isTurnOutputGroup(item) &&
         isCollapsibleWorkGroup(item) &&
         !groupEndsRunInFailure(item) &&
-        (index < finalReplyIndex ||
+        (index < segmentReply.index ||
           ((!item.runId || replyRunIds.has(item.runId)) && !groupHasFailedResult(item)));
       return {
         id: item.key,
@@ -274,12 +286,12 @@ export function collapseCompletedTurnWork(
         result.push(...chunk.parts.map((part) => part.value));
         continue;
       }
+      // SAFETY: only isTurnOutputGroup-narrowed MessageGroups are classified as work above.
       const groups = chunk.parts.map((part) => part.value as MessageGroup);
-      const replyRunId =
-        !hasForwardedSource(terminalReply) &&
-        groups.every((group) => !hasForwardedSource(group) && group.runId === terminalReply.runId)
-          ? terminalReply.runId
-          : undefined;
+      // The segment's reply owns presentation even when continuations or
+      // untagged tools have different execution identities. Segment boundaries
+      // already exclude forwarded deliveries and independent replies.
+      const replyRunId = segmentReplies.get(groups[0]!.key)?.reply.runId;
       result.push({
         kind: "work-group",
         key: `work:${groups[0]!.key}`,

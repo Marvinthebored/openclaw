@@ -5,6 +5,14 @@ import Testing
 struct ChatWorkChunksTests {
     private struct Fixture: Decodable {
         let cases: [Case]
+        let markdownEnvelopes: [MarkdownEnvelope]
+        struct MarkdownEnvelope: Decodable {
+            let name: String
+            let text: [String]
+            let textType: String?
+            let workBetweenText: Bool
+            let expectedParts: Int
+        }
         struct Case: Decodable {
             let name: String
             let live: Bool?
@@ -40,6 +48,69 @@ struct ChatWorkChunksTests {
             }
             #expect(actual == item.expected, "\(item.name)")
         }
+    }
+
+    @Test func `shared Markdown envelope context`() throws {
+        var directory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+        while directory.path != "/",
+              !FileManager.default.fileExists(atPath: directory.appendingPathComponent(
+                  "test/fixtures/chat-work-chunks.json").path)
+        { directory.deleteLastPathComponent() }
+        let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: directory.appendingPathComponent(
+            "test/fixtures/chat-work-chunks.json")))
+        for item in fixture.markdownEnvelopes {
+            let work = OpenClawChatMessageContent(type: "thinking", thinking: "Recorded work")
+            var content: [OpenClawChatMessageContent] = []
+            for (index, text) in item.text.enumerated() {
+                if item.workBetweenText, index == 1 { content.append(work) }
+                content.append(.init(type: item.textType ?? "text", text: text))
+            }
+            if !item.workBetweenText { content.append(work) }
+            let source = OpenClawChatMessage(role: "assistant", content: content, timestamp: nil)
+            let parts = source.workPresentationParts
+            #expect(parts.count == item.expectedParts, "\(item.name)")
+            let textCounts = parts.map { part in
+                part.content.filter { ChatMessageVisibleText.isVisibleContentType($0.type, role: source.role) }.count
+            }.filter { $0 > 0 }
+            #expect(textCounts == (item.expectedParts == 3 ? [1, 1] : [item.text.count]), "\(item.name)")
+            #expect(parts.allSatisfy { $0.id == source.id })
+        }
+    }
+
+    @Test func `paragraph separator stays in its text envelope`() {
+        let source = OpenClawChatMessage(role: "assistant", content: [
+            .init(type: "text", text: "First paragraph"),
+            .init(type: "text", text: "\n"),
+            .init(type: "text", text: "Second paragraph"),
+            .init(type: "thinking", thinking: "Recorded work"),
+        ], timestamp: nil)
+        let parts = source.workPresentationParts
+        #expect(parts == [source])
+        #expect(parts.map { ChatMessageVisibleText.displayText(in: $0, includeThinking: false) } == [
+            ChatMessageVisibleText.displayText(in: source, includeThinking: false),
+        ])
+    }
+
+    @Test(arguments: [false, true])
+    func `fenced code keeps one renderer context`(workBetweenText: Bool) {
+        let work = OpenClawChatMessageContent(type: "thinking", thinking: "Recorded work")
+        var content: [OpenClawChatMessageContent] = [.init(type: "text", text: "```js\nconst a = 1;")]
+        if workBetweenText { content.append(work) }
+        content.append(.init(type: "text", text: "const b = 2;\n```"))
+        if !workBetweenText { content.append(work) }
+        let source = OpenClawChatMessage(role: "assistant", content: content, timestamp: nil)
+        let blocks = source.workPresentationParts.flatMap { part in
+            ChatMarkdownBlockSegmenter.segments(
+                markdown: part.content.filter { $0.type == "text" }.compactMap(\.text).joined(separator: "\n"),
+                isComplete: true)
+        }
+        let code = blocks.compactMap { block -> String? in
+            if case let .code(value) = block { return value.code }
+            return nil
+        }
+        #expect(code.count == 1)
+        #expect(code.first?.contains("const a = 1;\nconst b = 2;") == true)
+        #expect(blocks.count == 1)
     }
 
     @Test func `mixed envelope keeps text and source identity`() throws {

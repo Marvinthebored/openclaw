@@ -76,10 +76,41 @@ extension OpenClawChatMessage {
         let parts = Array(self.content.enumerated()).filter { entry in
             entry.element.isWorkContent || entry.element.isVisibleWorkBoundary(role: self.role)
         }
+        // Empty text between prose blocks can carry paragraph boundaries. It
+        // may be ignored between tools, but cannot change the envelope's text.
+        let filteredText = parts.compactMap { entry -> String? in
+            ChatMessageVisibleText.isVisibleContentType(entry.element.type, role: self.role)
+                ? entry.element.text : nil
+        }.joined(separator: "\n")
+        guard filteredText.trimmingCharacters(in: .whitespacesAndNewlines) ==
+            text.trimmingCharacters(in: .whitespacesAndNewlines)
+        else { return [self] }
         let lastVisible = parts.last { $0.element.isVisibleWorkBoundary(role: self.role) }?.offset
-        let chunks = ChatWorkChunks.project(parts) { entry in
+        let projected = ChatWorkChunks.project(parts) { entry in
             entry.element.isWorkContent ? .work : .visible
         }
+        var chunks: [ChatWorkChunk<(offset: Int, element: OpenClawChatMessageContent)>] = []
+        for chunk in projected {
+            if !chunk.isWork,
+               chunk.parts.allSatisfy({
+                   ChatMessageVisibleText.isVisibleContentType($0.element.type, role: self.role)
+               }),
+               let last = chunks.last, !last.isWork,
+               last.parts.allSatisfy({
+                   ChatMessageVisibleText.isVisibleContentType($0.element.type, role: self.role)
+               })
+            {
+                chunks[chunks.count - 1] = ChatWorkChunk(isWork: false, parts: last.parts + chunk.parts)
+            } else {
+                chunks.append(chunk)
+            }
+        }
+        // Keep Markdown parser context across folded work. Plain narration can
+        // still bound independent work; syntax-sensitive envelopes stay whole.
+        if chunks.filter({ !$0.isWork }).count > 1,
+           text.range(of: #"[`*_~\[\]<>\\$|#:]|(?:^|\n)(?: {4}|\t|\s*(?:[-+=]|\d+[.)]\s))"#,
+                      options: .regularExpression) != nil
+        { return [self] }
         return chunks.map { chunk in
             var part = self
             part.content = chunk.parts.map(\.element)

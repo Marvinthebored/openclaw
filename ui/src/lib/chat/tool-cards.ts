@@ -100,7 +100,11 @@ function readToolExitCode(...values: unknown[]): number | undefined {
   return undefined;
 }
 
-export function isToolCardSkipped(card: ToolCard): boolean {
+// Call-only fragments retain their recorded classifier input, not result payloads.
+const recordedToolCardOutcomes = new WeakMap<ToolCard, ToolCard>();
+
+export function isToolCardSkipped(input: ToolCard): boolean {
+  const card = recordedToolCardOutcomes.get(input) ?? input;
   if (card.activity) {
     return card.activity.status === "skipped";
   }
@@ -112,7 +116,8 @@ export function isToolCardSkipped(card: ToolCard): boolean {
   );
 }
 
-export function isToolCardError(card: ToolCard): boolean {
+export function isToolCardError(input: ToolCard): boolean {
+  const card = recordedToolCardOutcomes.get(input) ?? input;
   if (isToolCardSkipped(card)) {
     return false;
   }
@@ -125,9 +130,10 @@ export function isToolCardError(card: ToolCard): boolean {
 }
 
 export function resolveToolCardOutcome(
-  card: ToolCard,
+  input: ToolCard,
   runActive: boolean | undefined,
 ): ToolCardOutcome {
+  const card = recordedToolCardOutcomes.get(input) ?? input;
   if (isToolCardSkipped(card)) {
     return "skipped";
   }
@@ -490,6 +496,46 @@ function extractToolCards(message: unknown): ToolCard[] {
 }
 
 const toolCardsByMessage = new WeakMap<object, ToolCard[]>();
+const toolCardEnvelopes = new WeakMap<object, object>();
+
+/** Immutable presentation fragments retain pairing context without copying output blocks. */
+export function rememberToolCardEnvelope(fragment: object, envelope: unknown): void {
+  if (envelope && typeof envelope === "object") {
+    toolCardEnvelopes.set(fragment, toolCardEnvelopes.get(envelope) ?? envelope);
+  }
+}
+
+function projectEnvelopeCards(message: object, cards: ToolCard[]): ToolCard[] {
+  const envelope = toolCardEnvelopes.get(message);
+  if (!envelope) {
+    return cards;
+  }
+  const recorded = extractToolCardsCached(envelope);
+  const content = normalizeContent(asNullableRecord(message)?.content);
+  return cards.map((card) => {
+    const paired = card.callId ? recorded.find((item) => item.callId === card.callId) : undefined;
+    if (!paired) {
+      return card;
+    }
+    const hasResult = content.some(
+      (block) => isToolResultContentType(block.type) && resolveToolUseId(block) === card.callId,
+    );
+    if (hasResult) {
+      return { ...card, ...paired };
+    }
+    // The call carries its recorded outcome, but output/preview stays at the
+    // result's original position rather than appearing twice.
+    const projected = {
+      ...card,
+      completed: paired.completed,
+      isError: isToolCardError(paired),
+      exitCode: paired.exitCode,
+      toolOutput: paired.toolOutput,
+    };
+    recordedToolCardOutcomes.set(projected, paired);
+    return projected;
+  });
+}
 
 export function extractToolCardsCached(message: unknown): ToolCard[] {
   if (!message || typeof message !== "object") {
@@ -499,7 +545,7 @@ export function extractToolCardsCached(message: unknown): ToolCard[] {
   if (cached) {
     return cached;
   }
-  const cards = extractToolCards(message);
+  const cards = projectEnvelopeCards(message, extractToolCards(message));
   toolCardsByMessage.set(message, cards);
   return cards;
 }
@@ -517,7 +563,9 @@ export function extractToolBlockCardsCached(
   if (cached) {
     return cached;
   }
-  const cards = extractToolCards({ ...message, content: [block] });
+  const fragment = { ...message, content: [block] };
+  rememberToolCardEnvelope(fragment, message);
+  const cards = projectEnvelopeCards(fragment, extractToolCards(fragment));
   if (!byBlock) {
     byBlock = new WeakMap();
     toolCardsByBlock.set(message, byBlock);
