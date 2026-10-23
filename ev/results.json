@@ -1,0 +1,405 @@
+{
+  "base_head": "776b11e50db1edd1504680ba8830a0ec7ba734de",
+  "product_patch_sha256": "98bbc439cbdb46a08abb8e8ea7c25a3fc66d916c336e350d39a92f137d1a207d",
+  "source_variants": {
+    "r2": "baseline plus viewport/tests candidate; metadata/UI logging only",
+    "caller": "final three-file product candidate plus forced-marker/deferred-state harness",
+    "controlled": "final product candidate;25s page-delay fixture and native offset logging; not production timing"
+  },
+  "scope": "iPhone17/iOS26.5 simulator with synthetic fixtures; scratch-only logs/forced-marker probes documented; not physical-device latency proof",
+  "r2": {
+    "head": "776b11e50db1edd1504680ba8830a0ec7ba734de",
+    "steps": {
+      "copy": {
+        "exit": 0,
+        "at": 1792726386.1335292
+      },
+      "tool-pins": {
+        "exit": 0,
+        "at": 1792726388.4330869
+      },
+      "format-harness": {
+        "exit": 0,
+        "at": 1792726388.6749241
+      },
+      "boot": {
+        "exit": 0,
+        "at": 1792726390.1921039
+      },
+      "bootstatus": {
+        "exit": 0,
+        "at": 1792726443.415405
+      },
+      "red-build": {
+        "exit": 0,
+        "at": 1792726670.643906
+      },
+      "red-viewport": {
+        "exit": 65,
+        "at": 1792726691.241044
+      },
+      "export-red-viewport": {
+        "exit": 0,
+        "at": 1792726691.37417
+      },
+      "format-candidate": {
+        "exit": 0,
+        "at": 1792726691.4525282
+      },
+      "green-build": {
+        "exit": 0,
+        "at": 1792726705.9411242
+      },
+      "green-viewport": {
+        "exit": 0,
+        "at": 1792726710.489861
+      },
+      "export-green-viewport": {
+        "exit": 0,
+        "at": 1792726710.567778
+      },
+      "native-build": {
+        "exit": 0,
+        "at": 1792726721.5616581
+      },
+      "testNativeMetadataPublicationProof": {
+        "exit": 0,
+        "at": 1792726756.1163
+      },
+      "export-testNativeMetadataPublicationProof": {
+        "exit": 0,
+        "at": 1792726756.196108
+      },
+      "trace-testNativeMetadataPublicationProof": {
+        "exit": 0,
+        "at": 1792726758.2482932
+      },
+      "testHistoryFirstPageAppearsBeforeOptionalMetadataCompletes": {
+        "exit": 65,
+        "at": 1792726816.068416
+      },
+      "export-testHistoryFirstPageAppearsBeforeOptionalMetadataCompletes": {
+        "exit": 0,
+        "at": 1792726816.257662
+      },
+      "trace-testHistoryFirstPageAppearsBeforeOptionalMetadataCompletes": {
+        "exit": 0,
+        "at": 1792726819.511152
+      },
+      "testEarlierHistoryButtonWorksBeforeMetadataCompletes": {
+        "exit": 65,
+        "at": 1792726864.684587
+      },
+      "export-testEarlierHistoryButtonWorksBeforeMetadataCompletes": {
+        "exit": 0,
+        "at": 1792726864.876031
+      },
+      "trace-testEarlierHistoryButtonWorksBeforeMetadataCompletes": {
+        "exit": 0,
+        "at": 1792726866.81298
+      },
+      "testCompletedWorkDisclosureKeepsFinalReplyVisible": {
+        "exit": 0,
+        "at": 1792726900.301651
+      },
+      "export-testCompletedWorkDisclosureKeepsFinalReplyVisible": {
+        "exit": 0,
+        "at": 1792726900.492098
+      },
+      "trace-testCompletedWorkDisclosureKeepsFinalReplyVisible": {
+        "exit": 0,
+        "at": 1792726902.3695629
+      },
+      "testLongHistoryPrependPreservesReaderAndTrueLatest": {
+        "exit": 0,
+        "at": 1792727297.084844
+      },
+      "export-testLongHistoryPrependPreservesReaderAndTrueLatest": {
+        "exit": 0,
+        "at": 1792727297.216435
+      },
+      "trace-testLongHistoryPrependPreservesReaderAndTrueLatest": {
+        "exit": 0,
+        "at": 1792727298.4667132
+      },
+      "testPrependWhileDeceleratingAtTopPreservesReader": {
+        "exit": 0,
+        "at": 1792727395.501471
+      },
+      "export-testPrependWhileDeceleratingAtTopPreservesReader": {
+        "exit": 0,
+        "at": 1792727395.580634
+      },
+      "trace-testPrependWhileDeceleratingAtTopPreservesReader": {
+        "exit": 0,
+        "at": 1792727396.8939788
+      },
+      "testPrependLandingDuringStallWithTouchPreservesReader": {
+        "exit": 0,
+        "at": 1792727492.7337952
+      },
+      "export-testPrependLandingDuringStallWithTouchPreservesReader": {
+        "exit": 0,
+        "at": 1792727492.816412
+      },
+      "trace-testPrependLandingDuringStallWithTouchPreservesReader": {
+        "exit": 0,
+        "at": 1792727494.194984
+      }
+    },
+    "runs": {
+      "red-viewport": {
+        "exit": 65,
+        "start": 1792726670.64462,
+        "end": 1792726691.241645,
+        "counts": [
+          "Executed 10 tests, with 10 failures (0 unexpected) in 0.569 (0.572) seconds",
+          "Executed 10 tests, with 10 failures (0 unexpected) in 0.569 (0.572) seconds",
+          "Executed 10 tests, with 10 failures (0 unexpected) in 0.569 (0.573) seconds"
+        ],
+        "failures": [
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:133: error: -[OpenClawTests.ChatNativePrependViewportTests testDisconnectedAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertFalse failed",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:134: error: -[OpenClawTests.ChatNativePrependViewportTests testDisconnectedAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertFalse failed",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:138: error: -[OpenClawTests.ChatNativePrependViewportTests testDisconnectedAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertEqual failed: (\"1300.0\") is not equal to (\"350.0\")",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:118: error: -[OpenClawTests.ChatNativePrependViewportTests testMissingAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertFalse failed",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:119: error: -[OpenClawTests.ChatNativePrependViewportTests testMissingAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertFalse failed",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:123: error: -[OpenClawTests.ChatNativePrependViewportTests testMissingAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertEqual failed: (\"500.0\") is not equal to (\"350.0\")",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:126: error: -[OpenClawTests.ChatNativePrependViewportTests testMissingAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertEqual failed: (\"1500.0\") is not equal to (\"350.0\")",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:127: error: -[OpenClawTests.ChatNativePrependViewportTests testMissingAnchorDeclinesNativeLandingWithoutMovingReader] : XCTAssertEqual failed: (\"1\") is not equal to (\"0\")",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:159: error: -[OpenClawTests.ChatNativePrependViewportTests testMissingAnchorPreservesInsetAndOverscroll] : XCTAssertFalse failed",
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/Tests/ChatNativePrependViewportTests.swift:162: error: -[OpenClawTests.ChatNativePrependViewportTests testMissingAnchorPreservesInsetAndOverscroll] : XCTAssertEqual failed: (\"960.0\") is not equal to (\"-40.0\")"
+        ]
+      },
+      "green-viewport": {
+        "exit": 0,
+        "start": 1792726705.941663,
+        "end": 1792726710.490568,
+        "counts": [
+          "Executed 10 tests, with 0 failures (0 unexpected) in 0.016 (0.018) seconds",
+          "Executed 10 tests, with 0 failures (0 unexpected) in 0.016 (0.018) seconds",
+          "Executed 10 tests, with 0 failures (0 unexpected) in 0.016 (0.019) seconds"
+        ],
+        "failures": []
+      },
+      "testNativeMetadataPublicationProof": {
+        "exit": 0,
+        "start": 1792726721.56225,
+        "end": 1792726756.117097,
+        "counts": [
+          "Executed 1 test, with 0 failures (0 unexpected) in 29.726 (29.727) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 29.726 (29.727) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 29.726 (29.728) seconds"
+        ],
+        "failures": []
+      },
+      "testHistoryFirstPageAppearsBeforeOptionalMetadataCompletes": {
+        "exit": 65,
+        "start": 1792726758.249312,
+        "end": 1792726816.070137,
+        "counts": [],
+        "failures": [
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift:3051: error: -[OpenClawUITests.OpenClawSnapshotUITests testHistoryFirstPageAppearsBeforeOptionalMetadataCompletes] : XCTAssertEqual failed: (\"XCTWaiterResult(rawValue: 2)\") is not equal to (\"XCTWaiterResult(rawValue: 1)\") - Loaded messages must not remain blank while models refresh"
+        ]
+      },
+      "testEarlierHistoryButtonWorksBeforeMetadataCompletes": {
+        "exit": 65,
+        "start": 1792726819.512691,
+        "end": 1792726864.686702,
+        "counts": [],
+        "failures": [
+          "/tmp/pr163153-continuation-20261023/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift:3181: error: -[OpenClawUITests.OpenClawSnapshotUITests testEarlierHistoryButtonWorksBeforeMetadataCompletes] : XCTAssertEqual failed: (\"XCTWaiterResult(rawValue: 2)\") is not equal to (\"XCTWaiterResult(rawValue: 1)\")"
+        ]
+      },
+      "testCompletedWorkDisclosureKeepsFinalReplyVisible": {
+        "exit": 0,
+        "start": 1792726866.8144698,
+        "end": 1792726900.303381,
+        "counts": [
+          "Executed 1 test, with 0 failures (0 unexpected) in 26.621 (26.623) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 26.621 (26.624) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 26.621 (26.625) seconds"
+        ],
+        "failures": []
+      },
+      "testLongHistoryPrependPreservesReaderAndTrueLatest": {
+        "exit": 0,
+        "start": 1792726902.3711019,
+        "end": 1792727297.086089,
+        "counts": [
+          "Executed 1 test, with 0 failures (0 unexpected) in 387.897 (387.900) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 387.897 (387.901) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 387.897 (387.902) seconds"
+        ],
+        "failures": []
+      },
+      "testPrependWhileDeceleratingAtTopPreservesReader": {
+        "exit": 0,
+        "start": 1792727298.467846,
+        "end": 1792727395.502209,
+        "counts": [
+          "Executed 1 test, with 0 failures (0 unexpected) in 93.930 (93.931) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 93.930 (93.931) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 93.930 (93.932) seconds"
+        ],
+        "failures": []
+      },
+      "testPrependLandingDuringStallWithTouchPreservesReader": {
+        "exit": 0,
+        "start": 1792727396.8956218,
+        "end": 1792727492.734635,
+        "counts": [
+          "Executed 1 test, with 0 failures (0 unexpected) in 93.070 (93.071) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 93.070 (93.071) seconds",
+          "Executed 1 test, with 0 failures (0 unexpected) in 93.070 (93.072) seconds"
+        ],
+        "failures": []
+      }
+    },
+    "tools": {
+      "swiftformat": "0.63.1",
+      "swiftlint": "0.65.1"
+    },
+    "simulator": "A1FF9B97-A272-4702-982C-3EF1260F68B2",
+    "finished": 1792727494.914061
+  },
+  "caller": {
+    "head": "776b11e50db1edd1504680ba8830a0ec7ba734de",
+    "steps": {
+      "format-final-product": {
+        "exit": 0,
+        "at": 1792727502.349984
+      },
+      "format-harness": {
+        "exit": 0,
+        "at": 1792727506.994027
+      },
+      "boot": {
+        "exit": 0,
+        "at": 1792727507.7802181
+      },
+      "bootstatus": {
+        "exit": 0,
+        "at": 1792727527.9667451
+      },
+      "build": {
+        "exit": 0,
+        "at": 1792727556.105699
+      },
+      "testMissingAnchorCallerRestoresReader": {
+        "exit": 65,
+        "at": 1792727944.097923
+      },
+      "export-testMissingAnchorCallerRestoresReader": {
+        "exit": 0,
+        "at": 1792727944.7156649
+      },
+      "trace-testMissingAnchorCallerRestoresReader": {
+        "exit": 0,
+        "at": 1792727946.931117
+      },
+      "testConnectedCallerConsumesDeferredOnce": {
+        "exit": 65,
+        "at": 1792728366.3425431
+      },
+      "export-testConnectedCallerConsumesDeferredOnce": {
+        "exit": 0,
+        "at": 1792728367.0266528
+      },
+      "trace-testConnectedCallerConsumesDeferredOnce": {
+        "exit": 0,
+        "at": 1792728369.025082
+      },
+      "testEarlierHistoryContinuesPastEmptyProjectedPage": {
+        "exit": 0,
+        "at": 1792728433.3138921
+      },
+      "export-testEarlierHistoryContinuesPastEmptyProjectedPage": {
+        "exit": 0,
+        "at": 1792728433.5605602
+      },
+      "trace-testEarlierHistoryContinuesPastEmptyProjectedPage": {
+        "exit": 0,
+        "at": 1792728436.289814
+      }
+    },
+    "runs": {
+      "testMissingAnchorCallerRestoresReader": {
+        "exit": 65,
+        "start": 1792727556.107643,
+        "end": 1792727944.099597
+      },
+      "testConnectedCallerConsumesDeferredOnce": {
+        "exit": 65,
+        "start": 1792727946.932517,
+        "end": 1792728366.345599
+      },
+      "testEarlierHistoryContinuesPastEmptyProjectedPage": {
+        "exit": 0,
+        "start": 1792728369.02737,
+        "end": 1792728433.316876
+      }
+    },
+    "source_sha256": {
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift": "cea29f5af1fb59d03226a04f375c144e66ef49ce700434b3627b022385c695b1",
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatNativePrependViewport.swift": "05d543753acab7181220c8cabae296725ba0d1b0c9fb5bc47f9c8d86182e5668",
+      "apps/ios/Tests/ChatNativePrependViewportTests.swift": "4bc33d05a3c238b997a1ac2470b5b699d5234821bcc384df6c0ffb1c00003900",
+      "apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift": "8a7f4e6c339d9c431f4a0fab5645d16133be1d09c1feb6e0f8de8afd191dcdda",
+      "apps/ios/UITests/OpenClawSnapshotUITests.swift": "d302f12062a10a39da57163f28576719847c4cc7592f9a5a6c330847892ff1d5"
+    },
+    "simulator": "68F45DF7-2FD8-473E-9F0A-B41C4E1A3544",
+    "finished": 1792728438.96948
+  },
+  "controlled": {
+    "head": "776b11e50db1edd1504680ba8830a0ec7ba734de",
+    "steps": {
+      "format-final-product": {
+        "exit": 0,
+        "at": 1792729140.6400661
+      },
+      "format-harness": {
+        "exit": 0,
+        "at": 1792729145.224571
+      },
+      "boot": {
+        "exit": 0,
+        "at": 1792729145.881367
+      },
+      "bootstatus": {
+        "exit": 0,
+        "at": 1792729165.089917
+      },
+      "build": {
+        "exit": 0,
+        "at": 1792729209.655922
+      },
+      "testMissingAnchorCallerRestoresReader": {
+        "exit": 0,
+        "at": 1792729491.949232
+      },
+      "export-testMissingAnchorCallerRestoresReader": {
+        "exit": 0,
+        "at": 1792729492.082864
+      },
+      "trace-testMissingAnchorCallerRestoresReader": {
+        "exit": 0,
+        "at": 1792729495.00602
+      }
+    },
+    "runs": {
+      "testMissingAnchorCallerRestoresReader": {
+        "exit": 0,
+        "start": 1792729209.657036,
+        "end": 1792729491.949824
+      }
+    },
+    "source_sha256": {
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift": "3e25f50bbb525f0e9aa5daf939085f2a1d2c9ea4907ca8a47bce6aea156730eb",
+      "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatNativePrependViewport.swift": "8c99817cf9d4808677b7c395bd8a87261f118da1dd98c905d07db81c118bb133",
+      "apps/ios/Tests/ChatNativePrependViewportTests.swift": "4bc33d05a3c238b997a1ac2470b5b699d5234821bcc384df6c0ffb1c00003900",
+      "apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift": "600c981bd688ef246265ca9574a14d858d3052af77d0009cafb1c4054deb4c98",
+      "apps/ios/UITests/OpenClawSnapshotUITests.swift": "88468c6969dea20cad2671087c2a92f588981a7b4873a85a9ef22faa4745f785"
+    },
+    "simulator": "3462AF1C-9E4C-4CF3-B931-ACC40CA5D92F",
+    "finished": 1792729495.6553311
+  }
+}
