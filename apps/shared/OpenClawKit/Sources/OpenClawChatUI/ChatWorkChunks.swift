@@ -66,6 +66,13 @@ extension OpenClawChatMessage {
               self.content.contains(where: \.isWorkContent),
               self.content.contains(where: { $0.isVisibleWorkBoundary(role: self.role) })
         else { return [self] }
+        // Inline reasoning can span text blocks. Keep its envelope intact so the
+        // bubble parser retains context and the reasoning display control still works.
+        let text = self.content.compactMap { content -> String? in
+            ChatMessageVisibleText.isVisibleContentType(content.type, role: self.role) ? content.text : nil
+        }.joined(separator: "\n")
+        guard !AssistantTextParser.segments(from: text).contains(where: { $0.kind == .thinking })
+        else { return [self] }
         let parts = Array(self.content.enumerated()).filter { entry in
             entry.element.isWorkContent || entry.element.isVisibleWorkBoundary(role: self.role)
         }

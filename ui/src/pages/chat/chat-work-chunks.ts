@@ -8,6 +8,7 @@ import type { MessageGroup } from "../../lib/chat/chat-types.ts";
 import { resolveMessageDisplayMarkdown } from "../../lib/chat/message-display.ts";
 import { normalizeMessage } from "../../lib/chat/message-normalizer.ts";
 import { resolveMessageVisibleContent } from "../../lib/chat/message-visibility.ts";
+import { stripThinkingTags } from "../../lib/strip-thinking-tags.ts";
 import { isProviderVoiceTranscript } from "./chat-assistant-reply.ts";
 import { assistantGroupIsIndependentBoundary, hasForwardedSource } from "./chat-turn-boundary.ts";
 import { copyLiveTerminalIdentity } from "./terminal-message-identity.ts";
@@ -92,6 +93,34 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
       }
     }
     if (stretches.length < 2 || !stretches.some((stretch) => stretch.work)) {
+      return [
+        {
+          source,
+          role: group.role,
+          visibleContent: resolveMessageVisibleContent(
+            source.message,
+            normalizeMessage(source.message),
+          ),
+        },
+      ];
+    }
+
+    // The display parser owns the whole envelope: reasoning, scaffolding and
+    // Markdown code regions can span text blocks, even across typed work.
+    // Its filters do not expose source ranges, so retain the original envelope
+    // whenever splitting would change that projection instead of reparsing a
+    // context-free fragment (which can recover hidden reasoning as visible text).
+    const envelopeMarkdown = stripThinkingTags(
+      resolveMessageDisplayMarkdown(source.message, normalizeMessage(source.message)),
+    );
+    const splitMarkdown = stretches
+      .map(({ blocks }) => {
+        const part = { ...record, content: blocks };
+        return resolveMessageDisplayMarkdown(part, normalizeMessage(part));
+      })
+      .filter((markdown) => markdown.trim())
+      .join("\n");
+    if (stripThinkingTags(splitMarkdown).trim() !== envelopeMarkdown.trim()) {
       return [
         {
           source,

@@ -1,6 +1,8 @@
 // @vitest-environment node
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { resolveMessageDisplayMarkdown } from "../../lib/chat/message-display.ts";
+import { normalizeMessage } from "../../lib/chat/message-normalizer.ts";
 import { groupMessages } from "./chat-thread-grouping.ts";
 import { collapseCompletedTurnWork } from "./chat-turn-presentation.ts";
 import {
@@ -139,6 +141,71 @@ describe("completed work preserves source order", () => {
         .flatMap((part) => part.messages)
         .map((part) => (part.message as typeof source)["__openclaw"].id),
     ).toEqual(["mixed", "mixed", "mixed"]);
+  });
+
+  it.each([false, true])(
+    "keeps envelope-wide reasoning private when text blocks cross typed work (%s)",
+    (separatedByWork) => {
+      const thinking = { type: "thinking", thinking: "Typed work" };
+      const source = message(
+        "private-envelope",
+        "assistant",
+        [
+          text("Before<think>hidden start"),
+          ...(separatedByWork ? [thinking] : []),
+          text("SECRET</think>Visible"),
+          thinking,
+          text("After"),
+        ],
+        { stopReason: "stop" },
+      );
+      const original = structuredClone(source);
+      const group = groups([source])[0];
+      if (group?.kind !== "group") {
+        throw new Error("Missing source group");
+      }
+      const parts = splitMixedWorkGroup(group);
+      const markdown = parts
+        .flatMap((part) => part.messages)
+        .map(({ message: partMessage }) =>
+          resolveMessageDisplayMarkdown(partMessage, normalizeMessage(partMessage)),
+        )
+        .join("\n");
+      expect(markdown).toBe("BeforeVisible\nAfter");
+      expect(markdown).not.toContain("hidden start");
+      expect(markdown).not.toContain("SECRET");
+      // Context-dependent envelopes retain their source order and action owner.
+      expect(parts).toEqual([group]);
+      expect(parts[0]?.messages[0]).toBe(group.messages[0]);
+      expect(source).toEqual(original);
+    },
+  );
+
+  it.each([
+    ["reasoning", "<think>hidden start", "SECRET</think>Visible"],
+    ["memories", "<relevant-memories>hidden start", "SECRET</relevant-memories>Visible"],
+    ["tool XML", '<tool_call>{"hidden start":', '"SECRET"}</tool_call>Visible'],
+  ])("does not expose cross-block %s scaffolding", (_name, opening, closing) => {
+    const source = message("private-leading", "assistant", [
+      text(opening),
+      text(closing),
+      { type: "thinking", thinking: "Typed work" },
+    ]);
+    const group = groups([source])[0];
+    if (group?.kind !== "group") {
+      throw new Error("Missing source group");
+    }
+    const parts = splitMixedWorkGroup(group);
+    const markdown = parts
+      .flatMap((part) => part.messages)
+      .map(({ message: partMessage }) =>
+        resolveMessageDisplayMarkdown(partMessage, normalizeMessage(partMessage)),
+      )
+      .join("\n");
+    expect(markdown).toBe("Visible");
+    expect(markdown).not.toContain("hidden start");
+    expect(markdown).not.toContain("SECRET");
+    expect(parts[0]).toBe(group);
   });
 
   it.each(["toolUse", "error", "aborted"])(

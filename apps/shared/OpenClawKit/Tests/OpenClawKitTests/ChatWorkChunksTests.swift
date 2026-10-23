@@ -85,6 +85,35 @@ struct ChatWorkChunksTests {
         #expect(group.last?.answerID == visible.last?.presentationID)
     }
 
+    @Test(arguments: [false, true], [false, true])
+    func `split text keeps envelope reasoning private`(workBetweenText: Bool, leadingProse: Bool) throws {
+        let opening = (leadingProse ? "Before" : "") + "<think>hidden start"
+        let work = OpenClawChatMessageContent(type: "thinking", thinking: "Typed work")
+        var content: [OpenClawChatMessageContent] = [.init(type: "text", text: opening)]
+        if workBetweenText { content.append(work) }
+        let visibleIndex = content.count
+        content.append(.init(type: "text", text: "SECRET</think>Visible"))
+        content.append(work)
+        let source = OpenClawChatMessage(role: "assistant", content: content, timestamp: nil)
+        #expect(ChatMessageVisibleText.visibleText(in: source) == (leadingProse ? "Before\n\nVisible" : "Visible"))
+
+        let parts = source.workPresentationParts
+        #expect(parts.count == 1)
+        let retained = try #require(parts.first)
+        let visible = ChatMessageVisibleText.visibleText(in: retained)
+        #expect(visible == (leadingProse ? "Before\n\nVisible" : "Visible"))
+        #expect(!visible.contains("SECRET"))
+        #expect(!visible.contains("hidden start"))
+        // The same original envelope can still show inline reasoning when enabled.
+        let expanded = AssistantTextParser.segments(from:
+            ChatMessageVisibleText.displayText(in: retained, includeThinking: true))
+        #expect(expanded.contains { $0.kind == .thinking && $0.text.contains("hidden start") })
+        #expect(expanded.contains { $0.text.contains("SECRET") })
+        #expect(retained.id == source.id)
+        #expect(retained.presentationBlockIndex == nil)
+        #expect(retained.content[visibleIndex].text == "SECRET</think>Visible")
+    }
+
     @Test func `unphased narrative bounds independent work chunks`() {
         let text = { (value: String) in
             OpenClawChatMessage(role: "assistant", content: [.init(type: "text", text: value)], timestamp: nil)
