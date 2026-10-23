@@ -1,0 +1,8 @@
+ ✓  ui-e2e-bundled  ui/src/e2e/chat-work-proof.e2e.test.ts > Shipped chat narration proof > preserves narration, independent work and reply actions through the built chat entry point 2440ms
+     ✓ preserves narration, independent work and reply actions through the built chat entry point 2440ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  30.24s (tests 87%, import 8%, transform 5%)
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Duration  30.25s (tests 87%, import 8%, transform 5%)

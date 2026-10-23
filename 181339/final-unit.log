@@ -1,0 +1,4 @@
+ ✓  unit  src/pages/chat/chat-work-chunks.test.ts > preserves a skipped recorded outcome without duplicating output or details 0ms
+ Test Files  14 passed (14)
+      Tests  322 passed (322)
+   Duration  8.47s (tests 57%, transform 18%, import 16%, worker 6%, environment 3%)

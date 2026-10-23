@@ -1,0 +1,7 @@
+ ×  ui  ui/src/pages/chat/chat-work-chunks.test.ts > preserves a skipped recorded outcome without duplicating output or details 10ms
+ FAIL   ui  ui/src/pages/chat/chat-work-chunks.test.ts > preserves a skipped recorded outcome without duplicating output or details
+Expected: "skipped"
+Received: "succeeded"
+ Test Files  1 failed (1)
+      Tests  1 failed | 39 skipped (40)
+   Duration  893ms (worker 45%, transform 31%, import 19%, setup 4%, tests 1%)
