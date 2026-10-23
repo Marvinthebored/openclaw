@@ -22,12 +22,10 @@ final class ChatNativePrependViewport: NSObject {
         weak var anchor: UIView?
         /// The followed row; a rebuilt marker is taken up only for this row.
         let rowID: UUID?
-        let baseSize: CGFloat
-        let baseOffset: CGFloat
         let start: CFTimeInterval
         var lastSize: CGFloat
         /// The anchor's content y that the current offset already accounts for.
-        var heldAnchorY: CGFloat?
+        var heldAnchorY: CGFloat
         /// The anchor's y before the page. SwiftUI sets the content size before it moves the rows,
         /// and the row's old view can stay at this y for a frame; the row cannot return there.
         var staleAnchorY: CGFloat?
@@ -67,12 +65,15 @@ final class ChatNativePrependViewport: NSObject {
         }
         let now = CACurrentMediaTime()
         let height = scrollView.contentSize.height
-        let anchorY = self.contentY(of: anchor)
+        // Without a connected row, content growth cannot distinguish a prepend from a reply below.
+        // Let the caller use its interaction-fenced row restoration instead of guessing from size.
+        guard let anchorY = self.contentY(of: anchor) else {
+            self.cancel()
+            return false
+        }
         self.landing = Landing(
-            anchor: anchorY == nil ? nil : anchor,
+            anchor: anchor,
             rowID: (anchor as? ChatPrependAnchorMarker.MarkerView)?.rowID,
-            baseSize: height,
-            baseOffset: scrollView.contentOffset.y,
             start: now,
             lastSize: height,
             heldAnchorY: anchorY,
@@ -125,22 +126,15 @@ final class ChatNativePrependViewport: NSObject {
         let sizeDelta = height - landing.lastSize
         landing.lastSize = height
         self.landing = landing
-        guard landing.heldAnchorY != nil else {
-            // No anchor row to follow: the size delta is the whole correction.
-            let target = landing.baseOffset + height - landing.baseSize
-            self.shift(by: target - scrollView.contentOffset.y)
-            self.landing?.awaitsPrepend = false
-            return
-        }
-        if let anchorY = self.contentY(of: landing.anchor), let held = landing.heldAnchorY, abs(anchorY - held) > 0.25,
+        if let anchorY = self.contentY(of: landing.anchor), abs(anchorY - landing.heldAnchorY) > 0.25,
            !landing.isStale(anchorY)
         {
-            self.shift(by: anchorY - held)
+            self.shift(by: anchorY - landing.heldAnchorY)
             self.landing?.heldAnchorY = anchorY
             self.landing?.awaitsPrepend = false
         } else if landing.awaitsPrepend, sizeDelta != 0 {
             self.shift(by: sizeDelta)
-            self.landing?.heldAnchorY = landing.heldAnchorY.map { $0 + sizeDelta }
+            self.landing?.heldAnchorY = landing.heldAnchorY + sizeDelta
             self.landing?.staleAnchorY = landing.heldAnchorY
             self.landing?.awaitsPrepend = false
         }
@@ -156,11 +150,7 @@ final class ChatNativePrependViewport: NSObject {
         // Stability needs observed frames: after a main-thread stall, rows can still be about to grow.
         if now - landing.lastTick > 0.1 { landing.stableSince = now }
         landing.lastTick = now
-        guard let held = landing.heldAnchorY else {
-            // Size-only landing: the first size change is applied in the same pass; one more frame settles it.
-            if !landing.awaitsPrepend || age > 1 { self.finish() }
-            return
-        }
+        let held = landing.heldAnchorY
         let current = self.contentY(of: landing.anchor)
         if current.map(landing.isStale) ?? true, let marker = self.anchorSource?.anchorMarker,
            marker !== landing.anchor, landing.rowID != nil,

@@ -112,4 +112,53 @@ final class ChatNativePrependViewportTests: XCTestCase {
         self.tick()
         XCTAssertEqual(self.landedCount, 0)
     }
+
+    func testMissingAnchorDeclinesNativeLandingWithoutMovingReader() {
+        self.viewport.capture()
+        XCTAssertFalse(self.viewport.pageArrived(anchor: nil) { _ in self.landedCount += 1 })
+        XCTAssertFalse(self.viewport.isPending)
+        // A live reply below can grow before the prepend. Size cannot identify its direction.
+        self.scrollView.contentOffset.y = 350
+        self.scrollView.contentSize.height += 200
+        XCTAssertEqual(self.scrollView.contentOffset.y, 350)
+        self.scrollView.contentSize.height += 1000
+        self.tick()
+        XCTAssertEqual(self.scrollView.contentOffset.y, 350)
+        XCTAssertEqual(self.landedCount, 0)
+    }
+
+    func testDisconnectedAnchorDeclinesNativeLandingWithoutMovingReader() {
+        self.anchor.removeFromSuperview()
+        self.viewport.capture()
+        XCTAssertFalse(self.viewport.pageArrived(anchor: self.anchor))
+        XCTAssertFalse(self.viewport.isPending)
+        self.scrollView.contentOffset.y = 350
+        self.scrollView.contentSize.height += 1000
+        self.tick()
+        XCTAssertEqual(self.scrollView.contentOffset.y, 350)
+    }
+
+    func testConnectedLandingPreservesInterveningScrollAndIgnoresGrowthBelow() {
+        self.land()
+        self.scrollView.contentOffset.y = 350
+        self.scrollView.contentSize.height += 1000
+        XCTAssertEqual(self.scrollView.contentOffset.y, 1350)
+        self.anchor.frame.origin.y = 1400
+        self.tick()
+        self.scrollView.contentOffset.y = 1375
+        self.scrollView.contentSize.height += 200
+        self.scrollView.contentSize.height += 1
+        self.tick()
+        XCTAssertEqual(self.scrollView.contentOffset.y, 1375)
+    }
+
+    func testMissingAnchorPreservesInsetAndOverscroll() {
+        self.scrollView.contentInset.top = 20
+        self.scrollView.contentOffset.y = -40
+        self.viewport.capture()
+        XCTAssertFalse(self.viewport.pageArrived(anchor: nil))
+        self.scrollView.contentSize.height += 1000
+        self.tick()
+        XCTAssertEqual(self.scrollView.contentOffset.y, -40)
+    }
 }

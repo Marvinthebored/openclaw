@@ -1265,6 +1265,8 @@ extension OpenClawChatView {
             {
                 return
             }
+            // No native landing will consume a request deferred during capture.
+            self.deferredPageRequest = false
             nativeViewport?.cancel()
             #endif
             guard loaded,
