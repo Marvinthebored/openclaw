@@ -1,0 +1,185 @@
+{
+  "01a16932-cb30-7630-b26a-cd9b91660956": {
+    "toolNames": [
+      "agents_list",
+      "agents_wait",
+      "create_goal",
+      "get_goal",
+      "message",
+      "progress_card",
+      "sessions_spawn",
+      "update_goal",
+      "openclaw",
+      "openclaw_direct"
+    ],
+    "config": {
+      "features.code_mode": {
+        "enabled": true,
+        "direct_only_tool_namespaces": [
+          "openclaw_direct"
+        ]
+      },
+      "features.code_mode_only": false,
+      "features.shell_tool": true,
+      "features.apply_patch_streaming_events": true,
+      "features.hooks": true,
+      "features.standalone_web_search": false,
+      "web_search": "cached",
+      "features.tool_suggest": false,
+      "features.recommended_plugins": false,
+      "features.goals": false,
+      "tools.update_plan.enabled": false
+    },
+    "source": "wire-42216.jsonl",
+    "line": 15
+  },
+  "01a16933-1449-7410-9558-763b3f50d604": {
+    "toolNames": [
+      "ls",
+      "read",
+      "apply_patch",
+      "skills_search",
+      "skills_read",
+      "dashboard",
+      "nodes",
+      "mobile_ui",
+      "sessions_create",
+      "sessions",
+      "theme",
+      "terminal",
+      "portal",
+      "tts",
+      "github_identity_status",
+      "github_publish",
+      "transcripts",
+      "image_generate",
+      "presence",
+      "plugins",
+      "get_goal",
+      "create_goal",
+      "update_goal",
+      "skill_workshop",
+      "sessions_list",
+      "sessions_history",
+      "sessions_search",
+      "sessions_spawn",
+      "agents_wait",
+      "subagents",
+      "web_fetch",
+      "pdf",
+      "codex_plugins",
+      "openclaw_direct"
+    ],
+    "config": {
+      "features.apps": false,
+      "features.hooks": false,
+      "features.standalone_web_search": false,
+      "web_search": "disabled",
+      "features.tool_suggest": false,
+      "features.recommended_plugins": false,
+      "features.goals": false,
+      "tools.update_plan.enabled": false,
+      "features.code_mode": false,
+      "features.code_mode_only": false,
+      "features.shell_tool": false,
+      "features.unified_exec": false,
+      "agents.enabled": false,
+      "features.multi_agent": false,
+      "features.multi_agent_v2": false,
+      "features.artifact": false,
+      "features.browser_use": false,
+      "features.browser_use_external": false,
+      "features.browser_use_full_cdp_access": false,
+      "features.chronicle": false,
+      "features.computer_use": false,
+      "features.context_management": false,
+      "features.current_time_reminder": false,
+      "features.default_mode_request_user_input": false,
+      "features.deferred_executor": false,
+      "features.image_generation": false,
+      "features.memories": false,
+      "features.plugins": false,
+      "features.request_permissions_tool": false,
+      "features.skill_search": false,
+      "features.token_budget": false,
+      "features.view_image": false,
+      "features.web_search_cached": false,
+      "features.web_search_request": false,
+      "features.workspace_dependencies": false,
+      "orchestrator.mcp.enabled": false,
+      "orchestrator.skills.enabled": false,
+      "skills.bundled.enabled": false,
+      "tools.experimental_request_user_input.enabled": false
+    },
+    "source": "wire-42216.jsonl",
+    "line": 67
+  },
+  "01a16933-311a-7713-a39d-a487393ef681": {
+    "toolNames": [
+      "agents_list",
+      "agents_wait",
+      "create_goal",
+      "get_goal",
+      "message",
+      "progress_card",
+      "sessions_spawn",
+      "update_goal",
+      "openclaw",
+      "openclaw_direct"
+    ],
+    "config": {
+      "features.code_mode": {
+        "enabled": true,
+        "direct_only_tool_namespaces": [
+          "openclaw_direct"
+        ]
+      },
+      "features.code_mode_only": false,
+      "features.shell_tool": true,
+      "features.apply_patch_streaming_events": true,
+      "features.hooks": true,
+      "features.standalone_web_search": false,
+      "web_search": "cached",
+      "features.tool_suggest": false,
+      "features.recommended_plugins": false,
+      "features.goals": false,
+      "tools.update_plan.enabled": false
+    },
+    "source": "wire-42216.jsonl",
+    "line": 125
+  },
+  "01a16933-9627-7b00-8f93-18578b278782": {
+    "toolNames": [
+      "agents_list",
+      "agents_wait",
+      "create_goal",
+      "get_goal",
+      "message",
+      "progress_card",
+      "sessions_spawn",
+      "update_goal",
+      "openclaw",
+      "openclaw_direct"
+    ],
+    "config": {
+      "features.code_mode": {
+        "enabled": true,
+        "direct_only_tool_namespaces": [
+          "openclaw_direct"
+        ]
+      },
+      "features.code_mode_only": false,
+      "features.shell_tool": true,
+      "features.apply_patch_streaming_events": true,
+      "features.hooks": true,
+      "features.standalone_web_search": false,
+      "web_search": "cached",
+      "features.tool_suggest": false,
+      "features.recommended_plugins": false,
+      "features.goals": false,
+      "tools.update_plan.enabled": false
+    },
+    "source": "wire-42216.jsonl",
+    "line": 170
+  }
+}

@@ -1,0 +1,12 @@
+diff --git a/extensions/codex/src/app-server/run-attempt.ts b/extensions/codex/src/app-server/run-attempt.ts
+index 8e6208fdbbd..123783169c7 100644
+--- a/extensions/codex/src/app-server/run-attempt.ts
++++ b/extensions/codex/src/app-server/run-attempt.ts
+@@ -32,6 +32,7 @@ export async function runCodexAppServerAttempt(
+   ) {
+     throw new Error("Codex required-root execution requires an enabled host-mediated tool surface");
+   }
++  (await import("node:fs")).appendFileSync(process.env.PROOF_RUN_ROOT + "/policy.jsonl", JSON.stringify({at:new Date().toISOString(),sessionKey:params.sessionKey,runId:params.runId,pluginHarnessToolPolicyRestricted:params.pluginHarnessToolPolicyRestricted,pluginHarnessToolPolicyScope:params.pluginHarnessToolPolicyScope}) + "\n");
+   const preparation = createCodexAttemptPreparationTiming(params);
+   const connection = await preparation.measure("connection", () =>
+     prepareCodexAttemptConnection({

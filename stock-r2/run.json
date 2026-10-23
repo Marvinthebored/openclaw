@@ -1,0 +1,37 @@
+{
+  "run": "stock-r2",
+  "result": {
+    "label": "stock-r2",
+    "head": "648528a15470451db1d6b89ad35a829630372ec3",
+    "port": 52853,
+    "status": "completed",
+    "gatewayPid": 43577,
+    "clientExitCode": 0,
+    "gatewayExitCode": 0,
+    "portClosed": true
+  },
+  "scenario": {
+    "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+    "phrase": "PONG-31F9FDA574D7"
+  },
+  "checks": {
+    "sequence": "A,A,B,C,C",
+    "recallAnswerCorrect": true,
+    "turn4InputContainsPhrase": true,
+    "turn4HasQuotedContext": true,
+    "turn5InputContainsPhrase": false,
+    "completionRestricted": true,
+    "completionScope": "conversation",
+    "ownerThreadRestored": false,
+    "childPersistentPoliciesEqual": true,
+    "childEnvelopeSnapshots": [
+      "snapshot-2",
+      "snapshot-3",
+      "snapshot-4",
+      "snapshot-5"
+    ],
+    "storedOwnerBindingUnchanged": false,
+    "nativeRestrictionsRetained": true,
+    "childHasPersistentExecDenial": true
+  }
+}

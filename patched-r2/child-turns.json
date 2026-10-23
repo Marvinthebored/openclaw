@@ -1,0 +1,26 @@
+[
+  {
+    "turn": "child",
+    "threadId": "01a16937-fdee-7663-bcec-a4efa05a707e",
+    "turnId": "01a16937-fed5-7e33-94da-710b2c8451c0",
+    "inputText": "<<<BEGIN_OPENCLAW_INTERNAL_CONTEXT>>>\n\n[Subagent Context] You are running as a subagent (depth 1/5). Complete the current [Subagent Task]; inherited conversation is background context, not your assignment.\n\n## Session Context\n- Requester session: agent:main:proof:8380e89f-e0e5-4f07-bd63-8d90e573b1fa.\n- Your session: agent:main:subagent:533c7c96-2c6b-4523-bfb0-2ce1094475ea.\n\n[Subagent Task]\n\n<<<END_OPENCLAW_INTERNAL_CONTEXT>>>\n\nReply with the single word PONG-3D68B999DD7C.\n\n<<<BEGIN_OPENCLAW_INTERNAL_CONTEXT>>>\n\nBegin. Execute the assigned task to completion.\n\n<<<END_OPENCLAW_INTERNAL_CONTEXT>>>",
+    "nativeInput": [
+      {
+        "type": "text",
+        "text": "<<<BEGIN_OPENCLAW_INTERNAL_CONTEXT>>>\n\n[Subagent Context] You are running as a subagent (depth 1/5). Complete the current [Subagent Task]; inherited conversation is background context, not your assignment.\n\n## Session Context\n- Requester session: agent:main:proof:8380e89f-e0e5-4f07-bd63-8d90e573b1fa.\n- Your session: agent:main:subagent:533c7c96-2c6b-4523-bfb0-2ce1094475ea.\n\n[Subagent Task]\n\n<<<END_OPENCLAW_INTERNAL_CONTEXT>>>\n\nReply with the single word PONG-3D68B999DD7C.\n\n<<<BEGIN_OPENCLAW_INTERNAL_CONTEXT>>>\n\nBegin. Execute the assigned task to completion.\n\n<<<END_OPENCLAW_INTERNAL_CONTEXT>>>",
+        "text_elements": []
+      }
+    ],
+    "source": "wire-46879.jsonl",
+    "sourceLine": 70,
+    "requestAt": 1792766639.8286002,
+    "answer": "PONG-3D68B999DD7C",
+    "policy": {
+      "at": "2026-10-23T14:43:59.362Z",
+      "sessionKey": "agent:main:subagent:533c7c96-2c6b-4523-bfb0-2ce1094475ea",
+      "runId": "97c3083b-945c-4807-91d1-4af2f503c960",
+      "pluginHarnessToolPolicyRestricted": true,
+      "pluginHarnessToolPolicyScope": "conversation"
+    }
+  }
+]

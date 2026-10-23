@@ -1,0 +1,18 @@
+[
+  {
+    "snapshot": "snapshot-2",
+    "source": "snapshot-2/openclaw-agent.sqlite",
+    "sessionKey": "agent:main:subagent:e49f2a42-84d5-419f-a9e0-6e63bf38aa36",
+    "sessionId": "deeedda3-1ed5-43c5-83d2-16a84e789d9e",
+    "inheritedToolPolicyVersion": 1,
+    "spawnedBy": "agent:main:proof:8a6fdda6-95d0-457d-ae10-4a38fe3d0eba"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "source": "snapshot-3/openclaw-agent.sqlite",
+    "sessionKey": "agent:main:subagent:e49f2a42-84d5-419f-a9e0-6e63bf38aa36",
+    "sessionId": "deeedda3-1ed5-43c5-83d2-16a84e789d9e",
+    "inheritedToolPolicyVersion": 1,
+    "spawnedBy": "agent:main:proof:8a6fdda6-95d0-457d-ae10-4a38fe3d0eba"
+  }
+]

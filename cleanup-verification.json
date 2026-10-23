@@ -1,0 +1,67 @@
+{
+  "runs": [
+    {
+      "run": "patched-r3",
+      "port": 53647,
+      "portClosed": true,
+      "allRecordedPidsAbsent": true,
+      "result": "completed"
+    },
+    {
+      "run": "patched-r2",
+      "port": 53085,
+      "portClosed": true,
+      "allRecordedPidsAbsent": true,
+      "result": "completed"
+    },
+    {
+      "run": "stock-r1",
+      "port": 51653,
+      "portClosed": true,
+      "allRecordedPidsAbsent": true,
+      "result": "failed"
+    },
+    {
+      "run": "stock-r3",
+      "port": 53417,
+      "portClosed": true,
+      "allRecordedPidsAbsent": true,
+      "result": "completed"
+    },
+    {
+      "run": "stock-r2",
+      "port": 52853,
+      "portClosed": true,
+      "allRecordedPidsAbsent": true,
+      "result": "completed"
+    },
+    {
+      "run": "patched-r1",
+      "port": 52503,
+      "portClosed": true,
+      "allRecordedPidsAbsent": true,
+      "result": "completed"
+    },
+    {
+      "run": "stock-r1b",
+      "port": 52031,
+      "portClosed": true,
+      "allRecordedPidsAbsent": true,
+      "result": "completed"
+    }
+  ],
+  "worktrees": [
+    {
+      "variant": "stock",
+      "head": "648528a15470451db1d6b89ad35a829630372ec3",
+      "trackedAndUntrackedStatus": "",
+      "observationRemoved": true
+    },
+    {
+      "variant": "patched",
+      "head": "b5803a09ccaad014d0a9c693f628e037d0be102c",
+      "trackedAndUntrackedStatus": "",
+      "observationRemoved": true
+    }
+  ]
+}

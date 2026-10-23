@@ -1,0 +1,46 @@
+[
+  {
+    "snapshot": "snapshot-2",
+    "source": "snapshot-2/openclaw-agent.sqlite",
+    "sessionKey": "agent:main:subagent:5d33fd1f-2f77-4819-bd2d-cffb19654a3e",
+    "sessionId": "3f25c540-f123-4620-989c-2c45efae447a",
+    "inheritedToolPolicyVersion": 1,
+    "inheritedToolDeny": [
+      "exec"
+    ],
+    "spawnedBy": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "source": "snapshot-3/openclaw-agent.sqlite",
+    "sessionKey": "agent:main:subagent:5d33fd1f-2f77-4819-bd2d-cffb19654a3e",
+    "sessionId": "3f25c540-f123-4620-989c-2c45efae447a",
+    "inheritedToolPolicyVersion": 1,
+    "inheritedToolDeny": [
+      "exec"
+    ],
+    "spawnedBy": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d"
+  },
+  {
+    "snapshot": "snapshot-4",
+    "source": "snapshot-4/openclaw-agent.sqlite",
+    "sessionKey": "agent:main:subagent:5d33fd1f-2f77-4819-bd2d-cffb19654a3e",
+    "sessionId": "3f25c540-f123-4620-989c-2c45efae447a",
+    "inheritedToolPolicyVersion": 1,
+    "inheritedToolDeny": [
+      "exec"
+    ],
+    "spawnedBy": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d"
+  },
+  {
+    "snapshot": "snapshot-5",
+    "source": "snapshot-5/openclaw-agent.sqlite",
+    "sessionKey": "agent:main:subagent:5d33fd1f-2f77-4819-bd2d-cffb19654a3e",
+    "sessionId": "3f25c540-f123-4620-989c-2c45efae447a",
+    "inheritedToolPolicyVersion": 1,
+    "inheritedToolDeny": [
+      "exec"
+    ],
+    "spawnedBy": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d"
+  }
+]

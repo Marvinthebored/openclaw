@@ -1,0 +1,10 @@
+$PROOF_ROOT/client.mjs:6
+await new Promise((resolve,reject)=>{client.opts.onHelloOk=resolve;client.opts.onConnectError=reject;client.start();setTimeout(()=>reject(new Error('connect timeout')),30000).unref()});
+                                                          ^
+
+TypeError: Cannot set properties of undefined (setting 'onHelloOk')
+    at <anonymous> ($PROOF_ROOT/client.mjs:6:59)
+    at new Promise (<anonymous>)
+    at <anonymous> ($PROOF_ROOT/client.mjs:6:7)
+
+Node.js v26.12.1

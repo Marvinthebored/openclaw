@@ -1,0 +1,176 @@
+[
+  {
+    "turn": 1,
+    "threadId": "01a16935-cb08-71f2-bddb-d1a853420071",
+    "turnId": "01a16935-cbe7-77b1-bce1-b5f30ad179c2",
+    "source": "wire-44947.jsonl",
+    "sourceLine": 18,
+    "requestAt": 1792766495.7174778,
+    "thread": "A",
+    "answer": "READY",
+    "tokenEventCount": 1,
+    "tokenEvents": [
+      {
+        "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-41-35-01a16935-cb08-71f2-bddb-d1a853420071.jsonl",
+        "sourceLine": 16
+      }
+    ],
+    "lastRequestTokens": {
+      "input_tokens": 28295,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 28292,
+      "output_tokens": 5,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 28300
+    },
+    "input_tokens": 28295,
+    "cached_input_tokens": 0,
+    "policy": {
+      "at": "2026-10-23T14:41:30.094Z",
+      "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+      "runId": "057455b3-a1b5-44fc-a254-58fb2af2a14d",
+      "pluginHarnessToolPolicyRestricted": true,
+      "pluginHarnessToolPolicyScope": "conversation"
+    }
+  },
+  {
+    "turn": 2,
+    "threadId": "01a16935-cb08-71f2-bddb-d1a853420071",
+    "turnId": "01a16935-dec6-7b93-a66e-11fe86b9044a",
+    "source": "wire-44947.jsonl",
+    "sourceLine": 46,
+    "requestAt": 1792766500.548766,
+    "thread": "A",
+    "answer": "SPAWNED",
+    "tokenEventCount": 2,
+    "tokenEvents": [
+      {
+        "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-41-35-01a16935-cb08-71f2-bddb-d1a853420071.jsonl",
+        "sourceLine": 27
+      },
+      {
+        "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-41-35-01a16935-cb08-71f2-bddb-d1a853420071.jsonl",
+        "sourceLine": 31
+      }
+    ],
+    "lastRequestTokens": {
+      "input_tokens": 28629,
+      "cached_input_tokens": 28373,
+      "cache_write_input_tokens": 253,
+      "output_tokens": 8,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 28637
+    },
+    "input_tokens": 57005,
+    "cached_input_tokens": 56665,
+    "policy": {
+      "at": "2026-10-23T14:41:40.235Z",
+      "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+      "runId": "64bbdca9-7c79-46ac-bc92-2602566cb1fc",
+      "pluginHarnessToolPolicyRestricted": true,
+      "pluginHarnessToolPolicyScope": "conversation"
+    }
+  },
+  {
+    "turn": 3,
+    "threadId": "01a16935-fc6c-73b1-93e9-16db978cc80e",
+    "turnId": "01a16935-fd4d-71c1-a605-5f140a645720",
+    "source": "wire-44947.jsonl",
+    "sourceLine": 128,
+    "requestAt": 1792766508.3636181,
+    "thread": "B",
+    "answer": "PONG-31F9FDA574D7",
+    "tokenEventCount": 1,
+    "tokenEvents": [
+      {
+        "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-41-48-01a16935-fc6c-73b1-93e9-16db978cc80e.jsonl",
+        "sourceLine": 15
+      }
+    ],
+    "lastRequestTokens": {
+      "input_tokens": 28403,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 28400,
+      "output_tokens": 14,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 28417
+    },
+    "input_tokens": 28403,
+    "cached_input_tokens": 0,
+    "policy": {
+      "at": "2026-10-23T14:41:47.936Z",
+      "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+      "runId": "announce:v1:agent:main:subagent:5d33fd1f-2f77-4819-bd2d-cffb19654a3e:aca0cf24-1ab3-455d-b7a4-b6b780eca9c9",
+      "pluginHarnessToolPolicyRestricted": true,
+      "pluginHarnessToolPolicyScope": "conversation"
+    }
+  },
+  {
+    "turn": 4,
+    "threadId": "01a16936-0f8d-7563-9b1a-a6da2a730caa",
+    "turnId": "01a16936-1085-7dc2-aa57-ec05f4036147",
+    "source": "wire-44947.jsonl",
+    "sourceLine": 171,
+    "requestAt": 1792766513.2737448,
+    "thread": "C",
+    "answer": "PONG-31F9FDA574D7",
+    "tokenEventCount": 1,
+    "tokenEvents": [
+      {
+        "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-41-53-01a16936-0f8d-7563-9b1a-a6da2a730caa.jsonl",
+        "sourceLine": 16
+      }
+    ],
+    "lastRequestTokens": {
+      "input_tokens": 28462,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 28459,
+      "output_tokens": 14,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 28476
+    },
+    "input_tokens": 28462,
+    "cached_input_tokens": 0,
+    "policy": {
+      "at": "2026-10-23T14:41:52.836Z",
+      "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+      "runId": "5fc8d82d-2b17-4622-8ded-09477dc41825",
+      "pluginHarnessToolPolicyRestricted": true,
+      "pluginHarnessToolPolicyScope": "conversation"
+    }
+  },
+  {
+    "turn": 5,
+    "threadId": "01a16936-0f8d-7563-9b1a-a6da2a730caa",
+    "turnId": "01a16936-1e36-70e2-b92f-dce229eb993c",
+    "source": "wire-44947.jsonl",
+    "sourceLine": 208,
+    "requestAt": 1792766516.788464,
+    "thread": "C",
+    "answer": "DONE",
+    "tokenEventCount": 1,
+    "tokenEvents": [
+      {
+        "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-41-53-01a16936-0f8d-7563-9b1a-a6da2a730caa.jsonl",
+        "sourceLine": 26
+      }
+    ],
+    "lastRequestTokens": {
+      "input_tokens": 28508,
+      "cached_input_tokens": 28459,
+      "cache_write_input_tokens": 46,
+      "output_tokens": 5,
+      "reasoning_output_tokens": 0,
+      "total_tokens": 28513
+    },
+    "input_tokens": 28508,
+    "cached_input_tokens": 28459,
+    "policy": {
+      "at": "2026-10-23T14:41:56.501Z",
+      "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+      "runId": "57a80606-84f1-4afe-8a88-f6fc3896e894",
+      "pluginHarnessToolPolicyRestricted": true,
+      "pluginHarnessToolPolicyScope": "conversation"
+    }
+  }
+]

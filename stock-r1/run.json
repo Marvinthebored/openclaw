@@ -1,0 +1,11 @@
+{
+  "label": "stock-r1",
+  "head": "648528a15470451db1d6b89ad35a829630372ec3",
+  "port": 51653,
+  "status": "failed",
+  "gatewayPid": 34717,
+  "clientExitCode": 1,
+  "error": "client exited 1",
+  "gatewayExitCode": 0,
+  "portClosed": true
+}

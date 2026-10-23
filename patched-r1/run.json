@@ -1,0 +1,35 @@
+{
+  "run": "patched-r1",
+  "result": {
+    "label": "patched-r1",
+    "head": "b5803a09ccaad014d0a9c693f628e037d0be102c",
+    "port": 52503,
+    "status": "completed",
+    "gatewayPid": 40744,
+    "clientExitCode": 0,
+    "gatewayExitCode": 0,
+    "portClosed": true
+  },
+  "scenario": {
+    "sessionKey": "agent:main:proof:8a6fdda6-95d0-457d-ae10-4a38fe3d0eba",
+    "phrase": "PONG-3651270A9E15"
+  },
+  "checks": {
+    "sequence": "A,A,B,C,C",
+    "recallAnswerCorrect": true,
+    "turn4InputContainsPhrase": true,
+    "turn4HasQuotedContext": true,
+    "turn5InputContainsPhrase": false,
+    "completionRestricted": false,
+    "completionScope": "conversation",
+    "ownerThreadRestored": false,
+    "childPersistentPoliciesEqual": true,
+    "childEnvelopeSnapshots": [
+      "snapshot-2",
+      "snapshot-3"
+    ],
+    "storedOwnerBindingUnchanged": false,
+    "nativeRestrictionsRetained": false,
+    "childHasPersistentExecDenial": false
+  }
+}

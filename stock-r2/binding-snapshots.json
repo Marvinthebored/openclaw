@@ -1,0 +1,110 @@
+[
+  {
+    "snapshot": "snapshot-1",
+    "source": "snapshot-1/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:-VkL34rcSYK3QuJuF9Zbs30BTUsMKZi33PHXPQnNeCo",
+    "state": "active",
+    "threadId": "01a16935-cb08-71f2-bddb-d1a853420071",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:39.868Z",
+    "dynamicToolsFingerprint": "sha256:f87f3f58f185951a5f968ef538d8decab1e19f49dba77498eaebbdd90b519487"
+  },
+  {
+    "snapshot": "snapshot-2",
+    "source": "snapshot-2/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:orhdJ97wpHDTERzeVoL_-8Rcw6RnIW4Hc4zW7kThytE",
+    "state": "active",
+    "threadId": "01a16935-ea4b-7612-90de-59f37b9aafe6",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": null,
+    "dynamicToolsFingerprint": "sha256:8810bc88e85ef6811fc1baef89f4140ac311ffeb14dfc86dfba8f4d84a72e3ee"
+  },
+  {
+    "snapshot": "snapshot-2",
+    "source": "snapshot-2/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:-VkL34rcSYK3QuJuF9Zbs30BTUsMKZi33PHXPQnNeCo",
+    "state": "active",
+    "threadId": "01a16935-cb08-71f2-bddb-d1a853420071",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:45.149Z",
+    "dynamicToolsFingerprint": "sha256:f87f3f58f185951a5f968ef538d8decab1e19f49dba77498eaebbdd90b519487"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "source": "snapshot-3/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:orhdJ97wpHDTERzeVoL_-8Rcw6RnIW4Hc4zW7kThytE",
+    "state": "active",
+    "threadId": "01a16935-ea4b-7612-90de-59f37b9aafe6",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:47.606Z",
+    "dynamicToolsFingerprint": "sha256:8810bc88e85ef6811fc1baef89f4140ac311ffeb14dfc86dfba8f4d84a72e3ee"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "source": "snapshot-3/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:-VkL34rcSYK3QuJuF9Zbs30BTUsMKZi33PHXPQnNeCo",
+    "state": "active",
+    "threadId": "01a16935-fc6c-73b1-93e9-16db978cc80e",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:52.245Z",
+    "dynamicToolsFingerprint": "sha256:7a5b9bf61dd9a7415a5c3018b5aa668569fe56822b5527741cdee77ca0f64fcd"
+  },
+  {
+    "snapshot": "snapshot-4",
+    "source": "snapshot-4/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:orhdJ97wpHDTERzeVoL_-8Rcw6RnIW4Hc4zW7kThytE",
+    "state": "active",
+    "threadId": "01a16935-ea4b-7612-90de-59f37b9aafe6",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:47.606Z",
+    "dynamicToolsFingerprint": "sha256:8810bc88e85ef6811fc1baef89f4140ac311ffeb14dfc86dfba8f4d84a72e3ee"
+  },
+  {
+    "snapshot": "snapshot-4",
+    "source": "snapshot-4/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:-VkL34rcSYK3QuJuF9Zbs30BTUsMKZi33PHXPQnNeCo",
+    "state": "active",
+    "threadId": "01a16936-0f8d-7563-9b1a-a6da2a730caa",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:56.309Z",
+    "dynamicToolsFingerprint": "sha256:f87f3f58f185951a5f968ef538d8decab1e19f49dba77498eaebbdd90b519487"
+  },
+  {
+    "snapshot": "snapshot-5",
+    "source": "snapshot-5/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:orhdJ97wpHDTERzeVoL_-8Rcw6RnIW4Hc4zW7kThytE",
+    "state": "active",
+    "threadId": "01a16935-ea4b-7612-90de-59f37b9aafe6",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:47.606Z",
+    "dynamicToolsFingerprint": "sha256:8810bc88e85ef6811fc1baef89f4140ac311ffeb14dfc86dfba8f4d84a72e3ee"
+  },
+  {
+    "snapshot": "snapshot-5",
+    "source": "snapshot-5/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:-VkL34rcSYK3QuJuF9Zbs30BTUsMKZi33PHXPQnNeCo",
+    "state": "active",
+    "threadId": "01a16936-0f8d-7563-9b1a-a6da2a730caa",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:41:58.757Z",
+    "dynamicToolsFingerprint": "sha256:f87f3f58f185951a5f968ef538d8decab1e19f49dba77498eaebbdd90b519487"
+  }
+]

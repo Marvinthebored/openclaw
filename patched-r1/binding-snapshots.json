@@ -1,0 +1,86 @@
+[
+  {
+    "snapshot": "snapshot-1",
+    "source": "snapshot-1/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "state": "active",
+    "threadId": "01a16932-cb30-7630-b26a-cd9b91660956",
+    "nativeToolPolicyRestricted": false,
+    "historyCoveredThrough": "2026-10-23T14:38:34.249Z",
+    "dynamicToolsFingerprint": "sha256:0743e140e2287a6c2f6b30c5a57a92b61d94a504d99ee24aeb21412381066fb2"
+  },
+  {
+    "snapshot": "snapshot-2",
+    "source": "snapshot-2/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:1ZpAKFeRu-pgNo_Y3j6uMZNHlBbhFtMVvuOonBzLJnI",
+    "state": "active",
+    "threadId": "01a16933-1449-7410-9558-763b3f50d604",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": null,
+    "dynamicToolsFingerprint": "sha256:8810bc88e85ef6811fc1baef89f4140ac311ffeb14dfc86dfba8f4d84a72e3ee"
+  },
+  {
+    "snapshot": "snapshot-2",
+    "source": "snapshot-2/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "state": "active",
+    "threadId": "01a16932-cb30-7630-b26a-cd9b91660956",
+    "nativeToolPolicyRestricted": false,
+    "historyCoveredThrough": "2026-10-23T14:38:38.629Z",
+    "dynamicToolsFingerprint": "sha256:0743e140e2287a6c2f6b30c5a57a92b61d94a504d99ee24aeb21412381066fb2"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "source": "snapshot-3/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "state": "active",
+    "threadId": "01a16933-311a-7713-a39d-a487393ef681",
+    "nativeToolPolicyRestricted": false,
+    "historyCoveredThrough": "2026-10-23T14:39:06.507Z",
+    "dynamicToolsFingerprint": "sha256:ed88c3155e000a6c1cefa659d31a418627910d2ce4f975a6189b5dd4e586bfba"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "source": "snapshot-3/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:1ZpAKFeRu-pgNo_Y3j6uMZNHlBbhFtMVvuOonBzLJnI",
+    "state": "active",
+    "threadId": "01a16933-1449-7410-9558-763b3f50d604",
+    "nativeToolPolicyRestricted": true,
+    "historyCoveredThrough": "2026-10-23T14:38:44.304Z",
+    "dynamicToolsFingerprint": "sha256:8810bc88e85ef6811fc1baef89f4140ac311ffeb14dfc86dfba8f4d84a72e3ee"
+  },
+  {
+    "snapshot": "snapshot-4",
+    "source": "snapshot-4/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "state": "active",
+    "threadId": "01a16933-9627-7b00-8f93-18578b278782",
+    "nativeToolPolicyRestricted": false,
+    "historyCoveredThrough": "2026-10-23T14:39:36.988Z",
+    "dynamicToolsFingerprint": "sha256:0743e140e2287a6c2f6b30c5a57a92b61d94a504d99ee24aeb21412381066fb2"
+  },
+  {
+    "snapshot": "snapshot-5",
+    "source": "snapshot-5/openclaw.sqlite",
+    "table": "plugin_state_entries",
+    "namespace": "app-server-thread-bindings",
+    "entry_key": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "state": "active",
+    "threadId": "01a16933-9627-7b00-8f93-18578b278782",
+    "nativeToolPolicyRestricted": false,
+    "historyCoveredThrough": "2026-10-23T14:39:40.089Z",
+    "dynamicToolsFingerprint": "sha256:0743e140e2287a6c2f6b30c5a57a92b61d94a504d99ee24aeb21412381066fb2"
+  }
+]

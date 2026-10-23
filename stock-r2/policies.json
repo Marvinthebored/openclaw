@@ -1,0 +1,44 @@
+[
+  {
+    "at": "2026-10-23T14:41:30.094Z",
+    "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+    "runId": "057455b3-a1b5-44fc-a254-58fb2af2a14d",
+    "pluginHarnessToolPolicyRestricted": true,
+    "pluginHarnessToolPolicyScope": "conversation"
+  },
+  {
+    "at": "2026-10-23T14:41:40.235Z",
+    "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+    "runId": "64bbdca9-7c79-46ac-bc92-2602566cb1fc",
+    "pluginHarnessToolPolicyRestricted": true,
+    "pluginHarnessToolPolicyScope": "conversation"
+  },
+  {
+    "at": "2026-10-23T14:41:43.276Z",
+    "sessionKey": "agent:main:subagent:5d33fd1f-2f77-4819-bd2d-cffb19654a3e",
+    "runId": "aca0cf24-1ab3-455d-b7a4-b6b780eca9c9",
+    "pluginHarnessToolPolicyRestricted": true,
+    "pluginHarnessToolPolicyScope": "conversation"
+  },
+  {
+    "at": "2026-10-23T14:41:47.936Z",
+    "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+    "runId": "announce:v1:agent:main:subagent:5d33fd1f-2f77-4819-bd2d-cffb19654a3e:aca0cf24-1ab3-455d-b7a4-b6b780eca9c9",
+    "pluginHarnessToolPolicyRestricted": true,
+    "pluginHarnessToolPolicyScope": "conversation"
+  },
+  {
+    "at": "2026-10-23T14:41:52.836Z",
+    "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+    "runId": "5fc8d82d-2b17-4622-8ded-09477dc41825",
+    "pluginHarnessToolPolicyRestricted": true,
+    "pluginHarnessToolPolicyScope": "conversation"
+  },
+  {
+    "at": "2026-10-23T14:41:56.501Z",
+    "sessionKey": "agent:main:proof:b8940e45-b6e2-47db-82db-d26ac561887d",
+    "runId": "57a80606-84f1-4afe-8a88-f6fc3896e894",
+    "pluginHarnessToolPolicyRestricted": true,
+    "pluginHarnessToolPolicyScope": "conversation"
+  }
+]

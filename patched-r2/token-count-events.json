@@ -1,0 +1,233 @@
+[
+  {
+    "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-43-47-01a16937-cffb-76f0-8ea1-b8f34b2c479d.jsonl",
+    "sourceLine": 16,
+    "turnId": "01a16937-d0de-7203-9962-751c51c2a249",
+    "event": {
+      "timestamp": "2026-10-23T14:43:53.824Z",
+      "ordinal": 15,
+      "type": "event_msg",
+      "payload": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 28339,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 28336,
+            "output_tokens": 5,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28344
+          },
+          "last_token_usage": {
+            "input_tokens": 28339,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 28336,
+            "output_tokens": 5,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28344
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": null
+      }
+    }
+  },
+  {
+    "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-43-47-01a16937-cffb-76f0-8ea1-b8f34b2c479d.jsonl",
+    "sourceLine": 27,
+    "turnId": "01a16937-eb30-74b2-b2cc-bea1719c55de",
+    "event": {
+      "timestamp": "2026-10-23T14:43:59.289Z",
+      "ordinal": 26,
+      "type": "event_msg",
+      "payload": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 56760,
+            "cached_input_tokens": 28336,
+            "cache_write_input_tokens": 28418,
+            "output_tokens": 45,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 56805
+          },
+          "last_token_usage": {
+            "input_tokens": 28421,
+            "cached_input_tokens": 28336,
+            "cache_write_input_tokens": 82,
+            "output_tokens": 40,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28461
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": null
+      }
+    }
+  },
+  {
+    "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-43-47-01a16937-cffb-76f0-8ea1-b8f34b2c479d.jsonl",
+    "sourceLine": 31,
+    "turnId": "01a16937-eb30-74b2-b2cc-bea1719c55de",
+    "event": {
+      "timestamp": "2026-10-23T14:44:02.882Z",
+      "ordinal": 30,
+      "type": "event_msg",
+      "payload": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 85433,
+            "cached_input_tokens": 56754,
+            "cache_write_input_tokens": 28670,
+            "output_tokens": 53,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 85486
+          },
+          "last_token_usage": {
+            "input_tokens": 28673,
+            "cached_input_tokens": 28418,
+            "cache_write_input_tokens": 252,
+            "output_tokens": 8,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28681
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": null
+      }
+    }
+  },
+  {
+    "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-43-47-01a16937-cffb-76f0-8ea1-b8f34b2c479d.jsonl",
+    "sourceLine": 41,
+    "turnId": "01a16938-21f4-7312-947c-b13092f0cb2f",
+    "event": {
+      "timestamp": "2026-10-23T14:44:14.382Z",
+      "ordinal": 40,
+      "type": "event_msg",
+      "payload": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 114217,
+            "cached_input_tokens": 85424,
+            "cache_write_input_tokens": 28781,
+            "output_tokens": 68,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 114285
+          },
+          "last_token_usage": {
+            "input_tokens": 28784,
+            "cached_input_tokens": 28670,
+            "cache_write_input_tokens": 111,
+            "output_tokens": 15,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28799
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": null
+      }
+    }
+  },
+  {
+    "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-43-47-01a16937-cffb-76f0-8ea1-b8f34b2c479d.jsonl",
+    "sourceLine": 51,
+    "turnId": "01a16938-3a7e-7040-8a75-3300dae7df49",
+    "event": {
+      "timestamp": "2026-10-23T14:44:20.780Z",
+      "ordinal": 50,
+      "type": "event_msg",
+      "payload": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 143048,
+            "cached_input_tokens": 114205,
+            "cache_write_input_tokens": 28828,
+            "output_tokens": 73,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 143121
+          },
+          "last_token_usage": {
+            "input_tokens": 28831,
+            "cached_input_tokens": 28781,
+            "cache_write_input_tokens": 47,
+            "output_tokens": 5,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28836
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": null
+      }
+    }
+  },
+  {
+    "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-44-03-01a16938-0de1-78c2-a654-85167659cb9d.jsonl",
+    "sourceLine": 15,
+    "turnId": "01a16938-0e5c-7780-a678-be84eccb81da",
+    "event": {
+      "timestamp": "2026-10-23T14:44:07.722Z",
+      "ordinal": 14,
+      "type": "event_msg",
+      "payload": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 28449,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 28446,
+            "output_tokens": 15,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28464
+          },
+          "last_token_usage": {
+            "input_tokens": 28449,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 28446,
+            "output_tokens": 15,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 28464
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": null
+      }
+    }
+  },
+  {
+    "source": "state/agents/main/agent/codex-home/sessions/2026/10/23/rollout-2026-10-23T22-43-59-01a16937-fdee-7663-bcec-a4efa05a707e.jsonl",
+    "sourceLine": 15,
+    "turnId": "01a16937-fed5-7e33-94da-710b2c8451c0",
+    "event": {
+      "timestamp": "2026-10-23T14:44:02.857Z",
+      "ordinal": 14,
+      "type": "event_msg",
+      "payload": {
+        "type": "token_count",
+        "info": {
+          "total_token_usage": {
+            "input_tokens": 22376,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 22373,
+            "output_tokens": 15,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 22391
+          },
+          "last_token_usage": {
+            "input_tokens": 22376,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 22373,
+            "output_tokens": 15,
+            "reasoning_output_tokens": 0,
+            "total_tokens": 22391
+          },
+          "model_context_window": 258400
+        },
+        "rate_limits": null
+      }
+    }
+  }
+]

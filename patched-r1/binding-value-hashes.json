@@ -1,0 +1,58 @@
+[
+  {
+    "snapshot": "snapshot-1",
+    "entryKey": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "threadId": "01a16932-cb30-7630-b26a-cd9b91660956",
+    "nativeToolPolicyRestricted": false,
+    "storedRecordSha256": "1c0c1cdbeb9b03237c08785c0c26ee58e7cdae934e2136ece2d831069477fea0",
+    "bindingSha256": "4bf85573d8e87a2ded66975e1aa200a8bfb2e435ec342d2ebe686ee6f33d3c33"
+  },
+  {
+    "snapshot": "snapshot-2",
+    "entryKey": "session-key:main:1ZpAKFeRu-pgNo_Y3j6uMZNHlBbhFtMVvuOonBzLJnI",
+    "threadId": "01a16933-1449-7410-9558-763b3f50d604",
+    "nativeToolPolicyRestricted": true,
+    "storedRecordSha256": "9b8cb764b67c5eadbf9583a0a755130b40729bf222d648e270f68b743bf40e5d",
+    "bindingSha256": "bac5d6cd46022f30b5c01c7c4d29f3b4dd4b97c655a75a8e3b1fdd39e451d2ff"
+  },
+  {
+    "snapshot": "snapshot-2",
+    "entryKey": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "threadId": "01a16932-cb30-7630-b26a-cd9b91660956",
+    "nativeToolPolicyRestricted": false,
+    "storedRecordSha256": "3430aaa77a093e51939b1a7ce143694181751623920e5c2dee62b9f4aa545f24",
+    "bindingSha256": "174de451f840e19ecdef53211174ccca085e5bcfa238ef144dd53c36b5b62a3f"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "entryKey": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "threadId": "01a16933-311a-7713-a39d-a487393ef681",
+    "nativeToolPolicyRestricted": false,
+    "storedRecordSha256": "0bffa9e3915fddbb20b596a9d01b2b5653d36987410286ca0b9fa08be5b5cf8b",
+    "bindingSha256": "c8d37752923ad1b3801a0f091090eb3d46d0b36928a6026f9b24d0f7304d0b68"
+  },
+  {
+    "snapshot": "snapshot-3",
+    "entryKey": "session-key:main:1ZpAKFeRu-pgNo_Y3j6uMZNHlBbhFtMVvuOonBzLJnI",
+    "threadId": "01a16933-1449-7410-9558-763b3f50d604",
+    "nativeToolPolicyRestricted": true,
+    "storedRecordSha256": "0a2bf600cb70bbe085134ab151b927d527651077e8fd6befd0ca5cdf95e0772a",
+    "bindingSha256": "5273b295fb8884ac9137dee7cfbb8ac5d085fb8ba9bb028eb0dc7b6be8713770"
+  },
+  {
+    "snapshot": "snapshot-4",
+    "entryKey": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "threadId": "01a16933-9627-7b00-8f93-18578b278782",
+    "nativeToolPolicyRestricted": false,
+    "storedRecordSha256": "8ea7a0e43725c5a98e7b1f445f3efde70d2f0f5875db3e0ce085fbd7504c5db6",
+    "bindingSha256": "eca5117b25d57b5999ac935875dff1ff13d88cd643b0ee16788a42bf07791eed"
+  },
+  {
+    "snapshot": "snapshot-5",
+    "entryKey": "session-key:main:t3LqDYKFDX1Us3i1uMdVj4emX_Bbxwm1GnFZYH8J_sc",
+    "threadId": "01a16933-9627-7b00-8f93-18578b278782",
+    "nativeToolPolicyRestricted": false,
+    "storedRecordSha256": "e48faca174f0448528f7ad459cf4f52f2d499bca88f96bdec9d18e393f1d87f2",
+    "bindingSha256": "bdcdf86679af877d3c87b3c9db07c057e7c543cf245a5f47f32127a874a8477f"
+  }
+]
