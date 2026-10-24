@@ -1,0 +1,311 @@
+{
+  "passed": true,
+  "job": "pr171950-native-20261024-r3",
+  "gatewayRuntimeHead": "06803a17e4a0cd1d00090051abbcb275d4c0bc4c",
+  "gatewayRuntimeDistSHA256": "eedd615ce58dfe94abb5560384d92038dd37e1816c44c99e1c46ed5f01e5a760",
+  "preflight": true,
+  "comparison": {
+    "before": {
+      "exchanges": 13,
+      "responseFrameBytes": 633120,
+      "payloadJSONBytes": 632093,
+      "requestFrameBytes": 2041,
+      "combinedJSONFrameBytes": 635161
+    },
+    "after": {
+      "exchanges": 13,
+      "responseFrameBytes": 131529,
+      "payloadJSONBytes": 130502,
+      "requestFrameBytes": 4664,
+      "combinedJSONFrameBytes": 136193
+    }
+  },
+  "responseReductionPercent": 79.2252653525398,
+  "head": "c752c097fee716989eb7b33c84fd435a6353acd1",
+  "requests": 31,
+  "responses": 31,
+  "responseFrameBytes": 790874,
+  "payloadJSONBytes": 788425,
+  "phases": [
+    {
+      "phase": "before-full",
+      "historyKind": "full",
+      "responseFrameBytes": 45502,
+      "payloadJSONBytes": 45423,
+      "messageCount": 8,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-1",
+      "historyKind": "full",
+      "responseFrameBytes": 46040,
+      "payloadJSONBytes": 45961,
+      "messageCount": 9,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-2",
+      "historyKind": "full",
+      "responseFrameBytes": 46583,
+      "payloadJSONBytes": 46504,
+      "messageCount": 10,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-3",
+      "historyKind": "full",
+      "responseFrameBytes": 47123,
+      "payloadJSONBytes": 47044,
+      "messageCount": 11,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-4",
+      "historyKind": "full",
+      "responseFrameBytes": 47663,
+      "payloadJSONBytes": 47584,
+      "messageCount": 12,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-5",
+      "historyKind": "full",
+      "responseFrameBytes": 48203,
+      "payloadJSONBytes": 48124,
+      "messageCount": 13,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-6",
+      "historyKind": "full",
+      "responseFrameBytes": 48743,
+      "payloadJSONBytes": 48664,
+      "messageCount": 14,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-7",
+      "historyKind": "full",
+      "responseFrameBytes": 49283,
+      "payloadJSONBytes": 49204,
+      "messageCount": 15,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-8",
+      "historyKind": "full",
+      "responseFrameBytes": 49823,
+      "payloadJSONBytes": 49744,
+      "messageCount": 16,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-9",
+      "historyKind": "full",
+      "responseFrameBytes": 50363,
+      "payloadJSONBytes": 50284,
+      "messageCount": 17,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-10",
+      "historyKind": "full",
+      "responseFrameBytes": 50904,
+      "payloadJSONBytes": 50825,
+      "messageCount": 18,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-append-11",
+      "historyKind": "full",
+      "responseFrameBytes": 51445,
+      "payloadJSONBytes": 51366,
+      "messageCount": 19,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "before-unchanged",
+      "historyKind": "full",
+      "responseFrameBytes": 51445,
+      "payloadJSONBytes": 51366,
+      "messageCount": 19,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-full",
+      "historyKind": "full",
+      "responseFrameBytes": 45498,
+      "payloadJSONBytes": 45419,
+      "messageCount": 8,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-1",
+      "historyKind": "delta",
+      "responseFrameBytes": 7612,
+      "payloadJSONBytes": 7533,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-2",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-3",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-4",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-5",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-6",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-7",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-8",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-9",
+      "historyKind": "delta",
+      "responseFrameBytes": 7617,
+      "payloadJSONBytes": 7538,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-10",
+      "historyKind": "delta",
+      "responseFrameBytes": 7618,
+      "payloadJSONBytes": 7539,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-append-11",
+      "historyKind": "delta",
+      "responseFrameBytes": 7618,
+      "payloadJSONBytes": 7539,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "after-unchanged",
+      "historyKind": "delta",
+      "responseFrameBytes": 2247,
+      "payloadJSONBytes": 2168,
+      "messageCount": 0,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "run-start",
+      "historyKind": "delta",
+      "responseFrameBytes": 9020,
+      "payloadJSONBytes": 8941,
+      "messageCount": 1,
+      "hasInFlightRun": true,
+      "hasActiveRun": true
+    },
+    {
+      "phase": "run-gap-recovery",
+      "historyKind": "delta",
+      "responseFrameBytes": 2904,
+      "payloadJSONBytes": 2825,
+      "messageCount": 0,
+      "hasInFlightRun": true,
+      "hasActiveRun": true
+    },
+    {
+      "phase": "run-final",
+      "historyKind": "delta",
+      "responseFrameBytes": 10521,
+      "payloadJSONBytes": 10442,
+      "messageCount": 1,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "reset-recovery",
+      "historyKind": "reset",
+      "responseFrameBytes": 95,
+      "payloadJSONBytes": 16,
+      "messageCount": null,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    },
+    {
+      "phase": "reset-recovery",
+      "historyKind": "full",
+      "responseFrameBytes": 3685,
+      "payloadJSONBytes": 3606,
+      "messageCount": 2,
+      "hasInFlightRun": false,
+      "hasActiveRun": false
+    }
+  ],
+  "productionUnchanged": true
+}

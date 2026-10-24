@@ -1,0 +1,18 @@
+## test.log
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.001) seconds
+◇ Test realGatewayHistory() started.
+REAL_APP_GATEWAY_HISTORY_PASS before=13 after=13 append=11 unchanged activeRun gapRecovery final resetRecovery
+✔ Test realGatewayHistory() passed after 13.000 seconds.
+✔ Test run with 35 tests in 2 suites passed after 13.111 seconds.
+## kit.log
+✔ Test run with 672 tests in 22 suites passed after 12.696 seconds.
+## prepared-identity-red.log
+◇ Test "prepared delta identity survives publication" started.
+✘ Test "prepared delta identity survives publication" recorded an issue at ChatViewModelTests.swift:14588:9: Expectation failed: (model.messages.last?.id → D11734C3-16F8-4CEE-8507-AEF096A20F30) == (message.id → BC66D436-B3E4-4C30-BFB1-18BF8E78B047)
+✘ Test "prepared delta identity survives publication" failed after 0.009 seconds with 1 issue.
+✘ Test run with 1 test in 1 suite failed after 0.010 seconds with 1 issue.
+## prepared-identity-green.log
+◇ Test "prepared delta identity survives publication" started.
+✔ Test "prepared delta identity survives publication" passed after 0.010 seconds.
+✔ Test run with 1 test in 1 suite passed after 0.010 seconds.

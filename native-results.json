@@ -1,0 +1,44 @@
+{
+  "scope": "PR171950 native real Gateway history",
+  "head": "c752c097fee716989eb7b33c84fd435a6353acd1",
+  "steps": {
+    "unpack": 0,
+    "clone-spm-cache": 0,
+    "mermaid-inputs": 0,
+    "swift-filelist": 0,
+    "version-config": 0,
+    "xcodegen": 0,
+    "boot": 0,
+    "bootstatus": 0,
+    "build": 0,
+    "test": 0,
+    "kit": 0,
+    "prepared-identity-red": 1,
+    "prepared-identity-green": 0
+  },
+  "hashes": {
+    "apps/ios/Sources/Chat/IOSGatewayChatTransport.swift": "eafedd2febba9dbb3faf42a9b2044b2e11c17489a1802245bcd469eff34d7908",
+    "apps/ios/Tests/IOSGatewayChatTransportTests.swift": "3530e015197d91f94aec3bcfa8c885867e0c5494e3da6ea5ce02572466689305",
+    "apps/macos/Sources/OpenClaw/GatewayConnection.swift": "bbb03a6f30622139467139ca9ef35ee88301abb4e5921dba609fa69f8b526fc8",
+    "apps/macos/Sources/OpenClaw/WebChatSwiftUI.swift": "fdd75cb4810a119459901b7d10643818d6aa5036031f3e2440f8ff81459d94de",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatGatewayRequest.swift": "e839673fe898a049a31fda789a855269a541b6b1d790c09b1308884d87889b4c",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatModels.swift": "63163f4f3825dbbb0b2fe341da283fb9370dadb0d0749e2fbd4207c2d6203c5b",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatTransport.swift": "d79492c9323b57e5c74db8bd32a59af5487c97f26fbab529deaa616b365bc75f",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+HistoryReconciliation.swift": "1011f4c4c8f7c4d5d88fe3927fb19950a0dece440033535ca1e6a657ac133956",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+HistoryRequests.swift": "d485f1c4184845f742d958ce5226bd0d3e5ff52d243801610a79d32ed23a7104",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+SessionActions.swift": "44d68366ce98069983125ffdb633a4a37a957265d6afbb3d758573ef12bf1104",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel+TransportEvents.swift": "d7a88b2c35723759179afc4795d6480ea705c5b48e4885f1dfb655d3dc4bef59",
+    "apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel.swift": "1b8b519f280b975a1102edcd262bac206ce00d0669a7fe1197775b7dfc5bc78e",
+    "apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatViewModelTests.swift": "bd570b3b000d0f6c8e3181c322762af7d7bec00781d7afaf3dbdc6cd2efc8131"
+  },
+  "archiveSHA256": "4fd5bdd505be2b4ab6d355f52324c80ad445d442a899818648a89ba607ad8cbb",
+  "kitCounts": [
+    "672",
+    "22"
+  ],
+  "preparedIdentityRedDetected": true,
+  "sourceUnchanged": true,
+  "passed": true,
+  "finished": "2026-10-24T11:57:30+0800",
+  "project_adjustment": "Scratch only: no Watch app; pre-existing strict SwiftLint build phase omitted"
+}
