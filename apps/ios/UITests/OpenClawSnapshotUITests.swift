@@ -1168,6 +1168,53 @@ final class OpenClawSnapshotUITests: XCTestCase {
         self.attachScreenshot(named: "completed-work-collapsed-again")
     }
 
+    func testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive() throws {
+        self.launchApp(
+            for: Self.chatScreenshotTarget,
+            additionalArguments: ["--openclaw-long-chat-fixture"])
+        let app = try XCTUnwrap(self.app)
+        XCTAssertTrue(app.staticTexts["OPENCLAW_LONG_CHAT_LATEST"].waitForExistence(timeout: 8))
+        let work = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Worked")).firstMatch
+        XCTAssertTrue(work.waitForExistence(timeout: 5))
+        let earlier = app.staticTexts.matching(NSPredicate(
+            format: "label BEGINSWITH %@", "Earlier response context.")).firstMatch
+        XCTAssertFalse(earlier.exists)
+        work.tap()
+        XCTAssertTrue(earlier.waitForExistence(timeout: 5))
+        self.attachScreenshot(named: "work-expanded-before-new-turns")
+
+        // Six user/reply pairs move this response beyond the former eight-group
+        // warm suffix. Do not reopen the disclosure after the history grows.
+        for turn in 1...6 {
+            let prompt = "Disclosure retention turn \(turn)"
+            let input = self.chatMessageInput(in: app)
+            self.waitForEnabled(input)
+            input.tap()
+            input.typeText(prompt)
+            app.buttons["chat-send-message"].tap()
+            let reply = app.staticTexts.matching(NSPredicate(
+                format: "label BEGINSWITH %@ AND label CONTAINS %@",
+                "OpenClaw is connected to your gateway.",
+                prompt)).firstMatch
+            XCTAssertTrue(reply.waitForExistence(timeout: 8), "New turn must finish before the next send")
+        }
+
+        XCTAssertTrue(
+            earlier.waitForExistence(timeout: 5),
+            "Expanded work must remain open when new turns move it into older history")
+        let transcript = try self.chatTranscript(in: app)
+        let viewport = transcript.frame.intersection(app.windows.firstMatch.frame)
+        // A tall text element can be visible while its hittable point is off-screen.
+        for _ in 0..<64 where earlier.frame.intersection(viewport).height < 44 {
+            transcript.swipeDown()
+        }
+        self.attachScreenshot(named: "work-still-expanded-after-six-new-turns")
+        XCTAssertGreaterThanOrEqual(
+            earlier.frame.intersection(viewport).height,
+            44,
+            "Expanded work must still be readable in the transcript viewport")
+    }
+
     func testManualReaderDoesNotJumpDuringToolStream() throws {
         self.launchApp(
             for: Self.chatScreenshotTarget,

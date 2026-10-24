@@ -111,7 +111,6 @@ public struct OpenClawChatView: View {
     private let mediaPlaybackAllowed: @MainActor @Sendable () -> Bool
 
     private enum Layout {
-        static let eagerHistoryGroups = 8
         static let outerPaddingHorizontal: CGFloat = 6
         static let newTurnAnchor = UnitPoint(x: 0.5, y: 0.18)
         static let liveEdgeThreshold: CGFloat = 48
@@ -395,17 +394,13 @@ extension OpenClawChatView {
             liveRunID: liveRunIDs.count == 1 ? liveRunIDs.first : nil,
             hasLiveContent: self.showsWorkingIndicator || self.hasVisibleStreamingAssistantText,
             searchActive: self.isSearchPresented)
-        let eagerStartIndex = ChatAssistantRunGroup.eagerHistoryStart(groups, warming: Layout.eagerHistoryGroups)
         return ZStack {
             ScrollView {
                 // Native prepend preservation requires measured heights, not lazy estimates.
                 VStack(spacing: self.isDesktopLayout ? 16 : Layout.messageSpacing) {
                     self.messageListHeader()
-                    if eagerStartIndex > groups.startIndex {
-                        self.messageListRows(groups: Array(groups[..<eagerStartIndex]), transcript: transcript)
-                    }
+                    self.messageListRows(groups: groups, transcript: transcript)
                     VStack(spacing: self.isDesktopLayout ? 16 : Layout.messageSpacing) {
-                        self.messageListRows(groups: Array(groups[eagerStartIndex...]), transcript: transcript)
                         OpenClawQuestionCards(viewModel: self.viewModel)
                         if self.usesInlineProgressCard { self.progressCard }
                         if !self.showsComposer, !self.viewModel.hasBlockingRunActivity { self.turnRecapRow }
