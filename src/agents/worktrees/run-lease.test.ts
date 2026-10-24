@@ -6,6 +6,10 @@ import { promisify } from "node:util";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDeferred } from "../../../test/helpers/promise.js";
 import { useAutoCleanupTempDirTracker } from "../../../test/helpers/temp-dir.js";
+import {
+  resetConfigRuntimeState,
+  setRuntimeConfigSnapshot,
+} from "../../config/runtime-snapshot.js";
 import { SqliteWorkerError } from "../../infra/sqlite-worker-contract.js";
 import type { SqliteWorkerOperationSettlement } from "../../infra/sqlite-worker-operation-settlement.js";
 import * as pidAlive from "../../shared/pid-alive.js";
@@ -61,6 +65,7 @@ describe("worktree run lease", () => {
       vi.useRealTimers();
       await closeOpenClawStateDatabaseAsync();
       vi.restoreAllMocks();
+      resetConfigRuntimeState();
       runLeaseTesting.resetForTest();
       vi.unstubAllEnvs();
       closeOpenClawStateDatabaseForTest();
@@ -87,6 +92,8 @@ describe("worktree run lease", () => {
     await fs.cp(templateRepo, repo, { recursive: true });
     repo = await fs.realpath(repo);
     env = { ...process.env, OPENCLAW_STATE_DIR: path.join(root, "openclaw-state") };
+    vi.stubEnv("OPENCLAW_STATE_DIR", env.OPENCLAW_STATE_DIR);
+    setRuntimeConfigSnapshot({}, {});
     service = new ManagedWorktreeService({ env });
   });
 
@@ -355,7 +362,7 @@ describe("worktree run lease", () => {
     const nested = path.join(created.path, "workspace");
     await fs.mkdir(nested);
 
-    const selected = await resolveWorktreeForPath({ candidatePaths: [nested], env });
+    const selected = await resolveWorktreeForPath({ candidatePaths: [nested] });
     expect(selected?.record.id).toBe(created.id);
 
     const lease = await acquireWorktreeRunLease(created.id, { source: selected });
@@ -667,7 +674,6 @@ describe("worktree run lease", () => {
       resolveWorktreeForPath({
         sessionEntry: { worktree: { id: created.id } },
         candidatePaths: [],
-        env,
       }),
     ).rejects.toThrow("managed worktree was removed");
   });

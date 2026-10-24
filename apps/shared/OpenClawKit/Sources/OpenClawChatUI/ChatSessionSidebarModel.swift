@@ -583,7 +583,7 @@ public enum ChatSessionSidebarModel {
         to sessions: [OpenClawChatSessionEntry],
         activeAgentId: String? = nil) -> [OpenClawChatSessionEntry]?
     {
-        guard let key = change.sessionKey else { return sessions }
+        guard let key = change.sessionKey ?? change.session?.key else { return sessions }
         guard let index = sessions.firstIndex(where: { $0.key == key }) else { return nil }
         guard let projection = self.observerProjection(for: change, activeAgentId: activeAgentId)
         else { return sessions }
@@ -612,6 +612,9 @@ public enum ChatSessionSidebarModel {
         }
         if change.activeRunIdsPresent {
             session.activeRunIds = change.activeRunIds
+        }
+        if let reasoningLevel = change.session?.reasoningLevel {
+            session.reasoningLevel = reasoningLevel
         }
         if let startedAt = change.startedAt {
             session.startedAt = startedAt

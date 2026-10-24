@@ -46,8 +46,6 @@ import type { PluginRecord, PluginRegistry } from "./registry.js";
 import {
   captureActivePluginRegistrySnapshot,
   commitStagedPluginRegistry,
-  getActivePluginRegistry,
-  getActivePluginRegistryVersion,
   rollbackStagedPluginRegistry,
   stageActivePluginRegistry,
 } from "./runtime.js";
@@ -171,7 +169,6 @@ export function createPluginCandidatesFromManifestRegistry(
 }
 
 export class PluginLoadFailureError extends Error {
-  readonly pluginIds: string[];
   readonly registry: PluginRegistry;
 
   constructor(registry: PluginRegistry, failedPlugins: readonly PluginRecord[]) {
@@ -180,7 +177,6 @@ export class PluginLoadFailureError extends Error {
       .join("; ");
     super(`plugin load failed: ${summary}`);
     this.name = "PluginLoadFailureError";
-    this.pluginIds = failedPlugins.map((entry) => entry.id);
     this.registry = registry;
   }
 }
@@ -284,6 +280,7 @@ function createManifestPluginRecord(params: {
     activationState: params.activationState,
     channelIds: manifestRecord.channels,
     providerIds: manifestRecord.providers,
+    declaredContextEngineIds: manifestRecord.contextEngineIds,
     configSchema: Boolean(manifestRecord.configSchema),
   });
   if (!params.shouldLoadModules) {
@@ -424,53 +421,28 @@ export function activatePluginRegistry(
   const activeSnapshot = captureActivePluginRegistrySnapshot();
   const retainedRegistry = previousRegistry ?? activeSnapshot.activeRegistry;
   const previousHookRegistry = getGlobalPluginRegistry();
-  let stagedVersion: number | undefined;
-  const isCurrentStage = () =>
-    stagedVersion !== undefined &&
-    getActivePluginRegistry() === registry &&
-    getActivePluginRegistryVersion() === stagedVersion;
+  let activationFailed = false;
   try {
-    // Install the complete bundle before hooks, but never resume a displaced activation.
-    stagedVersion = stageActivePluginRegistry(
-      registry,
-      cacheKey,
-      runtimeSubagentMode,
-      workspaceDir,
-    );
-    if (!isCurrentStage()) {
-      throw new Error("Plugin registry activation was superseded");
-    }
+    // Registry activation is synchronous; recursive activation from callbacks is best effort.
+    stageActivePluginRegistry(registry, cacheKey, runtimeSubagentMode, workspaceDir);
     const activationAuthority = capturePluginLifecycleAuthority(registry);
     initializeGlobalHookRunner(registry);
     void activateContextEngineRegistrations(registry, {
       trackCleanup: (completion) => trackActivationCleanup?.(completion),
       assertCurrent: () => {
-        // A peer Gateway can change the process projection while this owner stays live.
-        if (stagedVersion === undefined || !activationAuthority?.()) {
+        if (activationFailed || !activationAuthority?.()) {
           throw new Error("Plugin registry activation was superseded");
         }
       },
     });
     commitStagedPluginRegistry(retainedRegistry, registry);
-    if (!isCurrentStage()) {
-      throw new Error("Plugin registry activation was superseded");
-    }
   } catch (error) {
-    const rollbackCurrentStage = isCurrentStage();
-    // Cached registry rollback can keep its epoch; this failed attempt still loses authority.
-    stagedVersion = undefined;
-    if (rollbackCurrentStage) {
-      const rollbackVersion = rollbackStagedPluginRegistry(activeSnapshot, retainedRegistry);
-      if (
-        getActivePluginRegistry() === activeSnapshot.activeRegistry &&
-        getActivePluginRegistryVersion() === rollbackVersion
-      ) {
-        if (previousHookRegistry) {
-          initializeGlobalHookRunner(previousHookRegistry);
-        } else {
-          resetGlobalHookRunner();
-        }
-      }
+    activationFailed = true;
+    rollbackStagedPluginRegistry(activeSnapshot, retainedRegistry);
+    if (previousHookRegistry) {
+      initializeGlobalHookRunner(previousHookRegistry);
+    } else {
+      resetGlobalHookRunner();
     }
     throw error;
   }
