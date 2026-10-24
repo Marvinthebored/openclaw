@@ -14571,6 +14571,24 @@ struct ChatHistoryDeltaTests {
         return (script, model)
     }
 
+    @Test @MainActor func `prepared delta identity survives publication`() async throws {
+        let (script, model) = self.fixture()
+        defer { model.detachTransport() }
+        #expect(await model.refreshHistoryAfterRun().applied)
+        let request = model.beginHistoryRequest()
+        await script.advance(to: 1)
+        let payload = try await script.read(sessionKey: "main", cursor: "0")
+        let prepared = try #require(OpenClawChatViewModel.decodeHistoryDelta(payload))
+        let message = try #require(prepared.first)
+        #expect(model.applyHistoryPayload(
+            payload,
+            for: request,
+            preservingOptimisticLocalMessages: true,
+            decodedDeltaMessages: prepared))
+        #expect(model.messages.last?.id == message.id)
+        #expect(model.historyDeltaCursor == "1")
+    }
+
     @Test @MainActor func `busy run uses one page and eleven deltas`() async {
         let (script, model) = self.fixture()
         defer { model.detachTransport() }
