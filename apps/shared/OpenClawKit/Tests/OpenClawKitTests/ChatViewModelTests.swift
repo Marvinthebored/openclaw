@@ -14651,6 +14651,65 @@ struct ChatHistoryDeltaTests {
         #expect(model.sessionId == "script-session")
     }
 
+    @Test @MainActor func `anchored completion after accepted wait reloads canonical order`() async {
+        let calls = AsyncCounter()
+        func row(_ text: String, rawSeq: Int, activity: [String: AnyCodable]? = nil) -> AnyCodable {
+            var record = chatTextMessage(role: "assistant", text: text, timestamp: Double(rawSeq))
+                .dictionaryValue ?? [:]
+            var position: [String: AnyCodable] = [
+                "source": AnyCodable("history"), "rawSeq": AnyCodable(rawSeq),
+            ]
+            if let activity { position["activity"] = AnyCodable(activity) }
+            record["__openclaw"] = AnyCodable([
+                "id": AnyCodable(text), "transcriptPosition": AnyCodable(position),
+            ])
+            return AnyCodable(record)
+        }
+        let exec = row("exec", rawSeq: 1)
+        let wait = row("wait", rawSeq: 2)
+        let completion = row("completion", rawSeq: 3, activity: [
+            "afterRawSeq": AnyCodable(1), "scopeId": AnyCodable("nested"), "startOrder": AnyCodable(0),
+        ])
+        let transport = TestChatTransport(historyResponses: [], historyCursorHook: { _, cursor in
+            let call = await calls.increment()
+            let rows: [AnyCodable]
+            let next: String
+            switch call {
+            case 1:
+                #expect(cursor == nil)
+                rows = [exec, wait]
+                next = "after-wait"
+            case 2:
+                #expect(cursor == "after-wait")
+                rows = [AnyCodable(["message": completion.value])]
+                next = "after-completion"
+            case 3:
+                #expect(cursor == nil, "Anchored placement must trigger a canonical read")
+                rows = [exec, completion, wait]
+                next = "after-completion"
+            default:
+                #expect(cursor == "after-completion")
+                rows = []
+                next = "after-completion"
+            }
+            return OpenClawChatHistoryPayload(
+                sessionKey: "main", sessionId: cursor == nil ? "history-session" : nil,
+                messages: rows, thinkingLevel: nil,
+                kind: cursor == nil ? nil : "delta", deltaCursor: next)
+        })
+        let model = OpenClawChatViewModel(sessionKey: "main", transport: transport)
+        defer { model.detachTransport() }
+        #expect(await model.refreshHistoryAfterRun().applied)
+        #expect(model.historyDeltaCursor == "after-wait")
+        #expect(model.messages.flatMap { $0.content.compactMap(\.text) } == ["exec", "wait"])
+        #expect(await model.refreshHistoryAfterRun().applied)
+        #expect(model.messages.flatMap { $0.content.compactMap(\.text) } == ["exec", "completion", "wait"])
+        #expect(await calls.current() == 3, "Initial page, anchored delta, and canonical fallback")
+        #expect(model.historyDeltaCursor == "after-completion")
+        #expect(await model.refreshHistoryAfterRun().applied)
+        #expect(model.messages.flatMap { $0.content.compactMap(\.text) } == ["exec", "completion", "wait"])
+    }
+
     @Test @MainActor func `reset falls back to canonical page`() async {
         let (script, model) = self.fixture()
         defer { model.detachTransport() }

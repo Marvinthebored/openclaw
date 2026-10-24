@@ -37,7 +37,11 @@ extension OpenClawChatViewModel {
         var messages: [OpenClawChatMessage] = []
         for envelope in envelopes {
             guard let row = envelope.dictionaryValue?["message"],
-                  let message = try? GatewayPayloadDecoding.decode(row, as: OpenClawChatMessage.self)
+                  // Anchored activities can precede the accepted cursor. Reload canonical order
+                  // before decoding drops placement metadata that native rows cannot compose.
+                  row.dictionaryValue?["__openclaw"]?.dictionaryValue?["transcriptPosition"]?
+                      .dictionaryValue?["activity"] == nil,
+                      let message = try? GatewayPayloadDecoding.decode(row, as: OpenClawChatMessage.self)
             else { return nil }
             messages.append(message)
         }
