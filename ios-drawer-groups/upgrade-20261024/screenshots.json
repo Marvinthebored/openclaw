@@ -1,0 +1,51 @@
+[
+  {
+    "file": "candidate-round2-folded-after-relaunch.png",
+    "sourceSHA256": "2fbeede225e16c2e6e9cf57b6d4c395e6f143c489f9aebf78354f057501fc79b",
+    "publishedSHA256": "120069039cfc8800fd568be923b40a726270ca8dd74dd91e6af6fbddd788a4c6",
+    "redactions": [
+      "Cropped connection footer"
+    ]
+  },
+  {
+    "file": "candidate-round2-defaults-reopened-retained.png",
+    "sourceSHA256": "c5e7f73925eb19e0a937425322790b0a9b3c20192da423b3d2e567666af29492",
+    "publishedSHA256": "4bae8bcd62c1ca142c270196bdc98cda63f22206392b3c9932f31abbb9faea1b",
+    "redactions": [
+      "Cropped connection footer",
+      "Masked local folder path"
+    ]
+  },
+  {
+    "file": "candidate-round2-native-long-press-menu.png",
+    "sourceSHA256": "1b8d122f260c41b3177b112bf1678f89aa9fa663d02bea9371446558af7ad52d",
+    "publishedSHA256": "f53412912672f386bd9512c02504f135c73921c0d31e5b306a5554d454e55ede",
+    "redactions": [
+      "Cropped connection footer"
+    ]
+  },
+  {
+    "file": "stable-native-occupied-and-empty-groups.png",
+    "sourceSHA256": "3ab832826b682c353aaec27f330f739fd5529e60643a2b1dd4cf5892528fe32d",
+    "publishedSHA256": "625b525df116c5e4d523aa03fd285e6ee8684df497066f2348360035445066fa",
+    "redactions": [
+      "Cropped bottom blank area"
+    ]
+  },
+  {
+    "file": "candidate-second-launch-no-reimport.png",
+    "sourceSHA256": "007dc800a7dc2f848ea1bb83fe0682e074948ce15a12b7ae70a5038abbc8914f",
+    "publishedSHA256": "948525de4208005417200d28bd81dfa1a4f84e28722196d8429bd7739b2ee6c2",
+    "redactions": [
+      "Cropped connection footer"
+    ]
+  },
+  {
+    "file": "candidate-native-migrated-occupied-group.png",
+    "sourceSHA256": "95306904cac59926d66557ba2cd343fe77e2496dd68d2f5f03b59a590b8232d8",
+    "publishedSHA256": "7ca478b8b9f2faab26bf22ef2ad6ce7fc1d5ebbe6b2751de06fc84a9dd69ff02",
+    "redactions": [
+      "Cropped connection footer"
+    ]
+  }
+]

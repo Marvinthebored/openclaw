@@ -1,0 +1,156 @@
+{
+  "passed": true,
+  "executed": true,
+  "startedAt": 1792807330.483681,
+  "finishedAt": 1792808769.997226,
+  "steps": [
+    {
+      "name": "stable-reuse-source-check",
+      "rc": 0
+    },
+    {
+      "name": "stable-version",
+      "rc": 0
+    },
+    {
+      "name": "stable-filelist",
+      "rc": 0
+    },
+    {
+      "name": "stable-generate",
+      "rc": 0
+    },
+    {
+      "name": "stable-build",
+      "rc": 0
+    },
+    {
+      "name": "stable-production-source-unchanged",
+      "rc": 0
+    },
+    {
+      "name": "candidate-clone",
+      "rc": 0
+    },
+    {
+      "name": "candidate-checkout",
+      "rc": 0
+    },
+    {
+      "name": "candidate-copy-node_modules",
+      "rc": 0
+    },
+    {
+      "name": "candidate-copy-Mermaid",
+      "rc": 0
+    },
+    {
+      "name": "candidate-copy-assets",
+      "rc": 0
+    },
+    {
+      "name": "candidate-version",
+      "rc": 0
+    },
+    {
+      "name": "candidate-filelist",
+      "rc": 0
+    },
+    {
+      "name": "candidate-generate",
+      "rc": 0
+    },
+    {
+      "name": "candidate-build",
+      "rc": 0
+    },
+    {
+      "name": "candidate-production-source-unchanged",
+      "rc": 0
+    },
+    {
+      "name": "sim-boot",
+      "rc": 0
+    },
+    {
+      "name": "sim-ready",
+      "rc": 0
+    },
+    {
+      "name": "stable-install",
+      "rc": 0
+    },
+    {
+      "name": "stable-writer-ui",
+      "rc": 0
+    },
+    {
+      "name": "stable-writer-attachments",
+      "rc": 0
+    },
+    {
+      "name": "candidate-install-in-place",
+      "rc": 0
+    },
+    {
+      "name": "candidate-first-ui",
+      "rc": 0
+    },
+    {
+      "name": "candidate-first-attachments",
+      "rc": 0
+    },
+    {
+      "name": "candidate-round2-controls-ui",
+      "rc": 0
+    },
+    {
+      "name": "candidate-round2-controls-attachments",
+      "rc": 0
+    },
+    {
+      "name": "candidate-relaunch-ui",
+      "rc": 0
+    },
+    {
+      "name": "candidate-relaunch-attachments",
+      "rc": 0
+    }
+  ],
+  "stable": {
+    "sha": "59cb44796b0f1f0daa0e37af8b1495abb45d9bc1",
+    "executableSHA256": "4df86de5363565ed9b3b31760f051f412c2dece9c8bb04e3aaca055d3b38e2c2",
+    "cleanCheckout": true
+  },
+  "candidate": {
+    "sha": "f1c3deb6256fa1d5b0f7d975042d4dd9c0c488f3",
+    "executableSHA256": "2b32df2f22767b85732915c2194c7becf757a9a989d08afa8fde36a58242f3de",
+    "cleanCheckout": true
+  },
+  "stable-before-upgrade": {
+    "sha256": "5b4329a969ab57869f01a637de6592ca01e3de63684cbe0984e38dfbb60593a9",
+    "pinnedPages": "overview,usage,cron,docs",
+    "legacy": [
+      "Legacy Amber",
+      "Legacy Violet"
+    ]
+  },
+  "candidate-before-first-launch": {
+    "sha256": "5b4329a969ab57869f01a637de6592ca01e3de63684cbe0984e38dfbb60593a9",
+    "pinnedPages": "overview,usage,cron,docs",
+    "legacy": [
+      "Legacy Amber",
+      "Legacy Violet"
+    ]
+  },
+  "candidate-after-migration": {
+    "sha256": "fae070515190a3f399487f5caa0762646cd751011361f42f26283c8514623d36",
+    "pinnedPages": "overview,usage,cron,docs",
+    "legacy": null
+  },
+  "candidate-after-relaunch": {
+    "sha256": "f874ba085014082198917f7509e655124c2da3689750e86798675b5d08a7acf9",
+    "pinnedPages": "overview,usage,cron,docs",
+    "legacy": null
+  }
+}

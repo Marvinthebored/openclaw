@@ -1,0 +1,74 @@
+{
+  "stable": {
+    "passed": true,
+    "catalog": {
+      "groups": [
+        {
+          "name": "Legacy Amber",
+          "position": 0
+        }
+      ],
+      "sectionOrder": []
+    },
+    "nativeMigrationPutCount": 0,
+    "productionSymlinkUnchanged": true,
+    "sessions": [
+      {
+        "label": "Upgrade Session Amber",
+        "category": "Legacy Amber"
+      },
+      {
+        "label": "Upgrade Session Blue",
+        "category": null
+      }
+    ]
+  },
+  "candidate": {
+    "passed": true,
+    "catalog": {
+      "groups": [
+        {
+          "name": "Legacy Amber",
+          "position": 0
+        }
+      ],
+      "sectionOrder": []
+    },
+    "nativeMigrationPutCount": 0,
+    "productionSymlinkUnchanged": true,
+    "sessions": [
+      {
+        "label": "Upgrade Session Amber",
+        "category": "Legacy Amber"
+      },
+      {
+        "label": "Upgrade Session Blue",
+        "category": null
+      }
+    ]
+  },
+  "relaunch": {
+    "passed": true,
+    "catalog": {
+      "groups": [
+        {
+          "name": "Legacy Amber",
+          "position": 0
+        }
+      ],
+      "sectionOrder": []
+    },
+    "nativeMigrationPutCount": 0,
+    "productionSymlinkUnchanged": true,
+    "sessions": [
+      {
+        "label": "Upgrade Session Amber",
+        "category": "Legacy Amber"
+      },
+      {
+        "label": "Upgrade Session Blue",
+        "category": null
+      }
+    ]
+  }
+}

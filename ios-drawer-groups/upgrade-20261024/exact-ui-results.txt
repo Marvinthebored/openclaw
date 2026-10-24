@@ -1,0 +1,28 @@
+
+candidate-first-ui.log
+Test Case '-[OpenClawUITests.UpgradeProof testCandidateMigration]' passed (49.629 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 49.629 (49.630) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 49.629 (49.631) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 49.629 (49.632) seconds
+** TEST EXECUTE SUCCEEDED **
+
+candidate-relaunch-ui.log
+Test Case '-[OpenClawUITests.UpgradeProof testCandidateRelaunch]' passed (31.453 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 31.453 (31.454) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 31.453 (31.454) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 31.453 (31.455) seconds
+** TEST EXECUTE SUCCEEDED **
+
+candidate-round2-controls-ui.log
+Test Case '-[OpenClawUITests.UpgradeProof testCandidateRound2GroupControls]' passed (109.638 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 109.638 (109.640) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 109.638 (109.641) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 109.638 (109.642) seconds
+** TEST EXECUTE SUCCEEDED **
+
+stable-writer-ui.log
+Test Case '-[OpenClawUITests.UpgradeProof testStableWriter]' passed (170.732 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 170.732 (170.733) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 170.732 (170.734) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 170.732 (170.734) seconds
+** TEST EXECUTE SUCCEEDED **
