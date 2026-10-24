@@ -1,0 +1,10 @@
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testLoadingEarlierHistoryPreservesReadingPosition]' started.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testLoadingEarlierHistoryPreservesReadingPosition]' passed (16.829 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testLongTranscriptFlingScrolling]' started.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testLongTranscriptFlingScrolling]' passed (85.559 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testManualReaderDoesNotJumpDuringToolStream]' started.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testManualReaderDoesNotJumpDuringToolStream]' passed (44.561 seconds).
+	 Executed 3 tests, with 0 failures (0 unexpected) in 146.948 (146.950) seconds
+	 Executed 3 tests, with 0 failures (0 unexpected) in 146.948 (146.951) seconds
+	 Executed 3 tests, with 0 failures (0 unexpected) in 146.948 (146.952) seconds
+** TEST EXECUTE SUCCEEDED **

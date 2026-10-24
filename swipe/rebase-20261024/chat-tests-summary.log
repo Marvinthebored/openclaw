@@ -1,0 +1,6 @@
+✔ Test "lagging history does not recursively refresh an acknowledged turn" passed after 5.133 seconds.
+✔ Test "send right after a session switch still queues behind that session's backlog" passed after 5.337 seconds.
+✔ Suite ChatViewModelOutboxTests passed after 5.357 seconds.
+✔ Test "reconnect mid-run converges via history refetch and drains pending run" passed after 5.665 seconds.
+✔ Suite ChatStreamReplayTests passed after 5.700 seconds.
+✔ Test run with 1784 tests in 133 suites passed after 5.701 seconds.
