@@ -1,0 +1,207 @@
+{
+  "baselineHead": "17f192d79cd18a480278dea81abe2c9335ee9d5f",
+  "baseline": [
+    {
+      "character": 41,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 2605,
+      "reason": "Prefer checking `isEmpty` over comparing `count` to zero",
+      "rule_id": "empty_count",
+      "severity": "Error",
+      "type": "Empty Count"
+    },
+    {
+      "character": 39,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 2606,
+      "reason": "Prefer checking `isEmpty` over comparing `count` to zero",
+      "rule_id": "empty_count",
+      "severity": "Error",
+      "type": "Empty Count"
+    },
+    {
+      "character": 1,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 3200,
+      "reason": "File should contain 2500 lines or less excluding comments and whitespaces: currently contains 2900",
+      "rule_id": "file_length",
+      "severity": "Error",
+      "type": "File Length"
+    },
+    {
+      "character": 5,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 484,
+      "reason": "Function body should span 150 lines or less excluding comments and whitespace: currently spans 153 lines",
+      "rule_id": "function_body_length",
+      "severity": "Error",
+      "type": "Function Body Length"
+    },
+    {
+      "character": 5,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1936,
+      "reason": "Function body should span 150 lines or less excluding comments and whitespace: currently spans 182 lines",
+      "rule_id": "function_body_length",
+      "severity": "Error",
+      "type": "Function Body Length"
+    },
+    {
+      "character": 32,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1082,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 45,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1131,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 33,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 2966,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 41,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 2966,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 66,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1211,
+      "reason": "Else and catch should be on the same line, one space after the previous declaration",
+      "rule_id": "statement_position",
+      "severity": "Error",
+      "type": "Statement Position"
+    },
+    {
+      "character": 7,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 6,
+      "reason": "Class body should span 1200 lines or less excluding comments and whitespace: currently spans 1554 lines",
+      "rule_id": "type_body_length",
+      "severity": "Error",
+      "type": "Type Body Length"
+    }
+  ],
+  "fixed": [
+    {
+      "character": 41,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 2652,
+      "reason": "Prefer checking `isEmpty` over comparing `count` to zero",
+      "rule_id": "empty_count",
+      "severity": "Error",
+      "type": "Empty Count"
+    },
+    {
+      "character": 39,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 2653,
+      "reason": "Prefer checking `isEmpty` over comparing `count` to zero",
+      "rule_id": "empty_count",
+      "severity": "Error",
+      "type": "Empty Count"
+    },
+    {
+      "character": 1,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 3247,
+      "reason": "File should contain 2500 lines or less excluding comments and whitespaces: currently contains 2941",
+      "rule_id": "file_length",
+      "severity": "Error",
+      "type": "File Length"
+    },
+    {
+      "character": 5,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 484,
+      "reason": "Function body should span 150 lines or less excluding comments and whitespace: currently spans 153 lines",
+      "rule_id": "function_body_length",
+      "severity": "Error",
+      "type": "Function Body Length"
+    },
+    {
+      "character": 5,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1983,
+      "reason": "Function body should span 150 lines or less excluding comments and whitespace: currently spans 182 lines",
+      "rule_id": "function_body_length",
+      "severity": "Error",
+      "type": "Function Body Length"
+    },
+    {
+      "character": 32,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1082,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 45,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1131,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 33,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 3013,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 41,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 3013,
+      "reason": "Arguments should be either on the same line, or one per line",
+      "rule_id": "multiline_arguments",
+      "severity": "Error",
+      "type": "Multiline Arguments"
+    },
+    {
+      "character": 66,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 1258,
+      "reason": "Else and catch should be on the same line, one space after the previous declaration",
+      "rule_id": "statement_position",
+      "severity": "Error",
+      "type": "Statement Position"
+    },
+    {
+      "character": 7,
+      "file": "/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift",
+      "line": 6,
+      "reason": "Class body should span 1200 lines or less excluding comments and whitespace: currently spans 1595 lines",
+      "rule_id": "type_body_length",
+      "severity": "Error",
+      "type": "Type Body Length"
+    }
+  ],
+  "added": [],
+  "note": "Existing file/type length limits retained; counts may grow by the focused regression test. Other findings matched by unchanged source line."
+}

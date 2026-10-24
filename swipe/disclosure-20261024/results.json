@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "steps": {
+    "unpack": 0,
+    "tool-versions": 0,
+    "format": 0,
+    "lint-ChatView": 0,
+    "lint-UITests-baseline": 2,
+    "lint-UITests-fixed": 2,
+    "mermaid": 0,
+    "filelists": 0,
+    "version": 0,
+    "xcodegen": 0,
+    "boot": 0,
+    "bootstatus": 0,
+    "red-build": 0,
+    "red-test": 65,
+    "ui-build": 0,
+    "ui-tests": 0,
+    "screenshots": 0
+  },
+  "phoneTouched": false,
+  "scope": "disclosure retention baseline-red/fixed-green and five simulator UI checks; pinned format and focused lint",
+  "baselineHead": "17f192d79cd18a480278dea81abe2c9335ee9d5f",
+  "fixedSourceSha256": "aa933c16012c73887eeac46ea920a112702b3fc259603f42e2a995e9d8db046d",
+  "testSha256": "946e5dffc9324d0950e34ec907e5feb1a203e557591824c6b34be8a03519ad3c",
+  "lintDeltaPassed": true,
+  "scratchChanges": "Watch dependency removed and broad lint build phase replaced by focused direct lint; source and SwiftFormat build phase retained.",
+  "simulator": "FD74D307-0CB4-4071-81B9-53565B443662",
+  "redVerified": true,
+  "sourceVerifiedAfterTests": true
+}

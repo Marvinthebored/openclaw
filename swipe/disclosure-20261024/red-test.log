@@ -1,0 +1,253 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project OpenClaw.xcodeproj -scheme OpenClawUITests -configuration Debug -destination "platform=iOS Simulator,id=FD74D307-0CB4-4071-81B9-53565B443662" -derivedDataPath /proof/disclosure/dd -parallel-testing-enabled NO -jobs 2 CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- OPENCLAW_CODE_SIGN_ENTITLEMENTS=build/OpenClaw.nopush.entitlements "-only-testing:OpenClawUITests/OpenClawSnapshotUITests/testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive" -resultBundlePath /proof/disclosure/red.xcresult
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = -
+    CODE_SIGNING_ALLOWED = YES
+    OPENCLAW_CODE_SIGN_ENTITLEMENTS = build/OpenClaw.nopush.entitlements
+
+Resolve Package Graph
+failed to retrieve search paths with pkg-config; maybe pkg-config is not installedyou may be able to install libsodium using your system-packager:
+    brew install libsodium
+
+
+Resolved source packages:
+  OpenClawKit: /proof/disclosure/tree/apps/shared/OpenClawKit
+  Sodium: https://github.com/jedisct1/swift-sodium.git @ cfd195c
+  GRDB: https://github.com/groue/GRDB.swift.git @ 7.11.1
+  WebRTC: https://github.com/stasel/WebRTC.git @ 154.0.0
+  swift-markdown: https://github.com/swiftlang/swift-markdown @ 0.9.0
+  cmark-gfm: https://github.com/swiftlang/swift-cmark.git @ 0.9.0
+  Commander: https://github.com/steipete/Commander.git @ 0.3.0
+  SwiftMath: https://github.com/mgriebling/SwiftMath @ 1.7.3
+  swabble: /proof/disclosure/tree/apps/swabble
+  ElevenLabsKit: https://github.com/steipete/ElevenLabsKit @ 0.1.3
+
+Writing result bundle at path:
+	/proof/disclosure/red.xcresult
+
+2026-10-24 11:12:48.693979+0800 OpenClawUITests-Runner[5573:150981589] [Default] Running tests...
+2026-10-24 11:12:48.712951+0800 OpenClawUITests-Runner[5573:150981741] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+2026-10-24 11:12:48.752897+0800 OpenClawUITests-Runner[5573:150981743] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+objc[5573]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x10ab9c310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10a40c398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-10-24 11:12:50.831.
+Test Suite 'OpenClawUITests.xctest' started at 2026-10-24 11:12:50.831.
+Test Suite 'OpenClawSnapshotUITests' started at 2026-10-24 11:12:50.831.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive]' started.
+    t =     0.00s Start Test at 2026-10-24 11:12:50.832
+    t =     0.11s Set Up
+2026-10-24 11:12:50.941172+0800 OpenClawUITests-Runner[5573:150981589] Couldn't detect/set language...
+2026-10-24 11:12:50.941262+0800 OpenClawUITests-Runner[5573:150981589] Couldn't detect/set locale...
+2026-10-24 11:12:50.941368+0800 OpenClawUITests-Runner[5573:150981589] Couldn't detect/set launch_arguments...
+    t =     0.11s Open ai.openclawfoundation.app.debug
+    t =     0.11s     Launch ai.openclawfoundation.app.debug
+2026-10-24 11:12:50.981 xcodebuild[5499:150980852] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-10-24 11:12:50.981 xcodebuild[5499:150980852] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.17s         Setting up automation session
+    t =     1.85s         Wait for ai.openclawfoundation.app.debug to idle
+    t =     4.22s Wait for ai.openclawfoundation.app.debug to become Running Foreground
+    t =     4.23s Waiting 8.0s for "RootTabs.Ready" Any to exist
+    t =     5.25s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Ready" Any`
+    t =     5.25s         Checking existence of `"RootTabs.Ready" Any`
+    t =     6.37s Checking `Expect predicate `value == "ready:chat"` for object "RootTabs.Ready" Any`
+    t =     6.37s     Find the "RootTabs.Ready" Any
+    t =     6.40s Waiting 8.0s for "OPENCLAW_LONG_CHAT_LATEST" StaticText to exist
+    t =     7.43s     Checking `Expect predicate `existsNoRetry == 1` for object "OPENCLAW_LONG_CHAT_LATEST" StaticText`
+    t =     7.43s         Checking existence of `"OPENCLAW_LONG_CHAT_LATEST" StaticText`
+    t =     7.46s Waiting 5.0s for Button (First Match) to exist
+    t =     8.49s     Checking `Expect predicate `existsNoRetry == 1` for object Button (First Match)`
+    t =     8.49s         Checking existence of `Button (First Match)`
+    t =     8.54s Checking existence of `StaticText (First Match)`
+    t =     8.59s Tap Button (First Match)
+    t =     8.59s     Wait for ai.openclawfoundation.app.debug to idle
+    t =     8.60s     Find the Button (First Match)
+    t =     8.64s     Check for interrupting elements affecting "chat-completed-work-271C6C9D-9FCC-4EF7-904D-DA00023B5FB3" Button
+    t =     8.66s     Synthesize event
+    t =     9.06s     Wait for ai.openclawfoundation.app.debug to idle
+    t =     9.06s Waiting 5.0s for StaticText (First Match) to exist
+    t =    10.10s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    10.10s         Checking existence of `StaticText (First Match)`
+    t =    10.16s Find the Target Application 'ai.openclawfoundation.app.debug'
+    t =    10.27s Added attachment named 'work-expanded-before-new-turns'
+    t =    11.30s Checking `Expect predicate `enabled == 1` for object "chat-message-input" Any`
+    t =    11.31s     Find the "chat-message-input" Any
+    t =    11.36s Tap "chat-message-input" TextView
+    t =    11.36s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    11.36s     Find the "chat-message-input" TextView
+    t =    11.39s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    11.42s     Synthesize event
+    t =    11.71s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    12.00s Type 'Disclosure retenti...' into "chat-message-input" TextView
+    t =    12.00s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    12.00s     Find the "chat-message-input" TextView
+    t =    12.07s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    12.11s     Synthesize event
+    t =    12.76s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    12.76s Tap "chat-send-message" Button
+    t =    12.76s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    12.76s     Find the "chat-send-message" Button
+    t =    12.80s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    12.84s     Synthesize event
+    t =    13.13s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    13.13s Waiting 8.0s for StaticText (First Match) to exist
+    t =    14.16s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    14.16s         Checking existence of `StaticText (First Match)`
+    t =    15.28s Checking `Expect predicate `enabled == 1` for object "chat-message-input" Any`
+    t =    15.28s     Find the "chat-message-input" Any
+    t =    15.34s Tap "chat-message-input" TextView
+    t =    15.34s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    15.34s     Find the "chat-message-input" TextView
+    t =    15.39s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    15.42s     Synthesize event
+    t =    15.71s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    15.74s Type 'Disclosure retenti...' into "chat-message-input" TextView
+    t =    15.74s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    15.75s     Find the "chat-message-input" TextView
+    t =    15.80s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    15.84s     Synthesize event
+    t =    16.49s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    16.49s Tap "chat-send-message" Button
+    t =    16.49s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    16.49s     Find the "chat-send-message" Button
+    t =    16.54s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    16.57s     Synthesize event
+    t =    16.86s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    16.86s Waiting 8.0s for StaticText (First Match) to exist
+    t =    17.90s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    17.90s         Checking existence of `StaticText (First Match)`
+    t =    19.04s Checking `Expect predicate `enabled == 1` for object "chat-message-input" Any`
+    t =    19.04s     Find the "chat-message-input" Any
+    t =    19.09s Tap "chat-message-input" TextView
+    t =    19.09s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    19.09s     Find the "chat-message-input" TextView
+    t =    19.14s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    19.18s     Synthesize event
+    t =    19.47s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    19.47s Type 'Disclosure retenti...' into "chat-message-input" TextView
+    t =    19.47s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    19.48s     Find the "chat-message-input" TextView
+    t =    19.53s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    19.57s     Synthesize event
+    t =    20.22s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    20.22s Tap "chat-send-message" Button
+    t =    20.22s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    20.22s     Find the "chat-send-message" Button
+    t =    20.27s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    20.31s     Synthesize event
+    t =    20.60s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    20.61s Waiting 8.0s for StaticText (First Match) to exist
+    t =    21.64s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    21.64s         Checking existence of `StaticText (First Match)`
+    t =    22.79s Checking `Expect predicate `enabled == 1` for object "chat-message-input" Any`
+    t =    22.79s     Find the "chat-message-input" Any
+    t =    22.86s Tap "chat-message-input" TextView
+    t =    22.86s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    22.86s     Find the "chat-message-input" TextView
+    t =    22.92s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    22.97s     Synthesize event
+    t =    23.26s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    23.27s Type 'Disclosure retenti...' into "chat-message-input" TextView
+    t =    23.27s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    23.28s     Find the "chat-message-input" TextView
+    t =    23.35s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    23.41s     Synthesize event
+    t =    24.06s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    24.07s Tap "chat-send-message" Button
+    t =    24.07s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    24.07s     Find the "chat-send-message" Button
+    t =    24.14s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    24.20s     Synthesize event
+    t =    24.49s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    24.51s Waiting 8.0s for StaticText (First Match) to exist
+    t =    25.54s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    25.54s         Checking existence of `StaticText (First Match)`
+    t =    26.76s Checking `Expect predicate `enabled == 1` for object "chat-message-input" Any`
+    t =    26.76s     Find the "chat-message-input" Any
+    t =    26.87s Tap "chat-message-input" TextView
+    t =    26.87s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    26.87s     Find the "chat-message-input" TextView
+    t =    26.97s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    27.06s     Synthesize event
+    t =    27.37s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    27.37s Type 'Disclosure retenti...' into "chat-message-input" TextView
+    t =    27.38s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    27.38s     Find the "chat-message-input" TextView
+    t =    27.47s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    27.55s     Synthesize event
+    t =    28.20s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    28.20s Tap "chat-send-message" Button
+    t =    28.20s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    28.21s     Find the "chat-send-message" Button
+    t =    28.28s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    28.35s     Synthesize event
+    t =    28.64s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    28.64s Waiting 8.0s for StaticText (First Match) to exist
+    t =    29.67s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    29.67s         Checking existence of `StaticText (First Match)`
+    t =    30.81s Checking `Expect predicate `enabled == 1` for object "chat-message-input" Any`
+    t =    30.81s     Find the "chat-message-input" Any
+    t =    30.88s Tap "chat-message-input" TextView
+    t =    30.88s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    30.88s     Find the "chat-message-input" TextView
+    t =    30.94s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    30.98s     Synthesize event
+    t =    31.27s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    31.27s Type 'Disclosure retenti...' into "chat-message-input" TextView
+    t =    31.27s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    31.28s     Find the "chat-message-input" TextView
+    t =    31.34s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    31.39s     Synthesize event
+    t =    32.04s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    32.04s Tap "chat-send-message" Button
+    t =    32.04s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    32.04s     Find the "chat-send-message" Button
+    t =    32.09s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    32.14s     Synthesize event
+    t =    32.43s     Wait for ai.openclawfoundation.app.debug to idle
+    t =    32.43s Waiting 8.0s for StaticText (First Match) to exist
+    t =    33.46s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    33.46s         Checking existence of `StaticText (First Match)`
+    t =    33.57s Waiting 5.0s for StaticText (First Match) to exist
+    t =    34.60s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    34.60s         Checking existence of `StaticText (First Match)`
+    t =    34.75s         Capturing element debug description
+    t =    35.57s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    35.57s         Checking existence of `StaticText (First Match)`
+    t =    35.74s         Capturing element debug description
+    t =    36.57s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    36.57s         Checking existence of `StaticText (First Match)`
+    t =    36.79s         Capturing element debug description
+    t =    37.63s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    37.63s         Checking existence of `StaticText (First Match)`
+    t =    37.87s         Capturing element debug description
+    t =    38.57s     Checking `Expect predicate `existsNoRetry == 1` for object StaticText (First Match)`
+    t =    38.57s         Checking existence of `StaticText (First Match)`
+    t =    38.81s         Capturing element debug description
+    t =    38.82s     Checking existence of `StaticText (First Match)`
+    t =    39.07s Collecting debug information to assist test failure triage
+    t =    39.07s     Requesting snapshot of accessibility hierarchy for app with pid 5655
+/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift:1202: error: -[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive] : XCTAssertTrue failed - Expanded work must remain open when new turns move it into older history
+    t =    39.65s Tear Down
+    t =    39.65s     Terminate ai.openclawfoundation.app.debug:5655
+    t =    40.74s     Wait for ai.openclawfoundation.app.debug to become Not Running
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive]' failed (40.786 seconds).
+Test Suite 'OpenClawSnapshotUITests' failed at 2026-10-24 11:13:31.618.
+	 Executed 1 test, with 1 failure (0 unexpected) in 40.786 (40.787) seconds
+Test Suite 'OpenClawUITests.xctest' failed at 2026-10-24 11:13:31.619.
+	 Executed 1 test, with 1 failure (0 unexpected) in 40.786 (40.787) seconds
+Test Suite 'Selected tests' failed at 2026-10-24 11:13:31.619.
+	 Executed 1 test, with 1 failure (0 unexpected) in 40.786 (40.788) seconds
+2026-10-24 11:13:48.846 xcodebuild[5499:150980852] [MT] IDETestOperationsObserverDebug: 63.363 elapsed -- Testing started completed.
+2026-10-24 11:13:48.846 xcodebuild[5499:150980852] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-10-24 11:13:48.846 xcodebuild[5499:150980852] [MT] IDETestOperationsObserverDebug: 63.363 sec, +63.363 sec -- end
+
+Test session results, code coverage, and logs:
+	/proof/disclosure/red.xcresult
+
+Failing tests:
+	OpenClawSnapshotUITests.testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive()
+
+** TEST EXECUTE FAILED **
+
+Testing started

@@ -1,0 +1,12 @@
+red-test.log
+/proof/disclosure/tree/apps/ios/UITests/OpenClawSnapshotUITests.swift:1202: error: -[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive] : XCTAssertTrue failed - Expanded work must remain open when new turns move it into older history
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive]' failed (40.786 seconds).
+ui-tests.log
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureKeepsFinalReplyVisible]' passed (20.450 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testCompletedWorkDisclosureStaysExpandedAsNewTurnsArrive]' passed (70.900 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testLoadingEarlierHistoryPreservesReadingPosition]' passed (14.398 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testLongTranscriptFlingScrolling]' passed (84.064 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testManualReaderDoesNotJumpDuringToolStream]' passed (43.644 seconds).
+	 Executed 5 tests, with 0 failures (0 unexpected) in 233.455 (233.458) seconds
+	 Executed 5 tests, with 0 failures (0 unexpected) in 233.455 (233.459) seconds
+	 Executed 5 tests, with 0 failures (0 unexpected) in 233.455 (233.459) seconds
