@@ -493,6 +493,12 @@ final class RootSidebarModel {
                     self.sessionChangesDuringLoad[row.key] = .init(
                         sessionKey: projected.key, agentId: projected.agentId, session: projected)
                 }
+                // Child lifecycle rows cannot clear omitted activity flags on ancestors.
+                if change.reason == "lifecycle" || change.reason == "subagent-status",
+                   (change.parentSessionKey ?? row.parentSessionKey) != nil
+                {
+                    self.scheduleSessionRefresh(appModel: appModel)
+                }
             } else {
                 if let key = change.sessionKey { self.sessionChangesDuringLoad[key] = nil }
                 self.scheduleSessionRefresh(appModel: appModel)

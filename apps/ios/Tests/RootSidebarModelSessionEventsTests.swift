@@ -32,6 +32,7 @@ struct RootSidebarModelSessionEventsTests {
         var maximumActive = 0
         var row = RootSidebarModelSessionEventsTests.row()
         var includeRow = true
+        var extraRows: [OpenClawChatSessionEntry] = []
         var hold = false
         var release: CheckedContinuation<Void, Never>?
 
@@ -39,7 +40,7 @@ struct RootSidebarModelSessionEventsTests {
             self.rosters += 1
             self.active += 1
             self.maximumActive = max(self.maximumActive, self.active)
-            let rows = self.includeRow ? [self.row] : []
+            let rows = (self.includeRow ? [self.row] : []) + self.extraRows
             if self.hold {
                 await withCheckedContinuation { self.release = $0 }
             }
@@ -95,6 +96,48 @@ struct RootSidebarModelSessionEventsTests {
         await Task.yield()
         #expect(clock.sleepers.isEmpty)
         #expect(loads.rosters == 0)
+    }
+
+    @Test(arguments: ["lifecycle", "subagent-status"])
+    func `finished known helper clears ancestor activity with one coalesced refresh`(reason: String) async throws {
+        let appModel = NodeAppModel()
+        let model = RootSidebarModel()
+        let clock = Clock()
+        let loads = Loads()
+        loads.row.status = "done"
+        loads.row.hasActiveRun = false
+        loads.row.activeRunIds = []
+        loads.row.hasActiveSubagentRun = true
+        var helper = Self.row(label: "Helper")
+        helper.key = "agent:main:subagent:helper"
+        helper.sessionId = "helper-id"
+        helper.parentSessionKey = loads.row.key
+        helper.status = "running"
+        helper.hasActiveRun = true
+        helper.activeRunIds = ["helper-run"]
+        loads.extraRows = [helper]
+        self.configure(model, clock: clock, loads: loads)
+        await model.refreshSessions(appModel: appModel)
+        #expect(model.sessions.first?.hasActiveSubagentRun == true)
+        loads.rosters = 0
+
+        // Mirror the shared native completion regression: the canonical parent
+        // omits its helper flag after the last child finishes.
+        loads.row.updatedAt = 200
+        loads.row.hasActiveSubagentRun = nil
+        helper.updatedAt = 200
+        helper.status = "done"
+        helper.hasActiveRun = false
+        helper.activeRunIds = []
+        loads.extraRows = [helper]
+        for _ in 0..<8 {
+            _ = try await model.handleSessionEvent(Self.event(reason: reason, row: helper), appModel: appModel)
+        }
+        await self.settle(clock: clock, until: { loads.rosters == 1 && !model.isRefreshing })
+        #expect(model.sessions.first?.hasActiveSubagentRun != true)
+        #expect(model.sessions.last?.hasActiveRun == false)
+        #expect(loads.rosters == 1)
+        #expect(loads.maximumActive == 1)
     }
 
     @Test func `in flight invalidations retain only one trailing roster load`() async throws {
