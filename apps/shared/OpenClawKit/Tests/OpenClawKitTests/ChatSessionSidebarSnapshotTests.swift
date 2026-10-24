@@ -1,7 +1,112 @@
+import Foundation
 import Testing
 @testable import OpenClawChatUI
 
 struct ChatSessionSidebarSnapshotTests {
+    @Test(arguments: ["patch", "lifecycle"])
+    func `event rows retain omitted session selection and thinking metadata`(reason: String) throws {
+        let previous = try self.profiledSession()
+        let change = try self.event("""
+        {"reason":"\(reason)","phase":"start","session":{
+          "key":"agent:main:work","kind":"direct","sessionId":"work-id","updatedAt":200,
+          "label":"New label","hasActiveRun":true,"activeRunIds":["run-2"],"status":"running"}}
+        """)
+        let session = try #require(ChatSessionSidebarModel.applying(
+            sessionChange: change, to: [previous])?.first)
+        #expect(session.label == "New label")
+        #expect(session.model == "session-model")
+        #expect(session.modelProvider == "session-provider")
+        #expect(session.agentRuntime == previous.agentRuntime)
+        #expect(session.thinkingLevels == previous.thinkingLevels)
+        #expect(session.thinkingOptions == previous.thinkingOptions)
+        #expect(session.thinkingDefault == "high")
+        #expect(session.derivedTitle == "Retained title")
+        let profile = try #require(OpenClawChatThinkingProfile.resolve(session: session, defaults: nil, model: nil))
+        #expect(profile.defaultLevel == "high")
+        #expect(profile.levels == previous.thinkingLevels)
+    }
+
+    @Test(arguments: ["model", "modelProvider", "agentRuntime", "sessionId"])
+    func `changed selection or incarnation does not retain stale thinking capabilities`(field: String) throws {
+        let sessionID = field == "sessionId" ? "replacement" : "work-id"
+        let value = field == "agentRuntime" ? #"{"id":"replacement"}"# : #""replacement""#
+        let selection = field == "sessionId" ? "" : ",\"\(field)\":\(value)"
+        let change = try self.event("""
+        {"reason":"patch","session":{"key":"agent:main:work","kind":"direct",
+          "sessionId":"\(sessionID)"\(selection),"updatedAt":200}}
+        """)
+        let session = try #require(try ChatSessionSidebarModel.applying(
+            sessionChange: change, to: [self.profiledSession()])?.first)
+        #expect(session.thinkingLevels == nil)
+        #expect(session.thinkingOptions == nil)
+        #expect(session.thinkingDefault == nil)
+        if field == "sessionId" { #expect(session.model == nil) }
+    }
+
+    @Test func `present nulls clear event metadata while omitted fields remain retained`() throws {
+        let change = try self.event("""
+        {"reason":"patch","session":{"key":"agent:main:work","kind":"direct","sessionId":"work-id",
+          "updatedAt":200,"label":null,"thinkingLevels":null,"thinkingOptions":null,"thinkingDefault":null}}
+        """)
+        let session = try #require(try ChatSessionSidebarModel.applying(
+            sessionChange: change, to: [self.profiledSession()])?.first)
+        #expect(session.label == nil)
+        #expect(session.model == "session-model")
+        #expect(session.thinkingLevels == nil)
+        #expect(session.thinkingOptions == nil)
+        #expect(session.thinkingDefault == nil)
+    }
+
+    @Test func `new model may supply its own thinking capabilities`() throws {
+        let change = try self.event("""
+        {"reason":"patch","session":{"key":"agent:main:work","kind":"direct","sessionId":"work-id",
+          "updatedAt":200,"model":"new-model","thinkingOptions":["off"],"thinkingDefault":"off"}}
+        """)
+        let session = try #require(try ChatSessionSidebarModel.applying(
+            sessionChange: change, to: [self.profiledSession()])?.first)
+        #expect(session.thinkingLevels == nil)
+        #expect(session.thinkingOptions == ["off"])
+        #expect(session.thinkingDefault == "off")
+    }
+
+    @Test func `event replay retains omitted fields and explicit nulls`() throws {
+        let change = try self.event("""
+        {"reason":"patch","session":{"key":"agent:main:work","kind":"direct","sessionId":"work-id",
+          "updatedAt":200,"label":null,"thinkingDefault":null}}
+        """)
+        let replayed = try JSONDecoder().decode(
+            OpenClawChatSessionsChangedEvent.self, from: JSONEncoder().encode(change))
+        #expect(replayed.sessionFields == change.sessionFields)
+        let session = try #require(try ChatSessionSidebarModel.applying(
+            sessionChange: replayed, to: [self.profiledSession()])?.first)
+        #expect(session.label == nil)
+        #expect(session.thinkingDefault == nil)
+        #expect(session.model == "session-model")
+        #expect(try session.thinkingLevels == (self.profiledSession()).thinkingLevels)
+    }
+
+    private func event(_ json: String) throws -> OpenClawChatSessionsChangedEvent {
+        try JSONDecoder().decode(OpenClawChatSessionsChangedEvent.self, from: Data(json.utf8))
+    }
+
+    private func profiledSession() throws -> OpenClawChatSessionEntry {
+        var session = OpenClawChatSessionEntry(
+            key: "agent:main:work",
+            kind: "direct",
+            updatedAt: 100,
+            sessionId: "work-id",
+            modelProvider: "session-provider",
+            model: "session-model",
+            thinkingLevels: [.init(id: "high", label: "High")],
+            thinkingOptions: ["high"],
+            thinkingDefault: "high",
+            label: "Old label")
+        session.agentRuntime = try JSONDecoder().decode(
+            OpenClawChatAgentRuntime.self, from: Data(#"{"id":"session-runtime"}"#.utf8))
+        session.derivedTitle = "Retained title"
+        return session
+    }
+
     @Test func `complete session snapshots replace metadata and fence retained observer state`() throws {
         var previous = OpenClawChatSessionEntry(key: "agent:main:work", updatedAt: 100)
         previous.kind = "direct"

@@ -132,13 +132,22 @@ struct RootSidebarModelSessionEventsTests {
         loads.hold = true
         _ = try await model.handleSessionEvent(Self.event(), appModel: appModel)
         await self.settle(clock: clock, until: { loads.release != nil })
-        _ = try await model.handleSessionEvent(Self.event(row: Self.row(label: "Live row")), appModel: appModel)
+        var selection = Self.row(label: "Live row")
+        selection.updatedAt = 200
+        selection.model = "new-model"
+        _ = try await model.handleSessionEvent(Self.event(row: selection), appModel: appModel)
+        var lifecycle = Self.row(label: "Live row")
+        lifecycle.updatedAt = 201
+        lifecycle.status = "running"
+        _ = try await model.handleSessionEvent(Self.event(reason: "lifecycle", row: lifecycle), appModel: appModel)
         #expect(model.sessions.first?.label == "Live row")
+        #expect(model.sessions.first?.model == "new-model")
         loads.hold = false
         loads.release?.resume()
         loads.release = nil
         await self.settle(clock: clock, until: { !model.isRefreshing })
         #expect(model.sessions.first?.label == "Live row")
+        #expect(model.sessions.first?.model == "new-model")
         #expect(loads.rosters == 1)
     }
 

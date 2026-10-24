@@ -488,8 +488,10 @@ final class RootSidebarModel {
             {
                 self.sessions = updated
                 // Replay rows received after an in-flight roster took its snapshot.
-                if self.isRefreshing {
-                    self.sessionChangesDuringLoad[row.key] = change
+                if self.isRefreshing, let projected = updated.first(where: { $0.key == row.key }) {
+                    // Retain the cumulative projection, not just the latest partial event.
+                    self.sessionChangesDuringLoad[row.key] = .init(
+                        sessionKey: projected.key, agentId: projected.agentId, session: projected)
                 }
             } else {
                 if let key = change.sessionKey { self.sessionChangesDuringLoad[key] = nil }

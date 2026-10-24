@@ -618,7 +618,12 @@ public enum ChatSessionSidebarModel {
         guard row.sessionId != nil, row.kind != nil else { return previous }
         if row.sessionId == previous.sessionId, let offeredDate = row.updatedAt,
            let heldDate = previous.updatedAt, offeredDate < heldDate { return nil }
-        var session = row
+        let sessionFields = change.sessionFields
+        var session = if row.sessionId == previous.sessionId, let sessionFields {
+            self.mergingSessionFields(row, fields: sessionFields, into: previous)
+        } else {
+            row
+        }
         if session.sessionId == previous.sessionId, self.isRunning(session),
            let digest = previous.observerDigest,
            self.sessionMatchesActiveAgent(
