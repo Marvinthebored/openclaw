@@ -5220,9 +5220,8 @@ extension NodeAppModel {
     }
 
     private func currentExecApprovalGatewayStableID() -> String? {
-        let stableID = self.activeGatewayConnectConfig?.effectiveStableID
-            ?? self.connectedGatewayID
-        return GatewayStableIdentifier.exact(stableID)
+        // Remembered chat ownership is not a configured approval route.
+        GatewayStableIdentifier.exact(self.activeGatewayConnectConfig?.effectiveStableID)
     }
 
     func refreshPendingApprovalInbox() async {
@@ -9317,9 +9316,6 @@ extension NodeAppModel {
     }
 
     func _test_presentExecApprovalPrompt(_ prompt: ExecApprovalPrompt) {
-        if self.currentExecApprovalGatewayStableID() == nil {
-            self.connectedGatewayID = prompt.gatewayStableID
-        }
         self.presentFetchedExecApprovalPrompt(prompt)
     }
 
