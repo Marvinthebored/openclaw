@@ -20,3 +20,7 @@ Before appending turns:
 After six new turns, without reopening:
 
 ![Expanded text still readable after six new turns](work-after-six-turns.png)
+
+## Review cleanup
+
+Final publication head: `261fdcc0bb5c7aab3ed236cdc2b56d77d646ca42`. After the paired run, removed the now-unused `ChatAssistantRunGroup.eagerHistoryStart` helper and its obsolete comment. Repository search confirmed there were no remaining call sites. SwiftFormat 0.63.1, strict SwiftLint 0.65.1 (zero findings), and Swift parser passed for this deletion-only file. The simulator-tested ChatView and UI-test hashes remain identical on the final head; no new simulator run is claimed for the unused-helper deletion.
