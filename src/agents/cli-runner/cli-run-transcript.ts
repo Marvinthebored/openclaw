@@ -159,6 +159,8 @@ export async function persistCliAssistantTranscript(params: {
   turnUsage?: CliUsage;
   stopReason: StopReason;
   yielded?: true;
+  /** Native final-message identity, shared with the Claude history importer. */
+  claudeMessageIdentity?: { cliSessionId: string; externalId: string };
 }): Promise<{
   owned: boolean;
   idempotencyKey?: string;
@@ -216,6 +218,9 @@ export async function persistCliAssistantTranscript(params: {
           : null;
       },
       message: {
+        ...(params.claudeMessageIdentity
+          ? { __openclaw: { importedFrom: "claude-cli", ...params.claudeMessageIdentity } }
+          : {}),
         ...buildAssistantMessage({
           model: {
             api: "cli",

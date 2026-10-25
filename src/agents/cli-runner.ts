@@ -70,6 +70,7 @@ import {
   runAgentHarnessLlmInputHook,
   runAgentHarnessLlmOutputHook,
 } from "./harness/lifecycle-hook-helpers.js";
+import { applyPluginTextReplacements } from "./plugin-text-transforms.js";
 import { isRequiredReplyExpectation, resolveReplyExpectation } from "./reply-completion.js";
 import { isAgentRunDirectAbortReason } from "./run-termination.js";
 import {
@@ -583,7 +584,26 @@ async function runPreparedCliAgentOwned(
           runParams: params,
           // Dispatch owns source-reply transcript mirrors and their idempotency keys.
           // Persisting them here would duplicate the same visible assistant reply.
-          text: sourceReplyWasDelivered ? "" : output.text,
+          // Claude history imports each authored message separately. The local
+          // terminal row owns only the final boundary, not another copy of narration.
+          text: sourceReplyWasDelivered
+            ? ""
+            : isClaudeCliBackend(params.provider)
+              ? applyPluginTextReplacements(
+                  output.rawFinalText ?? output.rawText ?? output.text,
+                  context.backendResolved.textTransforms?.output,
+                )
+              : output.text,
+          ...(isClaudeCliBackend(params.provider) &&
+          effectiveCliSessionId &&
+          output.resumeCheckpointId
+            ? {
+                claudeMessageIdentity: {
+                  cliSessionId: effectiveCliSessionId,
+                  externalId: output.resumeCheckpointId,
+                },
+              }
+            : {}),
           modelId: context.modelId,
           usage: output.usage,
           turnUsage: output.diagnosticUsage,
