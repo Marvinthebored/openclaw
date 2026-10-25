@@ -513,38 +513,45 @@ export function rememberToolCardEnvelope(fragment: object, envelope: unknown): v
   }
 }
 
-function projectEnvelopeCards(message: object, cards: ToolCard[]): ToolCard[] {
+function projectEnvelopeCards(message: object): ToolCard[] | undefined {
   const envelope = toolCardEnvelopes.get(message);
   if (!envelope) {
-    return cards;
+    return undefined;
   }
   extractToolCardsCached(envelope);
   const recorded = envelopeCardsByBlock.get(envelope);
-  const local = envelopeCardsByBlock.get(message);
   const content = normalizeContent(asNullableRecord(message)?.content);
-  return cards.map((card) => {
-    const block = content.find((item) => local?.get(item) === card);
-    const paired = block ? recorded?.get(block) : undefined;
-    if (!paired) {
-      return card;
+  const seen = new Set<ToolCard>();
+  return content.flatMap((block) => {
+    const paired = recorded?.get(block);
+    if (!paired || seen.has(paired)) {
+      return [];
     }
+    seen.add(paired);
     const hasResult = content.some(
-      (block) => isToolResultContentType(block.type) && recorded?.get(block) === paired,
+      (item) => isToolResultContentType(item.type) && recorded?.get(item) === paired,
     );
     if (hasResult) {
-      return { ...card, ...paired };
+      return [paired];
     }
+    // Extract calls independently: legacy fragment-local pairing can differ
+    // from the recorded envelope when another call precedes this stretch.
+    const [card] = extractToolCards({ ...asNullableRecord(message), content: [block] });
     // The call carries its recorded outcome, but output/preview stays at the
     // result's original position rather than appearing twice.
-    const projected = {
-      ...card,
-      [recordedToolCardOutcome]: paired,
-      completed: paired.completed,
-      isError: isToolCardError(paired),
-      exitCode: paired.exitCode,
-      toolOutput: paired.toolOutput,
-    };
-    return projected;
+    return [
+      {
+        ...card,
+        id: paired.id,
+        callId: paired.callId,
+        name: paired.name,
+        [recordedToolCardOutcome]: paired,
+        completed: paired.completed,
+        isError: isToolCardError(paired),
+        exitCode: paired.exitCode,
+        toolOutput: paired.toolOutput,
+      },
+    ];
   });
 }
 
@@ -557,7 +564,7 @@ export function extractToolCardsCached(message: unknown): ToolCard[] {
   if (cached && cached.content === content) {
     return cached.cards;
   }
-  const cards = projectEnvelopeCards(message, extractToolCards(message));
+  const cards = projectEnvelopeCards(message) ?? extractToolCards(message);
   toolCardsByMessage.set(message, { content, cards });
   return cards;
 }
@@ -584,7 +591,9 @@ export function extractToolBlockCardsCached(
   const recorded = isToolResultContentType(block.type)
     ? envelopeCardsByBlock.get(envelope)?.get(block)
     : undefined;
-  const cards = recorded ? [recorded] : projectEnvelopeCards(fragment, extractToolCards(fragment));
+  const cards = recorded
+    ? [recorded]
+    : (projectEnvelopeCards(fragment) ?? extractToolCards(fragment));
   if (!byBlock) {
     byBlock = new WeakMap();
     toolCardsByBlock.set(message, byBlock);

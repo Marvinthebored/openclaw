@@ -464,17 +464,19 @@ it.each(["call", "result", "both"])("preserves legacy pairing when %s lacks an I
   );
   expect(extractToolCardsCached(source)).toHaveLength(1);
   const group = groups([source])[0];
-  if (group?.kind !== "group") throw new Error("Missing group");
+  if (group?.kind !== "group") {
+    throw new Error("Missing group");
+  }
   const parts = splitMixedWorkGroup(group).flatMap((part) => part.messages);
-  const cards = parts.flatMap(({ message }) => extractToolCardsCached(message));
+  const cards = parts.flatMap(({ message: value }) => extractToolCardsCached(value));
   expect(cards.map((card) => resolveToolCardOutcome(card, false))).toEqual([
     "succeeded",
     "succeeded",
   ]);
   expect(cards.map((card) => card.args)).toEqual([{ path: "legacy.txt" }, { path: "legacy.txt" }]);
   expect(cards.map((card) => card.outputText)).toEqual([undefined, "Legacy output"]);
-  const blockCards = parts.flatMap(({ message }) => {
-    const record = message as Record<string, unknown>;
+  const blockCards = parts.flatMap(({ message: value }) => {
+    const record = value as Record<string, unknown>;
     return (record.content as Record<string, unknown>[]).flatMap((block) =>
       extractToolBlockCardsCached(record, block),
     );
@@ -485,4 +487,40 @@ it.each(["call", "result", "both"])("preserves legacy pairing when %s lacks an I
   ]);
   expect(blockCards.map((card) => card.args)).toEqual(cards.map((card) => card.args));
   expect(blockCards.map((card) => card.outputText)).toEqual([undefined, "Legacy output"]);
+});
+
+it("keeps each legacy result exactly once when calls cross a narration boundary", () => {
+  const source = message(
+    "legacy-multiple",
+    "assistant",
+    [
+      { type: "tool_use", name: "read", input: { path: "a" } },
+      text("Finding"),
+      { type: "tool_use", name: "read", input: { path: "b" } },
+      { type: "tool_result", name: "read", content: "OUT_A" },
+      { type: "tool_result", name: "read", content: "OUT_B" },
+      text("Answer"),
+    ],
+    { stopReason: "stop" },
+  );
+  const group = groups([source])[0];
+  if (group?.kind !== "group") {
+    throw new Error("Missing group");
+  }
+  const cards = splitMixedWorkGroup(group)
+    .flatMap((part) => part.messages)
+    .flatMap(({ message: value }) => extractToolCardsCached(value));
+  const outputs = cards.filter((card) => card.outputText !== undefined);
+  expect(outputs).toHaveLength(2);
+  expect(outputs.map((card) => [card.args, card.outputText])).toEqual(
+    expect.arrayContaining([
+      [{ path: "a" }, "OUT_A"],
+      [{ path: "b" }, "OUT_B"],
+    ]),
+  );
+  expect(cards.map((card) => resolveToolCardOutcome(card, false))).toEqual([
+    "succeeded",
+    "succeeded",
+    "succeeded",
+  ]);
 });
