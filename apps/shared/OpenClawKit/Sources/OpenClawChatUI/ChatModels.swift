@@ -559,6 +559,7 @@ public struct OpenClawChatMessage: Codable, Hashable, Identifiable, Sendable {
         case senderLabel
         case senderSession
         case phase
+        case activity
         case streamFallback = "openclawStreamFallback"
         case content
         case timestamp
@@ -659,6 +660,7 @@ public struct OpenClawChatMessage: Codable, Hashable, Identifiable, Sendable {
         self.senderSession = try? container.decode(AnyCodable.self, forKey: .senderSession)
         self.sourceMetadata = decodedOpenClaw
         self.phase = try container.decodeIfPresent(String.self, forKey: .phase)
+        self.activity = try container.decodeIfPresent([OpenClawAgentActivityItem].self, forKey: .activity)
         self.turnBoundary = decodedOpenClaw?.turnBoundary
         self.steerTargetRunID = decodedOpenClaw?.steerTargetRunId
         self.streamFallback = try? container.decode(OpenClawChatStreamFallback.self, forKey: .streamFallback)
@@ -765,6 +767,7 @@ public struct OpenClawChatMessage: Codable, Hashable, Identifiable, Sendable {
         try container.encodeIfPresent(self.senderLabel, forKey: .senderLabel)
         try container.encodeIfPresent(self.senderSession, forKey: .senderSession)
         try container.encodeIfPresent(self.phase, forKey: .phase)
+        try container.encodeIfPresent(self.activity, forKey: .activity)
         try container.encodeIfPresent(self.streamFallback, forKey: .streamFallback)
         try container.encodeIfPresent(self.timestamp, forKey: .timestamp)
         if self.transcriptMessageID != nil || self.transcriptRunID != nil || self.isTruncated || self
