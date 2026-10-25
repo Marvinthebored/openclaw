@@ -119,6 +119,54 @@ describe("content-sized composer with border width control", () => {
     },
   );
 
+  it.each(["end", "top", "grow"] as const)(
+    "keeps the draft viewport anchored on window shrink (%s)",
+    async (position) => {
+      await page.viewport(1440, 900);
+      const f = fixture();
+      f.props.draft = Array.from({ length: 100 }, (_, i) => `Line ${i}`).join("\n");
+      f.draw();
+      await settled();
+      await settled();
+      const editor = f.editor();
+      editor.focus();
+      const lineHeight = Number.parseFloat(getComputedStyle(editor).lineHeight);
+      const padding = Number.parseFloat(getComputedStyle(editor).paddingTop);
+      const line = position === "end" ? 99 : position === "top" ? 2 : 25;
+      const caret = position === "end" ? editor.value.length : editor.value.indexOf(`Line ${line}`);
+      editor.setSelectionRange(caret, caret);
+      editor.scrollTop =
+        position === "end" ? editor.scrollHeight : position === "top" ? 0 : 10 * lineHeight;
+      await settled();
+      const before = { height: editor.clientHeight, scroll: editor.scrollTop };
+      await page.viewport(1440, 600);
+      await settled();
+      await settled();
+      const lost = before.height - editor.clientHeight;
+      expect(lost).toBeGreaterThan(lineHeight);
+      const caretTop = padding + line * lineHeight;
+      const anchored = before.scroll + lost;
+      const expected = Math.max(0, Math.min(anchored, caretTop));
+      expect.soft(editor.scrollTop).toBeCloseTo(expected, 0);
+      expect.soft(caretTop - editor.scrollTop).toBeGreaterThanOrEqual(-1);
+      expect
+        .soft(caretTop + lineHeight - editor.scrollTop)
+        .toBeLessThanOrEqual(editor.clientHeight + 1);
+      if (position === "end") {
+        expect
+          .soft(editor.scrollHeight - editor.scrollTop - editor.clientHeight)
+          .toBeLessThanOrEqual(1);
+      }
+      if (position === "grow") {
+        const scroll = editor.scrollTop;
+        await page.viewport(1440, 900);
+        await settled();
+        await settled();
+        expect(editor.scrollTop).toBe(scroll);
+      }
+    },
+  );
+
   it("does not shrink or save when widening a full-width mobile composer", async () => {
     await page.viewport(390, 844);
     const f = fixture();
