@@ -1,0 +1,20 @@
+{
+  "origin": "http://127.0.0.1:21989",
+  "baselineVersion": "2026.10.7",
+  "baselineBuildId": "2026.10.7-release-157d8c2bc3ea-2026-10-24T02-45-17.235Z-010f999991d275831f307093b3a46cdd2dda1bdd04a84c0c48319b2e2157fda6",
+  "buildId": "pr-178226-d7c4e5831bf",
+  "buildInfo": {
+    "version": "2026.10.7",
+    "commit": "d31563e3caeec946c962b8802a48398ab7bd12a6",
+    "builtAt": "2026-10-25T09:48:08.440Z",
+    "release": false,
+    "commitAt": "2026-10-25T09:36:45.000Z",
+    "branch": "improve/composer-autogrow-width-drag",
+    "dirty": true,
+    "buildId": "pr-178226-d7c4e5831bf"
+  },
+  "width": "min(900px, 82%)",
+  "draft": "Synthetic existing draft PR178226 stable upgrade survivor.",
+  "url": "http://127.0.0.1:21989/chat/main",
+  "storageSeeded": false
+}
