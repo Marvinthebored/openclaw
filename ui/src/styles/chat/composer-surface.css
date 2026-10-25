@@ -23,9 +23,7 @@
   grid-template-columns: minmax(0, 1fr);
   align-items: end;
   gap: 6px;
-  /* Overrides the shared width above with the draggable composer width. */
   width: calc(100% - 2 * var(--chat-composer-inline-inset));
-  max-width: var(--chat-thread-drag-width, var(--chat-thread-max-width, 48rem));
   margin-block: var(--chat-composer-top-margin, 8px) var(--chat-composer-bottom-gap, 14px);
 }
 .agent-chat__composer-notices {
@@ -1278,39 +1276,41 @@
    embedded composers keep the regular grouping instead of shedding labels and
    stretching the model control long before the row is under pressure. */
 @container chat-composer (max-width: 480px) {
-  .agent-chat__input--mobile-toolbar .agent-chat__composer-controls {
-    order: 3;
-  }
   .agent-chat__composer-footer {
     --chat-composer-chip-icon: 16px;
     margin-bottom: 0;
     padding-block: 4px;
   }
 
-  .agent-chat__input--mobile-toolbar .agent-chat__composer-footer {
-    display: flex;
-    gap: 2px;
-  }
+  .agent-chat__input--mobile-toolbar {
+    .agent-chat__composer-controls {
+      order: 3;
+    }
+    .agent-chat__composer-footer {
+      display: flex;
+      gap: 2px;
+    }
 
-  .agent-chat__input--mobile-toolbar .agent-chat__composer-lead {
-    flex: 0 0 auto;
-    gap: 2px;
-    order: 1;
-  }
+    .agent-chat__composer-lead {
+      flex: 0 0 auto;
+      gap: 2px;
+      order: 1;
+    }
 
-  .agent-chat__input--mobile-toolbar .agent-chat__composer-trail {
-    display: contents;
-  }
+    .agent-chat__composer-trail {
+      display: contents;
+    }
 
-  .agent-chat__input--mobile-toolbar .agent-chat__composer-meta {
-    flex: 0 0 auto;
-    order: 2;
-  }
+    .agent-chat__composer-meta {
+      flex: 0 0 auto;
+      order: 2;
+    }
 
-  .agent-chat__input--mobile-toolbar .agent-chat__composer-actions {
-    flex: 0 0 auto;
-    gap: 8px;
-    order: 4;
+    .agent-chat__composer-actions {
+      flex: 0 0 auto;
+      gap: 8px;
+      order: 4;
+    }
   }
 }
 
@@ -1505,11 +1505,8 @@
 .agent-chat__composer-width-edge {
   position: absolute;
   z-index: 5;
-  top: 18px;
-  bottom: 18px;
-  left: -8px;
+  inset: 18px auto 18px -8px;
   width: 8px;
-  background: transparent;
   cursor: ew-resize;
   touch-action: none;
 }

@@ -103,7 +103,9 @@ export class ComposerLayout {
       // margins and a flex-shrunk context hides its natural content height.
       const chrome =
         Math.max(0, input.offsetHeight - editor.offsetHeight) +
-        (footer ? margins + contextHeight + contextGap : 0);
+        (footer
+          ? margins + Math.max(contextHeight + contextGap, shell.scrollHeight - input.offsetHeight)
+          : 0);
       const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
       const scroll = shell.closest<HTMLElement>(".new-session-page__scroll");
       const paneBottom = Math.min(

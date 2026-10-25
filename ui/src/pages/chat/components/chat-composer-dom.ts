@@ -436,7 +436,8 @@ export function observeTextareaOverflow(
     adjustmentFrame: null,
     overflowFrame: null,
     height: el.clientHeight,
-    maxHeight: Number.parseFloat(getComputedStyle(el).maxHeight),
+    // Ref binding precedes attachment; the first layout observation owns the cap.
+    maxHeight: el.isConnected ? Number.parseFloat(getComputedStyle(el).maxHeight) : Number.NaN,
     nativeInputPending: false,
     hasScrollbarGutter: false,
     scrollbarWidth: null,
