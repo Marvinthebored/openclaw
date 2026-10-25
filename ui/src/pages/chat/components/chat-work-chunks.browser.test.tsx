@@ -50,7 +50,20 @@ const messages = [
   msg("final", "assistant", "Final visible answer.", 6000, { stopReason: "stop" }),
 ];
 
-it.each([1440, 1600])("renders in-place Anthropic work at %spx in both modes", async (width) => {
+it.each([
+  { width: 1440, sameId: false },
+  { width: 1600, sameId: false },
+  { width: 1440, sameId: true },
+  { width: 1600, sameId: true },
+])("renders in-place work at $width px (same-ID envelope=$sameId) in both modes", async ({ width, sameId }) => {
+  const renderedMessages = sameId
+    ? [messages[0]!, msg("same-id", "assistant", [
+        text("First visible narration."), tool("read-1"),
+        text("Second visible narration."),
+        { type: "tool_result", tool_use_id: "read-1", content: "Recorded result." },
+        text("Final visible answer."),
+      ], 6000, { stopReason: "stop" })]
+    : messages;
   await page.viewport(width, 900);
   for (const bubbleMode of [false, true]) {
     const items = coalesceAgentRunFrames(
@@ -59,12 +72,12 @@ it.each([1440, 1600])("renders in-place Anthropic work at %spx in both modes", a
           buildItems({
             paneId: "work-chunks-browser-" + width + bubbleMode,
             sessionKey,
-            messages,
+            messages: renderedMessages,
           }),
           { sessionKey, runWorking: false, bubbleMode },
         ),
       ),
-      { messages },
+      { messages: renderedMessages },
     );
     const [expanded, setExpanded] = createSignal(new Set<string>());
     const view = mountSolid(() => (
@@ -198,7 +211,7 @@ it.each([1440, 1600])("renders in-place Anthropic work at %spx in both modes", a
       console.log(JSON.stringify({ phase, width, bubbleMode, geometry }));
       console.log(
         await page.screenshot({
-          path: `../../../../.vitest/180490-web-${phase}-${width}-${bubbleMode ? "bubbles" : "flat"}.png`,
+          path: `../../../../.vitest/180490-web-${phase}-${width}-${sameId ? "same-id" : "separate"}-${bubbleMode ? "bubbles" : "flat"}.png`,
         }),
       );
     } finally {

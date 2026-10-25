@@ -12,9 +12,7 @@ import {
 import { groupMessages } from "./chat-thread-grouping.ts";
 import { collapseCompletedTurnWork } from "./chat-turn-presentation.ts";
 import {
-  chunkContiguousWork,
   splitMixedWorkGroup,
-  type WorkChunkPart,
 } from "./chat-work-chunks.ts";
 
 const fixture = JSON.parse(
@@ -27,24 +25,8 @@ const fixture = JSON.parse(
     workBetweenText: boolean;
     expectedParts: number;
   }[];
-  cases: {
-    name: string;
-    live?: boolean;
-    parts: Omit<WorkChunkPart<undefined>, "value">[];
-    expected: { kind: string; ids: string[] }[];
-  }[];
-};
-describe("shared contiguous-work fixtures", () => {
-  it.each(fixture.cases)("$name", ({ parts, live, expected }) => {
-    expect(
-      chunkContiguousWork(
-        parts.map((part) => ({ ...part, value: undefined })),
-        live,
-      ).map((chunk) => ({ kind: chunk.kind, ids: chunk.parts.map((part) => part.id) })),
-    ).toEqual(expected);
-  });
-});
 
+};
 const sessionKey = "agent:main:dashboard:work-chunks";
 const message = (id: string, role: string, content: unknown, extra = {}) => ({
   role,
@@ -437,4 +419,43 @@ it("preserves a skipped recorded outcome without duplicating output or details",
     "skipped",
   ]);
   expect(blockCards.map((card) => card.outputText)).toEqual(cards.map((card) => card.outputText));
+});
+
+it("gives separated same-ID work stretches independent disclosure identities", () => {
+  const source = message("same-id", "assistant", [
+    tool("read-1"), text("Finding"),
+    { type: "tool_result", tool_use_id: "read-1", content: "Output" }, text("Answer"),
+  ], { stopReason: "stop" });
+  const input = groups([source]);
+  const output = collapseCompletedTurnWork(input, { sessionKey, runWorking: false });
+  const work = output.filter((item) => item.kind === "work-group");
+  expect(work).toHaveLength(2);
+  expect(new Set(work.map((item) => item.key)).size).toBe(2);
+  const fragments = work.flatMap((item) => item.groups).flatMap((group) => group.messages);
+  expect(new Set(fragments.map((item) => item.key)).size).toBe(2);
+  expect(fragments.map((item) => item.actionKey)).toEqual(["source-0", "source-0"]);
+});
+
+it.each(["call", "result", "both"])("preserves legacy pairing when %s lacks an ID", (missing) => {
+  const source = message("legacy", "assistant", [
+    { type: "tool_use", ...(missing === "result" ? { id: "read-1" } : {}), name: "read", input: { path: "legacy.txt" } },
+    text("Finding"),
+    { type: "tool_result", ...(missing === "call" ? { tool_use_id: "read-1" } : {}), name: "read", content: "Legacy output" },
+    text("Answer"),
+  ], { stopReason: "stop" });
+  expect(extractToolCardsCached(source)).toHaveLength(1);
+  const group = groups([source])[0];
+  if (group?.kind !== "group") throw new Error("Missing group");
+  const parts = splitMixedWorkGroup(group).flatMap((part) => part.messages);
+  const cards = parts.flatMap(({ message }) => extractToolCardsCached(message));
+  expect(cards.map((card) => resolveToolCardOutcome(card, false))).toEqual(["succeeded", "succeeded"]);
+  expect(cards.map((card) => card.args)).toEqual([{ path: "legacy.txt" }, { path: "legacy.txt" }]);
+  expect(cards.map((card) => card.outputText)).toEqual([undefined, "Legacy output"]);
+  const blockCards = parts.flatMap(({ message }) => {
+    const record = message as Record<string, unknown>;
+    return (record.content as Record<string, unknown>[]).flatMap((block) => extractToolBlockCardsCached(record, block));
+  });
+  expect(blockCards.map((card) => resolveToolCardOutcome(card, false))).toEqual(["succeeded", "succeeded"]);
+  expect(blockCards.map((card) => card.args)).toEqual(cards.map((card) => card.args));
+  expect(blockCards.map((card) => card.outputText)).toEqual([undefined, "Legacy output"]);
 });

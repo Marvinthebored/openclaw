@@ -177,7 +177,7 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
           key:
             !work && index === 0
               ? source.key
-              : `${source.key}:part:${work ? "work" : "visible"}:${blockIdentity}`,
+              : `${source.key}:part:${work ? "work" : "visible"}:${blockIdentity}:${index}`,
           actionKey: source.actionKey ?? source.key,
           actionMessage: source.actionMessage ?? source.message,
           presentationOwnsFooter: index === lastVisible,

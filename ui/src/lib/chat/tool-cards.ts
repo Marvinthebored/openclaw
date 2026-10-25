@@ -326,6 +326,8 @@ export function isToolCallContentBlock(item: {
   );
 }
 
+const envelopeCardsByBlock = new WeakMap<object, WeakMap<object, ToolCard>>();
+
 function extractToolCards(message: unknown): ToolCard[] {
   const m = message as Record<string, unknown>;
   const role = typeof m.role === "string" ? m.role.toLowerCase() : "";
@@ -340,6 +342,8 @@ function extractToolCards(message: unknown): ToolCard[] {
   const isLiveToolStream = m["__openclawToolStreamLive"] === true;
   const liveDiffStat = readLiveDiffStat(m["__openclawToolStreamDiffStat"]);
   const cards: ToolCard[] = [];
+  const blockCards = new WeakMap<object, ToolCard>();
+  envelopeCardsByBlock.set(m, blockCards);
   const fallbackMatchedCards = new WeakSet<ToolCard>();
   const transcriptMessageId = resolveTranscriptMessageId(m);
   const messageRunId = readSessionMessageIdentity(m)?.runId ?? readNonBlankString(m.runId);
@@ -413,6 +417,7 @@ function extractToolCards(message: unknown): ToolCard[] {
           : {}),
         ...(liveDiffStat ? { liveDiffStat } : {}),
       });
+      blockCards.set(item, cards.at(-1)!);
       continue;
     }
 
@@ -435,6 +440,7 @@ function extractToolCards(message: unknown): ToolCard[] {
         : (existing?.name ?? envelopeName ?? name);
     const result = readResult(item, browserToolName);
     if (existing) {
+      blockCards.set(item, existing);
       fallbackMatchedCards.add(existing);
       existing.callId ??= callId;
       existing.runId ??= runId;
@@ -457,6 +463,7 @@ function extractToolCards(message: unknown): ToolCard[] {
       completed: true,
       ...result,
     });
+    blockCards.set(item, cards.at(-1)!);
   }
 
   if (isStandaloneToolMessage && cards.length === 0) {
@@ -511,15 +518,18 @@ function projectEnvelopeCards(message: object, cards: ToolCard[]): ToolCard[] {
   if (!envelope) {
     return cards;
   }
-  const recorded = extractToolCardsCached(envelope);
+  extractToolCardsCached(envelope);
+  const recorded = envelopeCardsByBlock.get(envelope);
+  const local = envelopeCardsByBlock.get(message);
   const content = normalizeContent(asNullableRecord(message)?.content);
   return cards.map((card) => {
-    const paired = card.callId ? recorded.find((item) => item.callId === card.callId) : undefined;
+    const block = content.find((item) => local?.get(item) === card);
+    const paired = block ? recorded?.get(block) : undefined;
     if (!paired) {
       return card;
     }
     const hasResult = content.some(
-      (block) => isToolResultContentType(block.type) && resolveToolUseId(block) === card.callId,
+      (block) => isToolResultContentType(block.type) && recorded?.get(block) === paired,
     );
     if (hasResult) {
       return { ...card, ...paired };
@@ -569,11 +579,11 @@ export function extractToolBlockCardsCached(
   rememberToolCardEnvelope(fragment, message);
   // A result projection uses the recorded card unchanged. Re-extracting its
   // payload would repeat preview preparation (including browser preview I/O).
-  const callId = resolveToolUseId(block);
-  const recorded =
-    isToolResultContentType(block.type) && callId
-      ? extractToolCardsCached(message).find((card) => card.callId === callId)
-      : undefined;
+  const envelope = toolCardEnvelopes.get(message) ?? message;
+  extractToolCardsCached(envelope);
+  const recorded = isToolResultContentType(block.type)
+    ? envelopeCardsByBlock.get(envelope)?.get(block)
+    : undefined;
   const cards = recorded ? [recorded] : projectEnvelopeCards(fragment, extractToolCards(fragment));
   if (!byBlock) {
     byBlock = new WeakMap();
