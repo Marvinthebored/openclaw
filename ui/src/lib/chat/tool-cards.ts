@@ -343,7 +343,9 @@ function extractToolCards(message: unknown): ToolCard[] {
   const liveDiffStat = readLiveDiffStat(m["__openclawToolStreamDiffStat"]);
   const cards: ToolCard[] = [];
   const blockCards = new WeakMap<object, ToolCard>();
-  envelopeCardsByBlock.set(m, blockCards);
+  if (message && typeof message === "object") {
+    envelopeCardsByBlock.set(message, blockCards);
+  }
   const fallbackMatchedCards = new WeakSet<ToolCard>();
   const transcriptMessageId = resolveTranscriptMessageId(m);
   const messageRunId = readSessionMessageIdentity(m)?.runId ?? readNonBlankString(m.runId);

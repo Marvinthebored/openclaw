@@ -524,3 +524,10 @@ it("keeps each legacy result exactly once when calls cross a narration boundary"
     "succeeded",
   ]);
 });
+
+it.each(["plain text", 0, true])(
+  "does not record primitive tool-card input %j as an envelope",
+  (value) => {
+    expect(extractToolCardsCached(value)).toEqual([]);
+  },
+);
