@@ -749,7 +749,7 @@ it.each(["aborted", "error", "live-aborted"])(
   },
 );
 
-it("renders source previews cited before the final split slice", () => {
+it("renders source previews cited before the final split slice", async () => {
   const message = {
     role: "assistant",
     stopReason: "stop",
@@ -794,7 +794,11 @@ it("renders source previews cited before the final split slice", () => {
     />
   ));
   flush();
-  expect(view.container.querySelector(".chat-source-strip")?.textContent).toContain("example.test");
+  await waitForSolid(() =>
+    expect(view.container.querySelector(".chat-source-strip")?.textContent).toContain(
+      "example.test",
+    ),
+  );
 });
 
 it("keeps one interrupted tail when the last split part is hidden reasoning", () => {

@@ -11,9 +11,7 @@ import {
 } from "../../lib/chat/tool-cards.ts";
 import { groupMessages } from "./chat-thread-grouping.ts";
 import { collapseCompletedTurnWork } from "./chat-turn-presentation.ts";
-import {
-  splitMixedWorkGroup,
-} from "./chat-work-chunks.ts";
+import { splitMixedWorkGroup } from "./chat-work-chunks.ts";
 
 const fixture = JSON.parse(
   readFileSync(new URL("../../../../test/fixtures/chat-work-chunks.json", import.meta.url), "utf8"),
@@ -25,7 +23,6 @@ const fixture = JSON.parse(
     workBetweenText: boolean;
     expectedParts: number;
   }[];
-
 };
 const sessionKey = "agent:main:dashboard:work-chunks";
 const message = (id: string, role: string, content: unknown, extra = {}) => ({
@@ -422,10 +419,17 @@ it("preserves a skipped recorded outcome without duplicating output or details",
 });
 
 it("gives separated same-ID work stretches independent disclosure identities", () => {
-  const source = message("same-id", "assistant", [
-    tool("read-1"), text("Finding"),
-    { type: "tool_result", tool_use_id: "read-1", content: "Output" }, text("Answer"),
-  ], { stopReason: "stop" });
+  const source = message(
+    "same-id",
+    "assistant",
+    [
+      tool("read-1"),
+      text("Finding"),
+      { type: "tool_result", tool_use_id: "read-1", content: "Output" },
+      text("Answer"),
+    ],
+    { stopReason: "stop" },
+  );
   const input = groups([source]);
   const output = collapseCompletedTurnWork(input, { sessionKey, runWorking: false });
   const work = output.filter((item) => item.kind === "work-group");
@@ -437,25 +441,48 @@ it("gives separated same-ID work stretches independent disclosure identities", (
 });
 
 it.each(["call", "result", "both"])("preserves legacy pairing when %s lacks an ID", (missing) => {
-  const source = message("legacy", "assistant", [
-    { type: "tool_use", ...(missing === "result" ? { id: "read-1" } : {}), name: "read", input: { path: "legacy.txt" } },
-    text("Finding"),
-    { type: "tool_result", ...(missing === "call" ? { tool_use_id: "read-1" } : {}), name: "read", content: "Legacy output" },
-    text("Answer"),
-  ], { stopReason: "stop" });
+  const source = message(
+    "legacy",
+    "assistant",
+    [
+      {
+        type: "tool_use",
+        ...(missing === "result" ? { id: "read-1" } : {}),
+        name: "read",
+        input: { path: "legacy.txt" },
+      },
+      text("Finding"),
+      {
+        type: "tool_result",
+        ...(missing === "call" ? { tool_use_id: "read-1" } : {}),
+        name: "read",
+        content: "Legacy output",
+      },
+      text("Answer"),
+    ],
+    { stopReason: "stop" },
+  );
   expect(extractToolCardsCached(source)).toHaveLength(1);
   const group = groups([source])[0];
   if (group?.kind !== "group") throw new Error("Missing group");
   const parts = splitMixedWorkGroup(group).flatMap((part) => part.messages);
   const cards = parts.flatMap(({ message }) => extractToolCardsCached(message));
-  expect(cards.map((card) => resolveToolCardOutcome(card, false))).toEqual(["succeeded", "succeeded"]);
+  expect(cards.map((card) => resolveToolCardOutcome(card, false))).toEqual([
+    "succeeded",
+    "succeeded",
+  ]);
   expect(cards.map((card) => card.args)).toEqual([{ path: "legacy.txt" }, { path: "legacy.txt" }]);
   expect(cards.map((card) => card.outputText)).toEqual([undefined, "Legacy output"]);
   const blockCards = parts.flatMap(({ message }) => {
     const record = message as Record<string, unknown>;
-    return (record.content as Record<string, unknown>[]).flatMap((block) => extractToolBlockCardsCached(record, block));
+    return (record.content as Record<string, unknown>[]).flatMap((block) =>
+      extractToolBlockCardsCached(record, block),
+    );
   });
-  expect(blockCards.map((card) => resolveToolCardOutcome(card, false))).toEqual(["succeeded", "succeeded"]);
+  expect(blockCards.map((card) => resolveToolCardOutcome(card, false))).toEqual([
+    "succeeded",
+    "succeeded",
+  ]);
   expect(blockCards.map((card) => card.args)).toEqual(cards.map((card) => card.args));
   expect(blockCards.map((card) => card.outputText)).toEqual([undefined, "Legacy output"]);
 });

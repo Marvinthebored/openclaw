@@ -55,170 +55,183 @@ it.each([
   { width: 1600, sameId: false },
   { width: 1440, sameId: true },
   { width: 1600, sameId: true },
-])("renders in-place work at $width px (same-ID envelope=$sameId) in both modes", async ({ width, sameId }) => {
-  const renderedMessages = sameId
-    ? [messages[0]!, msg("same-id", "assistant", [
-        text("First visible narration."), tool("read-1"),
-        text("Second visible narration."),
-        { type: "tool_result", tool_use_id: "read-1", content: "Recorded result." },
-        text("Final visible answer."),
-      ], 6000, { stopReason: "stop" })]
-    : messages;
-  await page.viewport(width, 900);
-  for (const bubbleMode of [false, true]) {
-    const items = coalesceAgentRunFrames(
-      coalesceActivityRuns(
-        collapseCompletedTurnWork(
-          buildItems({
-            paneId: "work-chunks-browser-" + width + bubbleMode,
-            sessionKey,
-            messages: renderedMessages,
-          }),
-          { sessionKey, runWorking: false, bubbleMode },
+])(
+  "renders in-place work at $width px (same-ID envelope=$sameId) in both modes",
+  async ({ width, sameId }) => {
+    const renderedMessages = sameId
+      ? [
+          messages[0]!,
+          msg(
+            "same-id",
+            "assistant",
+            [
+              text("First visible narration."),
+              tool("read-1"),
+              text("Second visible narration."),
+              { type: "tool_result", tool_use_id: "read-1", content: "Recorded result." },
+              text("Final visible answer."),
+            ],
+            6000,
+            { stopReason: "stop" },
+          ),
+        ]
+      : messages;
+    await page.viewport(width, 900);
+    for (const bubbleMode of [false, true]) {
+      const items = coalesceAgentRunFrames(
+        coalesceActivityRuns(
+          collapseCompletedTurnWork(
+            buildItems({
+              paneId: "work-chunks-browser-" + width + bubbleMode,
+              sessionKey,
+              messages: renderedMessages,
+            }),
+            { sessionKey, runWorking: false, bubbleMode },
+          ),
         ),
-      ),
-      { messages: renderedMessages },
-    );
-    const [expanded, setExpanded] = createSignal(new Set<string>());
-    const view = mountSolid(() => (
-      <div
-        class={["chat-thread", { "chat-thread--bubbles": bubbleMode }]}
-        style={{ width: "900px", margin: "24px auto", height: "800px" }}
-      >
-        <div class="chat-thread-inner">
-          <For each={items}>
-            {(item) => (
-              <Switch>
-                <Match when={item.kind === "agent-run-frame"}>
-                  <AgentRunFrame
-                    frame={item as Extract<typeof item, { kind: "agent-run-frame" }>}
-                    options={{
-                      streamOptions: { bubbleMode },
-                      renderGroupOptions: () => ({
-                        showReasoning: true,
-                        showToolCalls: true,
-                        bubbleMode,
-                      }),
-                      isWorkExpanded: (key) => expanded().has(key),
-                      onToggleWork: (key, wasExpanded) =>
-                        setExpanded((current) => {
-                          const next = new Set(current);
-                          if (wasExpanded) {
-                            next.delete(key);
-                          } else {
-                            next.add(key);
-                          }
-                          return next;
+        { messages: renderedMessages },
+      );
+      const [expanded, setExpanded] = createSignal(new Set<string>());
+      const view = mountSolid(() => (
+        <div
+          class={["chat-thread", { "chat-thread--bubbles": bubbleMode }]}
+          style={{ width: "900px", margin: "24px auto", height: "800px" }}
+        >
+          <div class="chat-thread-inner">
+            <For each={items}>
+              {(item) => (
+                <Switch>
+                  <Match when={item.kind === "agent-run-frame"}>
+                    <AgentRunFrame
+                      frame={item as Extract<typeof item, { kind: "agent-run-frame" }>}
+                      options={{
+                        streamOptions: { bubbleMode },
+                        renderGroupOptions: () => ({
+                          showReasoning: true,
+                          showToolCalls: true,
+                          bubbleMode,
                         }),
-                    }}
-                  />
-                </Match>
-                <Match when={item.kind === "group"}>
-                  <MessageGroup
-                    group={item as Extract<typeof item, { kind: "group" }>}
-                    options={{ showReasoning: true, showToolCalls: true, bubbleMode }}
-                  />
-                </Match>
-              </Switch>
-            )}
-          </For>
+                        isWorkExpanded: (key) => expanded().has(key),
+                        onToggleWork: (key, wasExpanded) =>
+                          setExpanded((current) => {
+                            const next = new Set(current);
+                            if (wasExpanded) {
+                              next.delete(key);
+                            } else {
+                              next.add(key);
+                            }
+                            return next;
+                          }),
+                      }}
+                    />
+                  </Match>
+                  <Match when={item.kind === "group"}>
+                    <MessageGroup
+                      group={item as Extract<typeof item, { kind: "group" }>}
+                      options={{ showReasoning: true, showToolCalls: true, bubbleMode }}
+                    />
+                  </Match>
+                </Switch>
+              )}
+            </For>
+          </div>
         </div>
-      </div>
-    ));
-    try {
-      flush();
-      await waitForSolid(() =>
-        expect(view.container.textContent).toContain("Final visible answer."),
-      );
-      const visibleText = () =>
-        [...view.container.querySelectorAll<HTMLElement>(".chat-text")].map((node) =>
-          node.textContent?.trim(),
-        );
-      const summaries = () => [
-        ...view.container.querySelectorAll<HTMLButtonElement>(".chat-work-group > button"),
-      ];
-      if (!baseline) {
-        expect(visibleText()).toEqual([
-          "Inspect the synthetic inputs.",
-          "First visible narration.",
-          "Second visible narration.",
-          "Final visible answer.",
-        ]);
-        expect(summaries()).toHaveLength(2);
-        const order = [
-          ...view.container.querySelectorAll<HTMLElement>(".chat-text, .chat-work-group"),
-        ].map((node) => (node.matches(".chat-work-group") ? "WORK" : node.textContent?.trim()));
-        expect(order).toEqual([
-          "Inspect the synthetic inputs.",
-          "First visible narration.",
-          "WORK",
-          "Second visible narration.",
-          "WORK",
-          "Final visible answer.",
-        ]);
-        expect(
-          summaries().every((button) => button.getAttribute("aria-expanded") === "false"),
-        ).toBe(true);
-        const before = visibleText();
-        await userEvent.click(summaries()[0]!);
+      ));
+      try {
+        flush();
         await waitForSolid(() =>
-          expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("true"),
+          expect(view.container.textContent).toContain("Final visible answer."),
         );
-        expect(summaries()[1]?.getAttribute("aria-expanded")).toBe("false");
-        expect(visibleText().filter((value) => before.includes(value))).toEqual(before);
-        await userEvent.click(summaries()[0]!);
-        await waitForSolid(() =>
-          expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("false"),
-        );
-      }
-      view.container.querySelector<HTMLElement>(".chat-thread")!.scrollTop = 0;
-      window.scrollTo(0, 0);
-      await new Promise<void>((resolve) => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => resolve());
+        const visibleText = () =>
+          [...view.container.querySelectorAll<HTMLElement>(".chat-text")].map((node) =>
+            node.textContent?.trim(),
+          );
+        const summaries = () => [
+          ...view.container.querySelectorAll<HTMLButtonElement>(".chat-work-group > button"),
+        ];
+        if (!baseline) {
+          expect(visibleText()).toEqual([
+            "Inspect the synthetic inputs.",
+            "First visible narration.",
+            "Second visible narration.",
+            "Final visible answer.",
+          ]);
+          expect(summaries()).toHaveLength(2);
+          const order = [
+            ...view.container.querySelectorAll<HTMLElement>(".chat-text, .chat-work-group"),
+          ].map((node) => (node.matches(".chat-work-group") ? "WORK" : node.textContent?.trim()));
+          expect(order).toEqual([
+            "Inspect the synthetic inputs.",
+            "First visible narration.",
+            "WORK",
+            "Second visible narration.",
+            "WORK",
+            "Final visible answer.",
+          ]);
+          expect(
+            summaries().every((button) => button.getAttribute("aria-expanded") === "false"),
+          ).toBe(true);
+          const before = visibleText();
+          await userEvent.click(summaries()[0]!);
+          await waitForSolid(() =>
+            expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("true"),
+          );
+          expect(summaries()[1]?.getAttribute("aria-expanded")).toBe("false");
+          expect(visibleText().filter((value) => before.includes(value))).toEqual(before);
+          await userEvent.click(summaries()[0]!);
+          await waitForSolid(() =>
+            expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("false"),
+          );
+        }
+        view.container.querySelector<HTMLElement>(".chat-thread")!.scrollTop = 0;
+        window.scrollTo(0, 0);
+        await new Promise<void>((resolve) => {
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => resolve());
+          });
         });
-      });
-      const geometry = [
-        ...view.container.querySelectorAll<HTMLElement>(
-          ".chat-text, .chat-work-group, .chat-activity-group__label",
-        ),
-      ].map((node) => {
-        const rect = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        return {
-          selector: node.className,
-          text: node.textContent,
-          x: rect.x,
-          y: rect.y,
-          width: rect.width,
-          height: rect.height,
-          clientWidth: node.clientWidth,
-          scrollWidth: node.scrollWidth,
-          overflow: style.overflow,
-          textOverflow: style.textOverflow,
-        };
-      });
-      expect(
-        geometry.every(
-          (rect) =>
-            rect.y >= 0 &&
-            rect.y + rect.height <= 900 &&
-            rect.width > 0 &&
-            rect.height > 0 &&
-            rect.scrollWidth <= rect.clientWidth + 1,
-        ),
-      ).toBe(true);
-      console.log(JSON.stringify({ phase, width, bubbleMode, geometry }));
-      console.log(
-        await page.screenshot({
-          path: `../../../../.vitest/180490-web-${phase}-${width}-${sameId ? "same-id" : "separate"}-${bubbleMode ? "bubbles" : "flat"}.png`,
-        }),
-      );
-    } finally {
-      view.unmount();
+        const geometry = [
+          ...view.container.querySelectorAll<HTMLElement>(
+            ".chat-text, .chat-work-group, .chat-activity-group__label",
+          ),
+        ].map((node) => {
+          const rect = node.getBoundingClientRect();
+          const style = getComputedStyle(node);
+          return {
+            selector: node.className,
+            text: node.textContent,
+            x: rect.x,
+            y: rect.y,
+            width: rect.width,
+            height: rect.height,
+            clientWidth: node.clientWidth,
+            scrollWidth: node.scrollWidth,
+            overflow: style.overflow,
+            textOverflow: style.textOverflow,
+          };
+        });
+        expect(
+          geometry.every(
+            (rect) =>
+              rect.y >= 0 &&
+              rect.y + rect.height <= 900 &&
+              rect.width > 0 &&
+              rect.height > 0 &&
+              rect.scrollWidth <= rect.clientWidth + 1,
+          ),
+        ).toBe(true);
+        console.log(JSON.stringify({ phase, width, bubbleMode, geometry }));
+        console.log(
+          await page.screenshot({
+            path: `../../../../.vitest/180490-web-${phase}-${width}-${sameId ? "same-id" : "separate"}-${bubbleMode ? "bubbles" : "flat"}.png`,
+          }),
+        );
+      } finally {
+        view.unmount();
+      }
     }
-  }
-});
+  },
+);
 
 it.each([false, true])(
   "renders one fenced code unit across text blocks (work between=%s)",
