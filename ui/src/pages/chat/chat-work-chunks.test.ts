@@ -50,6 +50,34 @@ const tool = (id: string) => ({
 const text = (value: string) => ({ type: "text", text: value });
 
 describe("completed work preserves source order", () => {
+  it.each([false, true])(
+    "keeps unsplit Markdown-context narration visible (bubble=%s)",
+    (bubbleMode) => {
+      const source = message(
+        "mixed",
+        "assistant",
+        [text("Finding: first"), tool("read-1"), text("Second finding")],
+        { stopReason: "stop" },
+      );
+      const grouped = groups([
+        message("prompt", "user", "Inspect synthetic inputs"),
+        source,
+        message("final", "assistant", [text("Final answer")], { stopReason: "stop" }),
+      ]);
+      const items = collapseCompletedTurnWork(grouped, {
+        sessionKey,
+        runWorking: false,
+        bubbleMode,
+      });
+      expect(items.map((item) => item.kind)).toEqual(["group", "group", "group"]);
+      expect(items[1]).toEqual(grouped[1]);
+      if (items[1]?.kind !== "group") {
+        throw new Error("Missing visible mixed envelope");
+      }
+      expect(items[1].messages[0]?.message).toEqual(source);
+    },
+  );
+
   it.each([false, true])("keeps every Anthropic narration in place (bubble=%s)", (bubbleMode) => {
     const messages = [
       message("prompt", "user", "Inspect synthetic inputs"),

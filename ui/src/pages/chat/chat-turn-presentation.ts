@@ -103,6 +103,13 @@ function isCollapsibleWorkGroup(item: TurnRenderItem): item is MessageGroup {
     item.kind !== "group" ||
     item.isStreaming ||
     groupHasVisibleReplyContent(item, item.role.toLowerCase() !== "tool") ||
+    // Markdown-context fallbacks retain the tool role and the whole assistant
+    // envelope. Its narration still bounds completed work.
+    (item.visibleContent === "text" &&
+      item.messages.some(
+        ({ message, hasVisibleContent }) =>
+          asRecord(message)?.role === "assistant" && hasVisibleContent,
+      )) ||
     item.messages.some(({ message }) => isProviderVoiceTranscript(message))
   ) {
     return false;
