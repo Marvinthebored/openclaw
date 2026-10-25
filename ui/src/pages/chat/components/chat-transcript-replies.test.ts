@@ -190,7 +190,7 @@ it.each([
 );
 
 it.each([false, true])(
-  "opens folded work when a reply navigation loads its source (run frame: %s)",
+  "reveals visible assistant text when reply navigation loads its source (run frame: %s)",
   async (framed) => {
     const [sourceMessage, followUp] = replyMessages();
     const props = replyProps([followUp], { sessionKey: "agent:main:dashboard:reply" });
@@ -230,9 +230,7 @@ it.each([false, true])(
     expect(transcript.revealMessage("source")).toBe(true);
     rerender();
     await flushDeferredRowPrune();
-    expect(requireElement(container, ".chat-work-group button").getAttribute("aria-expanded")).toBe(
-      "true",
-    );
+    expect(container.querySelector(".chat-work-group")).toBeNull();
     expect(requireElement(container, "[data-entry-id='source']").textContent).toContain(
       "The original answer",
     );
@@ -259,7 +257,7 @@ it.each([true, false])(
     const { container, rerender, start } = threadView(props);
     await start();
     expectEntryText(container, "answer", "An operator approved it.");
-    expect(container.querySelector('[data-entry-id="commentary"]')).toBeNull();
+    expectEntryText(container, "commentary", "Checking the saved approval.");
     for (const index of [1, 2]) {
       props.messages = [
         ...props.messages,
@@ -281,7 +279,7 @@ it.each([true, false])(
       for (let alert = 1; alert <= index; alert++) {
         expectEntryText(container, `alert-${alert}`, `New application error ${alert}.`);
       }
-      expect(container.querySelector('[data-entry-id="commentary"]')).toBeNull();
+      expectEntryText(container, "commentary", "Checking the saved approval.");
     }
     props.messages = structuredClone(props.messages);
     rerender();
