@@ -221,8 +221,13 @@ function textareaCaretTop(el: HTMLTextAreaElement, style: CSSStyleDeclaration) {
   const origin = document.createElement("span");
   origin.textContent = "\u200b";
   const marker = document.createElement("span");
-  marker.textContent = el.value.slice(caret) || "\u200b";
-  mirror.append(origin, document.createTextNode(el.value.slice(0, caret)), marker);
+  marker.textContent = "\u200b";
+  mirror.append(
+    origin,
+    document.createTextNode(el.value.slice(0, caret)),
+    marker,
+    document.createTextNode(el.value.slice(caret)),
+  );
   document.body.append(mirror);
   const top =
     Number.parseFloat(style.paddingTop) +
@@ -250,6 +255,17 @@ function updateTextareaOverflow(
   const clientHeight = measured?.clientHeight ?? el.clientHeight;
   const scrollHeight = measured?.scrollHeight ?? el.scrollHeight;
   const state = composerTextareaResizeObservers.get(el);
+  if (el.closest('[data-composer-layout="single-line"]')) {
+    el.scrollTop = 0;
+    el.style.overflowY = "";
+    el.removeAttribute("data-scroll-fade-top");
+    el.removeAttribute("data-scroll-fade-bottom");
+    if (state) {
+      state.height = clientHeight;
+      state.maxHeight = Number.parseFloat(getComputedStyle(el).maxHeight);
+    }
+    return;
+  }
   if (state && clientHeight !== state.height) {
     const style = getComputedStyle(el);
     const maxHeight = Number.parseFloat(style.maxHeight);
@@ -306,6 +322,7 @@ export function adjustTextareaHeight(
   // pass would silently outrank the stylesheet. Which shape a composer is in is
   // declared in its markup, never inferred here from how much text it holds.
   if (el.closest('[data-composer-layout="single-line"]')) {
+    el.scrollTop = 0;
     el.style.height = "";
     el.style.overflowY = "";
     el.removeAttribute("data-composer-scrollable");

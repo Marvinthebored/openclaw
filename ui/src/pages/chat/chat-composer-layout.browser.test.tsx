@@ -8,6 +8,10 @@ import {
   renderComposerInto,
   disposeComposer,
 } from "./chat-composer.test-support.ts";
+import {
+  observeTextareaOverflow,
+  disconnectTextareaOverflowObserver,
+} from "./components/chat-composer-dom.ts";
 import { ComposerLayout } from "./components/chat-composer-layout.ts";
 import { resetChatComposerState } from "./components/chat-composer.tsx";
 import baseStyles from "../../styles/base.css?inline";
@@ -116,6 +120,36 @@ describe("content-sized composer with border width control", () => {
       f.draw();
       await settled();
       expect(f.input().getBoundingClientRect().height).toBe(initial.height);
+    },
+  );
+
+  it.each(["wrapped", "compact"] as const)(
+    "keeps the correct draft line visible after shrinking (%s)",
+    async (shape) => {
+      const editor = document.createElement("textarea");
+      editor.style.cssText =
+        "width:200px;height:96px;max-height:96px;min-height:0;padding:8px;border:0;box-sizing:border-box;font:16px/24px monospace;white-space:pre-wrap;overflow-wrap:break-word;resize:none";
+      editor.value = "abcdefghij ".repeat(80);
+      container.append(editor);
+      observeTextareaOverflow(editor);
+      onTestFinished(() => disconnectTextareaOverflowObserver(editor));
+      editor.focus();
+      editor.setSelectionRange(11, 11);
+      editor.scrollTop = 0;
+      await settled();
+      if (shape === "compact") {
+        editor.blur();
+        container.dataset.composerLayout = "single-line";
+      }
+      editor.style.height = shape === "compact" ? "24px" : "60px";
+      editor.style.maxHeight = editor.style.height;
+      await settled();
+      await settled();
+      expect(editor.scrollTop).toBe(shape === "compact" ? 0 : 8);
+      if (shape === "compact") {
+        expect(editor.style.overflowY).toBe("");
+        expect(editor.hasAttribute("data-scroll-fade-top")).toBe(false);
+      }
     },
   );
 
