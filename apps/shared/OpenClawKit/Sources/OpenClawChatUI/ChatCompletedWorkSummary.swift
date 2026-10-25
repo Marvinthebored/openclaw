@@ -94,7 +94,8 @@ enum ChatCompletedWorkSummary {
     }
 
     private static func category(_ item: ChatToolActivityItem) -> Category {
-        let name = ToolDisplayRegistry.displayCall(name: item.name, args: item.arguments).name?.lowercased() ?? ""
+        let call = ToolDisplayRegistry.displayCall(name: item.name, args: item.arguments)
+        let name = call.name?.lowercased() ?? ""
         switch name {
         case "exec", "bash", "shell", "run_command", "run_terminal_cmd": return .commands
         case "read", "read_file", "readfile", "notebookread", "notebook_read": return .reads
@@ -104,7 +105,7 @@ enum ChatCompletedWorkSummary {
         case "grep", "glob", "find", "ls", "list", "codebase_search", "web_search": return .searches
         case "web_fetch", "webfetch", "fetch": return .fetches
         case "sessions_spawn":
-            return item.displayState == .finished && item.arguments?.dictionaryValue?["visible"]?.boolValue != true
+            return item.displayState == .finished && call.args?.dictionaryValue?["visible"]?.boolValue != true
                 ? .subagents : .other
         default: return .other
         }

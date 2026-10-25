@@ -63,6 +63,17 @@ struct ChatCompletedWorkSummaryTests {
         #expect(message.activity == nil)
     }
 
+    @Test func `wrapped visible launch is not a subagent`() throws {
+        let messages = try Self.decode("""
+        {"role":"assistant","content":[
+          {"type":"toolCall","id":"a","name":"dispatch_action",
+           "arguments":{"id":"openclaw:host:sessions_spawn","args":{"visible":true}}},
+          {"type":"toolResult","id":"a","text":"ok"}
+        ]}
+        """)
+        #expect(Self.label(messages) == "Worked · 1 other operation")
+    }
+
     private static func decode(_ json: String) throws -> [OpenClawChatMessage] {
         try [JSONDecoder().decode(OpenClawChatMessage.self, from: Data(json.utf8))]
     }
