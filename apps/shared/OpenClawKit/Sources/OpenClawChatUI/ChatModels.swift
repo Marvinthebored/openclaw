@@ -660,7 +660,7 @@ public struct OpenClawChatMessage: Codable, Hashable, Identifiable, Sendable {
         self.senderSession = try? container.decode(AnyCodable.self, forKey: .senderSession)
         self.sourceMetadata = decodedOpenClaw
         self.phase = try container.decodeIfPresent(String.self, forKey: .phase)
-        self.activity = try container.decodeIfPresent([OpenClawAgentActivityItem].self, forKey: .activity)
+        self.activity = try? container.decodeIfPresent([OpenClawAgentActivityItem].self, forKey: .activity)
         self.turnBoundary = decodedOpenClaw?.turnBoundary
         self.steerTargetRunID = decodedOpenClaw?.steerTargetRunId
         self.streamFallback = try? container.decode(OpenClawChatStreamFallback.self, forKey: .streamFallback)

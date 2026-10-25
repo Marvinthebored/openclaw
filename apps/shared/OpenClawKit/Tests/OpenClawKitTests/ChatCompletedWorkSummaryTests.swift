@@ -53,6 +53,16 @@ struct ChatCompletedWorkSummaryTests {
         #expect(Self.label(messages + messages) == "Worked · 1 read")
     }
 
+    @Test func `malformed activity preserves message text`() throws {
+        let messages = try Self.decode("""
+        {"role":"assistant","content":[{"type":"text","text":"Still visible."}],
+         "activity":[{"itemId":42}]}
+        """)
+        let message = try #require(messages.first)
+        #expect(message.content.first?.text == "Still visible.")
+        #expect(message.activity == nil)
+    }
+
     private static func decode(_ json: String) throws -> [OpenClawChatMessage] {
         try [JSONDecoder().decode(OpenClawChatMessage.self, from: Data(json.utf8))]
     }
