@@ -183,7 +183,7 @@ export async function persistCliAssistantTranscript(params: {
     return { owned: false };
   }
   const idempotencyKey = cliAssistantItemId(runParams.runId);
-  const prepare = (write: { message: unknown; sessionKey: string; agentId?: string }) => {
+  const prepare = (write: { message: unknown; sessionKey?: string; agentId?: string }) => {
     const message = runAgentHarnessBeforeMessageWriteHook({
       ...write,
       message: projectAgentHarnessTranscriptMessageForDisplay({
