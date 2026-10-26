@@ -72,3 +72,6 @@ export function createStableSkillAuthoring() {
     };
   };
 }
+
+/** The CLI runtime's own shapes; the embedded runtime keeps a separate instance. */
+export const resolveStableCliSkillAuthoring = createStableSkillAuthoring();
