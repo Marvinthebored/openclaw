@@ -1,13 +1,63 @@
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk/plugin-entry";
+import { createTestPluginApi } from "openclaw/plugin-sdk/plugin-test-api";
+import { createRealtimeVoiceSessionHarness } from "openclaw/plugin-sdk/realtime-voice";
+import type { RealtimeVoiceProviderPlugin } from "openclaw/plugin-sdk/realtime-voice-provider";
 import { beforeEach, expect, it, vi } from "vitest";
-import { TalkRealtimeRelayOutputOwnership } from "../../src/gateway/talk/relay/state.js";
-import { createRealtimeVoiceSessionHarness } from "../../src/talk/realtime-session-harness.js";
-import { buildXaiRealtimeVoiceProvider } from "./realtime-voice-provider.js";
-import { openRealtimeBridge } from "./realtime-voice-provider.test-support.js";
-const { FakeWebSocket } = await vi.hoisted(() => import("./realtime-voice-socket.test-support.js"));
-vi.mock("./ws-runtime.js", () => ({ WebSocket: FakeWebSocket }));
+import xaiPlugin from "../../../../extensions/xai/index.js";
+import { createCatalogContextFixture } from "../../../plugins/capability-catalog.test-support.js";
+import { TalkRealtimeRelayOutputOwnership } from "./state.js";
+
+const { FakeWebSocket } = await vi.hoisted(async () => {
+  const { EventEmitter } = await import("node:events");
+  class TestWebSocket extends EventEmitter {
+    static readonly OPEN = 1;
+    static readonly CONNECTING = 0;
+    static instances: TestWebSocket[] = [];
+    readyState = TestWebSocket.CONNECTING;
+    constructor(..._args: unknown[]) {
+      super();
+      TestWebSocket.instances.push(this);
+    }
+    send(_payload: string) {}
+    close() {
+      this.readyState = 3;
+      this.emit("close", 1000, Buffer.from(""));
+    }
+    terminate() {
+      this.close();
+    }
+    emitServer(event: unknown) {
+      this.emit("message", Buffer.from(JSON.stringify(event)));
+    }
+    open() {
+      this.readyState = TestWebSocket.OPEN;
+      this.emit("open");
+    }
+  }
+  return { FakeWebSocket: TestWebSocket };
+});
+vi.mock("../../../../extensions/xai/ws-runtime.js", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  WebSocket: FakeWebSocket,
+}));
 beforeEach(() => {
   FakeWebSocket.instances = [];
 });
+
+function registeredProvider(): RealtimeVoiceProviderPlugin {
+  const registerRealtimeVoiceProvider = vi.fn<OpenClawPluginApi["registerRealtimeVoiceProvider"]>();
+  xaiPlugin.register(createTestPluginApi({ registerRealtimeVoiceProvider }));
+  const factory = registerRealtimeVoiceProvider.mock.calls[0]?.[0];
+  expect(factory).toBeTypeOf("function");
+  if (typeof factory !== "function") {
+    throw new Error("expected xAI realtime provider factory");
+  }
+  return factory(
+    createCatalogContextFixture(() => {
+      throw new Error("registration must not invoke host operations");
+    }),
+  );
+}
 function server(socket: InstanceType<typeof FakeWebSocket>, type: string, data: object = {}) {
   socket.emitServer({ type, ...data });
 }
@@ -53,7 +103,7 @@ it("settles a server-VAD predecessor before admitting its successor through Talk
   const sendAudio = vi.fn();
   const outcomes = vi.fn((outcome) => ownership.finish(outcome.responseId));
   const session = harness.createBridge({
-    provider: ownership.bind(buildXaiRealtimeVoiceProvider(), vi.fn()),
+    provider: ownership.bind(registeredProvider(), vi.fn()),
     providerConfig: { apiKey: "xai-test" },
     audioSink: { sendAudio },
     onTranscript,
@@ -61,7 +111,12 @@ it("settles a server-VAD predecessor before admitting its successor through Talk
     onResponseDone: outcomes,
   });
   try {
-    const socket = await openRealtimeBridge(session.bridge, FakeWebSocket.instances.length);
+    const connecting = session.bridge.connect();
+    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1), { interval: 1 });
+    const socket = FakeWebSocket.instances[0]!;
+    socket.open();
+    server(socket, "session.updated");
+    await connecting;
     responseCreated(socket, "A");
     const firstTurn = harness.talk.activeTurnId;
     server(socket, "input_audio_buffer.speech_started");
