@@ -584,8 +584,8 @@ async function runPreparedCliAgentOwned(
           runParams: params,
           // Dispatch owns source-reply transcript mirrors and their idempotency keys.
           // Persisting them here would duplicate the same visible assistant reply.
-          // Claude history imports each authored message separately. The local
-          // terminal row owns only the final boundary, not another copy of narration.
+          // Completed Claude turns own each native message canonically; the
+          // terminal row owns the final boundary and whole-turn usage.
           text: sourceReplyWasDelivered
             ? ""
             : isClaudeCliBackend(params.provider) && !terminalInterruption && !output.yielded
@@ -604,6 +604,26 @@ async function runPreparedCliAgentOwned(
                   cliSessionId: effectiveCliSessionId,
                   externalId: output.resumeCheckpointId,
                 },
+              }
+            : {}),
+          ...(!sourceReplyWasDelivered &&
+          isClaudeCliBackend(params.provider) &&
+          !terminalInterruption &&
+          !output.yielded &&
+          effectiveCliSessionId &&
+          output.assistantMessages?.length
+            ? {
+                nativeMessages: output.assistantMessages.map((message, index, messages) => ({
+                  ...message,
+                  cliSessionId: effectiveCliSessionId,
+                  text:
+                    index === messages.length - 1
+                      ? applyPluginTextReplacements(
+                          message.text,
+                          context.backendResolved.textTransforms?.output,
+                        )
+                      : message.text,
+                })),
               }
             : {}),
           modelId: context.modelId,

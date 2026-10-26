@@ -2,6 +2,7 @@ import { cloneEnvWithPlatformSemantics } from "../../config/config-env-vars.js";
 import { getCliHistoryWriter } from "../../config/sessions/cli-history-boundary.js";
 import { resolveSessionStorePathCore } from "../../config/sessions/paths.js";
 import {
+  appendTranscriptMessages,
   patchSessionEntryCore,
   resolveSessionTranscriptDatabasePath,
 } from "../../config/sessions/session-accessor.js";
@@ -160,6 +161,7 @@ export async function persistCliAssistantTranscript(params: {
   stopReason: StopReason;
   yielded?: true;
   /** Native final-message identity, shared with the Claude history importer. */
+  nativeMessages?: { uuid: string; text: string; cliSessionId: string }[];
   claudeMessageIdentity?: { cliSessionId: string; externalId: string };
 }): Promise<{
   owned: boolean;
@@ -167,7 +169,10 @@ export async function persistCliAssistantTranscript(params: {
   terminalAnchor?: import("../../config/sessions/session-accessor.js").TranscriptEntryAnchor;
 }> {
   const { runParams } = params;
-  if (runParams.currentInboundEventKind === "room_event" || !params.text) {
+  if (
+    runParams.currentInboundEventKind === "room_event" ||
+    (!params.text && !params.nativeMessages?.length)
+  ) {
     const admission = runParams.userTurnTranscriptRecorder?.getAdmissionReceipt();
     return {
       owned: runParams.currentInboundEventKind === "room_event",
@@ -178,8 +183,100 @@ export async function persistCliAssistantTranscript(params: {
     return { owned: false };
   }
   const idempotencyKey = cliAssistantItemId(runParams.runId);
+  const prepare = (write: { message: unknown; sessionKey: string; agentId?: string }) => {
+    const message = runAgentHarnessBeforeMessageWriteHook({
+      ...write,
+      message: projectAgentHarnessTranscriptMessageForDisplay({
+        runId: runParams.runId,
+        hidden: runParams.privateCompletion === true,
+        inputProvenance: runParams.inputProvenance,
+        message: write.message as AgentMessage,
+      }),
+      prepareAssistantTranscriptMessage: runParams.prepareAssistantTranscriptMessage,
+    });
+    return message
+      ? projectAgentHarnessTranscriptMessageForDisplay({
+          runId: runParams.runId,
+          hidden: runParams.privateCompletion === true,
+          inputProvenance: runParams.inputProvenance,
+          message,
+        })
+      : null;
+  };
   let committed = false;
+  let blocked = false;
   try {
+    if (params.nativeMessages?.length) {
+      const rows = await appendTranscriptMessages(
+        {
+          sessionKey: runParams.sessionKey,
+          sessionId: runParams.sessionId,
+          agentId: runParams.agentId,
+          storePath: runParams.storePath,
+        },
+        {
+          config: runParams.config,
+          expectedLifecycleRevision: runParams.expectedLifecycleRevision,
+          expectedWriterRunId: runParams.expectedWriterRunId,
+          runId: runParams.runId,
+          updateMode: "inline",
+          touchSessionEntry: true,
+          onMessageCommitted: () => {
+            committed = true;
+          },
+          messages: params.nativeMessages.map((native, index, messages) => {
+            const final = index === messages.length - 1;
+            const key = final ? idempotencyKey : `${idempotencyKey}:native:${native.uuid}`;
+            return {
+              message: {
+                ...buildAssistantMessage({
+                  model: { api: "cli", provider: runParams.provider, id: params.modelId },
+                  content: [{ type: "text", text: native.text }],
+                  stopReason: "stop",
+                  usage: buildCliAssistantTranscriptUsage(
+                    final ? params.usage : undefined,
+                    final ? params.turnUsage : undefined,
+                  ),
+                }),
+                idempotencyKey: key,
+                __openclaw: {
+                  importedFrom: "claude-cli",
+                  cliSessionId: native.cliSessionId,
+                  externalId: native.uuid,
+                },
+              },
+              idempotencyLookup: "scan" as const,
+              workerPreparation: {
+                prepareMessageAfterIdempotencyCheck: (message: unknown) => {
+                  const prepared = prepare({
+                    message,
+                    sessionKey: runParams.sessionKey!,
+                    agentId: runParams.agentId,
+                  });
+                  if (!prepared) {
+                    blocked = true;
+                    return undefined;
+                  }
+                  return {
+                    ...prepared,
+                    idempotencyKey: key,
+                    __openclaw: {
+                      importedFrom: "claude-cli",
+                      cliSessionId: native.cliSessionId,
+                      externalId: native.uuid,
+                    },
+                  };
+                },
+              },
+            };
+          }),
+        },
+      );
+      const final = rows.at(-1);
+      return final
+        ? { owned: true, idempotencyKey, terminalAnchor: final.anchor }
+        : { owned: true };
+    }
     const result = await appendExactAssistantMessageToSessionTranscript({
       sessionKey: runParams.sessionKey,
       agentId: runParams.agentId,
@@ -197,26 +294,7 @@ export async function persistCliAssistantTranscript(params: {
       onMessageCommitted: () => {
         committed = true;
       },
-      beforeMessageWrite: (write) => {
-        const message = runAgentHarnessBeforeMessageWriteHook({
-          ...write,
-          message: projectAgentHarnessTranscriptMessageForDisplay({
-            runId: runParams.runId,
-            hidden: runParams.privateCompletion === true,
-            inputProvenance: runParams.inputProvenance,
-            message: write.message,
-          }),
-          prepareAssistantTranscriptMessage: runParams.prepareAssistantTranscriptMessage,
-        });
-        return message
-          ? projectAgentHarnessTranscriptMessageForDisplay({
-              runId: runParams.runId,
-              hidden: runParams.privateCompletion === true,
-              inputProvenance: runParams.inputProvenance,
-              message,
-            })
-          : null;
-      },
+      beforeMessageWrite: prepare,
       message: {
         ...(params.claudeMessageIdentity
           ? { __openclaw: { importedFrom: "claude-cli", ...params.claudeMessageIdentity } }
@@ -255,7 +333,7 @@ export async function persistCliAssistantTranscript(params: {
     };
   } catch (error) {
     log.warn(`CLI assistant transcript persistence failed: ${formatErrorMessage(error)}`);
-    return committed ? { owned: true, idempotencyKey } : { owned: false };
+    return committed ? { owned: true, idempotencyKey } : { owned: blocked };
   }
 }
 

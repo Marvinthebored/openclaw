@@ -31,6 +31,11 @@ it.each([
   });
   execute.mockResolvedValue({
     text: "Checking now\nChecking inputs\nDone",
+    assistantMessages: [
+      { uuid: "progress-uuid", text: "Checking now" },
+      { uuid: "second-progress-uuid", text: "Checking inputs" },
+      { uuid: "final-uuid", text: "Done" },
+    ],
     rawFinalText: "Done",
     sessionId: "native-session",
     resumeCheckpointId: "final-uuid",
@@ -55,7 +60,16 @@ it.each([
   const local = (await loadTranscriptEvents(target)).flatMap((event) =>
     typeof event === "object" && event !== null && "message" in event ? [event.message] : [],
   );
-  expect(local).toHaveLength(1);
+  if (!interrupted && !yielded) {
+    // Native history is unavailable: only canonical rows are read here.
+    expect(local.map((message) => (message as { content: unknown }).content)).toEqual([
+      [{ type: "text", text: "Checking now" }],
+      [{ type: "text", text: "Checking inputs" }],
+      [{ type: "text", text: transformed ? "Finished" : "Done" }],
+    ]);
+  } else {
+    expect(local).toHaveLength(1);
+  }
   if (interrupted || yielded) {
     expect(local[0]).toMatchObject({
       content: [{ type: "text", text: "Checking now\nChecking inputs\nDone" }],
@@ -63,7 +77,7 @@ it.each([
     expect(local[0]).not.toHaveProperty("__openclaw.externalId");
     return;
   }
-  expect(local[0]).toMatchObject({
+  expect(local.at(-1)).toMatchObject({
     content: [{ type: "text", text: transformed ? "Finished" : "Done" }],
     __openclaw: {
       importedFrom: "claude-cli",
@@ -90,5 +104,6 @@ it.each([
   }
   index.finish();
   expect(index.count).toBe(3);
+  expect(index.rows(0, 3).map((row) => row.local_seq)).toEqual([1, 2, 3]);
   index.close();
 });

@@ -21,6 +21,7 @@ import {
 import * as cliOutputLifecycle from "./cli-output-lifecycle.js";
 import {
   decodeCliRecords,
+  recordClaudeAssistantMessage,
   isClaudeStopHookFeedbackRecord,
   isClaudeStreamJsonDialect,
   isClaudeSyntheticNoResponse,
@@ -52,6 +53,7 @@ const CLAUDE_SYNTHETIC_NO_RESPONSE_ERROR = "Claude CLI returned a synthetic no-r
 
 export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOptions) {
   const lineBuffer = { pending: "" };
+  const assistantMessages: NonNullable<CliOutput["assistantMessages"]> = [];
   let assistantText = "";
   let customThinkingText = "";
   let pendingClaudeText = "";
@@ -373,6 +375,9 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
         }
       }
       resumeCheckpointId = pickCliResumeCheckpointId({ ...params, parsed }) ?? resumeCheckpointId;
+      if (claudeStreamJson) {
+        recordClaudeAssistantMessage(assistantMessages, parsed);
+      }
       params.onAssistantMessage?.(parsed.message);
       if (claudeStreamJson && isClaudeSyntheticNoResponse(parsed)) {
         sawClaudeSyntheticNoResponse = true;
@@ -724,9 +729,9 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
         };
       }
       if (output) {
-        return output;
+        return { ...output, ...(assistantMessages.length ? { assistantMessages } : {}) };
       }
-      return resolveCliStreamOutput({
+      const resolved = resolveCliStreamOutput({
         params,
         texts,
         assistantText,
@@ -739,6 +744,9 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
         claudeStreamJson,
         finalStreamedMessageText,
       });
+      return resolved
+        ? { ...resolved, ...(assistantMessages.length ? { assistantMessages } : {}) }
+        : resolved;
     },
   };
 }

@@ -640,3 +640,31 @@ export function readGeminiCliStreamJsonError(parsed: Record<string, unknown>): s
   }
   return undefined;
 }
+
+/** Keep native envelope boundaries independently of cumulative result text. */
+export function recordClaudeAssistantMessage(
+  messages: NonNullable<CliOutput["assistantMessages"]>,
+  parsed: Record<string, unknown>,
+): void {
+  if (
+    typeof parsed.uuid !== "string" ||
+    !isRecord(parsed.message) ||
+    !Array.isArray(parsed.message.content) ||
+    isClaudeSyntheticNoResponse(parsed)
+  ) {
+    return;
+  }
+  const text = parsed.message.content
+    .flatMap((block: unknown) =>
+      isRecord(block) && block.type === "text" && typeof block.text === "string"
+        ? [block.text]
+        : [],
+    )
+    .join("\n");
+  const existing = messages.find((message) => message.uuid === parsed.uuid);
+  if (existing) {
+    existing.text = text;
+  } else {
+    messages.push({ uuid: parsed.uuid, text });
+  }
+}

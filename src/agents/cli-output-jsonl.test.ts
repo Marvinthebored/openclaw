@@ -391,3 +391,18 @@ describe("parseCliJsonl", () => {
     expect(progress).toEqual([parentId, "toolu_other", parentId]);
   });
 });
+
+it("retains ordered native assistant UUIDs without splitting cumulative results", () => {
+  const output = parseFrames(
+    initFrame("native"),
+    assistantRecord([textBlock("One")], { uuid: "one" }, "msg-one"),
+    assistantRecord([textBlock("Two")], { uuid: "two" }, "msg-two"),
+    assistantRecord([textBlock("Final")], { uuid: "final" }, "msg-final"),
+    resultFrame("One\nTwo\nFinal"),
+  );
+  expect(output.assistantMessages).toEqual([
+    { uuid: "one", text: "One" },
+    { uuid: "two", text: "Two" },
+    { uuid: "final", text: "Final" },
+  ]);
+});
