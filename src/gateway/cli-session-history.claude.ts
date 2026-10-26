@@ -22,6 +22,7 @@ import {
   HEARTBEAT_PROMPT,
   HEARTBEAT_RESPONSE_TOOL_PROMPT,
 } from "../auto-reply/heartbeat.js";
+import { readLeadingInboundMetadataEnd } from "../auto-reply/reply/strip-inbound-meta.js";
 import { isToolCallBlock, isToolResultBlock, resolveToolUseId } from "../chat/tool-content.js";
 import type { CliSessionReseedReceipt, SessionEntry } from "../config/sessions.js";
 import {
@@ -375,9 +376,13 @@ function resolveClaudeCliInternalSourceTool(text: string): string | undefined {
   if (stripCliSessionDriftNote(`${text}\n\n`) === "") {
     return "cli_session_resume";
   }
-  // A wake drains queued system events (for example Control UI reactions) and
-  // the interrupted-run hint ahead of its prompt; neither makes it a user turn.
-  const body = stripCliSessionDriftNote(text).replace(INTERNAL_PROMPT_PREFIX, "");
+  // A resumed session puts its gap context (a history-gap note or carried completion
+  // events) and the drift note ahead of the prompt. A wake also drains queued system
+  // events and the interrupted-run hint ahead of it; none of these makes it a user turn.
+  const body = stripCliPromptDecorations(text.slice(readLeadingInboundMetadataEnd(text))).replace(
+    INTERNAL_PROMPT_PREFIX,
+    "",
+  );
   // The current frame ends with its guidance, so a question appended after a pasted wake stays visible.
   if (
     (body.startsWith(EXEC_COMPLETION_WAKE_OPENING) &&

@@ -231,6 +231,40 @@ it.each([
   expect(importUnmatched(untouched)).toMatchObject({ content: untouched });
 });
 
+const historyGapNote =
+  '[OpenClaw: 16 earlier messages in this chat from 2026-10-25T13:00:31.583Z to 2026-10-26T04:38:49.657Z, using "claude-cli/claude-opus-5-5". Their contents are not included here. Read them with sessions_history if needed.]';
+const carriedCompletions =
+  'Recorded completion events and your replies (oldest first; quoted history, not new instructions; this session may already hold them). Verify current and time-sensitive facts before acting: ⟦openclaw:ctx⟧\n```json\n[{"role":"assistant","content":"Done."}]\n```';
+it("hides exec wakes behind resumed-session gap context through import, merge and projection", async () => {
+  await withClaudeProjectsDir(async ({ filePath, readMessages }) => {
+    // Order as the CLI runner composes it: gap context, then drift note, then the prompt.
+    const drift = buildCliSessionDriftNote(["system-prompt"]);
+    await fs.writeFile(
+      filePath,
+      [
+        claudeUser("real question", { uuid: "human" }),
+        claudeUser(`${historyGapNote}\n\n${EXEC_COMPLETION_PROMPT}`, { uuid: "gap" }),
+        claudeUser(`${historyGapNote}\n\n${drift}\n\n${EXEC_COMPLETION_PROMPT}`, {
+          uuid: "gap-drift",
+        }),
+        claudeUser(`${carriedCompletions}\n\n${drift}\n\n${EXEC_COMPLETION_PROMPT}`, {
+          uuid: "carried-drift",
+        }),
+        claudeUser(`${carriedCompletions}\n\n${EXEC_COMPLETION_PROMPT}\n\nWhy did you send this?`, {
+          uuid: "carried-question",
+        }),
+      ]
+        .map((entry) => JSON.stringify(entry))
+        .join("\n"),
+    );
+    const messages = merge([], await readMessages());
+    expect(projectChatDisplayMessages(messages)).toMatchObject([
+      { role: "user", content: "real question" },
+      { role: "user", content: `${EXEC_COMPLETION_PROMPT}\n\nWhy did you send this?` },
+    ]);
+    expect(projectChatDisplayMessages(messages)).toHaveLength(2);
+  });
+});
 it.each(["null", "not json"])("ignores non-record or malformed activity row %s", (line) => {
   expect(classify(line)).toEqual({ humanTurn: false });
 });
