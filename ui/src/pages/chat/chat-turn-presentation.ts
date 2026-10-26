@@ -288,7 +288,8 @@ export function collapseCompletedTurnWork(
         value: item,
       };
     });
-    for (const chunk of chunkContiguousWork(parts)) {
+    const chunks = chunkContiguousWork(parts);
+    for (const [chunkIndex, chunk] of chunks.entries()) {
       if (chunk.kind === "visible") {
         result.push(...chunk.parts.map((part) => part.value));
         continue;
@@ -301,7 +302,8 @@ export function collapseCompletedTurnWork(
       const replyRunId = segmentReplies.get(groups[0]!.key)?.reply.runId;
       result.push({
         kind: "work-group",
-        key: `work:${groups[0]!.key}`,
+        // Older pages can prepend work; the following visible boundary survives.
+        key: `work:${chunks[chunkIndex + 1]?.parts[0]?.id ?? groups.at(-1)!.key}`,
         groups,
         ...(replyRunId ? { replyRunId } : {}),
         // Lifecycle runtime measures the whole run, not this bounded stretch.
