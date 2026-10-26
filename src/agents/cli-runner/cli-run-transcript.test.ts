@@ -4,6 +4,7 @@ import * as transcriptAccessor from "../../config/sessions/session-accessor.js";
 import { loadTranscriptEvents } from "../../config/sessions/session-accessor.js";
 import { applyAssistantDeliveryDirectives } from "../../config/sessions/transcript-assistant-delivery.js";
 import { sanitizeChatHistoryMessages } from "../../gateway/chat-display-projection.sanitize.js";
+import { mergeImportedChatHistoryMessages } from "../../gateway/cli-session-history.test-support.js";
 import type { AssistantMessage } from "../../llm/types.js";
 import { upsertSessionEntry } from "../../plugin-sdk/session-store-runtime.js";
 import {
@@ -18,6 +19,7 @@ import {
   type InternalSessionTranscriptUpdate,
 } from "../../sessions/transcript-events.js";
 import { useSessionStoreTempDirs } from "../../test-utils/session-state-cleanup.js";
+import { parseCliOutput } from "../cli-output.js";
 import { isIntermediateAssistantTranscriptMessage } from "../embedded-agent-runner/message-visibility.js";
 import { persistCliAssistantTranscript } from "./cli-run-transcript.js";
 
@@ -267,4 +269,60 @@ it("replays a native group without duplicates and rolls back blocked groups with
   ).toMatchObject({ owned: true });
   expect(await transcriptMessages(target)).toHaveLength(2);
   expect(updates).toHaveLength(2);
+});
+
+it("persists only text-bearing native messages and preserves imported tool calls", async () => {
+  const { target, persist } = await transcriptFixture("tool-only");
+  const toolContent = [
+    { type: "tool_use", id: "read-1", name: "Read", input: { path: "README.md" } },
+  ];
+  const output = parseCliOutput({
+    providerId: "claude-cli",
+    backend: { command: "claude", output: "jsonl" },
+    outputMode: "jsonl",
+    raw: [
+      { type: "system", subtype: "init", session_id: "native" },
+      ...[
+        { uuid: "one", content: [{ type: "text", text: "One" }] },
+        { uuid: "tool", content: toolContent },
+        { uuid: "two", content: [{ type: "text", text: "Two" }] },
+        { uuid: "final", content: [{ type: "text", text: "Final" }] },
+      ].map(({ uuid, content }) => ({
+        type: "assistant",
+        uuid,
+        message: { role: "assistant", content },
+      })),
+      { type: "result", result: "Final" },
+    ]
+      .map((frame) => JSON.stringify(frame))
+      .join("\n"),
+  });
+  const result = await persist({
+    text: output.text,
+    nativeMessages: output.assistantMessages?.map(({ uuid, text }) => ({
+      uuid,
+      text,
+      cliSessionId: "native",
+    })),
+  });
+  expect(result).toMatchObject({ owned: true, idempotencyKey: "cli-assistant:cli-tool-only-run" });
+  expect(result.terminalAnchor).toBeDefined();
+  const messages = await transcriptMessages(target);
+  expect(messages).toMatchObject([
+    { content: [{ type: "text", text: "One" }], __openclaw: { externalId: "one" } },
+    { content: [{ type: "text", text: "Two" }], __openclaw: { externalId: "two" } },
+    { content: [{ type: "text", text: "Final" }], __openclaw: { externalId: "final" } },
+  ]);
+  expect(messages).toHaveLength(3);
+  const tool = {
+    role: "assistant",
+    content: [{ type: "toolcall", id: "read-1", name: "Read", arguments: { path: "README.md" } }],
+    __openclaw: { importedFrom: "claude-cli", cliSessionId: "native", externalId: "tool" },
+  };
+  const merged = mergeImportedChatHistoryMessages({
+    localMessages: messages,
+    importedMessages: [tool],
+  });
+  expect(merged).toHaveLength(4);
+  expect(merged).toContainEqual(tool);
 });

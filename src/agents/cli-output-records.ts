@@ -661,6 +661,9 @@ export function recordClaudeAssistantMessage(
         : [],
     )
     .join("\n");
+  if (!text) {
+    return;
+  }
   const existing = messages.find((message) => message.uuid === parsed.uuid);
   if (existing) {
     existing.text = text;

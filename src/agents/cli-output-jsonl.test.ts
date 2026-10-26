@@ -406,3 +406,18 @@ it("retains ordered native assistant UUIDs without splitting cumulative results"
     { uuid: "final", text: "Final" },
   ]);
 });
+
+it("keeps tool-only terminal continuity and usage without text records", () => {
+  const output = parseFrames(
+    initFrame("native-tool-only"),
+    assistantRecord([{ type: "tool_use", id: "read-1", name: "Read", input: {} }], {
+      uuid: "tool-terminal",
+    }),
+    resultFrame("", { usage: { input_tokens: 10, output_tokens: 5 } }),
+  );
+  expect(output.text).toBe("");
+  expect(output.assistantMessages).toBeUndefined();
+  expect(output.resumeCheckpointId).toBe("tool-terminal");
+  expect(output.sessionId).toBe("native-tool-only");
+  expect(output.usage).toMatchObject({ input: 10, output: 5 });
+});
