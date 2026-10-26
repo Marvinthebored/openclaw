@@ -588,13 +588,15 @@ async function runPreparedCliAgentOwned(
           // terminal row owns only the final boundary, not another copy of narration.
           text: sourceReplyWasDelivered
             ? ""
-            : isClaudeCliBackend(params.provider)
+            : isClaudeCliBackend(params.provider) && !terminalInterruption && !output.yielded
               ? applyPluginTextReplacements(
                   output.rawFinalText ?? output.rawText ?? output.text,
                   context.backendResolved.textTransforms?.output,
                 )
               : output.text,
           ...(isClaudeCliBackend(params.provider) &&
+          !terminalInterruption &&
+          !output.yielded &&
           effectiveCliSessionId &&
           output.resumeCheckpointId
             ? {

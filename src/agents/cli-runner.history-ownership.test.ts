@@ -12,72 +12,83 @@ const { execute } = vi.hoisted(() => ({ execute: vi.fn() }));
 vi.mock("./cli-runner/execute.runtime.js", () => ({ executePreparedCliRun: execute }));
 const dirs = useSessionStoreTempDirs(afterAll, "cli-history-owner-");
 
-it.each([false, true])(
-  "publishes Claude narration and final once (transformed=%s)",
-  async (transformed) => {
-    const root = dirs.make();
-    const target = {
-      agentId: "main",
-      sessionId: "ownership",
-      sessionKey: "agent:main:ownership",
-      storePath: path.join(root, "agents/main/agent/openclaw-agent.sqlite"),
-    };
-    await upsertSessionEntry({
-      ...target,
-      entry: { sessionId: target.sessionId, updatedAt: Date.now() },
-    });
-    execute.mockResolvedValue({
-      text: "Checking now\nChecking inputs\nDone",
-      rawFinalText: "Done",
-      sessionId: "native-session",
-      resumeCheckpointId: "final-uuid",
-    });
-    const context = buildPreparedCliRunContext({
-      sessionTarget: target,
-      workspaceDir: root,
-      runId: "owner-run",
-    });
-    Object.assign(context.params, {
-      config: {},
-      storePath: target.storePath,
-      persistAssistantTranscript: true,
-      provider: "claude-cli",
-    });
-    if (transformed) {
-      context.backendResolved.textTransforms = { output: [{ from: "Done", to: "Finished" }] };
-    }
-    await runPreparedCliAgent(context);
-    const local = (await loadTranscriptEvents(target)).flatMap((event) =>
-      typeof event === "object" && event !== null && "message" in event ? [event.message] : [],
-    );
-    expect(local).toHaveLength(1);
+it.each([
+  { transformed: false, interrupted: false, yielded: false },
+  { transformed: true, interrupted: false, yielded: false },
+  { transformed: false, interrupted: true, yielded: false },
+  { transformed: false, interrupted: false, yielded: true },
+])("settles Claude history safely: %j", async ({ transformed, interrupted, yielded }) => {
+  const root = dirs.make();
+  const target = {
+    agentId: "main",
+    sessionId: "ownership",
+    sessionKey: "agent:main:ownership",
+    storePath: path.join(root, "agents/main/agent/openclaw-agent.sqlite"),
+  };
+  await upsertSessionEntry({
+    ...target,
+    entry: { sessionId: target.sessionId, updatedAt: Date.now() },
+  });
+  execute.mockResolvedValue({
+    text: "Checking now\nChecking inputs\nDone",
+    rawFinalText: "Done",
+    sessionId: "native-session",
+    resumeCheckpointId: "final-uuid",
+    ...(interrupted ? { terminalInterruption: { reason: "aborted" } } : {}),
+    ...(yielded ? { yielded: true } : {}),
+  });
+  const context = buildPreparedCliRunContext({
+    sessionTarget: target,
+    workspaceDir: root,
+    runId: "owner-run",
+  });
+  Object.assign(context.params, {
+    config: {},
+    storePath: target.storePath,
+    persistAssistantTranscript: true,
+    provider: "claude-cli",
+  });
+  if (transformed) {
+    context.backendResolved.textTransforms = { output: [{ from: "Done", to: "Finished" }] };
+  }
+  await runPreparedCliAgent(context);
+  const local = (await loadTranscriptEvents(target)).flatMap((event) =>
+    typeof event === "object" && event !== null && "message" in event ? [event.message] : [],
+  );
+  expect(local).toHaveLength(1);
+  if (interrupted || yielded) {
     expect(local[0]).toMatchObject({
-      content: [{ type: "text", text: transformed ? "Finished" : "Done" }],
+      content: [{ type: "text", text: "Checking now\nChecking inputs\nDone" }],
+    });
+    expect(local[0]).not.toHaveProperty("__openclaw.externalId");
+    return;
+  }
+  expect(local[0]).toMatchObject({
+    content: [{ type: "text", text: transformed ? "Finished" : "Done" }],
+    __openclaw: {
+      importedFrom: "claude-cli",
+      cliSessionId: "native-session",
+      externalId: "final-uuid",
+    },
+  });
+  const index = new MemoryCliSessionHistoryIndex();
+  index.appendLocal(local.map((message, i) => ({ message, seq: i + 1 })));
+  for (const [uuid, text] of [
+    ["progress-uuid", "Checking now"],
+    ["second-progress-uuid", "Checking inputs"],
+    ["final-uuid", "Done"],
+  ]) {
+    index.appendImported({
+      role: "assistant",
+      content: [{ type: "text", text }],
       __openclaw: {
         importedFrom: "claude-cli",
         cliSessionId: "native-session",
-        externalId: "final-uuid",
+        externalId: uuid,
       },
     });
-    const index = new MemoryCliSessionHistoryIndex();
-    index.appendLocal(local.map((message, i) => ({ message, seq: i + 1 })));
-    for (const [uuid, text] of [
-      ["progress-uuid", "Checking now"],
-      ["second-progress-uuid", "Checking inputs"],
-      ["final-uuid", "Done"],
-    ]) {
-      index.appendImported({
-        role: "assistant",
-        content: [{ type: "text", text }],
-        __openclaw: {
-          importedFrom: "claude-cli",
-          cliSessionId: "native-session",
-          externalId: uuid,
-        },
-      });
-    }
-    index.finish();
-    expect(index.count).toBe(3);
-    index.close();
-  },
-);
+  }
+  index.finish();
+  expect(index.count).toBe(3);
+  index.close();
+});
