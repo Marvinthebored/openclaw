@@ -190,6 +190,7 @@ export async function persistCliAssistantTranscript(params: {
         runId: runParams.runId,
         hidden: runParams.privateCompletion === true,
         inputProvenance: runParams.inputProvenance,
+        // SAFETY: both write paths hand back the assistant message built in this function.
         message: write.message as AgentMessage,
       }),
       prepareAssistantTranscriptMessage: runParams.prepareAssistantTranscriptMessage,

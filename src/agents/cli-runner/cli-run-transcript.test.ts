@@ -252,8 +252,8 @@ it("replays a native group without duplicates and rolls back blocked groups with
   expect(await transcriptMessages(target)).toHaveLength(2);
   expect(updates).toHaveLength(2);
   const messages = (await transcriptMessages(target)) as AssistantMessage[];
-  expect(messages[0].usage.output).toBe(0);
-  expect(messages[1].usage.output).toBe(30);
+  expect(messages[0]?.usage.output).toBe(0);
+  expect(messages[1]?.usage.output).toBe(30);
   const registry = createEmptyPluginRegistry();
   registry.typedHooks.push({
     pluginId: "block",
