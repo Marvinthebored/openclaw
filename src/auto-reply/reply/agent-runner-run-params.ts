@@ -16,7 +16,7 @@ import { resolveCronFallbacksOverride } from "../../cron/isolated-agent/run-fall
 import { resolveCronScheduledToolPolicy } from "../../cron/scheduled-tool-policy.js";
 import { resolveCronRunToolsAllow } from "../../cron/tools-allow.js";
 import { isExecCompletionInputProvenance } from "../../sessions/input-provenance.js";
-import { SILENT_REPLY_TOKEN } from "../tokens.js";
+import { EXEC_COMPLETION_WAKE_GUIDANCE, EXEC_COMPLETION_WAKE_OPENING } from "../heartbeat.js";
 import type { AgentFallbackCandidateCommonParams } from "./agent-runner-fallback-cycle.types.js";
 import type { FollowupRun } from "./queue.js";
 import { resolveReplyRunTrigger } from "./reply-turn-kind.js";
@@ -150,12 +150,7 @@ export function buildFallbackCandidateTurnParams(params: AgentFallbackCandidateC
   const { turn } = params;
   // Add guidance after queue summarization so overflow cannot discard it.
   const prompt = isExecCompletionInputProvenance(turn.followupRun.run.inputProvenance)
-    ? `[OpenClaw exec completion]\n${turn.commandBody}\n\n` +
-      "Treat this completion as an internal continuation, not a new user request. " +
-      "Reconcile it with the conversation and continue any outstanding authorized work. " +
-      "Report requested results not yet delivered, meaningful outcome changes, or new unresolved failures, blockers, or decisions. " +
-      "Stay silent for routine output, duplicate or superseded results, and failures already recovered from; do not recap them or announce that nothing changed. " +
-      `If no user-facing update is needed, reply ${SILENT_REPLY_TOKEN} only.`
+    ? `${EXEC_COMPLETION_WAKE_OPENING}${turn.commandBody}\n\n${EXEC_COMPLETION_WAKE_GUIDANCE}`
     : turn.commandBody;
   return {
     preparedTtsPreferences: turn.opts?.preparedTtsPreferences,

@@ -16,7 +16,12 @@ import { stripCliSessionDriftNote } from "../agents/cli-session-drift.js";
 import { resolveClaudeCliProjectsDir } from "../agents/command/claude-cli-project-dir.js";
 import type { AgentMessage } from "../agents/runtime/index.js";
 import { sanitizeTranscriptMessage } from "../agents/transcript-sanitize.js";
-import { HEARTBEAT_PROMPT, HEARTBEAT_RESPONSE_TOOL_PROMPT } from "../auto-reply/heartbeat.js";
+import {
+  EXEC_COMPLETION_WAKE_GUIDANCE,
+  EXEC_COMPLETION_WAKE_OPENING,
+  HEARTBEAT_PROMPT,
+  HEARTBEAT_RESPONSE_TOOL_PROMPT,
+} from "../auto-reply/heartbeat.js";
 import { isToolCallBlock, isToolResultBlock, resolveToolUseId } from "../chat/tool-content.js";
 import type { CliSessionReseedReceipt, SessionEntry } from "../config/sessions.js";
 import {
@@ -373,11 +378,16 @@ function resolveClaudeCliInternalSourceTool(text: string): string | undefined {
   // A wake drains queued system events (for example Control UI reactions) and
   // the interrupted-run hint ahead of its prompt; neither makes it a user turn.
   const body = stripCliSessionDriftNote(text).replace(INTERNAL_PROMPT_PREFIX, "");
+  // The current frame ends with its guidance, so a question appended after a pasted wake stays visible.
   if (
-    body.startsWith(
+    (body.startsWith(EXEC_COMPLETION_WAKE_OPENING) &&
+      body.endsWith(`\n\n${EXEC_COMPLETION_WAKE_GUIDANCE}`)) ||
+    (body.startsWith(
       "An async command you ran earlier has completed. The command completion details are:\n\n",
     ) &&
-    body.includes("\n\nTreat this completion as an internal continuation, not a new user request. ")
+      body.includes(
+        "\n\nTreat this completion as an internal continuation, not a new user request. ",
+      ))
   ) {
     return "exec";
   }

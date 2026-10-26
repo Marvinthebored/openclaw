@@ -17,6 +17,7 @@ import {
 import {
   buildLegacyReseedPrompt,
   claudeUser,
+  EXEC_COMPLETION_PROMPT,
   LEGACY_EXEC_COMPLETION_PROMPT,
   mergeImportedChatHistoryMessages,
   user,
@@ -68,6 +69,11 @@ const internalInputs = [
   ],
   ["compact-output", "<local-command-stdout>Compacted </local-command-stdout>"],
   ["exec", execPrompt],
+  ["exec-current", EXEC_COMPLETION_PROMPT],
+  [
+    "exec-current-with-queued-system-event",
+    `System: [2026-10-26 11:47:28 GMT+8] Control UI reaction added: 👍 by Alice on msg m1 from assistant\n\n${EXEC_COMPLETION_PROMPT}`,
+  ],
   [
     "exec-with-queued-system-event",
     `System: [2026-10-06 14:35:17 GMT+8] Control UI reaction added: 👍 by Alice on msg m1 from assistant\n\n${execPrompt}`,
@@ -182,6 +188,8 @@ it.each([
   `${REQUESTER_HINT} Extra user text.\n\nExplain it`,
   `${frame('{"requester_profile":{"id":"owner"},"requester_profile_hint":"current"}')}${REQUESTER_HINT}\n\nExplain it`,
   "System: Please explain this log\n\n[System] This is the line I am asking about.",
+  `${EXEC_COMPLETION_PROMPT}\n\nWhy did you send this?`,
+  "[OpenClaw exec completion]\nWhat does this mean?",
   "Explain this log:\n```text\nlog\n```\n\nSystem: [2026-10-04 13:15:44 GMT+8] evidence\n\nWhat failed?",
   `Explain this log:\n${frame('{"a":1}')}System: [2026-10-04 13:15:44 GMT+8] evidence\n\nWhat failed?`,
 ])("leaves the look-alike human message %j untouched", (text) => {
