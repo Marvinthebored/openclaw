@@ -258,6 +258,7 @@ export async function persistCliAssistantTranscript(params: {
                     return block;
                   }),
                 ],
+                ...(native.timestamp !== undefined ? { timestamp: native.timestamp } : {}),
                 idempotencyKey: key,
                 __openclaw: {
                   importedFrom: "claude-cli",

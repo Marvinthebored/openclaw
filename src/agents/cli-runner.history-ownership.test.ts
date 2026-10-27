@@ -4,6 +4,8 @@ import { loadTranscriptEvents } from "../config/sessions/session-accessor.js";
 import { MemoryCliSessionHistoryIndex } from "../gateway/cli-session-history-index-memory.js";
 import { upsertSessionEntry } from "../plugin-sdk/session-store-runtime.js";
 import { useSessionStoreTempDirs } from "../test-utils/session-state-cleanup.js";
+import type { CliOutput } from "./cli-output-contracts.js";
+import { transformCliResultText } from "./cli-output-results.js";
 import { runPreparedCliAgent } from "./cli-runner.js";
 import { buildPreparedCliRunContext } from "./cli-runner.test-helpers.js";
 
@@ -29,7 +31,8 @@ it.each([
     ...target,
     entry: { sessionId: target.sessionId, updatedAt: Date.now() },
   });
-  execute.mockResolvedValue({
+  const replacements = [{ from: "Done", to: "Finished" }];
+  const parsed: CliOutput = {
     text: "Checking now\nChecking inputs\nDone",
     assistantMessages: [
       { uuid: "progress-uuid", text: "Checking now" },
@@ -41,7 +44,9 @@ it.each([
     resumeCheckpointId: "final-uuid",
     ...(interrupted ? { terminalInterruption: { reason: "aborted" } } : {}),
     ...(yielded ? { yielded: true } : {}),
-  });
+  };
+  // The process layer applies output replacements before the runner sees the result.
+  execute.mockResolvedValue(transformed ? transformCliResultText(parsed, replacements) : parsed);
   const context = buildPreparedCliRunContext({
     sessionTarget: target,
     workspaceDir: root,
@@ -54,7 +59,7 @@ it.each([
     provider: "claude-cli",
   });
   if (transformed) {
-    context.backendResolved.textTransforms = { output: [{ from: "Done", to: "Finished" }] };
+    context.backendResolved.textTransforms = { output: replacements };
   }
   await runPreparedCliAgent(context);
   const local = (await loadTranscriptEvents(target)).flatMap((event) =>

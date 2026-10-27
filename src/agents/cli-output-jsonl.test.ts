@@ -400,7 +400,12 @@ it("retains ordered native assistant UUIDs without splitting cumulative results"
     assistantRecord([textBlock("Final")], { uuid: "final" }, "msg-final"),
     resultFrame("One\nTwo\nFinal"),
   );
-  expect(output.assistantMessages).toEqual([
+  expect(output.assistantMessages?.map((message) => typeof message.timestamp)).toEqual([
+    "number",
+    "number",
+    "number",
+  ]);
+  expect(output.assistantMessages).toMatchObject([
     { uuid: "one", text: "One" },
     { uuid: "two", text: "Two" },
     { uuid: "final", text: "Final" },
@@ -449,7 +454,7 @@ it.each(["Accepted", "NO_REPLY"])("discards repeated stop-hook drafts before %s"
     assistantRecord([textBlock(accepted)], { uuid: "c" }),
     resultFrame(accepted),
   );
-  expect(output.assistantMessages).toEqual([{ uuid: "c", text: accepted }]);
+  expect(output.assistantMessages).toMatchObject([{ uuid: "c", text: accepted }]);
 });
 it("partitions native tagged reasoning before persistence", () => {
   const output = parseFrames(

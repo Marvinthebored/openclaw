@@ -230,6 +230,20 @@ it.each([
   },
 );
 
+it("stamps canonical native rows with their native receipt times", async () => {
+  const { target, persist, runParams } = await transcriptFixture("native-times");
+  await persist({
+    runParams,
+    nativeMessages: [
+      { uuid: "narration", text: "Checking", cliSessionId: "native", timestamp: 1_000 },
+      { uuid: "final", text: "Done", cliSessionId: "native", timestamp: 3_000 },
+    ],
+  });
+  const messages = (await transcriptMessages(target)) as AssistantMessage[];
+  // Imported native tool rows (stamped between these) sort by timestamp around them.
+  expect(messages.map((message) => message.timestamp)).toEqual([1_000, 3_000]);
+});
+
 it("replays a native group without duplicates and rolls back blocked groups without publication", async () => {
   const { target, persist, runParams, updates } = await transcriptFixture("atomic");
   const nativeMessages = [

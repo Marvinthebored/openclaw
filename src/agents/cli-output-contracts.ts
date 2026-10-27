@@ -38,6 +38,8 @@ export type CliOutput = {
     text: string;
     reasoningText?: string;
     nonTextContent?: unknown[];
+    /** Receipt time; orders canonical rows among imported native tool rows. */
+    timestamp?: number;
   }[];
   /** Completed result boundaries, retained for independent delivery and retry. */
   textParts?: string[];

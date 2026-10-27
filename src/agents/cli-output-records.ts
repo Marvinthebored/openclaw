@@ -680,7 +680,7 @@ export function recordClaudeAssistantMessage(
   if (existing) {
     Object.assign(existing, fields);
   } else {
-    messages.push({ uuid: parsed.uuid, ...fields });
+    messages.push({ uuid: parsed.uuid, ...fields, timestamp: Date.now() });
   }
 }
 
