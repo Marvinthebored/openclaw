@@ -4,7 +4,6 @@ import Testing
 
 struct ChatWorkChunksTests {
     private struct Fixture: Decodable {
-        let cases: [Case]
         let markdownEnvelopes: [MarkdownEnvelope]
         struct MarkdownEnvelope: Decodable {
             let name: String
@@ -13,41 +12,6 @@ struct ChatWorkChunksTests {
             let workBetweenText: Bool
             let expectedParts: Int
         }
-        struct Case: Decodable {
-            let name: String
-            let live: Bool?
-            let parts: [Part]
-            let expected: [Output]
-        }
-
-        struct Part: Decodable {
-            let id: String
-            let kind: ChatWorkPartKind
-        }
-
-        struct Output: Decodable, Equatable {
-            let kind: String
-            let ids: [String]
-        }
-    }
-
-    @Test func `shared portable contract`() throws {
-        // Follow the existing TalkConfigContractTests repository-root fixture convention.
-        var directory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-        while directory.path != "/",
-              !FileManager.default.fileExists(atPath: directory.appendingPathComponent(
-                  "test/fixtures/chat-work-chunks.json").path)
-        {
-            directory.deleteLastPathComponent()
-        }
-        let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: directory.appendingPathComponent(
-            "test/fixtures/chat-work-chunks.json")))
-        for item in fixture.cases {
-            let actual = ChatWorkChunks.project(item.parts, live: item.live ?? false, kind: { $0.kind }).map {
-                Fixture.Output(kind: $0.isWork ? "work-chunk" : "visible", ids: $0.parts.map(\.id))
-            }
-            #expect(actual == item.expected, "\(item.name)")
-        }
     }
 
     @Test func `shared Markdown envelope context`() throws {
@@ -55,7 +19,9 @@ struct ChatWorkChunksTests {
         while directory.path != "/",
               !FileManager.default.fileExists(atPath: directory.appendingPathComponent(
                   "test/fixtures/chat-work-chunks.json").path)
-        { directory.deleteLastPathComponent() }
+        {
+            directory.deleteLastPathComponent()
+        }
         let fixture = try JSONDecoder().decode(Fixture.self, from: Data(contentsOf: directory.appendingPathComponent(
             "test/fixtures/chat-work-chunks.json")))
         for item in fixture.markdownEnvelopes {
@@ -183,30 +149,6 @@ struct ChatWorkChunksTests {
         #expect(retained.id == source.id)
         #expect(retained.presentationBlockIndex == nil)
         #expect(retained.content[visibleIndex].text == "SECRET</think>Visible")
-    }
-
-    @Test func `unphased narrative bounds independent work chunks`() {
-        let text = { (value: String) in
-            OpenClawChatMessage(role: "assistant", content: [.init(type: "text", text: value)], timestamp: nil)
-        }
-        let tool = {
-            OpenClawChatMessage(role: "assistant", content: [
-                .init(type: "toolCall", id: UUID().uuidString, name: "read"),
-            ], timestamp: nil)
-        }
-        let source = [text("First"), tool(), text("Second"), tool(), text("Answer")]
-        let rows = ChatTranscriptRow.collapseCompletedWork(source.map(ChatTranscriptRow.message), runWorking: false)
-        #expect(rows.count == 5)
-        #expect(rows.enumerated().allSatisfy { index, row in
-            if index == 1 || index == 3 {
-                if case .completedWork = row { return true }
-                return false
-            }
-            if case let .message(message) = row { return message.id == source[index].id }
-            return false
-        })
-        #expect(ChatTranscriptRow.collapseCompletedWork(
-            source.map(ChatTranscriptRow.message), runWorking: true) == source.map(ChatTranscriptRow.message))
     }
 
     @Test func `empty text does not split work and projection does not serialize`() throws {

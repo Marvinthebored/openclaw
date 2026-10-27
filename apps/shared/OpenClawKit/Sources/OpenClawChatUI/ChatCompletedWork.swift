@@ -7,7 +7,7 @@ extension ChatTranscriptRow {
         let durationMilliseconds: Double?
 
         var id: UUID {
-            // Keep the disclosure distinct from its first source part, including
+            // Keep the disclosure distinct from its anchor row, including
             // when that message also owns a visible paragraph.
             var bytes = self.anchorID.uuid
             bytes.0 ^= 0x80
@@ -77,7 +77,7 @@ extension ChatTranscriptRow {
             }
             let parts = (start...end).flatMap { cursor -> [(row: Self, kind: ChatWorkPartKind)] in
                 let row = turn[cursor]
-                guard let source = row.workMessage else { return [(row, .boundary)] }
+                guard let source = row.workMessage else { return [(row, .visible)] }
                 if source.role.lowercased() == "assistant", !source.hasWorkReplyContent,
                    !source.content.contains(where: \.isWorkContent) { return [] }
                 let canFold = (finalIndex.map { cursor < $0 } ?? true) || !source.hasUnresolvedWork
@@ -87,12 +87,16 @@ extension ChatTranscriptRow {
                 }
             }
             let chunks = ChatWorkChunks.project(parts, kind: { $0.kind })
-            let projected = chunks.flatMap { chunk -> [Self] in
+            let projected = chunks.enumerated().flatMap { chunkIndex, chunk -> [Self] in
                 guard chunk.isWork else { return chunk.parts.map(\.row) }
                 let messages = chunk.parts.compactMap(\.row.workMessage)
-                guard let first = messages.first else { return [] }
+                guard let last = messages.last else { return [] }
+                // History prepends change the first work row, but not the visible
+                // boundary that follows it (including a continuing steer turn).
+                let anchor = chunks.dropFirst(chunkIndex + 1).first?.parts.first?.row.id ??
+                    continuations[index].flatMap { turns[$0].first?.id } ?? last.presentationID
                 return [.completedWork(CompletedWork(
-                    anchorID: first.presentationID,
+                    anchorID: anchor,
                     messages: messages,
                     durationMilliseconds: nil))]
             }

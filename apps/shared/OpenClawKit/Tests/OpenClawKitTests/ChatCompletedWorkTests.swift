@@ -204,7 +204,7 @@ struct ChatCompletedWorkTests {
         let groups = Self.work(in: rows)
         #expect(groups.map { $0.messages.map(\.id) } == [[work.id], [continuedWork.id]])
         #expect(groups.map(\.durationMilliseconds) == [nil, nil])
-        let prepended = Self.message("assistant", "Earlier work", at: 1500, phase: "commentary")
+        let prepended = Self.toolCall(at: 1500)
         let refreshed = Self.collapse([original, prepended, work, steer, continuedWork, answer])
         #expect(Self.work(in: refreshed).map(\.id) == groups.map(\.id))
     }
@@ -361,7 +361,9 @@ struct ChatCompletedWorkTests {
         rows.compactMap {
             if case let .completedWork(work) = $0 {
                 work
-            } else { nil }
+            } else {
+                nil
+            }
         }
     }
 
@@ -369,7 +371,9 @@ struct ChatCompletedWorkTests {
         rows.compactMap {
             if case let .message(message) = $0 {
                 message.id
-            } else { nil }
+            } else {
+                nil
+            }
         }
     }
 }

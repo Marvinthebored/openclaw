@@ -1,9 +1,8 @@
 import Foundation
 
-enum ChatWorkPartKind: String, Decodable {
+enum ChatWorkPartKind {
     case visible
     case work
-    case boundary
 }
 
 struct ChatWorkChunk<Part> {
@@ -11,14 +10,12 @@ struct ChatWorkChunk<Part> {
     let parts: [Part]
 }
 
-/// Portable presentation contract (test/fixtures/chat-work-chunks.json):
-/// preserve ordered visible/boundary parts individually; fold only contiguous work.
+/// Preserve ordered visible parts individually; fold only contiguous work.
 /// Callers classify typed content, retaining source action identity and block IDs.
-/// Live or ineligible output passes through. No chunk inherits a run's duration.
+/// No chunk inherits a run's duration.
 enum ChatWorkChunks {
     static func project<Part>(
         _ parts: [Part],
-        live: Bool = false,
         kind: (Part) -> ChatWorkPartKind) -> [ChatWorkChunk<Part>]
     {
         var result: [ChatWorkChunk<Part>] = []
@@ -30,7 +27,7 @@ enum ChatWorkChunks {
             }
         }
         for part in parts {
-            if !live, kind(part) == .work {
+            if kind(part) == .work {
                 work.append(part)
             } else {
                 flush()

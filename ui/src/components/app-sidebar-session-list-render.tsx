@@ -24,59 +24,36 @@ import {
   renderPendingSessionCreateRow,
 } from "./app-sidebar-session-row-render.tsx";
 import { renderSessionSection as SessionSection } from "./app-sidebar-session-section-render.tsx";
-import { SIDEBAR_SESSION_PAGE_SIZE } from "./app-sidebar-session-types.ts";
+import { PersonalSessionGroups } from "./personal-session-groups.tsx";
 import { areSessionCatalogsSettled } from "./session-data-catalog.ts";
 
-/** Fetching a page is useless if the new rows land behind a section's local cap,
- *  so an explicit roster load reveals a page in every section too -- otherwise
- *  the click can look like undefined happened. */
-function renderRosterLoadMore(
-  host: SidebarSessionListHost,
-  sections: RenderableSessionSection[],
-  hasMore: boolean | undefined,
-  loading: boolean,
-) {
-  if (!hasMore) {
-    return undefined;
-  }
+function RosterLoadMore(props: {
+  host: SidebarSessionListHost;
+  hasMore: boolean;
+  loading: boolean;
+}) {
   return (
-    <div class="sidebar-session-pagination sidebar-session-pagination--roster">
-      <button
-        type="button"
-        class="sidebar-session-pagination__button"
-        aria-label={loading ? t("common.loading") : t("chat.selectors.loadMoreRosterSessions")}
-        disabled={loading}
-        aria-busy={loading ? "true" : "false"}
-        onClick={() => {
-          // The request owner changes before the DOM commits the disabled attribute.
-          // A repeated activation must not reveal local rows during that read.
-          if (host.sessionData.sessionsLoading) {
-            return;
+    <Show when={props.hasMore}>
+      <div class="sidebar-session-pagination sidebar-session-pagination--roster">
+        <button
+          type="button"
+          class="sidebar-session-pagination__button"
+          aria-label={
+            props.loading ? t("common.loading") : t("chat.selectors.loadMoreRosterSessions")
           }
-          void host.sessionData.loadMoreSidebarSessions().then(() => {
-            for (const section of sections) {
-              host.setVisibleSessionLimit(
-                section.id,
-                section.visibleLimit + SIDEBAR_SESSION_PAGE_SIZE,
-              );
-            }
-          });
-        }}
-      >
-        {loading ? <span class="session-run-spinner" aria-hidden="true" /> : undefined}
-        {loading ? t("common.loading") : t("chat.selectors.loadMoreRosterSessions")}
-      </button>
-    </div>
+          disabled={props.loading}
+          aria-busy={props.loading ? "true" : "false"}
+          onClick={() => void props.host.loadMoreSidebarSessions()}
+        >
+          {props.loading ? <span class="session-run-spinner" aria-hidden="true" /> : undefined}
+          {props.loading ? t("common.loading") : t("chat.selectors.loadMoreRosterSessions")}
+        </button>
+      </div>
+    </Show>
   );
 }
 
-function renderSessionListBody(params: {
-  host: SidebarSessionListHost;
-  sections: RenderableSessionSection[];
-  nativeSessionsHaveMore: boolean;
-  catalogs: SessionCatalogRenderSnapshot;
-  catalogRenderer: SessionCatalogGroupsRenderer;
-}) {
+function renderSessionListBody(params: Parameters<typeof renderSessionList>[0]) {
   const host = createMemo(() => params.host);
   const personHeaders = createMemo<PersonHeaders | undefined>(() => {
     if (host().sessionsGrouping !== "person") {
@@ -155,7 +132,7 @@ export function renderSessionList(params: {
   const host = createMemo(() => params.host);
   // A create for a rendered custom group is placed by that section instead.
   const unplacedCreate = createMemo(() => {
-    const pending = host().pendingSessionCreate();
+    const pending = host().sessionCreateDisplay();
     const category = pending?.category;
     return category && params.sections.some((section) => section.category === category)
       ? undefined
@@ -166,12 +143,11 @@ export function renderSessionList(params: {
     <div class="sidebar-recent-sessions">
       {renderPendingSessionCreateRow(unplacedCreate)}
       {renderSessionListBody(params)}
-      {renderRosterLoadMore(
-        host(),
-        params.sections,
-        params.nativeSessionsHaveMore,
-        params.nativeSessionsLoading,
-      )}
+      <RosterLoadMore
+        host={host()}
+        hasMore={params.nativeSessionsHaveMore}
+        loading={params.nativeSessionsLoading}
+      />
       {renderPersonalSessionEmpty(
         host(),
         params.empty && params.sections.every((section) => section.totalRowCount === 0),
@@ -262,7 +238,9 @@ export function renderSessionListFrame(host: () => SidebarSessionListHost, body:
           {t("sessionsView.moveToTopLevel")}
         </div>
       ) : undefined}
-      {renderSessionMutationError(host())} <PinnedSessionSection host={host()} />
+      {renderSessionMutationError(host())}
+      <PersonalSessionGroups host={host()} />
+      <PinnedSessionSection host={host()} />
       {body}
     </section>
   );
