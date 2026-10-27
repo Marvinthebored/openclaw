@@ -669,7 +669,6 @@ export function projectChatTranscript(
             runWorking: Boolean(props.runWorking),
             searchActive: false,
             bubbleMode: props.chatBubbleMode === true,
-            session: activeSession,
           },
         )
       : transcriptChain;
