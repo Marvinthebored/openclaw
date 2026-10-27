@@ -105,14 +105,31 @@ it("keeps the recap duration when zero runtime cannot label completed work", asy
   expect(text(".chat-turn-recap")).toContain("42 output tokens");
 });
 
-it("does not borrow whole-run duration for a bounded work chunk", async () => {
+it("keeps a watched run's duration in its recap instead of either work stretch", async () => {
   const runId = "duration-run";
-  const props = propsFor(runId, [prompt(runId, 1_000), work(runId, 2_000), reply(runId, 508_000)]);
-  props.selectedSession = session(runId, 1_655_000);
+  const props = propsFor(runId, [prompt(runId, 1_000), work(runId, 2_000)]);
+  running(props, runId, 42);
+  const { container, text, rerender } = mount(props);
+  props.messages = [
+    ...props.messages,
+    { ...reply(runId, 3_000, "Checking another file."), phase: "commentary" },
+    { ...work(runId, 4_000), toolCallId: "second-read" },
+    reply(runId, 14_000),
+  ];
+  props.runActive = false;
+  props.runWorking = false;
+  props.runId = null;
+  props.selectedSession = session(runId, 13_000);
   props.transcriptMetadata = projectChatTranscriptMetadata(props.selectedSession);
-  const { text } = mount(props);
+  rerender();
   await flushDeferredRowPrune();
-  expect(text(".chat-activity-group__label")).toBe("Worked");
+  expect(
+    [...container.querySelectorAll(".chat-activity-group__label")].map(
+      (label) => label.textContent,
+    ),
+  ).toEqual(["Worked", "Worked"]);
+  expect(text(".chat-turn-recap")).toContain("Done in 13 seconds");
+  expect(text(".chat-turn-recap")).toContain("42 output tokens");
 });
 
 it("keeps the work disclosure interactive after its parent renders again", async () => {

@@ -11,6 +11,7 @@ import { resolveMessageVisibleContent } from "../../lib/chat/message-visibility.
 import { rememberToolCardEnvelope } from "../../lib/chat/tool-cards.ts";
 import { stripThinkingTags } from "../../lib/strip-thinking-tags.ts";
 import { isProviderVoiceTranscript } from "./chat-assistant-reply.ts";
+import { resolveCappedMessageId } from "./chat-message-recovery.ts";
 import { assistantGroupIsIndependentBoundary, hasForwardedSource } from "./chat-turn-boundary.ts";
 import { copyLiveTerminalIdentity } from "./terminal-message-identity.ts";
 
@@ -68,7 +69,12 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
         normalizeMessage(source.message),
       ),
     };
-    if (record?.role !== "assistant" || !Array.isArray(record.content)) {
+    // Recovery replaces a complete envelope; fragments cannot each own that replacement.
+    if (
+      record?.role !== "assistant" ||
+      !Array.isArray(record.content) ||
+      resolveCappedMessageId(source.message, "assistant")
+    ) {
       return [original];
     }
     const stretches: { work: boolean; blocks: unknown[]; index: number }[] = [];
