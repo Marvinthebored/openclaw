@@ -34,11 +34,6 @@ it.each([
   const replacements = [{ from: "Done", to: "Finished" }];
   const parsed: CliOutput = {
     text: "Checking now\nChecking inputs\nDone",
-    assistantMessages: [
-      { uuid: "progress-uuid", text: "Checking now" },
-      { uuid: "second-progress-uuid", text: "Checking inputs" },
-      { uuid: "final-uuid", text: "Done" },
-    ],
     rawFinalText: "Done",
     sessionId: "native-session",
     resumeCheckpointId: "final-uuid",
@@ -65,16 +60,7 @@ it.each([
   const local = (await loadTranscriptEvents(target)).flatMap((event) =>
     typeof event === "object" && event !== null && "message" in event ? [event.message] : [],
   );
-  if (!interrupted && !yielded) {
-    // Native history is unavailable: only canonical rows are read here.
-    expect(local.map((message) => (message as { content: unknown }).content)).toEqual([
-      [{ type: "text", text: "Checking now" }],
-      [{ type: "text", text: "Checking inputs" }],
-      [{ type: "text", text: transformed ? "Finished" : "Done" }],
-    ]);
-  } else {
-    expect(local).toHaveLength(1);
-  }
+  expect(local).toHaveLength(1);
   if (interrupted || yielded) {
     expect(local[0]).toMatchObject({
       content: [{ type: "text", text: "Checking now\nChecking inputs\nDone" }],
@@ -82,7 +68,8 @@ it.each([
     expect(local[0]).not.toHaveProperty("__openclaw.externalId");
     return;
   }
-  expect(local.at(-1)).toMatchObject({
+  // Narration stays in Claude's native rows; the canonical row is the final message.
+  expect(local[0]).toMatchObject({
     content: [{ type: "text", text: transformed ? "Finished" : "Done" }],
     __openclaw: {
       importedFrom: "claude-cli",
@@ -92,14 +79,17 @@ it.each([
   });
   const index = new MemoryCliSessionHistoryIndex();
   index.appendLocal(local.map((message, i) => ({ message, seq: i + 1 })));
-  for (const [uuid, text] of [
-    ["progress-uuid", "Checking now"],
-    ["second-progress-uuid", "Checking inputs"],
-    ["final-uuid", "Done"],
-  ]) {
+  // Claude wrote these native rows while the turn ran, before the canonical final committed.
+  const startedAt = Date.now() - 10_000;
+  for (const [offset, uuid, text] of [
+    [0, "progress-uuid", "Checking now"],
+    [1, "second-progress-uuid", "Checking inputs"],
+    [2, "final-uuid", "Done"],
+  ] as const) {
     index.appendImported({
       role: "assistant",
       content: [{ type: "text", text }],
+      timestamp: startedAt + offset * 1000,
       __openclaw: {
         importedFrom: "claude-cli",
         cliSessionId: "native-session",
@@ -108,7 +98,8 @@ it.each([
     });
   }
   index.finish();
+  // Each narration and the final answer appear once; the final is the canonical row.
   expect(index.count).toBe(3);
-  expect(index.rows(0, 3).map((row) => row.local_seq)).toEqual([1, 2, 3]);
+  expect(index.rows(0, 3).map((row) => row.local_seq)).toEqual([null, null, 1]);
   index.close();
 });

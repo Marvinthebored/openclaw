@@ -21,8 +21,6 @@ import {
 import * as cliOutputLifecycle from "./cli-output-lifecycle.js";
 import {
   decodeCliRecords,
-  finalizeClaudeAssistantMessages,
-  recordClaudeAssistantMessage,
   isClaudeStopHookFeedbackRecord,
   isClaudeStreamJsonDialect,
   isClaudeSyntheticNoResponse,
@@ -54,7 +52,6 @@ const CLAUDE_SYNTHETIC_NO_RESPONSE_ERROR = "Claude CLI returned a synthetic no-r
 
 export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOptions) {
   const lineBuffer = { pending: "" };
-  const assistantMessages: NonNullable<CliOutput["assistantMessages"]> = [];
   let assistantText = "";
   let customThinkingText = "";
   let pendingClaudeText = "";
@@ -307,7 +304,6 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
   };
 
   // Committed or rejected text cannot join the next reply through a tool split.
-  let acceptedAssistantMessageCount = 0;
   const resetReplySegment = () => {
     segmentStart = assistantText.length;
     currentMessageStart = segmentStart;
@@ -377,9 +373,6 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
         }
       }
       resumeCheckpointId = pickCliResumeCheckpointId({ ...params, parsed }) ?? resumeCheckpointId;
-      if (claudeStreamJson) {
-        recordClaudeAssistantMessage(assistantMessages, parsed);
-      }
       params.onAssistantMessage?.(parsed.message);
       if (claudeStreamJson && isClaudeSyntheticNoResponse(parsed)) {
         sawClaudeSyntheticNoResponse = true;
@@ -416,7 +409,6 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
     }
 
     if (stopHookFeedback) {
-      assistantMessages.length = acceptedAssistantMessageCount;
       resetReplySegment();
     }
 
@@ -513,12 +505,6 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
       ) {
         params.onCompletedReply?.(completedText, textParts.length - 1);
       }
-      finalizeClaudeAssistantMessages(
-        assistantMessages,
-        acceptedAssistantMessageCount,
-        result.text,
-      );
-      acceptedAssistantMessageCount = assistantMessages.length;
       // An interim result commits its segment. Rebase boundary state so later
       // text is judged on its own, while delta snapshots stay cumulative.
       resetReplySegment();
@@ -738,9 +724,9 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
         };
       }
       if (output) {
-        return { ...output, ...(assistantMessages.length ? { assistantMessages } : {}) };
+        return output;
       }
-      const resolved = resolveCliStreamOutput({
+      return resolveCliStreamOutput({
         params,
         texts,
         assistantText,
@@ -753,9 +739,6 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
         claudeStreamJson,
         finalStreamedMessageText,
       });
-      return resolved
-        ? { ...resolved, ...(assistantMessages.length ? { assistantMessages } : {}) }
-        : resolved;
     },
   };
 }

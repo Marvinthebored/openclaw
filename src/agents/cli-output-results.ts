@@ -11,14 +11,6 @@ export function transformCliResultText(
   return {
     ...output,
     rawText: output.text,
-    ...(output.assistantMessages
-      ? {
-          assistantMessages: output.assistantMessages.map((message) => ({
-            ...message,
-            text: applyPluginTextReplacements(message.text, replacements),
-          })),
-        }
-      : {}),
     text: applyPluginTextReplacements(output.text, replacements),
     ...(output.textParts
       ? {

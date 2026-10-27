@@ -32,15 +32,6 @@ export type CliTerminalInterruption = {
 /** Normalized result from a CLI-backed model provider turn. */
 export type CliOutput = {
   text: string;
-  /** Ordered native Claude assistant envelopes; never split from cumulative text. */
-  assistantMessages?: {
-    uuid: string;
-    text: string;
-    reasoningText?: string;
-    nonTextContent?: unknown[];
-    /** Receipt time; orders canonical rows among imported native tool rows. */
-    timestamp?: number;
-  }[];
   /** Completed result boundaries, retained for independent delivery and retry. */
   textParts?: string[];
   rawText?: string;

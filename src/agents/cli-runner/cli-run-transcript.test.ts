@@ -1,10 +1,8 @@
 import path from "node:path";
-import { afterAll, afterEach, expect, it, onTestFinished, vi } from "vitest";
-import * as transcriptAccessor from "../../config/sessions/session-accessor.js";
+import { afterAll, afterEach, expect, it, onTestFinished } from "vitest";
 import { loadTranscriptEvents } from "../../config/sessions/session-accessor.js";
 import { applyAssistantDeliveryDirectives } from "../../config/sessions/transcript-assistant-delivery.js";
 import { sanitizeChatHistoryMessages } from "../../gateway/chat-display-projection.sanitize.js";
-import { mergeImportedChatHistoryMessages } from "../../gateway/cli-session-history.test-support.js";
 import type { AssistantMessage } from "../../llm/types.js";
 import { upsertSessionEntry } from "../../plugin-sdk/session-store-runtime.js";
 import {
@@ -19,7 +17,6 @@ import {
   type InternalSessionTranscriptUpdate,
 } from "../../sessions/transcript-events.js";
 import { useSessionStoreTempDirs } from "../../test-utils/session-state-cleanup.js";
-import { parseCliOutput } from "../cli-output.js";
 import { isIntermediateAssistantTranscriptMessage } from "../embedded-agent-runner/message-visibility.js";
 import { persistCliAssistantTranscript } from "./cli-run-transcript.js";
 
@@ -136,79 +133,25 @@ it.each([
   async ({ yielded, stopReason }) => {
     const { target, runParams, persist, updates } = await transcriptFixture("media");
     const sourceText = "Artifacts ready\nMEDIA:./artifact.json";
-    const completed = !yielded;
-    const order: string[] = [];
-    if (completed) {
-      const append = transcriptAccessor.appendTranscriptMessages;
-      const spy = vi
-        .spyOn(transcriptAccessor, "appendTranscriptMessages")
-        .mockImplementation(async (scope, options) => {
-          let observedCommit = false;
-          return append(scope, {
-            ...options,
-            onMessageCommitted: (...args) => {
-              if (!observedCommit) {
-                order.push("commit");
-                observedCommit = true;
-              }
-              options.onMessageCommitted?.(...args);
-            },
-          });
-        });
-      onTestFinished(() => spy.mockRestore());
-    }
-    onTestFinished(
-      onInternalSessionTranscriptUpdate(() => {
-        order.push("publish");
-      }),
-    );
-    const prepareAssistantTranscriptMessage = vi.fn((message: AssistantMessage) => {
-      order.push("prepare");
-      expect(updates).toHaveLength(0);
-      return applyAssistantDeliveryDirectives(message, { managedMediaUrls: ["./artifact.json"] });
-    });
     const result = await persist({
       runParams: {
         ...runParams,
-        prepareAssistantTranscriptMessage,
+        prepareAssistantTranscriptMessage: (message) =>
+          applyAssistantDeliveryDirectives(message, { managedMediaUrls: ["./artifact.json"] }),
       },
       text: sourceText,
-      ...(completed
-        ? {
-            nativeMessages: [
-              { uuid: "progress", text: "Working", cliSessionId: "native" },
-              { uuid: "final", text: sourceText, cliSessionId: "native" },
-            ],
-          }
-        : {}),
       stopReason,
       yielded,
     });
     expect(result).toMatchObject({ owned: true, idempotencyKey: "cli-assistant:cli-media-run" });
-    expect(prepareAssistantTranscriptMessage).toHaveBeenCalledTimes(completed ? 2 : 1);
-    expect(order).toEqual(
-      completed ? ["prepare", "prepare", "commit", "publish", "publish"] : ["prepare", "publish"],
-    );
-    expect(prepareAssistantTranscriptMessage).toHaveBeenLastCalledWith(
-      expect.objectContaining({ content: [{ type: "text", text: sourceText }] }),
-      sourceText,
-    );
-    expect(updates).toHaveLength(completed ? 2 : 1);
-    expect(updates.at(-1)?.message).toMatchObject({
+    expect(updates).toHaveLength(1);
+    expect(updates[0]?.message).toMatchObject({
       content: [{ type: "text", text: sourceText }],
       idempotencyKey: result.idempotencyKey,
       openclawDelivery: { mediaUrls: ["./artifact.json"] },
     });
     const messages = await transcriptMessages(target);
-    expect(messages).toHaveLength(completed ? 2 : 1);
-    if (completed) {
-      expect(updates.map((update) => update.messageId)).toEqual(
-        expect.arrayContaining([expect.any(String), expect.any(String)]),
-      );
-      expect(new Set(updates.map((update) => update.messageSeq)).size).toBe(2);
-      expect(messages[0]).toMatchObject({ content: [{ type: "text", text: "Working" }] });
-      messages.shift();
-    }
+    expect(messages).toHaveLength(1);
     expect(isIntermediateAssistantTranscriptMessage(messages[0])).toBe(
       yielded === true && stopReason === "stop",
     );
@@ -229,161 +172,3 @@ it.each([
     ]);
   },
 );
-
-it("stamps canonical native rows with their native receipt times", async () => {
-  const { target, persist, runParams } = await transcriptFixture("native-times");
-  await persist({
-    runParams,
-    nativeMessages: [
-      { uuid: "narration", text: "Checking", cliSessionId: "native", timestamp: 1_000 },
-      { uuid: "final", text: "Done", cliSessionId: "native", timestamp: 3_000 },
-    ],
-  });
-  const messages = (await transcriptMessages(target)) as AssistantMessage[];
-  // Imported native tool rows (stamped between these) sort by timestamp around them.
-  expect(messages.map((message) => message.timestamp)).toEqual([1_000, 3_000]);
-});
-
-it("replays a native group without duplicates and rolls back blocked groups without publication", async () => {
-  const { target, persist, runParams, updates } = await transcriptFixture("atomic");
-  const nativeMessages = [
-    { uuid: "one", text: "Progress", cliSessionId: "native" },
-    { uuid: "last", text: "Final", cliSessionId: "native" },
-  ];
-  const prepare = vi.fn((message: AssistantMessage) => message);
-  const first = await persist({
-    nativeMessages,
-    runParams: { ...runParams, prepareAssistantTranscriptMessage: prepare },
-    usage: { input: 10, output: 5 },
-    turnUsage: { input: 20, output: 30 },
-  });
-  const replay = await persist({
-    nativeMessages,
-    runParams: { ...runParams, prepareAssistantTranscriptMessage: prepare },
-  });
-  expect(replay.terminalAnchor).toEqual(first.terminalAnchor);
-  expect(prepare).toHaveBeenCalledTimes(2);
-  expect(await transcriptMessages(target)).toHaveLength(2);
-  expect(updates).toHaveLength(2);
-  const messages = (await transcriptMessages(target)) as AssistantMessage[];
-  expect(messages[0]?.usage.output).toBe(0);
-  expect(messages[1]?.usage.output).toBe(30);
-  const registry = createEmptyPluginRegistry();
-  registry.typedHooks.push({
-    pluginId: "block",
-    hookName: "before_message_write",
-    source: "test",
-    handler: ({ message }: PluginHookBeforeMessageWriteEvent) => ({
-      block: JSON.stringify(message).includes("Final"),
-    }),
-  });
-  initializeGlobalHookRunner(registry);
-  expect(
-    await persist({ nativeMessages, runParams: { ...runParams, runId: "blocked" } }),
-  ).toMatchObject({ owned: true });
-  expect(await transcriptMessages(target)).toHaveLength(2);
-  expect(updates).toHaveLength(2);
-});
-
-it("persists only text-bearing native messages and preserves imported tool calls", async () => {
-  const { target, persist } = await transcriptFixture("tool-only");
-  const toolContent = [
-    { type: "tool_use", id: "read-1", name: "Read", input: { path: "README.md" } },
-  ];
-  const output = parseCliOutput({
-    providerId: "claude-cli",
-    backend: { command: "claude", output: "jsonl" },
-    outputMode: "jsonl",
-    raw: [
-      { type: "system", subtype: "init", session_id: "native" },
-      ...[
-        { uuid: "one", content: [{ type: "text", text: "One" }] },
-        { uuid: "tool", content: toolContent },
-        { uuid: "two", content: [{ type: "text", text: "Two" }] },
-        { uuid: "final", content: [{ type: "text", text: "Final" }] },
-      ].map(({ uuid, content }) => ({
-        type: "assistant",
-        uuid,
-        message: { role: "assistant", content },
-      })),
-      { type: "result", result: "Final" },
-    ]
-      .map((frame) => JSON.stringify(frame))
-      .join("\n"),
-  });
-  const result = await persist({
-    text: output.text,
-    nativeMessages: output.assistantMessages?.map(({ uuid, text }) => ({
-      uuid,
-      text,
-      cliSessionId: "native",
-    })),
-  });
-  expect(result).toMatchObject({ owned: true, idempotencyKey: "cli-assistant:cli-tool-only-run" });
-  expect(result.terminalAnchor).toBeDefined();
-  const messages = await transcriptMessages(target);
-  expect(messages).toMatchObject([
-    { content: [{ type: "text", text: "One" }], __openclaw: { externalId: "one" } },
-    { content: [{ type: "text", text: "Two" }], __openclaw: { externalId: "two" } },
-    { content: [{ type: "text", text: "Final" }], __openclaw: { externalId: "final" } },
-  ]);
-  expect(messages).toHaveLength(3);
-  const tool = {
-    role: "assistant",
-    content: [{ type: "toolcall", id: "read-1", name: "Read", arguments: { path: "README.md" } }],
-    __openclaw: { importedFrom: "claude-cli", cliSessionId: "native", externalId: "tool" },
-  };
-  const merged = mergeImportedChatHistoryMessages({
-    localMessages: messages,
-    importedMessages: [tool],
-  });
-  expect(merged).toHaveLength(4);
-  expect(merged).toContainEqual(tool);
-});
-
-it("persists mixed native tools and tagged reasoning without losing imported identity", async () => {
-  const { target, persist } = await transcriptFixture("mixed-review");
-  const output = parseCliOutput({
-    providerId: "claude-cli",
-    backend: { command: "claude", output: "jsonl" },
-    outputMode: "jsonl",
-    raw: [
-      {
-        type: "assistant",
-        uuid: "mixed",
-        message: {
-          role: "assistant",
-          content: [
-            { type: "text", text: "<thinking>Private.</thinking>Visible." },
-            { type: "tool_use", id: "t", name: "Read", input: { path: "README.md" } },
-          ],
-        },
-      },
-      { type: "result", result: "Visible." },
-    ]
-      .map((frame) => JSON.stringify(frame))
-      .join("\n"),
-  });
-  await persist({
-    text: output.text,
-    nativeMessages: output.assistantMessages?.map(
-      ({ uuid, text, reasoningText, nonTextContent }) => ({
-        uuid,
-        text,
-        reasoningText,
-        nonTextContent,
-        cliSessionId: "native",
-      }),
-    ),
-  });
-  expect(await transcriptMessages(target)).toMatchObject([
-    {
-      content: [
-        { type: "thinking", thinking: "Private." },
-        { type: "text", text: "Visible." },
-        { type: "toolcall", id: "t", name: "Read", arguments: { path: "README.md" } },
-      ],
-      __openclaw: { externalId: "mixed" },
-    },
-  ]);
-});

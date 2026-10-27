@@ -10,7 +10,6 @@ import type {
   CliToolUseStartDelta,
   CliUsage,
 } from "./cli-output-contracts.js";
-import { partitionLeadingTaggedReasoning } from "./cli-output-tagged-reasoning.js";
 import { normalizeUsage, type UsageLike } from "./usage.js";
 
 export function isClaudeCliProvider(providerId: string): boolean {
@@ -640,69 +639,4 @@ export function readGeminiCliStreamJsonError(parsed: Record<string, unknown>): s
     return collectExplicitCliErrorText(parsed) || GEMINI_CLI_RESULT_ERROR_FALLBACK;
   }
   return undefined;
-}
-
-/** Keep native envelope boundaries independently of cumulative result text. */
-export function recordClaudeAssistantMessage(
-  messages: NonNullable<CliOutput["assistantMessages"]>,
-  parsed: Record<string, unknown>,
-): void {
-  if (
-    typeof parsed.uuid !== "string" ||
-    !isRecord(parsed.message) ||
-    !Array.isArray(parsed.message.content) ||
-    isClaudeSyntheticNoResponse(parsed)
-  ) {
-    return;
-  }
-  const rawText = parsed.message.content
-    .flatMap((block: unknown) =>
-      isRecord(block) && block.type === "text" && typeof block.text === "string"
-        ? [block.text]
-        : [],
-    )
-    .join("\n");
-  const partition = partitionLeadingTaggedReasoning(rawText, true);
-  const text = partition.pending ? rawText : partition.visibleText;
-  const reasoningText = partition.pending ? "" : partition.reasoningText;
-  const nonTextContent = parsed.message.content.filter(
-    (block: unknown) => !isRecord(block) || block.type !== "text",
-  );
-  if (!text && !reasoningText) {
-    return;
-  }
-  const fields = {
-    text,
-    ...(reasoningText ? { reasoningText } : {}),
-    ...(nonTextContent.length ? { nonTextContent } : {}),
-  };
-  const existing = messages.find((message) => message.uuid === parsed.uuid);
-  if (existing) {
-    Object.assign(existing, fields);
-  } else {
-    messages.push({ uuid: parsed.uuid, ...fields, timestamp: Date.now() });
-  }
-}
-
-export function finalizeClaudeAssistantMessages(
-  assistantMessages: NonNullable<CliOutput["assistantMessages"]>,
-  acceptedAssistantMessageCount: number,
-  resultText: string,
-): void {
-  const lastNativeMessage = assistantMessages.at(-1);
-  const nativeTexts = assistantMessages
-    .slice(acceptedAssistantMessageCount)
-    .map((message) => message.text);
-  // Some backends repeat the entire segment in result; do not put narration
-  // into the terminal row twice. Otherwise the result is authoritative.
-  const repeatsNativeSegment = ["\n", "\n\n"].some(
-    (separator) => nativeTexts.join(separator).trim() === resultText.trim(),
-  );
-  if (lastNativeMessage && resultText?.trim() && !repeatsNativeSegment) {
-    const partition = partitionLeadingTaggedReasoning(resultText, true);
-    lastNativeMessage.text = partition.pending ? resultText : partition.visibleText;
-    if (!partition.pending && partition.reasoningText) {
-      lastNativeMessage.reasoningText = partition.reasoningText;
-    }
-  }
 }

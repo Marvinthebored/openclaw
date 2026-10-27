@@ -70,7 +70,6 @@ import {
   runAgentHarnessLlmInputHook,
   runAgentHarnessLlmOutputHook,
 } from "./harness/lifecycle-hook-helpers.js";
-import { applyPluginTextReplacements } from "./plugin-text-transforms.js";
 import { isRequiredReplyExpectation, resolveReplyExpectation } from "./reply-completion.js";
 import { isAgentRunDirectAbortReason } from "./run-termination.js";
 import {
@@ -580,45 +579,28 @@ async function runPreparedCliAgentOwned(
               context.cwd ?? context.workspaceDir,
               { skipTranscriptProbe: acceptsCliLiveSession(context) },
             );
-        const assistantTranscript = await persistCliAssistantTranscript({
-          runParams: params,
-          // Dispatch owns source-reply transcript mirrors and their idempotency keys.
-          // Persisting them here would duplicate the same visible assistant reply.
-          // Completed Claude turns own each native message canonically; the
-          // terminal row owns the final boundary and whole-turn usage.
-          text: sourceReplyWasDelivered
-            ? ""
-            : isClaudeCliBackend(params.provider) && !terminalInterruption && !output.yielded
-              ? applyPluginTextReplacements(
-                  output.rawFinalText ?? output.rawText ?? output.text,
-                  context.backendResolved.textTransforms?.output,
-                )
-              : output.text,
-          ...(isClaudeCliBackend(params.provider) &&
-          !terminalInterruption &&
+        // Claude saves each narration and the final answer as its own native row. Keep only the
+        // final message here, keyed to its native row, so imported history shows each row once.
+        const nativeFinal =
           !output.yielded &&
+          !output.terminalInterruption &&
+          output.resumeCheckpointId &&
           effectiveCliSessionId &&
-          output.resumeCheckpointId
+          preparedReply.finalMessageText
             ? {
-                claudeMessageIdentity: {
+                text: preparedReply.finalMessageText,
+                identity: {
                   cliSessionId: effectiveCliSessionId,
                   externalId: output.resumeCheckpointId,
                 },
               }
-            : {}),
-          ...(!sourceReplyWasDelivered &&
-          isClaudeCliBackend(params.provider) &&
-          !terminalInterruption &&
-          !output.yielded &&
-          effectiveCliSessionId &&
-          output.assistantMessages?.length
-            ? {
-                nativeMessages: output.assistantMessages.map((message) => ({
-                  ...message,
-                  cliSessionId: effectiveCliSessionId,
-                })),
-              }
-            : {}),
+            : undefined;
+        const assistantTranscript = await persistCliAssistantTranscript({
+          runParams: params,
+          // Dispatch owns source-reply transcript mirrors and their idempotency keys.
+          // Persisting them here would duplicate the same visible assistant reply.
+          text: sourceReplyWasDelivered ? "" : (nativeFinal?.text ?? output.text),
+          ...(nativeFinal ? { nativeIdentity: nativeFinal.identity } : {}),
           modelId: context.modelId,
           usage: output.usage,
           turnUsage: output.diagnosticUsage,

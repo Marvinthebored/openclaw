@@ -121,17 +121,7 @@ function resolveTranscriptTurnAgentId(params: {
 /** Appends one prepared ordered group in the existing transcript turn transaction. */
 export async function appendTranscriptMessages<TMessage>(
   scope: SessionTranscriptWriteScope,
-  options: Pick<
-    SessionTranscriptTurnPersistOptions,
-    | "config"
-    | "cwd"
-    | "updateMode"
-    | "runId"
-    | "touchSessionEntry"
-    | "expectedLifecycleRevision"
-    | "expectedWriterRunId"
-    | "onMessageCommitted"
-  > & {
+  options: Pick<SessionTranscriptTurnPersistOptions, "config" | "cwd"> & {
     messages: readonly Omit<
       SessionTranscriptTurnMessageAppend,
       | "config"
@@ -151,7 +141,6 @@ export async function appendTranscriptMessages<TMessage>(
     throw new Error("Cannot append a transcript batch without an exact session id");
   }
   const turn = await persistExpectedSessionTranscriptTurn(scope, {
-    ...options,
     atomicGroup: true,
     config: options.config,
     cwd: options.cwd,
@@ -162,7 +151,7 @@ export async function appendTranscriptMessages<TMessage>(
       message: sanitizeTranscriptMessageForStorage(append.message),
       now: append.now ?? Date.now(),
     })),
-    updateMode: options.updateMode ?? "none",
+    updateMode: "none",
   });
   if (turn.rejectedReason) {
     throw new Error("Transcript session changed before batch append");
