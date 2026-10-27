@@ -238,6 +238,11 @@ export async function reserveRestoredSubagentControllerSources(
     if (
       !isSubagentObligationRetired(entry) &&
       entry.expectsCompletionMessage === true &&
+      // Yielded children owe a future result, not a runnable completion. Restore only
+      // their explicit pause-notice wake below, otherwise they block requester FIFO.
+      entry.pauseReason !== "sessions_yield" &&
+      // Interrupted terminal delivery is reserved by recovery after reconciliation.
+      entry.terminalOwner !== "interrupted-recovery" &&
       !hasRequesterCompletionCohort(entry) &&
       (entry.delivery?.status === "pending" || entry.delivery?.status === "in_progress") &&
       (entry.delivery.nextAttemptAt ?? 0) <= Date.now()
@@ -257,6 +262,7 @@ export async function reserveRestoredSubagentControllerSources(
           if (
             !current ||
             isSubagentObligationRetired(current) ||
+            current.pauseReason === "sessions_yield" ||
             hasRequesterCompletionCohort(current) ||
             (current.delivery?.status !== "pending" &&
               current.delivery?.status !== "in_progress") ||

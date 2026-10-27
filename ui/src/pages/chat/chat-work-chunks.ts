@@ -18,13 +18,10 @@ export type WorkChunkPart<T> = { id: string; kind: "visible" | "work" | "boundar
 export type WorkChunk<T> = { kind: "visible" | "work-chunk"; parts: WorkChunkPart<T>[] };
 
 /** Order-preserving presentation only. Boundaries are emitted, never swallowed by work. */
-export function chunkContiguousWork<T>(
-  parts: readonly WorkChunkPart<T>[],
-  live = false,
-): WorkChunk<T>[] {
+export function chunkContiguousWork<T>(parts: readonly WorkChunkPart<T>[]): WorkChunk<T>[] {
   const chunks: WorkChunk<T>[] = [];
   for (const part of parts) {
-    const kind = !live && part.kind === "work" ? "work-chunk" : "visible";
+    const kind = part.kind === "work" ? "work-chunk" : "visible";
     const previous = chunks.at(-1);
     if (kind === "work-chunk" && previous?.kind === "work-chunk") {
       previous.parts.push(part);
@@ -63,17 +60,16 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
   }
   const pieces = group.messages.flatMap((source) => {
     const record = asRecord(source.message);
+    const original = {
+      source,
+      role: group.role,
+      visibleContent: resolveMessageVisibleContent(
+        source.message,
+        normalizeMessage(source.message),
+      ),
+    };
     if (record?.role !== "assistant" || !Array.isArray(record.content)) {
-      return [
-        {
-          source,
-          role: group.role,
-          visibleContent: resolveMessageVisibleContent(
-            source.message,
-            normalizeMessage(source.message),
-          ),
-        },
-      ];
+      return [original];
     }
     const stretches: { work: boolean; blocks: unknown[]; index: number }[] = [];
     for (const [index, block] of record.content.entries()) {
@@ -101,16 +97,7 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
       }
     }
     if (stretches.length < 2 || !stretches.some((stretch) => stretch.work)) {
-      return [
-        {
-          source,
-          role: group.role,
-          visibleContent: resolveMessageVisibleContent(
-            source.message,
-            normalizeMessage(source.message),
-          ),
-        },
-      ];
+      return [original];
     }
 
     // The display parser owns the whole envelope: reasoning, scaffolding and
@@ -135,16 +122,7 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
       stretches.filter((stretch) => !stretch.work).length > 1 &&
       /[`*_~[\]<>\\$|#:]|(?:^|\n)(?: {4}|\t|\s*(?:[-+=]|\d+[.)]\s))/u.test(envelopeMarkdown);
     if (crossWorkMarkdown || stripThinkingTags(splitMarkdown).trim() !== envelopeMarkdown.trim()) {
-      return [
-        {
-          source,
-          role: group.role,
-          visibleContent: resolveMessageVisibleContent(
-            source.message,
-            normalizeMessage(source.message),
-          ),
-        },
-      ];
+      return [original];
     }
 
     const lastVisible = stretches.findLast((stretch) => !stretch.work)?.index;

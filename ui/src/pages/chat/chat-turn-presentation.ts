@@ -268,7 +268,24 @@ export function collapseCompletedTurnWork(
       }
     }
     closeSegment(turn.length);
-    const replyRunIds = runIdsWithVisibleReplies(turn);
+    const replyRunIds = new Set<string>();
+    for (const item of turn) {
+      if (item.kind === "stream-run") {
+        if (item.runId) {
+          replyRunIds.add(item.runId);
+        }
+        continue;
+      }
+      if (item.kind !== "group" || item.runId === undefined) {
+        continue;
+      }
+      // Tool-group text is the tool's own output shown inside the card, never a
+      // reply; assistant/user text is the run's visible response.
+      const includeText = item.role.toLowerCase() !== "tool";
+      if (item.isStreaming || groupHasVisibleReplyContent(item, includeText)) {
+        replyRunIds.add(item.runId);
+      }
+    }
     // A handoff owns request-wide footer timing and keeps its activity exposed.
     // Do not move even post-answer work across the visible answer.
     const handoff = turn.some((item) => item.kind === "notice" && item.handoffBoundary);
@@ -316,30 +333,6 @@ export function collapseCompletedTurnWork(
 }
 
 export type CompletedTurnRenderItem = TurnRenderItem | WorkGroupRenderItem;
-
-// Completed work may include activity after an answer only when that activity
-// belongs to a run with a visible reply, not an independent background wake.
-function runIdsWithVisibleReplies(items: CompletedTurnRenderItem[]): Set<string> {
-  const replyRunIds = new Set<string>();
-  for (const item of items) {
-    if (item.kind === "stream-run") {
-      if (item.runId) {
-        replyRunIds.add(item.runId);
-      }
-      continue;
-    }
-    if (item.kind !== "group" || item.runId === undefined) {
-      continue;
-    }
-    // Tool-group text is the tool's own output shown inside the card, never a
-    // reply; assistant/user text is the run's visible response.
-    const includeText = item.role.toLowerCase() !== "tool";
-    if (item.isStreaming || groupHasVisibleReplyContent(item, includeText)) {
-      replyRunIds.add(item.runId);
-    }
-  }
-  return replyRunIds;
-}
 
 // Adjacent activity is one disclosure even when automatic continuations use
 // new run IDs. Visible content, not other output elsewhere in those runs,

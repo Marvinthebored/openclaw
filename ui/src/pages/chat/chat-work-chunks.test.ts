@@ -559,3 +559,30 @@ it.each(["plain text", 0, true])(
     expect(extractToolCardsCached(value)).toEqual([]);
   },
 );
+
+it.each([false, true])("retains narration around completed work (bubble=%s)", (bubbleMode) => {
+  const messages = [
+    { role: "user", content: "Inspect the sample", timestamp: 1000 },
+    { role: "assistant", content: "First finding", phase: "commentary", timestamp: 2000 },
+    {
+      role: "toolResult",
+      toolName: "read",
+      toolCallId: "read",
+      content: "Sample",
+      timestamp: 3000,
+    },
+    { role: "assistant", content: "Final answer", phase: "final_answer", timestamp: 4000 },
+  ];
+  const items = collapseCompletedTurnWork(
+    groupMessages(
+      messages.map((entry, index) => ({ kind: "message", key: String(index), message: entry })),
+      {},
+      undefined,
+      true,
+    ),
+    { sessionKey: "agent:main:dashboard:narration", runWorking: false, bubbleMode },
+  );
+  expect(items.map((item) => item.kind)).toEqual(["group", "group", "work-group", "group"]);
+  const narration = items[1];
+  expect(narration?.kind === "group" && narration.messages[0]?.message).toBe(messages[1]);
+});

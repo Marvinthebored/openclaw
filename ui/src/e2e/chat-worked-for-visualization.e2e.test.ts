@@ -115,7 +115,7 @@ suite.define(() => {
             ),
             {
               role: "assistant",
-              content: `[embed ref="${viewId}" title="Release confidence" height="1000" /]`,
+              content: `[embed ref="${viewId}" title="Release confidence" height="180" /]`,
               timestamp: browserFirst ? 4_000 : 3_000,
             },
           ];

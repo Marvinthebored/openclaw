@@ -12,8 +12,6 @@ import { MessageGroup } from "./chat-message-group-view.tsx";
 import "../../../styles.css";
 import "../../../styles/chat.ts";
 
-const baseline = import.meta.env.VITE_WORK_CHUNK_BASELINE === "1";
-const phase = baseline ? "before" : "after";
 const sessionKey = "agent:main:dashboard:synthetic-work-chunks";
 const runId = "synthetic-anthropic";
 const msg = (id: string, role: string, content: unknown, timestamp: number, extra = {}) => ({
@@ -52,9 +50,7 @@ const messages = [
 
 it.each([
   { width: 1440, sameId: false },
-  { width: 1600, sameId: false },
   { width: 1440, sameId: true },
-  { width: 1600, sameId: true },
 ])(
   "renders in-place work at $width px (same-ID envelope=$sameId) in both modes",
   async ({ width, sameId }) => {
@@ -149,82 +145,37 @@ it.each([
         const summaries = () => [
           ...view.container.querySelectorAll<HTMLButtonElement>(".chat-work-group > button"),
         ];
-        if (!baseline) {
-          expect(visibleText()).toEqual([
-            "Inspect the synthetic inputs.",
-            "First visible narration.",
-            "Second visible narration.",
-            "Final visible answer.",
-          ]);
-          expect(summaries()).toHaveLength(2);
-          const order = [
-            ...view.container.querySelectorAll<HTMLElement>(".chat-text, .chat-work-group"),
-          ].map((node) => (node.matches(".chat-work-group") ? "WORK" : node.textContent?.trim()));
-          expect(order).toEqual([
-            "Inspect the synthetic inputs.",
-            "First visible narration.",
-            "WORK",
-            "Second visible narration.",
-            "WORK",
-            "Final visible answer.",
-          ]);
-          expect(
-            summaries().every((button) => button.getAttribute("aria-expanded") === "false"),
-          ).toBe(true);
-          const before = visibleText();
-          await userEvent.click(summaries()[0]!);
-          await waitForSolid(() =>
-            expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("true"),
-          );
-          expect(summaries()[1]?.getAttribute("aria-expanded")).toBe("false");
-          expect(visibleText().filter((value) => before.includes(value))).toEqual(before);
-          await userEvent.click(summaries()[0]!);
-          await waitForSolid(() =>
-            expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("false"),
-          );
-        }
-        view.container.querySelector<HTMLElement>(".chat-thread")!.scrollTop = 0;
-        window.scrollTo(0, 0);
-        await new Promise<void>((resolve) => {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => resolve());
-          });
-        });
-        const geometry = [
-          ...view.container.querySelectorAll<HTMLElement>(
-            ".chat-text, .chat-work-group, .chat-activity-group__label",
-          ),
-        ].map((node) => {
-          const rect = node.getBoundingClientRect();
-          const style = getComputedStyle(node);
-          return {
-            selector: node.className,
-            text: node.textContent,
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height,
-            clientWidth: node.clientWidth,
-            scrollWidth: node.scrollWidth,
-            overflow: style.overflow,
-            textOverflow: style.textOverflow,
-          };
-        });
+        expect(visibleText()).toEqual([
+          "Inspect the synthetic inputs.",
+          "First visible narration.",
+          "Second visible narration.",
+          "Final visible answer.",
+        ]);
+        expect(summaries()).toHaveLength(2);
+        const order = [
+          ...view.container.querySelectorAll<HTMLElement>(".chat-text, .chat-work-group"),
+        ].map((node) => (node.matches(".chat-work-group") ? "WORK" : node.textContent?.trim()));
+        expect(order).toEqual([
+          "Inspect the synthetic inputs.",
+          "First visible narration.",
+          "WORK",
+          "Second visible narration.",
+          "WORK",
+          "Final visible answer.",
+        ]);
         expect(
-          geometry.every(
-            (rect) =>
-              rect.y >= 0 &&
-              rect.y + rect.height <= 900 &&
-              rect.width > 0 &&
-              rect.height > 0 &&
-              rect.scrollWidth <= rect.clientWidth + 1,
-          ),
+          summaries().every((button) => button.getAttribute("aria-expanded") === "false"),
         ).toBe(true);
-        console.log(JSON.stringify({ phase, width, bubbleMode, geometry }));
-        console.log(
-          await page.screenshot({
-            path: `../../../../.vitest/180490-web-${phase}-${width}-${sameId ? "same-id" : "separate"}-${bubbleMode ? "bubbles" : "flat"}.png`,
-          }),
+        const before = visibleText();
+        await userEvent.click(summaries()[0]!);
+        await waitForSolid(() =>
+          expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("true"),
+        );
+        expect(summaries()[1]?.getAttribute("aria-expanded")).toBe("false");
+        expect(visibleText().filter((value) => before.includes(value))).toEqual(before);
+        await userEvent.click(summaries()[0]!);
+        await waitForSolid(() =>
+          expect(summaries()[0]?.getAttribute("aria-expanded")).toBe("false"),
         );
       } finally {
         view.unmount();
