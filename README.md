@@ -2,7 +2,7 @@
 
 All images are 50% device scale, cropped to the composer plus surrounding pane edge. Synthetic Lorem Ipsum and short Line 1–Line 20 prose only. Captured from the rebuilt production-bundle preview.
 
-Empty; a few lines; actual border drag narrower (editor159→201px); actual border drag wider (201→159px);20 numbered lines at pane bound (618px editor,684px content); phone editing (338px editor,923px content, send button visible); New Session pane bound (495px editor,684px content).
+Empty; a few lines; actual border drag narrower (editor159→201px); actual border drag wider (201→159px);20 numbered lines at pane bound (618px editor,684px content); phone editing on the current mobile toolbar (346px editor,915px content, send button visible); New Session pane bound (495px editor,684px content).
 
 Images inspected individually. Earlier captures with no actual overflow were rejected. No screenshot claims requesting-viewer delivery or real Gateway behavior; upgrade proof is separate.
 
