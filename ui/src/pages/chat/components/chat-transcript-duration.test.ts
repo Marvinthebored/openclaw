@@ -132,9 +132,16 @@ it("keeps a watched run's duration in its recap instead of either work stretch",
   expect(text(".chat-turn-recap")).toContain("42 output tokens");
 });
 
-it.each([true, false])(
-  "restores only the visible completed run's duration (matching=%s)",
-  async (matching) => {
+it.each([
+  [true, "live"],
+  [false, "live"],
+  [true, "cached"],
+  [false, "cached"],
+  [true, "sparse"],
+  [false, "sparse"],
+] as const)(
+  "restores only the visible completed run's duration (matching=%s, source=%s)",
+  async (matching, source) => {
     const runId = "restored-duration";
     const props = propsFor(runId, [
       prompt(runId, 1_000),
@@ -143,8 +150,14 @@ it.each([true, false])(
       { ...work(runId, 4_000), toolCallId: "second-read" },
       reply(runId, 14_000),
     ]);
-    props.selectedSession = session(matching ? runId : "another-run", 13_000);
-    props.transcriptMetadata = projectChatTranscriptMetadata(props.selectedSession);
+    const saved = session(matching ? runId : "another-run", 13_000);
+    props.selectedSession =
+      source === "live"
+        ? saved
+        : source === "sparse"
+          ? { key: saved.key, kind: saved.kind, updatedAt: saved.updatedAt }
+          : undefined;
+    props.transcriptMetadata = source === "live" ? undefined : projectChatTranscriptMetadata(saved);
     const { container, text } = mount(props);
     await flushDeferredRowPrune();
     expect(

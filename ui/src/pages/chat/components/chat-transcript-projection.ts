@@ -248,7 +248,7 @@ export function projectChatTranscript(
         shouldRenderQueuedSendInThread(item),
     ),
     activeRunId: props.runActive ? props.runId : undefined,
-    row: activeSession,
+    row: props.transcriptMetadata ?? activeSession,
     completedRunId: tailStatusOwner?.runId,
     usageByRun: props.runUsageById,
   });
