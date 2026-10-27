@@ -14,14 +14,6 @@ export const HEARTBEAT_RESPONSE_TOOL_INSTRUCTIONS =
 // A fallback backend may lack the direct-only tool; preserve both quiet and alert outcomes.
 const HEARTBEAT_RESPONSE_TOOL_FALLBACK_INSTRUCTIONS = `If the heartbeat_respond tool is not available in this run, reply ${SILENT_REPLY_TOKEN} when nothing needs the user's attention; when the user should be interrupted, reply with only the alert text instead of a prose report.`;
 export const HEARTBEAT_RESPONSE_TOOL_PROMPT = `${HEARTBEAT_CONTEXT_PROMPT} ${HEARTBEAT_RESPONSE_TOOL_INSTRUCTIONS} ${HEARTBEAT_RESPONSE_TOOL_FALLBACK_INSTRUCTIONS}`;
-// Exec completion wake frame; the Claude CLI history importer matches the same text.
-export const EXEC_COMPLETION_WAKE_OPENING = "[OpenClaw exec completion]\n";
-export const EXEC_COMPLETION_WAKE_GUIDANCE =
-  "Treat this completion as an internal continuation, not a new user request. " +
-  "Reconcile it with the conversation and continue any outstanding authorized work. " +
-  "Report requested results not yet delivered, meaningful outcome changes, or new unresolved failures, blockers, or decisions. " +
-  "Stay silent for routine output, duplicate or superseded results, and failures already recovered from; do not recap them or announce that nothing changed. " +
-  `If no user-facing update is needed, reply ${SILENT_REPLY_TOKEN} only.`;
 export const INTERNAL_WAKE_TRANSCRIPT_PROMPTS = {
   heartbeat: "[OpenClaw heartbeat poll]",
   exec: "[OpenClaw exec completion]\nDisable automatic completion turns with tools.exec.notifyOnExit=false; check per-agent overrides. Background exec and process poll remain available.",

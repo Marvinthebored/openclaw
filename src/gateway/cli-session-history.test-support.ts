@@ -2,10 +2,6 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { asOptionalRecord } from "@openclaw/normalization-core/record-coerce";
 import { hashCliReseedPrompt } from "../agents/cli-runner/reseed-envelope.js";
-import {
-  EXEC_COMPLETION_WAKE_GUIDANCE,
-  EXEC_COMPLETION_WAKE_OPENING,
-} from "../auto-reply/heartbeat.js";
 import type { CliSessionReseedReceipt, SessionEntry } from "../config/sessions.js";
 import { withEnvAsync } from "../test-utils/env.js";
 import { withTempDir } from "../test-utils/temp-dir.js";
@@ -28,9 +24,6 @@ export const LEGACY_EXEC_COMPLETION_PROMPT =
   "do not recap them or announce that nothing changed. " +
   "If no user-facing update is needed, reply with exactly NO_REPLY as the entire final answer. " +
   "NO_REPLY discards anything written this turn that was not sent, so send confirmations before ending silently.";
-
-// Exec completion wake as buildFallbackCandidateTurnParams frames it.
-export const EXEC_COMPLETION_PROMPT = `${EXEC_COMPLETION_WAKE_OPENING}Exec completed (example, code 0) :: done\n\n${EXEC_COMPLETION_WAKE_GUIDANCE}`;
 
 export async function readClaudeCliSessionMessagesAsync(
   params: ClaudeCliHistoryParams,
