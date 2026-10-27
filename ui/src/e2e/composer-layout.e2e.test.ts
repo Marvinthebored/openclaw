@@ -54,7 +54,7 @@ suite.define(() => {
           expect(
             await page
               .locator(".new-session-page")
-              .evaluate((element) => element.style.getPropertyValue("--chat-thread-drag-width")),
+              .evaluate((element) => element.style.getPropertyValue("--chat-thread-max-width")),
           ).toBe("480px");
           expect
             .soft(await alignment(), "active 480px drag placement alignment")
@@ -121,6 +121,11 @@ suite.define(() => {
       if (!resetBox) {
         throw new Error("Expected the restored border");
       }
+      const savedWidth = () =>
+        page
+          .locator(".new-session-page")
+          .evaluate((element) => element.style.getPropertyValue("--chat-thread-max-width"));
+      const saved = await savedWidth();
       await page.mouse.move(resetBox.x + 4, resetBox.y + resetBox.height / 2);
       await page.mouse.down();
       await page.mouse.move(resetBox.x - 25, resetBox.y + resetBox.height / 2);
@@ -128,11 +133,7 @@ suite.define(() => {
       await page.mouse.up();
       await expect.poll(width).toBe(initial - 40);
       expect(await edge.getAttribute("class")).not.toContain("--dragging");
-      expect(
-        await page
-          .locator(".new-session-page")
-          .evaluate((element) => element.style.getPropertyValue("--chat-thread-drag-width")),
-      ).toBe("");
+      expect(await savedWidth()).toBe(saved);
       await page.reload();
       await edge.waitFor();
       await expect.poll(width).toBe(initial - 40);

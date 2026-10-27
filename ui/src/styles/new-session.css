@@ -188,12 +188,6 @@ html:is(.openclaw-native-macos, .openclaw-native-desktop) .new-session-page__inc
   text-align: left;
 }
 
-.new-session-page__scroll > .new-session-page__draft {
-  /* The composer owns the width cap; its canvas must remain expandable. */
-  max-width: none;
-  margin-inline: auto;
-}
-
 .new-session-page__incognito-notice {
   display: flex;
   align-items: center;
@@ -201,7 +195,7 @@ html:is(.openclaw-native-macos, .openclaw-native-desktop) .new-session-page__inc
   box-sizing: border-box;
   width: calc(100% - 36px);
   max-height: 0;
-  max-width: var(--chat-thread-drag-width, var(--chat-thread-max-width, 48rem));
+  max-width: var(--chat-thread-max-width, 48rem);
   margin: -8px auto 0;
   padding-inline: var(--chat-composer-editor-inset-inline, 14px);
   overflow: hidden;
@@ -348,7 +342,7 @@ html:is(.openclaw-native-macos, .openclaw-native-desktop) .new-session-page__inc
   gap: 4px 2px;
   width: calc(100% - 36px);
   /* Share the composer's left edge at any saved or dragged width. */
-  max-width: var(--chat-thread-drag-width, var(--chat-thread-max-width, 48rem));
+  max-width: var(--chat-thread-max-width);
   margin: 0 auto;
   padding: 0;
   box-sizing: border-box;
@@ -1021,10 +1015,7 @@ span.new-session-page__select {
 .new-session-page__composer .new-session-page__message {
   /* Growth never drops below the ten-line floor: a composer resting at the
      bottom of a phone has no room beneath it, so the page scrolls instead. */
-  max-height: max(
-    var(--chat-composer-editor-height-limit, 0px),
-    calc(10lh + var(--chat-box-inset) + var(--chat-box-inset))
-  );
+  max-height: max(var(--chat-composer-editor-height-limit, 0px), 10lh + 2 * var(--chat-box-inset));
 }
 
 .new-session-page__composer::after {
@@ -1244,10 +1235,6 @@ span.new-session-page__select {
     min-height: auto;
     margin-block: auto;
     padding: 24px 0;
-  }
-
-  .new-session-page__scroll > .new-session-page__draft {
-    max-width: none;
   }
 
   /* Center the whole composition, not the introduction alone. Auto margins

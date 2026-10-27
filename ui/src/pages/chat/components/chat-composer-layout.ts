@@ -223,10 +223,12 @@ export class ComposerLayout {
     const shell = this.element!.closest<HTMLElement>(".agent-chat__composer-shell")!;
     const region = this.region(shell);
     const style = getComputedStyle(region);
-    // CSS owns the responsive gutter; use the same per-side token as its width rule.
-    const inset = Number.parseFloat(
-      getComputedStyle(shell).getPropertyValue("--chat-composer-inline-inset"),
-    );
+    // CSS owns the responsive gutter: phones set a per-side token, wider panes
+    // split the shell's side inset.
+    const shellStyle = getComputedStyle(shell);
+    const inset =
+      Number.parseFloat(shellStyle.getPropertyValue("--chat-composer-inline-inset")) ||
+      (Number.parseFloat(shellStyle.getPropertyValue("--chat-composer-side-inset")) || 36) / 2;
     return Math.max(
       0,
       region.clientWidth -
@@ -259,11 +261,17 @@ export class ComposerLayout {
       .closest<HTMLElement>(".agent-chat__composer-shell")!
       .getBoundingClientRect().width;
     const origin = event.clientX;
+    // Preview through the shared width token, then restore the rendered value.
+    const prior = root.style.getPropertyValue("--chat-thread-max-width");
     let width = start;
     let moved = false;
     const finish = (save: boolean) => {
       this.cancelDrag = null;
-      root.style.removeProperty("--chat-thread-drag-width");
+      if (prior) {
+        root.style.setProperty("--chat-thread-max-width", prior);
+      } else {
+        root.style.removeProperty("--chat-thread-max-width");
+      }
       edge.classList.remove("agent-chat__composer-width-edge--dragging");
       if (save && moved && Math.abs(width - start) >= 3) {
         this.commit(`${width}px`);
@@ -278,7 +286,7 @@ export class ComposerLayout {
           }
           moved = true;
           width = this.clampWidth(start - 2 * delta);
-          root.style.setProperty("--chat-thread-drag-width", `${width}px`);
+          root.style.setProperty("--chat-thread-max-width", `${width}px`);
         },
         end: () => finish(true),
         cancel: () => finish(false),

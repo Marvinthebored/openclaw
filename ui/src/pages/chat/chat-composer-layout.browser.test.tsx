@@ -367,6 +367,7 @@ describe("content-sized composer with border width control", () => {
       await settled();
       const edge = f.edge();
       const root = container.closest<HTMLElement>(".chat")!;
+      const saved = root.style.getPropertyValue("--chat-thread-max-width");
       edge.dispatchEvent(
         new PointerEvent("pointerdown", {
           pointerId: 7,
@@ -377,7 +378,7 @@ describe("content-sized composer with border width control", () => {
         }),
       );
       window.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: 330 }));
-      expect(root.style.getPropertyValue("--chat-thread-drag-width")).toBe("1021px");
+      expect(root.style.getPropertyValue("--chat-thread-max-width")).toBe("1021px");
       if (reason === "blur") {
         window.dispatchEvent(new Event("blur"));
       } else {
@@ -385,7 +386,7 @@ describe("content-sized composer with border width control", () => {
       }
       window.dispatchEvent(new PointerEvent("pointermove", { pointerId: 7, clientX: 350 }));
       window.dispatchEvent(new PointerEvent("pointerup", { pointerId: 7 }));
-      expect(root.style.getPropertyValue("--chat-thread-drag-width")).toBe("");
+      expect(root.style.getPropertyValue("--chat-thread-max-width")).toBe(saved);
       expect(edge.classList.contains("agent-chat__composer-width-edge--dragging")).toBe(false);
       expect(f.onWidthChange).not.toHaveBeenCalled();
       expect(f.input().getBoundingClientRect().width).toBe(1081);
