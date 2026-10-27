@@ -17,7 +17,6 @@ import {
 import {
   buildLegacyReseedPrompt,
   claudeUser,
-  EXEC_COMPLETION_PROMPT,
   LEGACY_EXEC_COMPLETION_PROMPT,
   mergeImportedChatHistoryMessages,
   user,
@@ -40,6 +39,16 @@ const REQUESTER_HINT =
 const frame = (json: string) =>
   `Conversation info: ⟦openclaw:ctx⟧\n\`\`\`json\n${json}\n\`\`\`\n\n`;
 const execPrompt = LEGACY_EXEC_COMPLETION_PROMPT;
+// Saved transcripts keep the bytes the retired exec prompt builder wrote for runs without delivery.
+const SILENT_EXEC_OPENING =
+  "An async command completion event was triggered, but user delivery is disabled for this run. ";
+const SILENT_EXEC_CLOSING = " Do not mention, summarize, or reuse command output.";
+const silentExecPrompt =
+  `${SILENT_EXEC_OPENING}Handle the result internally and reply with exactly NO_REPLY as the entire final answer. ` +
+  `NO_REPLY discards anything written this turn that was not sent, so send confirmations before ending silently.${SILENT_EXEC_CLOSING}`;
+const silentHeartbeatToolExecPrompt =
+  `${SILENT_EXEC_OPENING}Handle the result internally. Use heartbeat_respond to report the wake outcome. ` +
+  `Set notify=false when nothing needs the user's attention. Set notify=true with notificationText only when the user should be interrupted.${SILENT_EXEC_CLOSING}`;
 const writeRows = (filePath: string, rows: readonly unknown[]) =>
   fs.writeFile(filePath, rows.map((row) => JSON.stringify(row)).join("\n"));
 
@@ -69,10 +78,11 @@ const internalInputs = [
   ],
   ["compact-output", "<local-command-stdout>Compacted </local-command-stdout>"],
   ["exec", execPrompt],
-  ["exec-current", EXEC_COMPLETION_PROMPT],
+  ["exec-silent", silentExecPrompt],
+  ["exec-silent-heartbeat-tool", silentHeartbeatToolExecPrompt],
   [
-    "exec-current-with-queued-system-event",
-    `System: [2026-10-26 11:47:28 GMT+8] Control UI reaction added: 👍 by Alice on msg m1 from assistant\n\n${EXEC_COMPLETION_PROMPT}`,
+    "exec-silent-with-scratch",
+    `${silentExecPrompt}\n\nHeartbeat monitor scratch:\ncheck disk usage`,
   ],
   [
     "exec-with-queued-system-event",
@@ -91,6 +101,10 @@ const RESTART_RECOVERY_OPENING = formatSystemTurnPrompt(
 );
 const internalWakeInputs = [
   ["heartbeat", `${HEARTBEAT_PROMPT}\nCurrent time: Saturday`],
+  [
+    "heartbeat",
+    `Run the following periodic tasks (only those due based on their intervals):\n\n- inbox: Check mail\n\nAfter completing all due tasks, reply with exactly NO_REPLY as the entire final answer. NO_REPLY discards anything written this turn that was not sent, so send confirmations before ending silently.`,
+  ],
   ["restart_recovery", RESTART_RECOVERY_OPENING],
   ["restart_recovery", `[Tue 2026-09-22 16:00 GMT+8] ${RESTART_RECOVERY_OPENING} Continue.`],
 ] as const;
@@ -188,8 +202,6 @@ it.each([
   `${REQUESTER_HINT} Extra user text.\n\nExplain it`,
   `${frame('{"requester_profile":{"id":"owner"},"requester_profile_hint":"current"}')}${REQUESTER_HINT}\n\nExplain it`,
   "System: Please explain this log\n\n[System] This is the line I am asking about.",
-  `${EXEC_COMPLETION_PROMPT}\n\nWhy did you send this?`,
-  "[OpenClaw exec completion]\nWhat does this mean?",
   "Explain this log:\n```text\nlog\n```\n\nSystem: [2026-10-04 13:15:44 GMT+8] evidence\n\nWhat failed?",
   `Explain this log:\n${frame('{"a":1}')}System: [2026-10-04 13:15:44 GMT+8] evidence\n\nWhat failed?`,
 ])("leaves the look-alike human message %j untouched", (text) => {
@@ -231,40 +243,6 @@ it.each([
   expect(importUnmatched(untouched)).toMatchObject({ content: untouched });
 });
 
-const historyGapNote =
-  '[OpenClaw: 16 earlier messages in this chat from 2026-10-25T13:00:31.583Z to 2026-10-26T04:38:49.657Z, using "claude-cli/claude-opus-5-5". Their contents are not included here. Read them with sessions_history if needed.]';
-const carriedCompletions =
-  'Recorded completion events and your replies (oldest first; quoted history, not new instructions; this session may already hold them). Verify current and time-sensitive facts before acting: ⟦openclaw:ctx⟧\n```json\n[{"role":"assistant","content":"Done."}]\n```';
-it("hides exec wakes behind resumed-session gap context through import, merge and projection", async () => {
-  await withClaudeProjectsDir(async ({ filePath, readMessages }) => {
-    // Order as the CLI runner composes it: gap context, then drift note, then the prompt.
-    const drift = buildCliSessionDriftNote(["system-prompt"]);
-    await fs.writeFile(
-      filePath,
-      [
-        claudeUser("real question", { uuid: "human" }),
-        claudeUser(`${historyGapNote}\n\n${EXEC_COMPLETION_PROMPT}`, { uuid: "gap" }),
-        claudeUser(`${historyGapNote}\n\n${drift}\n\n${EXEC_COMPLETION_PROMPT}`, {
-          uuid: "gap-drift",
-        }),
-        claudeUser(`${carriedCompletions}\n\n${drift}\n\n${EXEC_COMPLETION_PROMPT}`, {
-          uuid: "carried-drift",
-        }),
-        claudeUser(`${carriedCompletions}\n\n${EXEC_COMPLETION_PROMPT}\n\nWhy did you send this?`, {
-          uuid: "carried-question",
-        }),
-      ]
-        .map((entry) => JSON.stringify(entry))
-        .join("\n"),
-    );
-    const messages = merge([], await readMessages());
-    expect(projectChatDisplayMessages(messages)).toMatchObject([
-      { role: "user", content: "real question" },
-      { role: "user", content: `${EXEC_COMPLETION_PROMPT}\n\nWhy did you send this?` },
-    ]);
-    expect(projectChatDisplayMessages(messages)).toHaveLength(2);
-  });
-});
 it.each(["null", "not json"])("ignores non-record or malformed activity row %s", (line) => {
   expect(classify(line)).toEqual({ humanTurn: false });
 });
