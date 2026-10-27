@@ -3,8 +3,8 @@ import { createTestPluginApi } from "openclaw/plugin-sdk/plugin-test-api";
 import { createRealtimeVoiceSessionHarness } from "openclaw/plugin-sdk/realtime-voice";
 import type { RealtimeVoiceProviderPlugin } from "openclaw/plugin-sdk/realtime-voice-provider";
 import { beforeEach, expect, it, vi } from "vitest";
-import xaiPlugin from "../../../../extensions/xai/index.js";
 import { createCatalogContextFixture } from "../../../plugins/capability-catalog.test-support.js";
+import { loadBundledPluginFacade } from "../../../test-utils/bundled-plugin-public-surface.js";
 import { TalkRealtimeRelayOutputOwnership } from "./state.js";
 
 const { FakeWebSocket } = await vi.hoisted(async () => {
@@ -12,11 +12,11 @@ const { FakeWebSocket } = await vi.hoisted(async () => {
   class TestWebSocket extends EventEmitter {
     static readonly OPEN = 1;
     static readonly CONNECTING = 0;
-    static instances: TestWebSocket[] = [];
+    static constructed = Promise.withResolvers<TestWebSocket>();
     readyState = TestWebSocket.CONNECTING;
     constructor(..._args: unknown[]) {
       super();
-      TestWebSocket.instances.push(this);
+      TestWebSocket.constructed.resolve(this);
     }
     send(_payload: string) {}
     close() {
@@ -41,10 +41,13 @@ vi.mock("../../../../extensions/xai/ws-runtime.js", async (importOriginal) => ({
   WebSocket: FakeWebSocket,
 }));
 beforeEach(() => {
-  FakeWebSocket.instances = [];
+  FakeWebSocket.constructed = Promise.withResolvers<InstanceType<typeof FakeWebSocket>>();
 });
 
-function registeredProvider(): RealtimeVoiceProviderPlugin {
+async function registeredProvider(): Promise<RealtimeVoiceProviderPlugin> {
+  const { default: xaiPlugin } = await loadBundledPluginFacade<{
+    default: { register: (api: OpenClawPluginApi) => void };
+  }>({ pluginId: "xai", artifactBasename: "index.js" });
   const registerRealtimeVoiceProvider = vi.fn<OpenClawPluginApi["registerRealtimeVoiceProvider"]>();
   xaiPlugin.register(createTestPluginApi({ registerRealtimeVoiceProvider }));
   const factory = registerRealtimeVoiceProvider.mock.calls[0]?.[0];
@@ -103,7 +106,7 @@ it("settles a server-VAD predecessor before admitting its successor through Talk
   const sendAudio = vi.fn();
   const outcomes = vi.fn((outcome) => ownership.finish(outcome.responseId));
   const session = harness.createBridge({
-    provider: ownership.bind(registeredProvider(), vi.fn()),
+    provider: ownership.bind(await registeredProvider(), vi.fn()),
     providerConfig: { apiKey: "xai-test" },
     audioSink: { sendAudio },
     onTranscript,
@@ -112,8 +115,7 @@ it("settles a server-VAD predecessor before admitting its successor through Talk
   });
   try {
     const connecting = session.bridge.connect();
-    await vi.waitFor(() => expect(FakeWebSocket.instances).toHaveLength(1), { interval: 1 });
-    const socket = FakeWebSocket.instances[0]!;
+    const socket = await FakeWebSocket.constructed.promise;
     socket.open();
     server(socket, "session.updated");
     await connecting;
