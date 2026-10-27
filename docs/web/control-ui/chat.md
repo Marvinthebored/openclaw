@@ -1339,7 +1339,8 @@ in their original positions. Contiguous tool activity and reasoning-only parts
 fold into separate **Worked** disclosures between those visible parts in both
 flat and bubble mode. Expanding a disclosure shows that stretch of activity in its
 original order, and loading older history preserves which disclosures are open.
-Each disclosure is untimed; the final recap keeps the duration for the whole turn.
+Each disclosure is untimed; the final recap keeps the duration for the whole turn,
+including after reopening a completed chat when its saved timing matches the visible reply.
 Browser tab previews keep their execution order relative to visible results, so a page opened after an inline widget appears after that widget.
 Failed tool results after the last answer stay visible outside
 the disclosure until a later answer follows them. This is display grouping, not a

@@ -463,6 +463,8 @@ describe("chat transcript rendering", () => {
       replaceOwner();
       rerender();
       expect(container.querySelector(".chat-turn-recap")).toBeNull();
+      rerender();
+      expect(container.querySelector(".chat-turn-recap")).toBeNull();
       rerender({ currentAgentId: "first", runId, runWorking: true });
       rerender({ runId: null, runWorking: false });
       expectRecap("7.1k output tokens");

@@ -566,12 +566,6 @@ describe("subagent handoff", () => {
   });
   const waitingChain = () =>
     projectHistory(waiting, { subagentWait: { startedAt: 32, runId: "run-1" } });
-  const resumedSession = {
-    key: sessionKey,
-    lastRunId: "announce:resume",
-    status: "done",
-    runtimeMs: 4_000,
-  } as const;
   it.each([
     [
       "waiting",
@@ -581,7 +575,7 @@ describe("subagent handoff", () => {
     ],
     ["wait ended", {}, "run-1", null],
     ["resume pending", { runWorking: true, runActive: true }, undefined, { startedAt: 10 }],
-    ["answered", { session: resumedSession }, "announce:resume", null],
+    ["answered", {}, "announce:resume", null],
   ] as const)("preserves handoff: %s", (state, options, runId, statusShape) => {
     const waitingKey = onlyFrame(waitingChain()).key;
     if (state === "resume pending") {
@@ -672,7 +666,6 @@ describe("subagent handoff", () => {
       const { parts } = onlyFrame(
         projectHistory([...waiting, readRow("read-2", "announce:resume", 7), answer, trailing], {
           sessionKey: key,
-          session: { key, lastRunId: "announce:resume", status: "done" },
         }),
       );
       const last = parts.at(-1);

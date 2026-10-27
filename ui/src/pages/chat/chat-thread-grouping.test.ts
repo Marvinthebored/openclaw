@@ -264,7 +264,6 @@ it.each([true, false])(
     const items = collapseCompletedTurnWork(groupHistory(ordered), {
       sessionKey,
       runWorking,
-      session: { key: sessionKey, lastRunId: runId, status: "done", runtimeMs: 321 },
     });
     expect(visible(items)).toEqual(runWorking ? ordered : [prompt, answer, queuedMessage, steer]);
     expect(work(items)).toEqual(runWorking ? [] : [evidence]);

@@ -1,6 +1,5 @@
 import { asNullableRecord as asRecord } from "@openclaw/normalization-core/record-coerce";
 import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/string-coerce";
-import type { GatewaySessionRow } from "../../api/types.ts";
 import type { ChatItem, MessageGroup } from "../../lib/chat/chat-types.ts";
 import { userTurnRunId } from "../../lib/chat/history-message-identity.ts";
 import { extractToolCardsCached, isToolCardError } from "../../lib/chat/tool-cards.ts";
@@ -168,7 +167,6 @@ export function collapseCompletedTurnWork(
     runWorking: boolean;
     bubbleMode?: boolean;
     searchActive?: boolean;
-    session?: Pick<GatewaySessionRow, "key" | "lastRunId" | "status" | "runtimeMs">;
   },
 ): Array<TurnRenderItem | WorkGroupRenderItem> {
   const [scope, agentId, kind, sessionId, ...extraParts] = normalizeLowercaseStringOrEmpty(

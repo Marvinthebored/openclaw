@@ -132,6 +132,30 @@ it("keeps a watched run's duration in its recap instead of either work stretch",
   expect(text(".chat-turn-recap")).toContain("42 output tokens");
 });
 
+it.each([true, false])(
+  "restores only the visible completed run's duration (matching=%s)",
+  async (matching) => {
+    const runId = "restored-duration";
+    const props = propsFor(runId, [
+      prompt(runId, 1_000),
+      work(runId, 2_000),
+      { ...reply(runId, 3_000, "Checking another file."), phase: "commentary" },
+      { ...work(runId, 4_000), toolCallId: "second-read" },
+      reply(runId, 14_000),
+    ]);
+    props.selectedSession = session(matching ? runId : "another-run", 13_000);
+    props.transcriptMetadata = projectChatTranscriptMetadata(props.selectedSession);
+    const { container, text } = mount(props);
+    await flushDeferredRowPrune();
+    expect(
+      [...container.querySelectorAll(".chat-activity-group__label")].map(
+        (label) => label.textContent,
+      ),
+    ).toEqual(["Worked", "Worked"]);
+    expect(text(".chat-turn-recap") ?? "").toBe(matching ? "Done in 13 seconds" : "");
+  },
+);
+
 it("keeps the work disclosure interactive after its parent renders again", async () => {
   vi.useFakeTimers();
   vi.setSystemTime(60_000);
