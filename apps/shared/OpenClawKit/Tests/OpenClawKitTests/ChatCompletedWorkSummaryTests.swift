@@ -74,6 +74,46 @@ struct ChatCompletedWorkSummaryTests {
         #expect(Self.label(messages) == "Worked · 1 other operation")
     }
 
+    @Test func `split call uses the recorded outcome across narration`() throws {
+        let messages = try Self.decode("""
+        {"role":"assistant","phase":"final_answer","content":[
+          {"type":"toolCall","id":"read","name":"read"},
+          {"type":"text","text":"Checking the result."},
+          {"type":"tool_result","id":"read","name":"read","text":"Done"},
+          {"type":"text","text":"All checked."}
+        ]}
+        """)
+        let work = try #require(Self.work(messages).first)
+        #expect(ChatCompletedWorkSummary.label(work: work, expanded: false) == "Worked · 1 read")
+    }
+
+    @Test(arguments: [false, true])
+    func `distinct calls keep fallback identities and run scopes`(scoped: Bool) throws {
+        let calls = ["read", "exec"].enumerated().map { index, name in
+            OpenClawChatMessage(
+                role: "assistant",
+                content: [.init(type: "toolCall", id: scoped ? "call" : nil, name: name)],
+                timestamp: nil,
+                transcriptRunID: scoped ? "run-\(index)" : nil)
+        }
+        let answer = OpenClawChatMessage(
+            role: "assistant", content: [.init(type: "text", text: "Finished.")], timestamp: nil)
+        let work = try #require(Self.work(calls + [answer]).first)
+        #expect(ChatCompletedWorkSummary.label(work: work, expanded: true) ==
+            "Worked · 2 tool calls · 1 command · 1 read · 2 unknown")
+    }
+
+    private static func work(_ messages: [OpenClawChatMessage]) -> [ChatTranscriptRow.CompletedWork] {
+        ChatTranscriptRow.collapseCompletedWork(
+            ChatTranscriptRow.build(from: ChatTranscriptRow.mergeToolResults(in: messages)),
+            runWorking: false).compactMap { row in
+            if case let .completedWork(work) = row {
+                return work
+            }
+            return nil
+        }
+    }
+
     private static func decode(_ json: String) throws -> [OpenClawChatMessage] {
         try [JSONDecoder().decode(OpenClawChatMessage.self, from: Data(json.utf8))]
     }

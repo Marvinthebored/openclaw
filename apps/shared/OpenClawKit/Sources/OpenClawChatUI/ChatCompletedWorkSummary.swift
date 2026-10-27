@@ -25,36 +25,30 @@ enum ChatCompletedWorkSummary {
             (.unavailable, String(localized: "%lld unknown")),
         ] {
             let count = items.filter { $0.displayState == state }.count
-            if count > 0 { parts.append(String(format: format, count)) }
+            if count > 0 {
+                parts.append(String(format: format, count))
+            }
         }
         return parts.joined(separator: " · ")
     }
 
     private static func items(_ messages: [OpenClawChatMessage]) -> [ChatToolActivityItem] {
-        var items: [String: ChatToolActivityItem] = [:]
+        var items: [[String]: ChatToolActivityItem] = [:]
         for message in messages {
-            let current: [ChatToolActivityItem] = if message.isToolResult {
-                [ChatToolActivityItem(
-                    id: message.toolCallId ?? message.content.first?.id ?? message.id.uuidString,
-                    name: message.toolName,
-                    arguments: nil,
-                    details: message.details,
-                    resultText: ChatMessageVisibleText.visibleText(in: message),
-                    state: ChatToolActivity.resultIsError(
-                        message.isError, text: ChatMessageVisibleText.visibleText(in: message)) ? .failed : .finished,
-                    liveDiffStat: nil,
-                    activity: message.activity?.first,
-                    activityPrepared: message.activity != nil)]
-            } else {
-                ChatToolActivity.items(
-                    calls: message.content.filter(\.isToolCall),
-                    results: message.content.filter(\.isToolResult),
-                    activity: message.activity)
-            }
-            for item in current {
+            let explicitIDs = Set(message.content.compactMap(\.id) + [message.toolCallId].compactMap(\.self))
+            for item in ChatToolActivity.items(message: message) {
+                // Recorded IDs are run-scoped; generated fallback IDs belong
+                // only to the source fragment that assigned them.
+                let key = [
+                    message.workRunID ?? "",
+                    explicitIDs.contains(item.id) ? "" : message.presentationID.uuidString,
+                    item.id,
+                ]
                 // Prepared visibility wins over the raw fallback for the same call.
-                if items[item.id]?.activity != nil, item.activity == nil { continue }
-                items[item.id] = item
+                if items[key]?.activity != nil, item.activity == nil {
+                    continue
+                }
+                items[key] = item
             }
         }
         return items.values.filter(\.isVisible)
@@ -66,28 +60,44 @@ enum ChatCompletedWorkSummary {
         func format(_ count: Int) -> String {
             switch self {
             case .commands:
-                if count == 1 { return String(localized: "%lld command") }
+                if count == 1 {
+                    return String(localized: "%lld command")
+                }
                 return String(localized: "%lld commands")
             case .reads:
-                if count == 1 { return String(localized: "%lld read") }
+                if count == 1 {
+                    return String(localized: "%lld read")
+                }
                 return String(localized: "%lld reads")
             case .edits:
-                if count == 1 { return String(localized: "%lld edit") }
+                if count == 1 {
+                    return String(localized: "%lld edit")
+                }
                 return String(localized: "%lld edits")
             case .writes:
-                if count == 1 { return String(localized: "%lld write") }
+                if count == 1 {
+                    return String(localized: "%lld write")
+                }
                 return String(localized: "%lld writes")
             case .searches:
-                if count == 1 { return String(localized: "%lld search") }
+                if count == 1 {
+                    return String(localized: "%lld search")
+                }
                 return String(localized: "%lld searches")
             case .fetches:
-                if count == 1 { return String(localized: "%lld fetch") }
+                if count == 1 {
+                    return String(localized: "%lld fetch")
+                }
                 return String(localized: "%lld fetches")
             case .other:
-                if count == 1 { return String(localized: "%lld other operation") }
+                if count == 1 {
+                    return String(localized: "%lld other operation")
+                }
                 return String(localized: "%lld other operations")
             case .subagents:
-                if count == 1 { return String(localized: "%lld subagent") }
+                if count == 1 {
+                    return String(localized: "%lld subagent")
+                }
                 return String(localized: "%lld subagents")
             }
         }
