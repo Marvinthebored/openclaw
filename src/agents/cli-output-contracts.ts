@@ -33,7 +33,12 @@ export type CliTerminalInterruption = {
 export type CliOutput = {
   text: string;
   /** Ordered native Claude assistant envelopes; never split from cumulative text. */
-  assistantMessages?: { uuid: string; text: string }[];
+  assistantMessages?: {
+    uuid: string;
+    text: string;
+    reasoningText?: string;
+    nonTextContent?: unknown[];
+  }[];
   /** Completed result boundaries, retained for independent delivery and retry. */
   textParts?: string[];
   rawText?: string;

@@ -421,3 +421,53 @@ it("keeps tool-only terminal continuity and usage without text records", () => {
   expect(output.sessionId).toBe("native-tool-only");
   expect(output.usage).toMatchObject({ input: 10, output: 5 });
 });
+
+it("keeps mixed native content for canonical persistence", () => {
+  const output = parseFrames(
+    assistantRecord(
+      [
+        textBlock("Visible"),
+        { type: "thinking", thinking: "Private" },
+        { type: "tool_use", id: "t", name: "Read", input: {} },
+      ],
+      { uuid: "mixed" },
+    ),
+    resultFrame("Visible"),
+  );
+  expect(output.assistantMessages?.[0]?.nonTextContent).toEqual([
+    { type: "thinking", thinking: "Private" },
+    { type: "tool_use", id: "t", name: "Read", input: {} },
+  ]);
+});
+it.each(["Accepted", "NO_REPLY"])("discards repeated stop-hook drafts before %s", (accepted) => {
+  const feedback = { type: "system", subtype: "notification", key: "stop-hook-error" };
+  const output = parseFrames(
+    assistantRecord([textBlock("A")], { uuid: "a" }),
+    feedback,
+    assistantRecord([textBlock("B")], { uuid: "b" }),
+    feedback,
+    assistantRecord([textBlock(accepted)], { uuid: "c" }),
+    resultFrame(accepted),
+  );
+  expect(output.assistantMessages).toEqual([{ uuid: "c", text: accepted }]);
+});
+it("partitions native tagged reasoning before persistence", () => {
+  const output = parseFrames(
+    assistantRecord([textBlock("<thinking>Private.</thinking>Visible.")], { uuid: "tagged" }),
+    resultFrame("Visible."),
+  );
+  expect(output.assistantMessages?.[0]).toMatchObject({
+    text: "Visible.",
+    reasoningText: "Private.",
+  });
+});
+it.each(["Correct", "PrefixStale"])(
+  "uses divergent terminal result %s over native snapshot",
+  (result) => {
+    const output = parseFrames(
+      assistantRecord([textBlock("Stale")], { uuid: "final" }),
+      resultFrame(result),
+    );
+    expect(output.assistantMessages?.[0]?.text).toBe(result);
+  },
+);

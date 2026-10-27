@@ -1,3 +1,4 @@
+import { isRecord } from "@openclaw/normalization-core/record-coerce";
 import { cloneEnvWithPlatformSemantics } from "../../config/config-env-vars.js";
 import { getCliHistoryWriter } from "../../config/sessions/cli-history-boundary.js";
 import { resolveSessionStorePathCore } from "../../config/sessions/paths.js";
@@ -161,7 +162,9 @@ export async function persistCliAssistantTranscript(params: {
   stopReason: StopReason;
   yielded?: true;
   /** Native final-message identity, shared with the Claude history importer. */
-  nativeMessages?: { uuid: string; text: string; cliSessionId: string }[];
+  nativeMessages?: (NonNullable<CliOutput["assistantMessages"]>[number] & {
+    cliSessionId: string;
+  })[];
   claudeMessageIdentity?: { cliSessionId: string; externalId: string };
 }): Promise<{
   owned: boolean;
@@ -239,6 +242,22 @@ export async function persistCliAssistantTranscript(params: {
                     final ? params.turnUsage : undefined,
                   ),
                 }),
+                content: [
+                  ...(native.reasoningText
+                    ? [{ type: "thinking", thinking: native.reasoningText }]
+                    : []),
+                  { type: "text", text: native.text },
+                  ...(native.nonTextContent ?? []).map((block) => {
+                    if (isRecord(block) && block.type === "tool_use") {
+                      const { input, ...rest } = block;
+                      return Object.assign(rest, {
+                        type: "toolcall",
+                        arguments: block.arguments ?? input,
+                      });
+                    }
+                    return block;
+                  }),
+                ],
                 idempotencyKey: key,
                 __openclaw: {
                   importedFrom: "claude-cli",

@@ -613,16 +613,9 @@ async function runPreparedCliAgentOwned(
           effectiveCliSessionId &&
           output.assistantMessages?.length
             ? {
-                nativeMessages: output.assistantMessages.map((message, index, messages) => ({
+                nativeMessages: output.assistantMessages.map((message) => ({
                   ...message,
                   cliSessionId: effectiveCliSessionId,
-                  text:
-                    index === messages.length - 1
-                      ? applyPluginTextReplacements(
-                          message.text,
-                          context.backendResolved.textTransforms?.output,
-                        )
-                      : message.text,
                 })),
               }
             : {}),

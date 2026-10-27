@@ -21,6 +21,7 @@ import {
 import * as cliOutputLifecycle from "./cli-output-lifecycle.js";
 import {
   decodeCliRecords,
+  finalizeClaudeAssistantMessages,
   recordClaudeAssistantMessage,
   isClaudeStopHookFeedbackRecord,
   isClaudeStreamJsonDialect,
@@ -306,6 +307,7 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
   };
 
   // Committed or rejected text cannot join the next reply through a tool split.
+  let acceptedAssistantMessageCount = 0;
   const resetReplySegment = () => {
     segmentStart = assistantText.length;
     currentMessageStart = segmentStart;
@@ -414,6 +416,7 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
     }
 
     if (stopHookFeedback) {
+      assistantMessages.length = acceptedAssistantMessageCount;
       resetReplySegment();
     }
 
@@ -510,6 +513,12 @@ export function createCliJsonlStreamingParser(params: CliJsonlStreamingParserOpt
       ) {
         params.onCompletedReply?.(completedText, textParts.length - 1);
       }
+      finalizeClaudeAssistantMessages(
+        assistantMessages,
+        acceptedAssistantMessageCount,
+        result.text,
+      );
+      acceptedAssistantMessageCount = assistantMessages.length;
       // An interim result commits its segment. Rebase boundary state so later
       // text is judged on its own, while delta snapshots stay cumulative.
       resetReplySegment();

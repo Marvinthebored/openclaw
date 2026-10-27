@@ -326,3 +326,50 @@ it("persists only text-bearing native messages and preserves imported tool calls
   expect(merged).toHaveLength(4);
   expect(merged).toContainEqual(tool);
 });
+
+it("persists mixed native tools and tagged reasoning without losing imported identity", async () => {
+  const { target, persist } = await transcriptFixture("mixed-review");
+  const output = parseCliOutput({
+    providerId: "claude-cli",
+    backend: { command: "claude", output: "jsonl" },
+    outputMode: "jsonl",
+    raw: [
+      {
+        type: "assistant",
+        uuid: "mixed",
+        message: {
+          role: "assistant",
+          content: [
+            { type: "text", text: "<thinking>Private.</thinking>Visible." },
+            { type: "tool_use", id: "t", name: "Read", input: { path: "README.md" } },
+          ],
+        },
+      },
+      { type: "result", result: "Visible." },
+    ]
+      .map((frame) => JSON.stringify(frame))
+      .join("\n"),
+  });
+  await persist({
+    text: output.text,
+    nativeMessages: output.assistantMessages?.map(
+      ({ uuid, text, reasoningText, nonTextContent }) => ({
+        uuid,
+        text,
+        reasoningText,
+        nonTextContent,
+        cliSessionId: "native",
+      }),
+    ),
+  });
+  expect(await transcriptMessages(target)).toMatchObject([
+    {
+      content: [
+        { type: "thinking", thinking: "Private." },
+        { type: "text", text: "Visible." },
+        { type: "toolcall", id: "t", name: "Read", arguments: { path: "README.md" } },
+      ],
+      __openclaw: { externalId: "mixed" },
+    },
+  ]);
+});
