@@ -410,7 +410,7 @@ it.each(server.browser === "webkit" ? ["classic", "overlay"] : ["overlay"])(
     };
     const text =
       "handover for plugin hot reload. To test it, make the knowledge fix and hit reload ";
-    const draft = text.repeat(6);
+    const draft = text.repeat(24);
     // Typing past the cap must not swap the end inset for a gutter that later
     // disappears: each wrap change would undo the overflow that caused it.
     const overflows = async (length: number) => {
