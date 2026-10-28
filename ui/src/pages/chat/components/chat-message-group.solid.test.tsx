@@ -718,6 +718,34 @@ it.each([false, true])(
   },
 );
 
+it("renders persisted media once in a mixed narration and reasoning envelope", async () => {
+  const message = {
+    role: "assistant",
+    stopReason: "stop",
+    content: [
+      { type: "text", text: "Before" },
+      { type: "thinking", thinking: "Work" },
+      { type: "text", text: "After" },
+    ],
+    __openclaw: {
+      id: "media-source",
+      media: [{ url: "data:image/png;base64,cG5n", contentType: "image/png" }],
+    },
+  };
+  const parts = splitMixedWorkGroup(createMessageGroup(message, "assistant"));
+  const view = mountSolid(() => (
+    <For each={parts}>
+      {(part) => <MessageGroup group={part} options={{ showReasoning: false }} />}
+    </For>
+  ));
+  await waitForSolid(() =>
+    expect(view.container.querySelectorAll(".chat-message-image-button")).toHaveLength(1),
+  );
+  expect(view.container.textContent).toContain("Before");
+  expect(view.container.textContent).toContain("After");
+  expect(view.container.textContent).not.toContain("Work");
+});
+
 it("renders source reactions once across split visible and work parts", () => {
   const message = {
     role: "assistant",

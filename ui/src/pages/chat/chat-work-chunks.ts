@@ -6,6 +6,7 @@ import {
 } from "../../../../src/chat/tool-content.js";
 import type { MessageGroup } from "../../lib/chat/chat-types.ts";
 import { resolveMessageDisplayMarkdown } from "../../lib/chat/message-display.ts";
+import { readTranscriptMediaEntries } from "../../lib/chat/message-extract.ts";
 import { normalizeMessage } from "../../lib/chat/message-normalizer.ts";
 import { resolveMessageVisibleContent } from "../../lib/chat/message-visibility.ts";
 import { rememberToolCardEnvelope } from "../../lib/chat/tool-cards.ts";
@@ -69,11 +70,12 @@ export function splitMixedWorkGroup(group: MessageGroup): MessageGroup[] {
         normalizeMessage(source.message),
       ),
     };
-    // Recovery replaces a complete envelope; fragments cannot each own that replacement.
+    // Recovery and persisted media belong to one envelope, not every fragment.
     if (
       record?.role !== "assistant" ||
       !Array.isArray(record.content) ||
-      resolveCappedMessageId(source.message, "assistant")
+      resolveCappedMessageId(source.message, "assistant") ||
+      readTranscriptMediaEntries(source.message).length > 0
     ) {
       return [original];
     }
