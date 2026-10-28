@@ -1018,7 +1018,8 @@ span.new-session-page__select {
    decision, and a left-only override here put the draft further from one edge
    than the other while the chat composer stayed symmetric. */
 .new-session-page__composer .new-session-page__message {
-  max-height: calc(10lh + var(--chat-box-inset) + var(--chat-box-inset));
+  /* Keep the existing ten-line floor on short panes; the page can scroll. */
+  max-height: max(var(--chat-composer-editor-height-limit, 0px), 10lh + 2 * var(--chat-box-inset));
 }
 
 .new-session-page__composer::after {

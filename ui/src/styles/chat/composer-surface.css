@@ -388,9 +388,9 @@
   min-height: calc(var(--chat-composer-editor-line) + 8px);
   /* The editor grows upward against the viewport, not against a line count:
      past this the surface stops moving and the draft scrolls inside it. */
-  max-height: min(
-    25dvh,
-    calc(var(--chat-composer-editor-line) * 6 + var(--chat-composer-editor-inset-block) * 2)
+  max-height: var(
+    --chat-composer-editor-height-limit,
+    min(25dvh, var(--chat-composer-editor-line) * 6 + var(--chat-composer-editor-inset-block) * 2)
   );
   resize: none;
   padding-block: var(--chat-composer-editor-inset-block);

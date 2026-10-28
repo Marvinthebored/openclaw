@@ -10,6 +10,7 @@ type ComposerTextareaResizeObserverState = {
   adjustmentFrame: number | null;
   overflowFrame: number | null;
   height: number;
+  maxHeight: number;
   nativeInputPending: boolean;
   hasScrollbarGutter: boolean;
   // Width a forced scrollbar takes from this textarea; null until first overflow.
@@ -196,6 +197,46 @@ function setTextareaScrollbarGutter(
   }
 }
 
+// Textareas expose selection offsets, but no caret rectangle. Measure only on
+// cap shrink, using the same wrapping and typography as the real editor.
+function textareaCaretTop(el: HTMLTextAreaElement, style: CSSStyleDeclaration) {
+  const mirror = document.createElement("div");
+  for (const property of style) {
+    mirror.style.setProperty(property, style.getPropertyValue(property));
+  }
+  Object.assign(mirror.style, {
+    position: "fixed",
+    visibility: "hidden",
+    pointerEvents: "none",
+    width: `${el.clientWidth}px`,
+    height: "auto",
+    minHeight: "0",
+    maxHeight: "none",
+    boxSizing: "border-box",
+    border: "0",
+    overflow: "hidden",
+    scrollbarGutter: "auto",
+  });
+  const caret = el.selectionDirection === "backward" ? el.selectionStart : el.selectionEnd;
+  const origin = document.createElement("span");
+  origin.textContent = "\u200b";
+  const marker = document.createElement("span");
+  marker.textContent = "\u200b";
+  mirror.append(
+    origin,
+    document.createTextNode(el.value.slice(0, caret)),
+    marker,
+    document.createTextNode(el.value.slice(caret)),
+  );
+  document.body.append(mirror);
+  const top =
+    Number.parseFloat(style.paddingTop) +
+    marker.getClientRects()[0]!.top -
+    origin.getBoundingClientRect().top;
+  mirror.remove();
+  return top;
+}
+
 function updateTextareaOverflow(
   el: HTMLTextAreaElement,
   deferNativeEditing = true,
@@ -213,6 +254,32 @@ function updateTextareaOverflow(
   }
   const clientHeight = measured?.clientHeight ?? el.clientHeight;
   const scrollHeight = measured?.scrollHeight ?? el.scrollHeight;
+  const state = composerTextareaResizeObservers.get(el);
+  if (el.closest('[data-composer-layout="single-line"]')) {
+    el.scrollTop = 0;
+    el.style.overflowY = "";
+    el.removeAttribute("data-scroll-fade-top");
+    el.removeAttribute("data-scroll-fade-bottom");
+    if (state) {
+      state.height = clientHeight;
+      state.maxHeight = Number.parseFloat(getComputedStyle(el).maxHeight);
+    }
+    return;
+  }
+  if (state && clientHeight !== state.height) {
+    const style = getComputedStyle(el);
+    const maxHeight = Number.parseFloat(style.maxHeight);
+    if (clientHeight < state.height && maxHeight < state.maxHeight) {
+      let scrollTop = el.scrollTop + state.height - clientHeight;
+      if (document.activeElement === el) {
+        const top = textareaCaretTop(el, style);
+        const bottom = top + Number.parseFloat(style.lineHeight);
+        scrollTop = Math.max(bottom - clientHeight, Math.min(scrollTop, top));
+      }
+      el.scrollTop = scrollTop;
+    }
+    state.maxHeight = maxHeight;
+  }
   const scrollable = scrollHeight > clientHeight + 1;
   // Two 16px fades need enough vertical runway not to overlap into a narrow
   // opaque strip on short drafts. Small overflows still scroll, just unfaded.
@@ -220,7 +287,6 @@ function updateTextareaOverflow(
     scrollable && clientHeight >= 64 && !composerTextareaResizeObservers.get(el)?.editing;
   const fadeTop = canFade && el.scrollTop > 1;
   const fadeBottom = canFade && el.scrollTop + clientHeight < scrollHeight - 1;
-  const state = composerTextareaResizeObservers.get(el);
   setTextareaScrollbarGutter(el, scrollable, state);
   el.toggleAttribute("data-scroll-fade-top", fadeTop);
   el.toggleAttribute("data-scroll-fade-bottom", fadeBottom);
@@ -255,6 +321,7 @@ export function adjustTextareaHeight(
   // pass would silently outrank the stylesheet. Which shape a composer is in is
   // declared in its markup, never inferred here from how much text it holds.
   if (el.closest('[data-composer-layout="single-line"]')) {
+    el.scrollTop = 0;
     el.style.height = "";
     el.style.overflowY = "";
     el.removeAttribute("data-composer-scrollable");
@@ -368,6 +435,8 @@ export function observeTextareaOverflow(
     adjustmentFrame: null,
     overflowFrame: null,
     height: el.clientHeight,
+    // Ref binding precedes attachment; the first layout observation owns the cap.
+    maxHeight: el.isConnected ? Number.parseFloat(getComputedStyle(el).maxHeight) : Number.NaN,
     nativeInputPending: false,
     hasScrollbarGutter: false,
     scrollbarWidth: null,
