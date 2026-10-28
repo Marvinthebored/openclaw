@@ -287,7 +287,6 @@ function updateTextareaOverflow(
     scrollable && clientHeight >= 64 && !composerTextareaResizeObservers.get(el)?.editing;
   const fadeTop = canFade && el.scrollTop > 1;
   const fadeBottom = canFade && el.scrollTop + clientHeight < scrollHeight - 1;
-  const state = composerTextareaResizeObservers.get(el);
   setTextareaScrollbarGutter(el, scrollable, state);
   el.toggleAttribute("data-scroll-fade-top", fadeTop);
   el.toggleAttribute("data-scroll-fade-bottom", fadeBottom);
