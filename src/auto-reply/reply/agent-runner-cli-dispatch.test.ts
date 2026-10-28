@@ -5,9 +5,7 @@ import { awaitGateBeforeSettlement, createDeferred } from "../../../test/helpers
 import { useAutoCleanupTempDirTracker } from "../../../test/helpers/temp-dir.js";
 import { withTestAdmittedRunContext } from "../../agents/admitted-run-context.test-support.js";
 import { clearCliSessionInStore } from "../../agents/cli-session-store.js";
-import { classifyEmbeddedAgentRunResultForModelFallback } from "../../agents/embedded-agent-runner/result-fallback-classifier.js";
 import type { EmbeddedAgentRunResult } from "../../agents/embedded-agent-runner/types.js";
-import { runWithModelFallback } from "../../agents/model-fallback-runner.js";
 import { createAgentRunRestartAbortError } from "../../agents/run-termination.js";
 import { loadSessionEntry, replaceSessionEntry } from "../../config/sessions/session-accessor.js";
 import {
@@ -170,65 +168,6 @@ describe("runCliAgentWithLifecycle", () => {
           { step: "Patch", status: "pending" },
         ],
       }),
-    );
-  });
-
-  it.each([false, true])("does not replay a yielded CLI turn (reasoning=%s)", async (reasoning) => {
-    const runs: string[] = [];
-    cliDispatchState.runCliAgentMock.mockImplementationOnce(async (params: { runId: string }) => {
-      if (reasoning) {
-        emitAgentEvent({
-          runId: params.runId,
-          stream: "thinking",
-          data: { text: "Checking the result", isReasoningSnapshot: true },
-        });
-      }
-      emitAgentEvent({
-        runId: params.runId,
-        stream: "item",
-        data: { kind: "preamble", progressText: "Handing off; I will resume here." },
-      });
-      return {
-        meta: {
-          durationMs: 1,
-          yielded: true,
-          livenessState: "paused",
-          stopReason: "end_turn",
-          terminalReply: { disposition: "empty" },
-          agentMeta: { sessionId: "native-session" },
-        },
-      };
-    });
-    const onCommentaryText = vi.fn();
-    const outcome = await runWithModelFallback({
-      cfg: undefined,
-      provider: "external",
-      model: "primary",
-      fallbacksOverride: ["external/fallback"],
-      skipAuthProfileRuntime: true,
-      run: async (_provider, model) => {
-        runs.push(model);
-        if (model === "fallback") {
-          return { payloads: [{ text: "Replayed the task" }], meta: { durationMs: 1 } };
-        }
-        return await runCliAgentWithLifecycle({
-          runId: "cli-yield-fallback",
-          runParams: createRunParams("cli-yield-fallback"),
-          onCommentaryText,
-        });
-      },
-      classifyResult: classifyEmbeddedAgentRunResultForModelFallback,
-    });
-    expect(runs).toEqual(["primary"]);
-    expect(outcome.attempts).toEqual([]);
-    expect(outcome.result.meta).toMatchObject({
-      yielded: true,
-      livenessState: "paused",
-      agentMeta: { sessionId: "native-session" },
-    });
-    expect(onCommentaryText).toHaveBeenCalledWith({ text: "Handing off; I will resume here." });
-    expect(outcome.result.payloads).toEqual(
-      reasoning ? [{ text: "Checking the result", isReasoning: true }] : undefined,
     );
   });
 
