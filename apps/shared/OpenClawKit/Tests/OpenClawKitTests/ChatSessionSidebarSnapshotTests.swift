@@ -57,6 +57,34 @@ struct ChatSessionSidebarSnapshotTests {
         #expect(session.thinkingDefault == nil)
     }
 
+    @Test func `outer clearing tombstones survive row projection and event replay`() throws {
+        var previous = try self.profiledSession()
+        previous.icon = "book"
+        previous.category = "Research"
+        previous.snoozedUntil = 1800003600000
+        let change = try self.event("""
+        {"sessionKey":"agent:main:work","reason":"patch",
+          "label":null,"icon":null,"category":null,"snoozedUntil":null,
+          "session":{"key":"agent:main:work","kind":"direct",
+            "sessionId":"work-id","updatedAt":200}}
+        """)
+        let replayed = try JSONDecoder().decode(
+            OpenClawChatSessionsChangedEvent.self, from: JSONEncoder().encode(change))
+        for event in [change, replayed] {
+            let session = try #require(ChatSessionSidebarModel.applying(
+                sessionChange: event, to: [previous])?.first)
+            #expect(session.label == nil)
+            #expect(session.icon == nil)
+            #expect(session.category == nil)
+            #expect(session.snoozedUntil == nil)
+            #expect(session.model == previous.model)
+            #expect(session.modelProvider == previous.modelProvider)
+            #expect(session.agentRuntime == previous.agentRuntime)
+            #expect(session.thinkingLevels == previous.thinkingLevels)
+            #expect(session.thinkingDefault == previous.thinkingDefault)
+        }
+    }
+
     @Test func `new model may supply its own thinking capabilities`() throws {
         let change = try self.event("""
         {"reason":"patch","session":{"key":"agent:main:work","kind":"direct","sessionId":"work-id",

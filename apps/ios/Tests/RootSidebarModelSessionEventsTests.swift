@@ -98,6 +98,45 @@ struct RootSidebarModelSessionEventsTests {
         #expect(loads.rosters == 0)
     }
 
+    @Test func `outer wake receipt makes a known row visible without a roster load`() async throws {
+        let appModel = NodeAppModel()
+        let model = RootSidebarModel()
+        let clock = Clock()
+        let loads = Loads()
+        let now = Date(timeIntervalSince1970: 1800000000)
+        loads.row.snoozedUntil = now.addingTimeInterval(3600).timeIntervalSince1970 * 1000
+        loads.row.icon = "book"
+        loads.row.category = "Research"
+        self.configure(model, clock: clock, loads: loads)
+        await model.refreshSessions(appModel: appModel)
+        loads.rosters = 0
+        func visibleKeys() -> [String] {
+            RootSidebarModel.sections(
+                sessions: model.sessions,
+                query: "",
+                currentSessionKey: "agent:main:other",
+                mainSessionKey: "agent:main:main",
+                activeAgentID: "main",
+                groups: [],
+                now: now).flatMap(\.nodes).map(\.session.key)
+        }
+        #expect(!visibleKeys().contains(loads.row.key))
+        let payload: [String: Any] = [
+            "sessionKey": loads.row.key, "reason": "patch",
+            "snoozedUntil": NSNull(), "label": NSNull(), "icon": NSNull(), "category": NSNull(),
+            "session": ["key": loads.row.key, "kind": "direct", "sessionId": "work-id", "updatedAt": 200],
+        ]
+        _ = await model.handleSessionEvent(EventFrame(
+            type: "event", event: "sessions.changed", payload: AnyCodable(payload)), appModel: appModel)
+        #expect(visibleKeys().contains(loads.row.key))
+        #expect(model.sessions.first?.label == nil)
+        #expect(model.sessions.first?.icon == nil)
+        #expect(model.sessions.first?.category == nil)
+        await Task.yield()
+        #expect(clock.sleepers.isEmpty)
+        #expect(loads.rosters == 0)
+    }
+
     @Test(arguments: ["lifecycle", "subagent-status"])
     func `finished known helper clears ancestor activity with one coalesced refresh`(reason: String) async throws {
         let appModel = NodeAppModel()
