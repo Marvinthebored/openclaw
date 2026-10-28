@@ -540,8 +540,8 @@ describe("classifyEmbeddedAgentRunResultForModelFallback", () => {
 
   it.each([
     {
-      label: "a yielded empty result records potential side effects",
-      meta: { replayInvalid: true, yielded: true, stopReason: "end_turn" },
+      label: "a yielded empty result retains its continuation",
+      meta: { yielded: true, stopReason: "end_turn" },
     },
     {
       label: "an exact terminal tool batch intentionally completes the turn",
