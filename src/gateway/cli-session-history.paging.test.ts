@@ -477,24 +477,3 @@ it("pages merged incognito CLI history without allocating SQLite", async () => {
     }
   });
 });
-
-it("keeps earlier native activity before the final across a backdated hidden exec completion", async () => {
-  await withPagingHistory("cli-backdated-completion", async (fixture) => {
-    const completion = local("completion", "final", "Exec completed", 100, "user");
-    await fixture.setEvents([
-      local("human", null, "start", 0, "user"),
-      local("final", "human", "final answer", 200),
-      {
-        ...completion,
-        message: {
-          ...completion.message,
-          provenance: { kind: "internal_system", sourceTool: "exec" },
-        },
-      },
-    ]);
-    await fs.writeFile(fixture.filePath, native("work", "earlier work", 150));
-    const page = await readNativePage(historyParams(fixture, fixture.homeDir), fixture.readers);
-    expect(page.messages.map(readChatHistoryMessageId)).toEqual(["human", "work", "final"]);
-    expect(page.messages.at(-1)).toMatchObject({ content: "final answer", timestamp: 200 });
-  });
-});

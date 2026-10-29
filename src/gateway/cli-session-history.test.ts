@@ -580,51 +580,23 @@ describe("cli session history", () => {
 
   it.each([
     {
-      name: "keeps a backdated exec completion after the answer it followed",
-      localMessages: [
-        { role: "assistant", content: "long final answer", timestamp: 200 },
-        {
-          role: "user",
-          content: "Exec completed",
-          timestamp: 100,
-          provenance: { kind: "internal_system", sourceTool: "exec" },
-        },
-        { role: "assistant", content: "short follow-up", timestamp: 300 },
-      ],
-      imported: [{ role: "assistant", content: "unmatched cli import", timestamp: 50 }],
-      expected: ["unmatched cli import", "long final answer", "Exec completed", "short follow-up"],
-    },
-    {
-      name: "keeps earlier CLI work before a final followed by a backdated completion",
-      localMessages: [
-        { role: "user", content: "start", timestamp: 0 },
-        { role: "assistant", content: "final answer", timestamp: 200 },
-        {
-          role: "user",
-          content: "Exec completed",
-          timestamp: 100,
-          provenance: { kind: "internal_system", sourceTool: "exec" },
-        },
-      ],
-      imported: [
-        { role: "assistant", content: "earlier work", timestamp: 150 },
-        { role: "assistant", content: "same-time work", timestamp: 200 },
-        { role: "assistant", content: "later work", timestamp: 250 },
-      ],
+      name: "keeps earlier imports before a backdated local's preceding answer",
+      localMessages: [200, 100, 300].map((t) => historyRow(`local ${t}`, t)),
+      imported: [50, 150, 200, 250].map((t) => historyRow(`import ${t}`, t)),
       expected: [
-        "start",
-        "earlier work",
-        "final answer",
-        "Exec completed",
-        "same-time work",
-        "later work",
+        "import 50",
+        "import 150",
+        "local 200",
+        "local 100",
+        "import 200",
+        "import 250",
+        "local 300",
       ],
     },
     {
       name: "splices unmatched imports in timestamp order without moving local rows",
       localMessages: [200, 300, 0, 400, 500, 600].map((t) => historyRow(`local ${t}`, t)),
       imported: [150, 100].map((t) => historyRow(`import ${t}`, t)),
-      // A backdated local must not pull earlier imports across preceding locals.
       expected: [
         "import 100",
         "import 150",

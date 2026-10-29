@@ -303,11 +303,8 @@ function attachCliHistoryImport<T extends CliHistoryOrderRow>(
   afterLocal.set(anchor.id, [imported]);
 }
 
-/**
- * Locals stay in transcript order. A backdated local cannot pull earlier CLI
- * activity past the answer that preceded it. Use a monotonic local timeline
- * only for import placement; leave stored timestamps and local order intact.
- */
+// Prefix timestamps anchor imports without letting backdated locals move earlier
+// activity past a preceding answer. Stored timestamps and local order stay intact.
 export function orderCliHistoryRows<T extends CliHistoryOrderRow>(rows: readonly T[]): T[] {
   const locals = rows
     .filter(isLocalCliHistoryRow)
@@ -316,12 +313,6 @@ export function orderCliHistoryRows<T extends CliHistoryOrderRow>(rows: readonly
     .filter((row) => row.local_seq === null)
     .toSorted(compareImportedCliHistoryRows);
   let localTime = Number.NEGATIVE_INFINITY;
-  const byTime = locals
-    .filter((row): row is T & { local_seq: number; timestamp: number } => row.timestamp !== null)
-    .map((row) => {
-      localTime = Math.max(localTime, row.timestamp);
-      return { row, timestamp: localTime };
-    });
   const before: T[] = [];
   const afterLocal = new Map<number, T[]>();
   let timeIndex = 0;
@@ -332,12 +323,18 @@ export function orderCliHistoryRows<T extends CliHistoryOrderRow>(rows: readonly
       continue;
     }
     for (;;) {
-      const candidate = byTime[timeIndex];
-      if (candidate === undefined || candidate.timestamp > imported.timestamp) {
+      const candidate = locals[timeIndex];
+      if (candidate === undefined) {
         break;
       }
+      if (candidate.timestamp !== null) {
+        localTime = Math.max(localTime, candidate.timestamp);
+        if (localTime > imported.timestamp) {
+          break;
+        }
+        anchor = candidate;
+      }
       timeIndex += 1;
-      anchor = candidate.row;
     }
     attachCliHistoryImport(imported, anchor, before, afterLocal);
   }
