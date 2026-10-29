@@ -595,15 +595,42 @@ describe("cli session history", () => {
       expected: ["unmatched cli import", "long final answer", "Exec completed", "short follow-up"],
     },
     {
+      name: "keeps earlier CLI work before a final followed by a backdated completion",
+      localMessages: [
+        { role: "user", content: "start", timestamp: 0 },
+        { role: "assistant", content: "final answer", timestamp: 200 },
+        {
+          role: "user",
+          content: "Exec completed",
+          timestamp: 100,
+          provenance: { kind: "internal_system", sourceTool: "exec" },
+        },
+      ],
+      imported: [
+        { role: "assistant", content: "earlier work", timestamp: 150 },
+        { role: "assistant", content: "same-time work", timestamp: 200 },
+        { role: "assistant", content: "later work", timestamp: 250 },
+      ],
+      expected: [
+        "start",
+        "earlier work",
+        "final answer",
+        "Exec completed",
+        "same-time work",
+        "later work",
+      ],
+    },
+    {
       name: "splices unmatched imports in timestamp order without moving local rows",
       localMessages: [200, 300, 0, 400, 500, 600].map((t) => historyRow(`local ${t}`, t)),
       imported: [150, 100].map((t) => historyRow(`import ${t}`, t)),
+      // A backdated local must not pull earlier imports across preceding locals.
       expected: [
+        "import 100",
+        "import 150",
         "local 200",
         "local 300",
         "local 0",
-        "import 100",
-        "import 150",
         "local 400",
         "local 500",
         "local 600",
