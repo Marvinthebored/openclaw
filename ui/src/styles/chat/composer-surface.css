@@ -42,6 +42,10 @@
 }
 
 .chat-footer .agent-chat__composer-shell {
+  /* Paint twelve lines before the pane measures a shorter limit. */
+  --chat-composer-editor-max-lines: 12;
+  --chat-composer-editor-height-limit: 100dvh;
+
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
@@ -379,11 +383,6 @@
   padding-inline: calc(
     var(--chat-composer-editor-inset-inline) - var(--chat-composer-editor-scroll-inset)
   );
-}
-
-.chat-footer {
-  --chat-composer-editor-max-lines: 12;
-  --chat-composer-editor-height-limit: 100dvh;
 }
 
 .agent-chat__composer-combobox > :is(textarea, input) {

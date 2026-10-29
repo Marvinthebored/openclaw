@@ -931,8 +931,6 @@
   "ui/src/pages/chat/components/chat-composer-dom.ts",
   "ui/src/pages/chat/components/chat-composer-emoji-state.ts",
   "ui/src/pages/chat/components/chat-composer-inline-slash.ts",
-  "ui/src/pages/chat/components/chat-composer-layout-ref.ts",
-  "ui/src/pages/chat/components/chat-composer-layout.ts",
   "ui/src/pages/chat/components/chat-composer-mention-menu-state.ts",
   "ui/src/pages/chat/components/chat-composer-menus.ts",
   "ui/src/pages/chat/components/chat-composer-plus-menu.tsx",

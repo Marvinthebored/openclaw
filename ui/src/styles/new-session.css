@@ -1003,7 +1003,6 @@ span.new-session-page__select {
 
 /* The chip row already spaces itself; keep the composer snug beneath it. */
 .new-session-page__composer.agent-chat__composer-shell {
-  position: relative;
   margin-top: 0;
   border-radius: var(--radius-md);
 }
@@ -1020,7 +1019,7 @@ span.new-session-page__select {
   max-height: clamp(
     10lh + 2 * var(--chat-box-inset),
     var(--chat-composer-editor-height-limit, 100dvh),
-    var(--chat-composer-editor-max-lines, 12) * 1lh + var(--chat-composer-editor-inset-block) * 2
+    12lh + 2 * var(--chat-composer-editor-inset-block)
   );
 }
 
@@ -1043,10 +1042,6 @@ span.new-session-page__select {
 @media (prefers-reduced-motion: reduce) {
   .new-session-page__start-submit.new-session-page__start-submit--busy svg {
     animation: none;
-  }
-
-  .new-session-page__composer::after {
-    transition-duration: 0ms;
   }
 }
 
