@@ -517,7 +517,18 @@ describe("new-session composer sizing lifecycle", () => {
     vi.stubGlobal("ResizeObserver", TestResizeObserver);
     const composerTextarea = createNewSessionComposerTextarea();
     const onInput = vi.fn();
-    const first = renderComposer({ composerTextarea, onInput });
+    let savedWidth: string | undefined = "600px";
+    const first = renderComposer({
+      composerTextarea,
+      onInput,
+      get chatMessageMaxWidth() {
+        return savedWidth;
+      },
+      onComposerWidthChange: (value) => {
+        savedWidth = value;
+        first.rerender();
+      },
+    });
     document.body.append(first.container);
     const textarea = getComposerTextarea(first.composer);
     let scrollHeightReads = 0;
@@ -528,10 +539,15 @@ describe("new-session composer sizing lifecycle", () => {
         return 42;
       },
     });
-    // The shared layout attaches after Solid, then schedules the initial cap.
-    await waitForFast(() =>
-      expect(first.container.querySelector('[role="separator"]')).not.toBeNull(),
-    );
+    // JSX exists before geometry settles. Capture the baseline only after both
+    // owners have bound all their targets, not merely after the edge renders.
+    const expectedTargets = new Set([
+      textarea,
+      first.composer,
+      first.composer.querySelector<HTMLElement>(".agent-chat__input")!,
+      first.container,
+    ]);
+    await waitForFast(() => expect(observedTargets()).toEqual(expectedTargets));
     const readsAfterAttach = scrollHeightReads;
     const targetsAfterAttach = observedTargets();
     expect(targetsAfterAttach.has(textarea)).toBe(true);

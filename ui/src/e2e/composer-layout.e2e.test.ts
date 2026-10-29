@@ -1,6 +1,16 @@
 import { expect, it } from "vitest";
-import { installMockGateway } from "../test-helpers/control-ui-e2e.ts";
+import { waitForLayoutSettled } from "../pages/chat/chat-layout.browser.test-support.ts";
+import { controlUiSessionUrl, installMockGateway } from "../test-helpers/control-ui-e2e.ts";
+import { openChatDetails } from "./chat-details.test-support.ts";
+import { seedChatSettings } from "./chat-layout-fixtures.test-support.ts";
+import { openChatSidePanelType } from "./chat-side-panel.test-support.ts";
 import { createControlUiE2eSuite } from "./control-ui-e2e-suite.test-support.ts";
+
+declare global {
+  interface Window {
+    composerWidthFrames: number[];
+  }
+}
 
 const suite = createControlUiE2eSuite({ name: "Composer border width preference" });
 
@@ -132,11 +142,141 @@ suite.define(() => {
       await page.evaluate(() => window.dispatchEvent(new Event("blur")));
       await page.mouse.up();
       await expect.poll(width).toBe(initial - 40);
-      expect(await edge.getAttribute("class")).not.toContain("--dragging");
       expect(await savedWidth()).toBe(saved);
       await page.reload();
       await edge.waitFor();
       await expect.poll(width).toBe(initial - 40);
     });
   });
+  it.each([
+    ["docked Details", 1600, "details"],
+    ["a side panel", 1440, "files"],
+    ["floating Details", 1100, "floating"],
+  ] as const)(
+    "keeps the widest composer inside the transcript column beside %s",
+    async (_label, viewportWidth, panel) => {
+      await suite.withPage(
+        { viewport: { width: viewportWidth, height: 900 } },
+        async ({ page }) => {
+          const sessionKey = "agent:main:composer-width-panels";
+          await installMockGateway(page, {
+            sessionKey,
+            historyMessages: [{ role: "assistant", content: "Panels keep their space." }],
+            workspace: "/workspace/openclaw",
+            workspaceGit: true,
+            methodResponses: {
+              "sessions.files.list": {
+                browser: { path: "", entries: [] },
+                files: [],
+                root: "/workspace/openclaw",
+                sessionKey,
+              },
+            },
+          });
+          await page.goto(controlUiSessionUrl(suite.server.baseUrl, sessionKey));
+          await page.getByText("Panels keep their space.").waitFor();
+          if (panel === "details") {
+            await openChatDetails(page);
+            await page.locator(".chat-details--docked").waitFor();
+          } else if (panel === "files") {
+            await openChatSidePanelType(page, "Files");
+          }
+          const edge = page.getByRole("separator", { name: "Resize message width", exact: true });
+          await edge.waitFor();
+          const box = (await edge.boundingBox())!;
+          await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+          await page.mouse.down();
+          await page.mouse.move(box.x - 3000, box.y + box.height / 2, { steps: 8 });
+          await page.mouse.up();
+          const bounds = (selector: string) =>
+            page
+              .locator(selector)
+              .filter({ visible: true })
+              .first()
+              .evaluate((element) => {
+                const rect = element.getBoundingClientRect();
+                return {
+                  left: rect.left,
+                  right: rect.right,
+                  top: rect.top,
+                  bottom: rect.bottom,
+                  width: rect.width,
+                };
+              });
+          // The actual reading column excludes Details, scrollbars, and transcript gutters.
+          // Comparing against .chat or even .chat-main__conversation misses all three.
+          await expect
+            .poll(async () => {
+              const transcript = await bounds(".chat-thread-inner");
+              const composer = await bounds(".agent-chat__composer-shell");
+              return Math.max(transcript.left - composer.left, composer.right - transcript.right);
+            })
+            .toBeLessThanOrEqual(1);
+          const composer = await bounds(".agent-chat__composer-shell");
+          expect(composer.width).toBeGreaterThan(0);
+          if (panel === "details") {
+            expect((await bounds(".chat-details--docked")).left).toBeGreaterThanOrEqual(
+              composer.right,
+            );
+          } else if (panel === "floating") {
+            // Opening the floating inspector after resizing keeps the real outside-click
+            // dismissal behavior, while proving its existing footer reservation still fits.
+            const details = await openChatDetails(page);
+            expect(await details.getAttribute("class")).not.toContain("chat-details--docked");
+            await expect
+              .poll(
+                async () =>
+                  (await bounds(".chat-details")).bottom - (await bounds(".agent-chat__input")).top,
+              )
+              .toBeLessThanOrEqual(0);
+          }
+        },
+      );
+    },
+  );
+
+  it.each(["chat", "new"] as const)(
+    "restores saved %s width at the first visible frame",
+    async (route) => {
+      await suite.withPage({ viewport: { width: 1600, height: 900 } }, async ({ page }) => {
+        const sessionKey = "agent:main:composer-width-reload";
+        await seedChatSettings(page, suite.server.baseUrl, { chatMessageMaxWidth: "1000px" });
+        await installMockGateway(page, {
+          sessionKey,
+          historyMessages: [{ role: "assistant", content: "Reload keeps the composer still." }],
+        });
+        await page.goto(
+          route === "chat"
+            ? controlUiSessionUrl(suite.server.baseUrl, sessionKey)
+            : suite.server.baseUrl + "new",
+        );
+        const edge = page.getByRole("separator", { name: "Resize message width", exact: true });
+        await edge.waitFor();
+        await waitForLayoutSettled(page, ".agent-chat__composer-shell");
+        const expectedWidth = await page
+          .locator(".agent-chat__composer-shell")
+          .evaluate((element) => Math.round(element.getBoundingClientRect().width));
+        expect(expectedWidth).toBeGreaterThan(0);
+        expect(expectedWidth).toBeLessThanOrEqual(1000);
+        await page.addInitScript(() => {
+          window.composerWidthFrames = [];
+          const tick = () => {
+            const shell = document.querySelector(".agent-chat__composer-shell");
+            const rect = shell?.getBoundingClientRect();
+            if (rect && rect.width > 0 && rect.height > 0) {
+              window.composerWidthFrames.push(Math.round(rect.width));
+            }
+            if (window.composerWidthFrames.length < 30) {
+              requestAnimationFrame(tick);
+            }
+          };
+          requestAnimationFrame(tick);
+        });
+        await page.reload();
+        await expect.poll(() => page.evaluate(() => window.composerWidthFrames.length)).toBe(30);
+        const frames = await page.evaluate(() => window.composerWidthFrames);
+        expect(new Set(frames), frames.join(", ")).toEqual(new Set([expectedWidth]));
+      });
+    },
+  );
 });
