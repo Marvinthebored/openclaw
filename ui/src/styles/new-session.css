@@ -1003,6 +1003,7 @@ span.new-session-page__select {
 
 /* The chip row already spaces itself; keep the composer snug beneath it. */
 .new-session-page__composer.agent-chat__composer-shell {
+  --chat-composer-editor-max-lines: 12;
   position: relative;
   margin-top: 0;
   border-radius: var(--radius-md);
@@ -1012,14 +1013,18 @@ span.new-session-page__select {
   animation: btn-spinner-spin 2.25s linear infinite;
 }
 
-/* Keep a long first prompt visible before scrolling. The shared auto-height
-   controller measures content; this surface owns its ten-line visual cap. */
+/* Share the desktop line cap while retaining New Session's ten-line floor. */
 /* No inset of its own: the editor's breathing room is the composer surface's
    decision, and a left-only override here put the draft further from one edge
    than the other while the chat composer stayed symmetric. */
 .new-session-page__composer .new-session-page__message {
-  /* Keep the existing ten-line floor on short panes; the page can scroll. */
-  max-height: max(var(--chat-composer-editor-height-limit, 0px), 10lh + 2 * var(--chat-box-inset));
+  max-height: max(
+    10lh + 2 * var(--chat-box-inset),
+    min(
+      var(--chat-composer-editor-height-limit, 100dvh),
+      var(--chat-composer-editor-max-lines) * 1lh + 2 * var(--chat-composer-editor-inset-block)
+    )
+  );
 }
 
 .new-session-page__composer::after {

@@ -131,7 +131,7 @@ suite.define(() => {
     }
   });
 
-  it("grows the first prompt downward past ten lines, then scrolls at the pane limit", async () => {
+  it("grows the first prompt downward to twelve lines, then scrolls internally", async () => {
     await withNewSessionPage(async (page) => {
       const gateway = await installMockGateway(page);
       await page.emulateMedia({ reducedMotion: "reduce" });
@@ -195,7 +195,7 @@ suite.define(() => {
         triggers.boundingBox(),
         composer.boundingBox(),
       ]);
-      expect(capped.clientHeight).toBeGreaterThan(tenLines.height);
+      expect(capped.clientHeight).toBeCloseTo(tenLines.lineHeight * 12 + tenLines.padding, 0);
       expect(capped.clientHeight).toBeLessThan(tenLines.viewportHeight);
       expect(capped.clientHeight).toBeLessThan(capped.scrollHeight);
       // Browser subpixel rounding may shift stable blocks by a pixel; larger movement is visible.

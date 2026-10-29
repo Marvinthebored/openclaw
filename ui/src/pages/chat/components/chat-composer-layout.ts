@@ -38,7 +38,11 @@ export class ComposerLayout {
       this.measure?.();
       return;
     }
-    this.root = input.closest<HTMLElement>(".chat, .new-session-page") ?? input.parentElement;
+    const pane = input.closest<HTMLElement>(".chat-footer, .new-session-page__scroll");
+    if (!pane) {
+      return;
+    }
+    this.root = input.closest<HTMLElement>(".chat, .new-session-page");
     const root = this.root;
     const findEditor = () => this.options.getEditor();
     const mounted = findEditor();
@@ -80,13 +84,10 @@ export class ComposerLayout {
       // editor and move the scroll boundary again. Both rects are viewport-relative.
       const budget = footer
         ? Number.parseFloat(getComputedStyle(footer).maxHeight)
-        : Math.min(
-            viewportHeight * 0.8,
-            paneBottom - shell.getBoundingClientRect().top - (scroll?.scrollTop ?? 0) - margins,
-          );
+        : paneBottom - shell.getBoundingClientRect().top - (scroll?.scrollTop ?? 0) - margins;
       if (Number.isFinite(budget)) {
-        const viewportLimit = (window.visualViewport?.height ?? window.innerHeight) * 0.8;
-        const limit = `${Math.max(36, Math.min(viewportLimit, budget - chrome))}px`;
+        // CSS owns the line cap; measurement only constrains it to short panes.
+        const limit = `${Math.max(36, budget - chrome)}px`;
         if (input.style.getPropertyValue("--chat-composer-editor-height-limit") !== limit) {
           input.style.setProperty("--chat-composer-editor-height-limit", limit);
           scheduleTextareaHeightAdjustment(editor);

@@ -107,6 +107,25 @@ describe("content-sized composer height", () => {
     },
   );
 
+  it.each([
+    [1440, 900, 12],
+    [390, 844, 6],
+  ])("caps automatic growth at %ipx × %ipx to %i lines", async (width, height, lines) => {
+    await page.viewport(width, height);
+    const f = fixture();
+    f.props.draft = "Long draft\n".repeat(40);
+    f.draw();
+    await settled();
+    await settled();
+    const style = getComputedStyle(f.editor());
+    const expectedHeight =
+      lines * Number.parseFloat(style.lineHeight) +
+      Number.parseFloat(style.paddingTop) +
+      Number.parseFloat(style.paddingBottom);
+    expect(f.editor().clientHeight).toBeCloseTo(expectedHeight, 0);
+    expect(f.editor().scrollHeight).toBeGreaterThan(f.editor().clientHeight);
+  });
+
   it.each(["wrapped", "compact"] as const)(
     "keeps the correct draft line visible after shrinking (%s)",
     async (shape) => {
@@ -150,14 +169,14 @@ describe("content-sized composer height", () => {
       editor.focus();
       const lineHeight = Number.parseFloat(getComputedStyle(editor).lineHeight);
       const padding = Number.parseFloat(getComputedStyle(editor).paddingTop);
-      const line = position === "end" ? 99 : position === "top" ? 2 : 25;
+      const line = position === "end" ? 99 : position === "top" ? 2 : 15;
       const caret = position === "end" ? editor.value.length : editor.value.indexOf(`Line ${line}`);
       editor.setSelectionRange(caret, caret);
       editor.scrollTop =
         position === "end" ? editor.scrollHeight : position === "top" ? 0 : 10 * lineHeight;
       await settled();
       const before = { height: editor.clientHeight, scroll: editor.scrollTop };
-      await page.viewport(1440, 600);
+      await page.viewport(1440, 400);
       await settled();
       await settled();
       const lost = before.height - editor.clientHeight;
@@ -195,14 +214,14 @@ describe("content-sized composer height", () => {
     const before = f.editor().clientHeight;
     // Context chrome must leave room for the editor inside the complete footer.
     f.props.footerContent = (
-      <div style={{ height: "180px", "flex-shrink": "0" }}>Visible context</div>
+      <div style={{ height: "560px", "flex-shrink": "0" }}>Visible context</div>
     );
     f.draw();
     await settled();
     await settled();
     const context = container.querySelector<HTMLElement>(".chat-footer__context")!;
-    expect(context.clientHeight).toBeGreaterThanOrEqual(180);
-    expect(f.editor().clientHeight).toBeLessThanOrEqual(before - 180 + 1);
+    expect(context.clientHeight).toBeGreaterThanOrEqual(560);
+    expect(f.editor().clientHeight).toBeLessThan(before);
     expect(f.input().getBoundingClientRect().bottom).toBeLessThanOrEqual(900);
     f.props.footerContent = undefined;
     f.draw();
@@ -275,19 +294,18 @@ describe("content-sized composer height", () => {
     trailing.remove();
     root.className = "chat";
   });
-  it("keeps the existing line cap on composers without pane-height ownership", async () => {
-    await page.viewport(1440, 900);
-    container.innerHTML =
-      '<div class="agent-chat__input"><div class="agent-chat__composer-combobox"><textarea></textarea></div></div>';
+  it.each([900, 400])("keeps the existing embedded composer cap at %ipx height", async (height) => {
+    await page.viewport(1440, height);
+    renderComposerInto(container, createComposerProps({ draft: "Long draft\n".repeat(100) }));
     const editor = container.querySelector("textarea")!;
-    editor.value = "Long draft\n".repeat(100);
+    await settled();
     await settled();
     const style = getComputedStyle(editor);
     const sixLines =
       6 * Number.parseFloat(style.lineHeight) +
       Number.parseFloat(style.paddingTop) +
       Number.parseFloat(style.paddingBottom);
-    expect(editor.clientHeight).toBeLessThanOrEqual(sixLines + 1);
+    expect(editor.clientHeight).toBeLessThanOrEqual(Math.min(sixLines, height * 0.25) + 1);
     expect(editor.scrollHeight).toBeGreaterThan(editor.clientHeight);
   });
 });
