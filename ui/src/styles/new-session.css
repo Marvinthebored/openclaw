@@ -1003,7 +1003,6 @@ span.new-session-page__select {
 
 /* The chip row already spaces itself; keep the composer snug beneath it. */
 .new-session-page__composer.agent-chat__composer-shell {
-  --chat-composer-editor-max-lines: 12;
   position: relative;
   margin-top: 0;
   border-radius: var(--radius-md);
@@ -1018,12 +1017,10 @@ span.new-session-page__select {
    decision, and a left-only override here put the draft further from one edge
    than the other while the chat composer stayed symmetric. */
 .new-session-page__composer .new-session-page__message {
-  max-height: max(
+  max-height: clamp(
     10lh + 2 * var(--chat-box-inset),
-    min(
-      var(--chat-composer-editor-height-limit, 100dvh),
-      var(--chat-composer-editor-max-lines) * 1lh + 2 * var(--chat-composer-editor-inset-block)
-    )
+    var(--chat-composer-editor-height-limit, 100dvh),
+    var(--chat-composer-editor-max-lines, 12) * 1lh + var(--chat-composer-editor-inset-block) * 2
   );
 }
 

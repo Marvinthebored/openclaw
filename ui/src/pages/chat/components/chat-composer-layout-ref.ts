@@ -1,6 +1,11 @@
-import { createMemo, onSettled } from "solid-js";
+import { onSettled } from "solid-js";
 import { createLayoutMeasurement } from "../../../lib/reactive/layout-measurement.ts";
-import { ComposerLayout, type ComposerLayoutOptions } from "./chat-composer-layout.ts";
+import { listen } from "../../../lib/reactive/listener.ts";
+import {
+  composerLayoutTargets,
+  measureComposerLayout,
+  type ComposerLayoutOptions,
+} from "./chat-composer-layout.ts";
 import type { ChatComposerState } from "./chat-composer-types.ts";
 
 /** Bind the shared geometry owner after Solid commits the surface and its children. */
@@ -8,29 +13,37 @@ export function createComposerLayoutRef(
   options: () => ComposerLayoutOptions,
   active: () => boolean = () => true,
 ) {
-  const layout = new ComposerLayout();
   let input: HTMLElement | undefined;
   let shell: HTMLElement | undefined;
-  const binding = createMemo(() => ({ value: options(), active: active() }));
-  createLayoutMeasurement(
-    binding,
-    () => {
-      const next = binding();
-      if (next.active && input) {
-        layout.update(input, next.value);
-      } else {
-        layout.disconnect();
+  const clear = () => input?.style.removeProperty("--chat-composer-editor-height-limit");
+  const schedule = createLayoutMeasurement(
+    () => ({ value: options(), active: active() }),
+    (next) => {
+      if (next?.active && input) {
+        return measureComposerLayout(input, next.value);
       }
+      return clear;
     },
     {
-      targets: () => [shell, ...layout.targets()].filter((node): node is Element => Boolean(node)),
+      targets: (next) => composerLayoutTargets(input, shell, next?.value),
       mutations: () => shell!,
     },
   );
-  onSettled(() => () => layout.disconnect());
+  onSettled(() => {
+    // Pane observers cover layout resizing; the visual viewport also covers the keyboard.
+    const stopViewport = window.visualViewport && listen(window.visualViewport, "resize", schedule);
+    return () => {
+      stopViewport?.();
+      clear();
+    };
+  });
   return Object.assign(
     (element: HTMLElement) => {
-      input = element;
+      if (input !== element) {
+        clear();
+        input = element;
+        schedule();
+      }
     },
     {
       shell: (element: HTMLElement) => {
