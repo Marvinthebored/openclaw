@@ -201,10 +201,18 @@ publication, include `<!-- openclaw:attribution=off -->` in that PR’s descript
 Turning the profile preference off affects future PRs, not already published
 ones. Incognito sessions do not automatically add attribution.
 
-For PRs created through ordinary GitHub CLI or shell commands, the agent follows
-attribution instructions rather than a Git hook or wrapper. That path is
-best-effort; the Gateway can apply the footer directly only to its managed
-publication flow.
+For PRs created through ordinary GitHub CLI or shell commands, the agent receives
+attribution instructions only when the current verified requester has enabled
+the preference. Default/off and incognito requests add no attribution prompt
+block. Enabled instructions apply only to that request, not later requests or
+other participants in the same conversation. A later request without an enabled
+block must not inherit attribution from earlier instructions. This path remains
+best-effort instruction following, not a Git hook or wrapper; the Gateway can
+apply the footer directly only to its managed publication flow.
+
+Upgrading does not rewrite instructions already retained in a conversation. If
+an older session contains enabled attribution guidance from before request
+scoping was introduced, start a new session to discard that guidance.
 
 ## Merging duplicate profiles
 
@@ -343,6 +351,31 @@ My GitHub requires an authenticated, durable Gateway profile, including the loca
 1. Choose **For me** and connect GitHub. For identified administrators, this is the default purpose. **For the system** is an explicit alternative.
 2. Open the displayed `github.com/login/device` link yourself and approve the one-time code. The Gateway verifies the account and keeps the credentials out of browser responses and agent context.
 3. Check the connected account before using it. Personal connections use device authorization. The existing PAT alternative remains available for admin-managed shared connections.
+
+### Inspect publication readiness
+
+When `github_publish` is available under the current tool policy, use
+`action: "readiness"` to inspect the current publishing session. Optionally supply
+`publishingSessionKey` for a child of the current conversation and `requestId` for
+one existing shared publication request. This read accepts no workspace, repository,
+account, or new-request selector. The corresponding Gateway method is
+`sessions.github.readiness`.
+
+The result separates current read admission, source custody, bounded GitHub target
+support, and shared request observation. It does not establish write permission,
+credentials, an exact remote destination, CI, review, or merge readiness. A cached
+target is labeled as cached. An ordinary working directory is not a managed
+publication binding; select an existing bound session or separately authorize a
+supported binding operation.
+
+Observation does not refresh credentials, adopt or stage source, create a request,
+retry publication, or settle an existing effect. It preserves cold database files
+and sidecars. An authorized exact terminal receipt can remain observable even when
+the current source is unavailable. A missing or unavailable exact receipt does not
+prove that publication never ran: keep the original request identity and inspect
+it rather than submitting again. Personal receipts remain private, and revoked
+session or connection access fails the read instead of returning an unknown result.
+Account discovery through `sessions.github.options` is unchanged.
 
 ### Publish with your account
 
