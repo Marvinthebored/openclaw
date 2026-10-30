@@ -16,6 +16,7 @@ import {
   createProviderHttpError,
   readProviderJsonResponse,
 } from "../agents/provider-http-errors.js";
+import { attachLocalServiceDiagnostics } from "../agents/provider-local-service-diagnostics.js";
 import type {
   AcquireConfiguredProviderLocalService,
   ConfiguredProviderLocalServiceTarget,
@@ -67,10 +68,6 @@ type ConfiguredEmbeddingProvider = Partial<
 type ResolvedConfiguredEmbeddingProvider = {
   providerId: string;
   config: ConfiguredEmbeddingProvider;
-};
-
-type LocalServiceAwareEmbeddingOptions = EmbeddingProviderCreateOptions & {
-  acquireLocalService?: AcquireConfiguredProviderLocalService;
 };
 
 function normalizeBaseUrl(value: string | undefined): string {
@@ -431,6 +428,10 @@ async function postEmbeddingRequest(params: {
         }
       },
     });
+  } catch (error) {
+    throw callOptions?.signal?.aborted
+      ? error
+      : attachLocalServiceDiagnostics(error, localServiceLease);
   } finally {
     localServiceLease?.release();
   }
@@ -479,7 +480,6 @@ async function createOpenAICompatibleEmbeddingClient(
       headers.authorization = `Bearer ${providerApiKey}`;
     }
   }
-  const localServiceOptions = options as LocalServiceAwareEmbeddingOptions;
   return {
     providerId,
     baseUrl,
@@ -503,7 +503,7 @@ async function createOpenAICompatibleEmbeddingClient(
             baseUrl,
             headers,
           },
-          acquireLocalService: localServiceOptions.acquireLocalService,
+          acquireLocalService: options.acquireLocalService,
         }
       : {}),
     ...(options.dimensions !== undefined

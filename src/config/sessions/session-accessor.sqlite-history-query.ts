@@ -4,7 +4,10 @@ import type {
   SessionTranscriptDisplayDeltaResult,
   SessionTranscriptMessageByIdOptions,
 } from "../../gateway/session-transcript-read.types.js";
-import { SOURCE_PAGE_MAX_BYTES } from "../../gateway/session-transcript-source-pages.js";
+import {
+  assertUnboundedAnchorPageUsable,
+  SOURCE_PAGE_MAX_BYTES,
+} from "../../gateway/session-transcript-source-pages.js";
 import { registerNodeSqliteDisposeCallback } from "../../infra/kysely-sync-cache-state.js";
 import { executeSqliteQuerySync } from "../../infra/kysely-sync.js";
 import { pruneMapToMaxSize } from "../../infra/map-size.js";
@@ -63,15 +66,19 @@ import { createTranscriptRawDeltaCursor } from "./session-transcript-raw-cursor.
 import { resolveSessionTranscriptReadFence } from "./session-transcript-read-fence.js";
 import { readTranscriptPayload } from "./transcript-payload.js";
 
-const recentHistoryWindows = new Map<
-  string,
-  {
-    database: CurrentTranscriptProjection["database"]["db"];
-    revision: string;
-    page: SessionTranscriptMessageEventPage;
-  }
->();
-channel("openclaw.memory.critical").subscribe(() => recentHistoryWindows.clear());
+const recentHistory = {
+  // Bun weakly retains named channels, so the cache owner must keep its subscription alive.
+  pressure: channel("openclaw.memory.critical"),
+  windows: new Map<
+    string,
+    {
+      database: CurrentTranscriptProjection["database"]["db"];
+      revision: string;
+      page: SessionTranscriptMessageEventPage;
+    }
+  >(),
+};
+recentHistory.pressure.subscribe(() => recentHistory.windows.clear());
 const historyWindowOwners = new WeakSet<CurrentTranscriptProjection["database"]["db"]>();
 
 function retainHistoryWindowOwner(database: CurrentTranscriptProjection["database"]["db"]): void {
@@ -80,9 +87,9 @@ function retainHistoryWindowOwner(database: CurrentTranscriptProjection["databas
   }
   registerNodeSqliteDisposeCallback(sqlPublicationAnchor(database), () => {
     // Closed handles must release cached pages and their connection-owned facts.
-    for (const [key, cached] of recentHistoryWindows) {
+    for (const [key, cached] of recentHistory.windows) {
       if (cached.database === database) {
-        recentHistoryWindows.delete(key);
+        recentHistory.windows.delete(key);
       }
     }
   });
@@ -420,11 +427,11 @@ export function readRecentSessionTranscriptHistoryEventsFromProjection(
     options.maxBytes,
     Boolean(options.captureReadWindow),
   ]);
-  const cached = recentHistoryWindows.get(key);
+  const cached = recentHistory.windows.get(key);
   if (cached?.database === projection.database.db && cached.revision === revision) {
     return structuredClone(cached.page);
   }
-  recentHistoryWindows.delete(key);
+  recentHistory.windows.delete(key);
   return read((page, bytes) => {
     // Reuse the window's byte count, including a lone oversized event, without serializing again.
     if (bytes > 1024 * 1024) {
@@ -433,12 +440,12 @@ export function readRecentSessionTranscriptHistoryEventsFromProjection(
     try {
       const database = projection.database.db;
       retainHistoryWindowOwner(database);
-      recentHistoryWindows.set(key, {
+      recentHistory.windows.set(key, {
         database,
         revision,
         page: structuredClone(page),
       });
-      pruneMapToMaxSize(recentHistoryWindows, 16);
+      pruneMapToMaxSize(recentHistory.windows, 16);
     } catch {
       // Deep legacy JSON can be readable even when cloning exceeds the stack.
     }
@@ -674,11 +681,7 @@ export function readSessionTranscriptHistoryAnchorPageFromProjection(
     range.endExclusive - range.readStart,
     options.maxBytes === undefined,
   );
-  if (options.maxBytes === undefined && start !== range.readStart) {
-    throw new Error(
-      `Transcript history page exceeds the ${SOURCE_PAGE_MAX_BYTES}-byte limit; request a smaller limit`,
-    );
-  }
+  assertUnboundedAnchorPageUsable(options, { start, ...range });
   const events = readVisibleHistoryRange(projection, start, range.endExclusive, history);
   return {
     events,
