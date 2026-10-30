@@ -103,10 +103,11 @@ extension OpenClawChatViewModel {
                     captureLatestUserTurn: original.latestUserTurn != nil)
                 continue
             }
-            guard self.canApplyHistory(request) else { return .failed }
-            // A request issued before another read published carries that older view of the
-            // transcript. The wire read starts here, so a changed transcript is captured again.
-            if self.messages.count != request.visibleMessagesByID.count ||
+            // A current caller may arrive after a newer, incompatible refresh has published.
+            // Admit its wire read against the current request order and transcript, even when
+            // that refresh left the visible rows unchanged. Session/route guards remain above.
+            if request.id < max(self.latestAppliedHistoryRequestID, self.latestAppliedHistoryCursorRequestID) ||
+                self.messages.count != request.visibleMessagesByID.count ||
                 self.messages.contains(where: { request.visibleMessagesByID[$0.id] != $0 })
             {
                 request = self.beginHistoryRequest(
