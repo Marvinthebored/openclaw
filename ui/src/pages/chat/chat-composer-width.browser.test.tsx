@@ -6,6 +6,7 @@ import {
   renderComposerInto,
   disposeComposer,
 } from "./chat-composer.test-support.ts";
+import { loadComposerWidthEdge } from "./components/chat-composer-width-ref.tsx";
 import { resetChatComposerState } from "./components/chat-composer.tsx";
 import baseStyles from "../../styles/base.css?inline";
 import surfaceStyles from "../../styles/chat/composer-surface.css?inline";
@@ -21,7 +22,9 @@ const settled = () =>
 describe("composer border width control", () => {
   let container: ReturnType<typeof createComposerContainer>;
   let styles: HTMLStyleElement;
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Production warms the lazy edge owner at idle; the new-session suite covers intent loading.
+    await loadComposerWidthEdge();
     styles = document.createElement("style");
     styles.textContent = [
       baseStyles,
@@ -272,13 +275,28 @@ describe("composer border width control", () => {
     assertColumn();
     const saved = f.width();
     // A docked side panel changes the containing region, not the saved preference.
-    root.style.width = "600px";
+    root.style.width = "1000px";
     await settled();
     await settled();
     assertColumn();
     expect(f.width()).toBe(saved);
     expect(f.onWidthChange).toHaveBeenCalledTimes(1);
   });
+  it("keeps unsaved and narrow-column geometry at the default composer width", async () => {
+    await page.viewport(1440, 900);
+    const f = fixture();
+    const root = container.closest<HTMLElement>(".chat")!;
+    const shell = f.input().closest<HTMLElement>(".agent-chat__composer-shell")!;
+    f.onWidthChange(undefined);
+    root.style.width = "600px";
+    await settled();
+    expect(shell.style.maxWidth).toBe("");
+    const unsaved = shell.getBoundingClientRect().width;
+    f.setWidth("1081px");
+    await settled();
+    expect(shell.getBoundingClientRect().width).toBe(unsaved);
+  });
+
   it("leaves embedded composers alone until writable and retires their old edge", async () => {
     await page.viewport(1440, 900);
     const f = fixture(false);

@@ -1214,13 +1214,7 @@
   }
 }
 
-/* Resolve the reading inset to pixels for the shared width gesture owner. */
-@property --chat-thread-inline-inset {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-
+/* The scroll container exposes the reading inset to the composer width owner. */
 .chat-thread {
   --chat-thread-inline-inset: max(
     var(--chat-thread-annotation-inset, 0px),
@@ -1515,14 +1509,4 @@
     margin-bottom: 0;
     padding-block: 0;
   }
-}
-
-/* Keep the border target outside the scroll-clipped input and its controls. */
-.agent-chat__composer-width-edge {
-  position: absolute;
-  /* Width geometry places the edge beside the input, not its floating context. */
-  left: -8px;
-  width: 8px;
-  cursor: ew-resize;
-  touch-action: none;
 }

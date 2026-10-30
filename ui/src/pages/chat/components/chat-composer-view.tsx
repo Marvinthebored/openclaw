@@ -40,7 +40,7 @@ import { commitComposerDraft } from "./chat-composer-state.ts";
 import { renderFallbackIndicatorSolid } from "./chat-composer-status.tsx";
 import { renderComposerTextarea, type ComposerTextareaProps } from "./chat-composer-textarea.tsx";
 import type { ChatComposerProps, ChatComposerState } from "./chat-composer-types.ts";
-import { createComposerWidthRef } from "./chat-composer-width-ref.tsx";
+import { ComposerWidthEdge, prepareComposerWidthEdge } from "./chat-composer-width-ref.tsx";
 import { ChatLazyBoundary } from "./chat-lazy-boundary.tsx";
 import { ChatPermissionPicker } from "./chat-permission-picker.tsx";
 import { ChatVoiceStatus, ComposerDictationStatus } from "./chat-voice-activity.tsx";
@@ -203,7 +203,6 @@ export function renderChatComposerView(
   const showComposerInput = createMemo(
     () => context().showComposer && props.disabledBanner?.kind !== "composer-replacement",
   );
-  const widthRef = createComposerWidthRef(() => props);
   const disabledReasonId = () => paneDomId(props.paneId, "disabled-reason");
   const composerAlerts = createMemo(() =>
     showComposerInput() ? (
@@ -290,16 +289,13 @@ export function renderChatComposerView(
   return (
     <div
       class="agent-chat__composer-shell"
-      ref={[
-        footerControl,
-        (element) => (shell = element),
-        elementRef(props.onComposerShellRef),
-        widthRef.shell,
-      ]}
+      ref={[footerControl, (element) => (shell = element), elementRef(props.onComposerShellRef)]}
       data-mobile-composer={props.mobileComposer ? "true" : undefined}
       data-composer-editing={mobileEditing() ? "true" : "false"}
       data-composer-keyboard={props.mobileKeyboardVisible ? "true" : undefined}
       data-composer-keyboard-navigation={keyboardNavigation() ? "true" : undefined}
+      onPointerEnter={prepareComposerWidthEdge}
+      onKeyDown={prepareComposerWidthEdge}
     >
       {lifecycle}
       <div class="agent-chat__composer-float" ref={[elementRef(props.onComposerFloatRef)]}>
@@ -437,7 +433,6 @@ export function renderChatComposerView(
                 };
               }),
               createBackgroundLayoutRef("composer"),
-              widthRef,
             ]}
           >
             {context().menus.slashMenuVisible ? (
@@ -697,7 +692,7 @@ export function renderChatComposerView(
               </div>
             </div>
           </div>
-          <widthRef.Edge />
+          <ComposerWidthEdge options={() => props} shell={() => shell} />
         </ComposerInputScope>
       ) : props.disabledBanner?.kind === "composer-replacement" ? (
         disabledBanner

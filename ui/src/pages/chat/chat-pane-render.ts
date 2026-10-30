@@ -637,7 +637,9 @@ export class ChatPaneRuntime extends ChatPaneLayoutRender {
       personActivity: personActivityRouting(this.context),
       ...this.resourceProps(state, this.context),
       chatMessageMaxWidth: state.settings.chatMessageMaxWidth,
-      onComposerWidthChange: (value) => state.applySettings({ chatMessageMaxWidth: value }),
+      onComposerWidthChange: (value) => {
+        state.settings = patchSettings({ chatMessageMaxWidth: value });
+      },
       chatBubbleMode: isChatBubbleMode(
         state.settings,
         state.sessionKey,
