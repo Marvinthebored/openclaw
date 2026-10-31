@@ -146,8 +146,10 @@ describe("Control UI theme contrast", () => {
     ),
   );
   const componentsRules = cssRules(readStyle("components.css"));
+  const codeScope =
+    ":is(.code-block, .code-block-wrapper pre code.hljs, :where(.chat-group.user .chat-text) pre code.hljs)";
   const diffs = ["addition", "deletion"].map((kind) => {
-    const rule = readRule(componentsRules, `:is(.code-block, pre code.hljs) .hljs-${kind}`);
+    const rule = readRule(componentsRules, `${codeScope} .hljs-${kind}`);
     return rule;
   });
   // #160568 retired per-theme confirmation overrides in favor of paired action tokens.
