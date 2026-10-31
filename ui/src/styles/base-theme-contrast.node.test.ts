@@ -32,8 +32,8 @@ const AA_NORMAL_TEXT_MIN = 4.5;
 const contrastFloor = (theme: string) => (AAA_THEMES.has(theme) ? 7 : AA_NORMAL_TEXT_MIN);
 const USER_CODE_INKS = [
   "--text",
-  "--muted",
-  "--accent-2",
+  "--hljs-comment",
+  "--hljs-link",
   "--hljs-keyword",
   "--hljs-number",
   "--hljs-string",
@@ -146,10 +146,8 @@ describe("Control UI theme contrast", () => {
     ),
   );
   const componentsRules = cssRules(readStyle("components.css"));
-  const codeScope =
-    ":is(.code-block, .code-block-wrapper pre code.hljs, :where(.chat-group.user .chat-text) pre code.hljs)";
   const diffs = ["addition", "deletion"].map((kind) => {
-    const rule = readRule(componentsRules, `${codeScope} .hljs-${kind}`);
+    const rule = readRule(componentsRules, `.hljs-${kind}`);
     return rule;
   });
   // #160568 retired per-theme confirmation overrides in favor of paired action tokens.
@@ -223,17 +221,12 @@ describe("Control UI theme contrast", () => {
   });
 
   it("keeps user code block syntax colors at AA over every sender bubble", () => {
-    const panelRule = readRule(textRules, ".chat-group.user .chat-text :where(pre)");
-    const lightRule = readRule(
-      textRules,
-      ':root[data-theme-mode="light"] .chat-group.user .chat-text :where(pre)',
-    );
     const toHex = (rgb: RGB) =>
       `#${rgb.map((value) => Math.round(value).toString(16).padStart(2, "0")).join("")}`;
     const hues = [null, ...Array.from({ length: 24 }, (_, index) => index * 15)];
     for (const [theme, tokens] of themes) {
       const light = theme === "light" || theme.endsWith("-light");
-      const panel = resolveColor(readPaint(light ? lightRule : panelRule, "background"), tokens);
+      const panel = resolveColor("var(--user-code-bg)", tokens);
       const palette = prepareParticipantPalette({
         mode: light ? "light" : "dark",
         background: hexToOklch(toHex(resolveOpaqueColor("var(--bg-content)", tokens))),
@@ -246,13 +239,12 @@ describe("Control UI theme contrast", () => {
         const bubble = oklchStyleToRgb(palette.style(hue));
         const surface = composite(panel, bubble);
         for (const ink of USER_CODE_INKS) {
-          const override = light ? lightRule.get(ink) : undefined;
           const tint = { "--hljs-deletion": "--danger-subtle", "--hljs-addition": "--ok-subtle" }[
             ink as string
           ];
           expectFloor(
             contrastRatio(
-              resolveOpaqueColor(override ?? `var(${ink})`, tokens),
+              resolveOpaqueColor(`var(${ink})`, tokens),
               tint ? composite(resolveColor(`var(${tint})`, tokens), surface) : surface,
             ),
             AA_NORMAL_TEXT_MIN,

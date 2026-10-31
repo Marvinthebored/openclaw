@@ -1173,17 +1173,8 @@
   overflow: auto;
 }
 
-/* Keep some bubble tint; base-theme-contrast checks syntax colors over every sender hue. */
 .chat-group.user .chat-text :where(pre) {
-  background: color-mix(in srgb, var(--bg) 80%, transparent);
-}
-
-:root[data-theme-mode="light"] .chat-group.user .chat-text :where(pre) {
-  background: color-mix(in srgb, var(--bg) 50%, transparent);
-  --hljs-keyword: #b81b27;
-  --muted: var(--muted-strong);
-  --hljs-title: #7040d0;
-  --accent-2: #0d6b64;
+  background: var(--user-code-bg);
 }
 
 .chat-text :where(.code-block-wrapper pre) {
