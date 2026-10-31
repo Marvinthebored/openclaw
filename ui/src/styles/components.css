@@ -1443,83 +1443,83 @@ select.settings-select:not([multiple]) {
   background: var(--bg);
 }
 
-:is(.code-block .hljs, .code-block-wrapper pre code.hljs) {
+:is(.code-block .hljs, pre code.hljs) {
   color: var(--text);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-comment,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-quote {
+:is(.code-block, pre code.hljs) .hljs-comment,
+:is(.code-block, pre code.hljs) .hljs-quote {
   color: var(--muted);
   font-style: italic;
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-keyword,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-selector-tag,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-subst {
+:is(.code-block, pre code.hljs) .hljs-keyword,
+:is(.code-block, pre code.hljs) .hljs-selector-tag,
+:is(.code-block, pre code.hljs) .hljs-subst {
   color: var(--hljs-keyword);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-number,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-literal,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-variable,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-template-variable,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-tag .hljs-attr {
+:is(.code-block, pre code.hljs) .hljs-number,
+:is(.code-block, pre code.hljs) .hljs-literal,
+:is(.code-block, pre code.hljs) .hljs-variable,
+:is(.code-block, pre code.hljs) .hljs-template-variable,
+:is(.code-block, pre code.hljs) .hljs-tag .hljs-attr {
   color: var(--hljs-number);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-string,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-doctag {
+:is(.code-block, pre code.hljs) .hljs-string,
+:is(.code-block, pre code.hljs) .hljs-doctag {
   color: var(--hljs-string);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-title,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-section,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-selector-id,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-function .hljs-title {
+:is(.code-block, pre code.hljs) .hljs-title,
+:is(.code-block, pre code.hljs) .hljs-section,
+:is(.code-block, pre code.hljs) .hljs-selector-id,
+:is(.code-block, pre code.hljs) .hljs-function .hljs-title {
   color: var(--hljs-title);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-type,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-class .hljs-title,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-built_in,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-builtin-name {
+:is(.code-block, pre code.hljs) .hljs-type,
+:is(.code-block, pre code.hljs) .hljs-class .hljs-title,
+:is(.code-block, pre code.hljs) .hljs-built_in,
+:is(.code-block, pre code.hljs) .hljs-builtin-name {
   color: var(--hljs-type);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-attr,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-attribute,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-name,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-selector-class,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-selector-attr,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-selector-pseudo {
+:is(.code-block, pre code.hljs) .hljs-attr,
+:is(.code-block, pre code.hljs) .hljs-attribute,
+:is(.code-block, pre code.hljs) .hljs-name,
+:is(.code-block, pre code.hljs) .hljs-selector-class,
+:is(.code-block, pre code.hljs) .hljs-selector-attr,
+:is(.code-block, pre code.hljs) .hljs-selector-pseudo {
   color: var(--hljs-attribute);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-symbol,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-bullet,
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-link {
+:is(.code-block, pre code.hljs) .hljs-symbol,
+:is(.code-block, pre code.hljs) .hljs-bullet,
+:is(.code-block, pre code.hljs) .hljs-link {
   color: var(--accent-2);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-meta {
+:is(.code-block, pre code.hljs) .hljs-meta {
   color: var(--hljs-meta);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-deletion {
+:is(.code-block, pre code.hljs) .hljs-deletion {
   color: var(--hljs-deletion);
   background: var(--danger-subtle);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-addition {
+:is(.code-block, pre code.hljs) .hljs-addition {
   color: var(--hljs-addition);
   background: var(--ok-subtle);
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-emphasis {
+:is(.code-block, pre code.hljs) .hljs-emphasis {
   font-style: italic;
 }
 
-:is(.code-block, .code-block-wrapper pre code.hljs) .hljs-strong {
+:is(.code-block, pre code.hljs) .hljs-strong {
   font-weight: 600;
 }
 
