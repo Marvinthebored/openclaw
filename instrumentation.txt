@@ -1,0 +1,124 @@
++
++    func testScratchNativeSwipeProof() throws {
++        self.launchApp(for: Self.chatScreenshotTarget,
++                       additionalArguments: ["--openclaw-empty-chat-fixture"])
++        let app = try XCTUnwrap(self.app)
++        let input = self.chatMessageInput(in: app)
++        XCTAssertTrue(input.waitForExistence(timeout: 8))
++        for index in 0..<60 {
++            input.tap()
++            let prompt = String(format: "SWIPE_Q_%02d", index)
++            input.typeText(prompt)
++            let send = app.buttons["chat-send-message"]
++            XCTAssertTrue(send.isEnabled)
++            send.tap()
++            let answer = app.staticTexts.matching(NSPredicate(
++                format: "label CONTAINS %@ AND label CONTAINS %@", "I can help with", prompt)).firstMatch
++            XCTAssertTrue(answer.waitForExistence(timeout: 8), "Answer missing at pair \(index)")
++            print("NATIVE_PAIR \(index)")
++        }
++        let transcript = try self.chatTranscript(in: app)
++        try self.dismissChatKeyboardThroughTranscript(in: app)
++        let jump = app.buttons["Jump to latest reply"]
++        if jump.exists { jump.tap() }
++        XCTAssertTrue(jump.waitForNonExistence(timeout: 5))
++        self.attachScreenshot(named: "swipe-60-pairs-at-latest")
++        print("NATIVE_SWIPE_BEGIN \(Date().timeIntervalSince1970)")
++        for _ in 0..<8 { transcript.swipeDown() }
++        for _ in 0..<8 { transcript.swipeUp() }
++        print("NATIVE_SWIPE_END \(Date().timeIntervalSince1970)")
++        transcript.swipeDown()
++        XCTAssertTrue(jump.waitForExistence(timeout: 5))
++        self.attachScreenshot(named: "swipe-jump-visible")
++        jump.tap()
++        XCTAssertTrue(jump.waitForNonExistence(timeout: 5))
++        let latest = app.staticTexts.matching(NSPredicate(
++            format: "label CONTAINS %@ AND label CONTAINS %@", "I can help with", "SWIPE_Q_59")).firstMatch
++        XCTAssertTrue(latest.exists)
++        XCTAssertTrue(transcript.frame.intersects(latest.frame))
++        self.attachScreenshot(named: "swipe-jump-returned-to-latest")
++        print("NATIVE_JUMP_PASS")
++    }
++
++private enum ScrollFollowTarget: Equatable {
++    case latest
++    case turn(UUID)
++}
++
++    @State private var hasNewerContentBelow = false
++    @State private var followTarget: ScrollFollowTarget? = .latest
++    @State private var isAtLiveEdge = true
++    @State private var isUserScrolling = false
++        let () = scratchSwipeMark("body")
++            .defaultScrollAnchor(
++                self.followTarget == .latest && !self.isUserScrolling ? .bottom : nil,
++                for: .sizeChanges)
++                guard self.isAtLiveEdge != isAtLiveEdge else { return }
++                self.isAtLiveEdge = isAtLiveEdge
++                if isAtLiveEdge, !self.isUserScrolling, !self.isFollowingTurn, self.searchMessageID == nil {
++                    self.followTarget = .latest
++                    self.hasNewerContentBelow = false
++                scratchSwipeMark("phase=\(phase)")
++                    self.isUserScrolling = true
++                    self.followTarget = nil
++                } else if phase == .idle, self.isUserScrolling {
++                    self.isUserScrolling = false
++                    if self.isAtLiveEdge {
++                        self.followTarget = .latest
++                        self.hasNewerContentBelow = false
++                        self.hasNewerContentBelow = true
++            if self.showsJumpToLatest(hasVisibleContent: hasVisibleContent) {
++                    .padding(.bottom, 12)
++                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
++                    .transition(.move(edge: .bottom).combined(with: .opacity))
++            self.followTarget = .latest
++            self.isAtLiveEdge = true
++            self.isUserScrolling = false
++            self.hasNewerContentBelow = false
++                self.followTarget == .latest && !self.isUserScrolling && self.searchMessageID == nil
++            self.isUserScrolling = false
++            self.followTarget = .latest
++            self.hasNewerContentBelow = false
++        let () = scratchSwipeMark("rows")
++        scratchSwipeMark("prepare")
++        if case .turn = self.followTarget {
++    private func showsJumpToLatest(hasVisibleContent: Bool) -> Bool {
++        chatReaderShowsJumpToLatest(
++            hasNewerContentBelow: self.hasNewerContentBelow,
++            isAtLiveEdge: self.isAtLiveEdge,
++            hasVisibleContent: hasVisibleContent,
++            isLoading: self.viewModel.isLoading)
++    }
++
++            self.followTarget = .latest
++            self.hasNewerContentBelow = false
++            self.followTarget = nil
++            self.hasNewerContentBelow = chatReaderHasNewerContent(
++            self.followTarget = .latest
++            self.hasNewerContentBelow = false
++            self.followTarget = .latest
++            self.hasNewerContentBelow = false
++            if case let .turn(messageID) = followTarget,
++                self.followTarget = nil
++                self.hasNewerContentBelow = false
++            self.hasNewerContentBelow = false
++                self.followTarget = .latest
++                self.followTarget = .turn(latestTurnStartID)
++        switch self.followTarget {
++            self.hasNewerContentBelow = false
++            self.hasNewerContentBelow = chatReaderHasNewerContent(
++            self.hasNewerContentBelow = true
++        self.followTarget = nil
++        self.hasNewerContentBelow = true
++
++private func scratchSwipeMark(_ event: String) {
++    let url = FileManager.default.temporaryDirectory.appendingPathComponent("native-swipe-trace.txt")
++    let line = "\(Date().timeIntervalSince1970) \(event)\n"
++    if !FileManager.default.fileExists(atPath: url.path) {
++        FileManager.default.createFile(atPath: url.path, contents: nil)
++    }
++    guard let handle = try? FileHandle(forWritingTo: url) else { return }
++    defer { try? handle.close() }
++    _ = try? handle.seekToEnd()
++    try? handle.write(contentsOf: Data(line.utf8))
++}
