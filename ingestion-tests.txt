@@ -1,0 +1,129 @@
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 744]
+[Planning 715 / 744]
+[Planning deferred tasks]
+[Constructing 1334 / 1639]
+[17 / 348] SwiftMath_SwiftMath
+[65 / 348] OpenClawKit_OpenClawChatUI
+[81 / 348]
+[83 / 348]
+[86 / 348]
+[92 / 348]
+[96 / 348]
+[99 / 348]
+[101 / 348]
+[104 / 348]
+[107 / 350] cmark-gfm-extensions
+[108 / 350] OpenClawNativeState
+[116 / 350] cmark-gfm-extensions
+[128 / 350] cmark-gfm-extensions
+[132 / 350]
+[136 / 350] cmark-gfm
+[139 / 350] cmark-gfm
+[141 / 350] cmark-gfm
+[144 / 350] cmark-gfm
+[145 / 350] cmark-gfm
+[151 / 350] cmark-gfm
+[156 / 350] cmark-gfm
+[159 / 350] cmark-gfm
+[164 / 350] cmark-gfm
+[165 / 350] cmark-gfm
+[169 / 350] cmark-gfm
+[171 / 350] cmark-gfm
+[176 / 350] cmark-gfm
+[179 / 350] cmark-gfm
+[185 / 350] cmark-gfm
+[187 / 350] SwiftMath
+[190 / 350] OpenClawNativeStateTests-product
+[192 / 350]
+[194 / 350]
+[196 / 350] OpenClawNativeState
+[204 / 350] OpenClawKit
+[215 / 350] Markdown
+[229 / 350] GRDB
+[240 / 350] GRDB_GRDB
+[243 / 350] OpenClawNativeState-product
+[245 / 351] OpenClawNativeStateTests-product
+[246 / 351]
+[248 / 351]
+[250 / 352] Markdown
+[252 / 354] OpenClawNativeStateTests-product
+[253 / 354] Markdown
+[256 / 354] Markdown
+[259 / 354] Markdown
+[261 / 354] Markdown-product
+[265 / 354] GRDB_GRDB
+[267 / 354]
+[268 / 355]
+[273 / 355] OpenClawNativeStateTests-product
+[278 / 355] OpenClawProtocol
+[282 / 355] OpenClawProtocol
+[285 / 355]
+[291 / 355] GRDB_GRDB
+[293 / 355] OpenClawNativeStateTests-product
+[295 / 356] OpenClawNativeStateTests-product
+[297 / 356]
+[298 / 357]
+[301 / 357] GRDB
+[305 / 357]
+[312 / 357] ElevenLabsKit
+[316 / 358]
+[318 / 358]
+[319 / 358] Markdown
+[319 / 358]
+[319 / 358] OpenClawKit
+[328 / 359]
+[329 / 359] OpenClawChatUI
+[332 / 367] OpenClawChatUI
+[333 / 367] OpenClawChatUI
+[334 / 367] OpenClawChatUI
+[335 / 367] OpenClawChatUI
+[336 / 367] OpenClawChatUI
+[337 / 367] OpenClawChatUI
+[347 / 367] OpenClawChatUI
+[352 / 368] OpenClawKitTests-product
+[356 / 368] OpenClawChatUI-product
+[357 / 368] OpenClawKitTests-product
+[360 / 371] OpenClawKitTests-product
+/Users/admin/openclaw-builds/pr171976-slim/apps/shared/OpenClawKit/Tests/OpenClawKitTests/ChatSessionSidebarFiltersTests.swift:154:13: [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+[0;36m152 |[0;0m                 #", "archived":true,"participants":[{"identity":{"type":"profile","id":"bea"},"label":"Bea"}],"participantCount":1"#)
+[0;36m153 |[0;0m         func attribution(_ options: ChatSessionSidebarModel.ViewOptions) throws -> ChatSidebarOwnership.Attribution {
+[0;36m154 |[0;0m             try #require(ownership.attribution(
+    [0;36m|[0;0m             `- [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+[0;36m155 |[0;0m                 for: row, options: options, isChild: false, decorated: false, viewingProfileIDs: ["bea"]))
+[0;36m156 |[0;0m         }
+
+[#UnnecessaryEffectMarker]: <https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker>
+[367 / 371] OpenClawKitTests-product
+[368 / 371] OpenClawKitTests-product
+[369 / 371] OpenClawKitTests-product
+Build complete! (50.34 sec)
+◇ Test run started.
+↳ Testing Library Version: 2084
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite ChatToolResultIngestionTests started.
+◇ Test "mixed parallel results precede the next user turn" started.
+◇ Test "conflicting runs stay unmatched" started.
+◇ Test "error result preserves metadata" started.
+◇ Test "unmatched result" started.
+◇ Test "carrier turn boundary has one owner" started.
+◇ Test "equal parallel output keeps both calls and distinct runs" started.
+◇ Test "latest user, legacy range and voice fallback ignore carriers" started.
+◇ Test "parallel results" started.
+◇ Test "session result carriers retain canonical tips for background branch reconciliation" started.
+◇ Test "history result carriers retain canonical cache tips and active-path ancestry" started.
+◇ Test "mixed carrier results precede an adopted optimistic user" started.
+✔ Test "conflicting runs stay unmatched" passed after 0.054 seconds.
+✔ Test "equal parallel output keeps both calls and distinct runs" passed after 0.054 seconds.
+✔ Test "latest user, legacy range and voice fallback ignore carriers" passed after 0.054 seconds.
+✔ Test "carrier turn boundary has one owner" passed after 0.054 seconds.
+✔ Test "unmatched result" passed after 0.057 seconds.
+✔ Test "error result preserves metadata" passed after 0.057 seconds.
+✔ Test "mixed carrier results precede an adopted optimistic user" passed after 0.057 seconds.
+✔ Test "parallel results" passed after 0.057 seconds.
+✔ Test "mixed parallel results precede the next user turn" passed after 0.057 seconds.
+✔ Test "session result carriers retain canonical tips for background branch reconciliation" passed after 0.062 seconds.
+✔ Test "history result carriers retain canonical cache tips and active-path ancestry" passed after 0.066 seconds.
+✔ Suite ChatToolResultIngestionTests passed after 0.066 seconds.
+✔ Test run with 11 tests in 1 suite passed after 0.067 seconds.
