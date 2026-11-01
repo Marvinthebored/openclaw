@@ -1,0 +1,30 @@
+{
+  "head": "fa439551ca7ee758184097481a4e8adb195408df",
+  "qualification": "CI-mode GITHUB_ACTIONS=true, not strict normal local build",
+  "steps": [
+    {
+      "name": "version",
+      "rc": 0
+    },
+    {
+      "name": "filelist",
+      "rc": 0
+    },
+    {
+      "name": "generate",
+      "rc": 0
+    },
+    {
+      "name": "focused",
+      "rc": 0
+    },
+    {
+      "name": "ui-build",
+      "rc": 0
+    },
+    {
+      "name": "ui",
+      "rc": 0
+    }
+  ]
+}
