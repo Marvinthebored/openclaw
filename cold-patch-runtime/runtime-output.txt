@@ -1,0 +1,17 @@
+=== write native process ===
+COLD_PATCH phase=write pid=15462
+COLD_PATCH production storeCanonicalTranscript completed
+COLD_PATCH raw_name=mcp__openclaw__apply_patch display_name=apply_patch
+COLD_PATCH preview added=1 removed=1
+COLD_PATCH del: Hello before
+COLD_PATCH add: Hello after
+COLD_PATCH closed SQLite; phase=write PASS
+✔ Test run with 1 test in 1 suite passed after 0.176 seconds.
+=== read native process ===
+COLD_PATCH phase=read pid=15760
+COLD_PATCH raw_name=mcp__openclaw__apply_patch display_name=apply_patch
+COLD_PATCH preview added=1 removed=1
+COLD_PATCH del: Hello before
+COLD_PATCH add: Hello after
+COLD_PATCH closed SQLite; phase=read PASS
+✔ Test run with 1 test in 1 suite passed after 0.986 seconds.
