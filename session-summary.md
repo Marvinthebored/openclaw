@@ -11,3 +11,5 @@ Review follow-up: Codex identified that blocked rows without output would lose t
 Device verification: the reporter verified the UI on an iPhone on November 3, 2026. Before build 102480; after build 102481. The after-build also included other fixes. This PR changes only tool-row output and status presentation. The screenshots are cropped to tool rows; raw chat history is not published. The JSON fixture is sanitized.
 
 The focused shared Swift tests cover history/live ingestion, activity output, transcript rows, source preview, and duplicate delivery. The native UI regression now checks collapsed badge absence and expanded output plus the separate outcome cue.
+
+Cross-family follow-up: embedded assistant text is extracted block by block, matching web, so unrelated malformed metadata cannot discard valid text. String-valued content is also covered. The final focused run passed 45 tests in four suites.
