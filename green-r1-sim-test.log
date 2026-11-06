@@ -1,0 +1,576 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project OpenClaw.xcodeproj -scheme OpenClawUITests -configuration Debug -destination "platform=iOS Simulator,id=8EFA6EC7-D34A-45F2-A0EF-9B5F1911B05A" -derivedDataPath <local-path> -jobs 2 CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- -parallel-testing-enabled NO -resultBundlePath <local-path> "-only-testing:OpenClawUITests/AdaptiveLayoutUITests/testChatDraftAndFocusSurviveRotationAndWideSidebarToggles" "-only-testing:OpenClawUITests/OpenClawSnapshotUITests/testChatComposerStartsCompactAndGrowsWithDraft" "-only-testing:OpenClawUITests/OpenClawSnapshotUITests/testTextDraftKeepsStopAvailableDuringActiveResponse"
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = -
+    CODE_SIGNING_ALLOWED = YES
+
+Resolve Package Graph
+Invalid Exclude '<local-path>: File not found.Invalid Exclude '<local-path>: File not found.Invalid Exclude '<local-path>: File not found.failed to retrieve search paths with pkg-config; maybe pkg-config is not installedyou may be able to install libsodium using your system-packager:
+    brew install libsodium
+
+
+Resolved source packages:
+  WebRTC: https://github.com/stasel/WebRTC.git @ 154.0.0
+  swift-markdown: https://github.com/swiftlang/swift-markdown @ 0.9.0
+  OpenClawKit: <local-path>
+  ElevenLabsKit: https://github.com/steipete/ElevenLabsKit @ 0.1.3
+  swabble: <local-path>
+  ESPProvision: <local-path>
+  Commander: https://github.com/steipete/Commander.git @ 0.3.0
+  GRDB: https://github.com/groue/GRDB.swift.git @ 7.11.1
+  cmark-gfm: https://github.com/swiftlang/swift-cmark.git @ 0.9.0
+  SwiftProtobuf: https://github.com/apple/swift-protobuf.git @ 1.39.0
+  Sodium: https://github.com/jedisct1/swift-sodium.git @ cfd195c
+  SwiftMath: https://github.com/mgriebling/SwiftMath @ 1.7.3
+
+Writing result bundle at path:
+	<local-path>
+
+2026-11-07 00:24:30.938023+0800 OpenClawUITests-Runner[94144:8048603] [Default] Running tests...
+objc[94144]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1067ac310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x106828398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-11-07 00:24:34.830.
+Test Suite 'OpenClawUITests.xctest' started at 2026-11-07 00:24:34.831.
+Test Suite 'AdaptiveLayoutUITests' started at 2026-11-07 00:24:34.831.
+Test Case '-[OpenClawUITests.AdaptiveLayoutUITests testChatDraftAndFocusSurviveRotationAndWideSidebarToggles]' started.
+    t =     0.00s Start Test at 2026-11-07 00:24:34.834
+    t =     0.04s Set Up
+    t =     0.05s Setting device orientation to Portrait
+    t =     0.05s     Device orientation changed to Portrait
+    t =     0.07s     Wait for com.apple.springboard to idle
+    t =     0.13s Open ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+    t =     0.13s     Launch ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+2026-11-07 00:24:35.487 xcodebuild[94060:8047436] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL
+2026-11-07 00:24:35.487 xcodebuild[94060:8047436] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     2.72s         Setting up automation session
+    t =     4.76s         Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     9.55s Open ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+    t =     9.55s     Activate ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+    t =     9.56s         Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     9.57s Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to become Running Foreground
+    t =     9.57s Find the Window (First Match)
+    t =     9.59s Find the Window (First Match)
+    t =     9.61s Terminate ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug:94182
+    t =    10.68s Setting device orientation to Portrait
+    t =    10.69s     Wait for com.apple.springboard to idle
+<local-path>:366: -[OpenClawUITests.AdaptiveLayoutUITests testChatDraftAndFocusSurviveRotationAndWideSidebarToggles] : Test skipped - Requires expanded window space
+    t =    10.70s Tear Down
+Test Case '-[OpenClawUITests.AdaptiveLayoutUITests testChatDraftAndFocusSurviveRotationAndWideSidebarToggles]' skipped (10.721 seconds).
+Test Suite 'AdaptiveLayoutUITests' passed at 2026-11-07 00:24:45.555.
+	 Executed 1 test, with 1 test skipped and 0 failures (0 unexpected) in 10.721 (10.724) seconds
+Test Suite 'OpenClawSnapshotUITests' started at 2026-11-07 00:24:45.555.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testChatComposerStartsCompactAndGrowsWithDraft]' started.
+    t =     0.00s Start Test at 2026-11-07 00:24:45.556
+    t =     0.02s Set Up
+2026-11-07 00:24:45.580009+0800 OpenClawUITests-Runner[94144:8048603] Couldn't detect/set language...
+2026-11-07 00:24:45.580332+0800 OpenClawUITests-Runner[94144:8048603] Couldn't detect/set locale...
+2026-11-07 00:24:45.580610+0800 OpenClawUITests-Runner[94144:8048603] Couldn't detect/set launch_arguments...
+    t =     0.03s Open ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+    t =     0.03s     Launch ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+2026-11-07 00:24:45.584 xcodebuild[94060:8047436] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL
+2026-11-07 00:24:45.584 xcodebuild[94060:8047436] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     0.24s         Setting up automation session
+    t =     1.81s         Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     5.52s Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to become Running Foreground
+    t =     5.52s Waiting 8.0s for "RootTabs.Ready" Any to exist
+    t =     6.56s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Ready" Any`
+    t =     6.56s         Checking existence of `"RootTabs.Ready" Any`
+    t =     7.74s Checking `Expect predicate `value == "ready:chat"` for object "RootTabs.Ready" Any`
+    t =     7.74s     Find the "RootTabs.Ready" Any
+    t =     7.80s Waiting 8.0s for "chat-message-input" Any to exist
+    t =     8.84s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-message-input" Any`
+    t =     8.84s         Checking existence of `"chat-message-input" Any`
+    t =     8.89s Waiting 5.0s for "chat-realtime-control" Button to exist
+    t =     9.93s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-realtime-control" Button`
+    t =     9.93s         Checking existence of `"chat-realtime-control" Button`
+    t =     9.97s Waiting 5.0s for "chat-attachment-picker" Button to exist
+    t =    11.01s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-attachment-picker" Button`
+    t =    11.01s         Checking existence of `"chat-attachment-picker" Button`
+    t =    11.06s Waiting 5.0s for "chat-dictation-control" Button to exist
+    t =    12.10s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-dictation-control" Button`
+    t =    12.10s         Checking existence of `"chat-dictation-control" Button`
+    t =    12.14s Waiting 5.0s for "chat-composer-surface" Other to exist
+    t =    13.18s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-composer-surface" Other`
+    t =    13.18s         Checking existence of `"chat-composer-surface" Other`
+    t =    13.22s Waiting 5.0s for "chat-agent-identity" Button to exist
+    t =    14.24s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-agent-identity" Button`
+    t =    14.24s         Checking existence of `"chat-agent-identity" Button`
+    t =    14.30s Find the "chat-agent-identity" Button
+    t =    14.35s Tap "chat-agent-identity" Button
+    t =    14.35s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    14.35s     Find the "chat-agent-identity" Button
+    t =    14.40s     Check for interrupting elements affecting "chat-agent-identity" Button
+    t =    14.44s     Synthesize event
+    t =    14.85s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    15.88s Checking `Expect predicate `value == "Expanded"` for object "chat-agent-identity" Button`
+    t =    15.88s     Find the "chat-agent-identity" Button
+    t =    15.94s Checking existence of `"chat-send-message" Button`
+    t =    15.98s Find the "chat-agent-identity" Button
+    t =    16.03s Find the "chat-composer-surface" Other
+    t =    16.08s Find the "chat-attachment-picker" Button
+    t =    16.12s Find the "chat-composer-surface" Other
+    t =    16.17s Find the "chat-attachment-picker" Button
+    t =    16.22s Find the "chat-composer-surface" Other
+    t =    16.26s Find the "chat-dictation-control" Button
+    t =    16.30s Find the "chat-composer-surface" Other
+    t =    16.35s Find the "chat-dictation-control" Button
+    t =    16.39s Find the "chat-composer-surface" Other
+    t =    16.43s Find the "chat-realtime-control" Button
+    t =    16.48s Find the "chat-composer-surface" Other
+    t =    16.53s Find the "chat-realtime-control" Button
+    t =    16.57s Find the "chat-composer-surface" Other
+    t =    16.62s Find the "chat-attachment-picker" Button
+    t =    16.67s Find the "chat-attachment-picker" Button
+    t =    16.71s Find the "chat-dictation-control" Button
+    t =    16.76s Find the "chat-dictation-control" Button
+    t =    16.80s Find the "chat-realtime-control" Button
+    t =    16.85s Find the "chat-realtime-control" Button
+    t =    16.89s Waiting 5.0s for "chat-context-usage" Button to exist
+    t =    17.92s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-context-usage" Button`
+    t =    17.92s         Checking existence of `"chat-context-usage" Button`
+    t =    18.00s Waiting 5.0s for "chat-composer-inline-permissions" Button to exist
+    t =    19.03s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-composer-inline-permissions" Button`
+    t =    19.03s         Checking existence of `"chat-composer-inline-permissions" Button`
+    t =    19.08s Waiting 5.0s for "chat-composer-inline-model" Button to exist
+    t =    20.11s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-composer-inline-model" Button`
+    t =    20.11s         Checking existence of `"chat-composer-inline-model" Button`
+    t =    20.18s Waiting 5.0s for "chat-composer-inline-effort" Button to exist
+    t =    21.22s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-composer-inline-effort" Button`
+    t =    21.22s         Checking existence of `"chat-composer-inline-effort" Button`
+    t =    21.28s Find the "chat-composer-inline-permissions" Button
+    t =    21.35s Find the "chat-composer-inline-permissions" Button
+    t =    21.42s Find the "chat-composer-inline-model" Button
+    t =    21.48s Find the "chat-composer-inline-model" Button
+    t =    21.54s Find the "chat-composer-inline-effort" Button
+    t =    21.60s Find the "chat-composer-inline-effort" Button
+    t =    21.66s Find the "chat-composer-inline-permissions" Button
+    t =    21.72s Find the "chat-composer-surface" Other
+    t =    21.78s Find the "chat-composer-inline-permissions" Button
+    t =    21.84s Find the "chat-composer-surface" Other
+    t =    21.89s Find the "chat-composer-inline-permissions" Button
+    t =    21.94s Find the "chat-dictation-control" Button
+    t =    21.99s Find the "chat-context-usage" Button
+    t =    22.04s Find the "chat-composer-surface" Other
+    t =    22.09s Find the "chat-context-usage" Button
+    t =    22.14s Find the "chat-composer-surface" Other
+    t =    22.19s Find the "chat-context-usage" Button
+    t =    22.24s Find the "chat-dictation-control" Button
+    t =    22.28s Find the "chat-composer-inline-model" Button
+    t =    22.33s Find the "chat-composer-surface" Other
+    t =    22.38s Find the "chat-composer-inline-model" Button
+    t =    22.43s Find the "chat-composer-surface" Other
+    t =    22.47s Find the "chat-composer-inline-model" Button
+    t =    22.52s Find the "chat-dictation-control" Button
+    t =    22.57s Find the "chat-composer-inline-effort" Button
+    t =    22.62s Find the "chat-composer-surface" Other
+    t =    22.67s Find the "chat-composer-inline-effort" Button
+    t =    22.72s Find the "chat-composer-surface" Other
+    t =    22.77s Find the "chat-composer-inline-effort" Button
+    t =    22.83s Find the "chat-dictation-control" Button
+    t =    22.88s Find the "chat-composer-inline-permissions" Button
+    t =    22.92s Find the "chat-composer-inline-model" Button
+    t =    22.97s Find the "chat-composer-inline-effort" Button
+    t =    23.02s Find the "chat-context-usage" Button
+    t =    23.07s Find the "chat-context-usage" Button
+    t =    23.12s Find the "chat-composer-inline-permissions" Button
+    t =    23.17s Find the "chat-attachment-picker" Button
+    t =    23.22s Find the "chat-context-usage" Button
+    t =    23.27s Find the "chat-composer-inline-permissions" Button
+    t =    23.33s Find the "chat-composer-inline-model" Button
+    t =    23.48s Find the "chat-context-usage" Button
+    t =    23.53s Find the "chat-composer-inline-effort" Button
+    t =    23.59s Find the "chat-composer-inline-model" Button
+    t =    23.64s Find the "chat-dictation-control" Button
+    t =    23.69s Find the "chat-composer-inline-effort" Button
+    t =    23.74s Find the "chat-realtime-control" Button
+    t =    23.79s Find the "chat-dictation-control" Button
+    t =    23.84s Find the "chat-attachment-picker" Button
+    t =    23.89s Find the "chat-composer-inline-permissions" Button
+    t =    23.95s Find the "chat-composer-inline-permissions" Button
+    t =    24.00s Find the "chat-context-usage" Button
+    t =    24.05s Find the "chat-context-usage" Button
+    t =    24.10s Find the "chat-composer-inline-model" Button
+    t =    24.15s Find the "chat-composer-inline-model" Button
+    t =    24.20s Find the "chat-composer-inline-effort" Button
+    t =    24.25s Find the "chat-composer-inline-effort" Button
+    t =    24.31s Find the "chat-dictation-control" Button
+    t =    24.36s Find the "chat-dictation-control" Button
+    t =    24.41s Find the "chat-realtime-control" Button
+    t =    24.46s Find the "chat-context-usage" Button
+    t =    24.51s Find the "chat-message-input" Any
+    t =    24.56s Find the "chat-composer-surface" Other
+    t =    24.62s Find the "chat-message-input" TextView
+    t =    24.68s Find the "chat-attachment-picker" Button
+    t =    24.73s Find the "chat-attachment-picker" Button
+    t =    24.78s Find the "chat-dictation-control" Button
+    t =    24.83s Find the "chat-realtime-control" Button
+    t =    24.88s Find the "chat-dictation-control" Button
+    t =    24.93s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    25.15s Added attachment named 'chat-composer-inline-controls'
+    t =    25.16s Tap "chat-composer-inline-permissions" Button
+    t =    25.16s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    25.16s     Find the "chat-composer-inline-permissions" Button
+    t =    25.20s     Check for interrupting elements affecting "chat-composer-inline-permissions" Button
+    t =    25.24s     Synthesize event
+    t =    25.54s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    25.60s Waiting 3.0s for "Default (inherited)" Button to exist
+    t =    26.64s     Checking `Expect predicate `existsNoRetry == 1` for object "Default (inherited)" Button`
+    t =    26.64s         Checking existence of `"Default (inherited)" Button`
+    t =    26.70s Waiting 3.0s for "Read-only" Button to exist
+    t =    27.74s     Checking `Expect predicate `existsNoRetry == 1` for object "Read-only" Button`
+    t =    27.74s         Checking existence of `"Read-only" Button`
+    t =    27.79s Waiting 3.0s for "Guarded" Button to exist
+    t =    28.83s     Checking `Expect predicate `existsNoRetry == 1` for object "Guarded" Button`
+    t =    28.83s         Checking existence of `"Guarded" Button`
+    t =    28.88s Waiting 3.0s for "Workspace" Button to exist
+    t =    29.92s     Checking `Expect predicate `existsNoRetry == 1` for object "Workspace" Button`
+    t =    29.92s         Checking existence of `"Workspace" Button`
+    t =    29.96s Waiting 3.0s for "Full" Button to exist
+    t =    31.00s     Checking `Expect predicate `existsNoRetry == 1` for object "Full" Button`
+    t =    31.00s         Checking existence of `"Full" Button`
+    t =    31.05s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    31.31s Added attachment named 'chat-composer-permissions'
+    t =    31.31s Tap Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'[0.50, 0.20]
+    t =    31.31s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    31.31s     Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    31.35s     Check for interrupting elements affecting "Composer green" Application
+    t =    31.38s     Synthesize event
+    t =    31.38s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    31.41s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    31.44s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    31.76s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    31.76s Tap "chat-composer-inline-effort" Button
+    t =    31.76s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    31.76s     Find the "chat-composer-inline-effort" Button
+    t =    31.80s     Check for interrupting elements affecting "chat-composer-inline-effort" Button
+    t =    31.83s     Synthesize event
+    t =    32.12s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    32.13s Waiting 3.0s for "Thinking" Button to exist
+    t =    33.16s     Checking `Expect predicate `existsNoRetry == 1` for object "Thinking" Button`
+    t =    33.16s         Checking existence of `"Thinking" Button`
+    t =    33.21s Waiting 3.0s for "Fast" Button to exist
+    t =    34.24s     Checking `Expect predicate `existsNoRetry == 1` for object "Fast" Button`
+    t =    34.24s         Checking existence of `"Fast" Button`
+    t =    34.28s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    34.53s Added attachment named 'chat-composer-effort'
+    t =    34.53s Tap Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'[0.50, 0.20]
+    t =    34.53s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    34.53s     Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    34.56s     Check for interrupting elements affecting "Composer green" Application
+    t =    34.59s     Synthesize event
+    t =    34.59s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    34.62s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    34.64s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    34.95s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    34.95s Tap "chat-context-usage" Button
+    t =    34.95s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    34.95s     Find the "chat-context-usage" Button
+    t =    34.99s     Check for interrupting elements affecting "chat-context-usage" Button
+    t =    35.02s     Synthesize event
+    t =    35.31s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    35.32s Waiting 3.0s for "24.0k of 128.0k tokens used" Any to exist
+    t =    36.35s     Checking `Expect predicate `existsNoRetry == 1` for object "24.0k of 128.0k tokens used" Any`
+    t =    36.35s         Checking existence of `"24.0k of 128.0k tokens used" Any`
+    t =    36.40s Waiting 3.0s for "Compact Thread" Button to exist
+    t =    37.43s     Checking `Expect predicate `existsNoRetry == 1` for object "Compact Thread" Button`
+    t =    37.43s         Checking existence of `"Compact Thread" Button`
+    t =    37.47s Find the "Compact Thread" Button
+    t =    37.50s Tap Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'[0.50, 0.20]
+    t =    37.50s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    37.50s     Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    37.52s     Check for interrupting elements affecting "Composer green" Application
+    t =    37.55s     Synthesize event
+    t =    37.55s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    37.58s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    37.60s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    37.91s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    37.92s Tap "chat-attachment-picker" Button
+    t =    37.92s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    37.92s     Find the "chat-attachment-picker" Button
+    t =    37.96s     Check for interrupting elements affecting "chat-attachment-picker" Button
+    t =    37.99s     Synthesize event
+    t =    38.28s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    38.29s Waiting 3.0s for "Photo Library" Button to exist
+    t =    39.31s     Checking `Expect predicate `existsNoRetry == 1` for object "Photo Library" Button`
+    t =    39.31s         Checking existence of `"Photo Library" Button`
+    t =    39.36s Find the "Photo Library" Button
+    t =    39.41s Waiting 3.0s for "Camera" Button to exist
+    t =    40.44s     Checking `Expect predicate `existsNoRetry == 1` for object "Camera" Button`
+    t =    40.44s         Checking existence of `"Camera" Button`
+    t =    40.50s Waiting 3.0s for "File" Button to exist
+    t =    41.53s     Checking `Expect predicate `existsNoRetry == 1` for object "File" Button`
+    t =    41.53s         Checking existence of `"File" Button`
+    t =    41.58s Find the "File" Button
+    t =    41.62s Waiting 3.0s for "Verbosity" Button to exist
+    t =    42.66s     Checking `Expect predicate `existsNoRetry == 1` for object "Verbosity" Button`
+    t =    42.66s         Checking existence of `"Verbosity" Button`
+    t =    42.71s Waiting 3.0s for "Web Search" Button to exist
+    t =    43.74s     Checking `Expect predicate `existsNoRetry == 1` for object "Web Search" Button`
+    t =    43.74s         Checking existence of `"Web Search" Button`
+    t =    43.78s Waiting 3.0s for "Skills" Button to exist
+    t =    44.81s     Checking `Expect predicate `existsNoRetry == 1` for object "Skills" Button`
+    t =    44.81s         Checking existence of `"Skills" Button`
+    t =    44.86s Waiting 3.0s for "Connectors" Button to exist
+    t =    45.89s     Checking `Expect predicate `existsNoRetry == 1` for object "Connectors" Button`
+    t =    45.89s         Checking existence of `"Connectors" Button`
+    t =    45.94s Checking existence of `"Permissions" Button`
+    t =    45.98s Get number of matches for: Elements matching predicate 'label == "Model"'
+    t =    46.02s Checking existence of `"Thinking" Button`
+    t =    46.07s Checking existence of `"Fast" Button`
+    t =    46.11s Checking existence of `"Voice Memo" Button`
+    t =    46.16s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    46.38s Added attachment named 'chat-composer-capabilities'
+    t =    46.38s Tap Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'[0.50, 0.20]
+    t =    46.38s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    46.38s     Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    46.41s     Check for interrupting elements affecting "Composer green" Application
+    t =    46.45s     Synthesize event
+    t =    46.45s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    46.48s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    46.51s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    46.83s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    46.83s Tap "chat-attachment-picker" Button
+    t =    46.83s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    46.83s     Find the "chat-attachment-picker" Button
+    t =    46.87s     Check for interrupting elements affecting "chat-attachment-picker" Button
+    t =    46.91s     Synthesize event
+    t =    47.20s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    47.20s Tap "Skills" Button
+    t =    47.21s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    47.21s     Find the "Skills" Button
+    t =    47.26s     Check for interrupting elements affecting "chat-composer-skills" Button
+    t =    47.30s     Synthesize event
+    t =    47.59s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    47.60s Waiting 3.0s for "Auto Review" Button to exist
+    t =    48.63s     Checking `Expect predicate `existsNoRetry == 1` for object "Auto Review" Button`
+    t =    48.63s         Checking existence of `"Auto Review" Button`
+    t =    48.68s Waiting 3.0s for "Disabled Skill — Disabled in the Gateway configuration." Button to exist
+    t =    49.70s     Checking `Expect predicate `existsNoRetry == 1` for object "Disabled Skill — Disabled in the Gateway configuration." Button`
+    t =    49.70s         Checking existence of `"Disabled Skill — Disabled in the Gateway configuration." Button`
+    t =    49.75s Find the "Disabled Skill — Disabled in the Gateway configuration." Button
+    t =    49.78s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    50.00s Added attachment named 'chat-composer-skills'
+    t =    50.00s Tap Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'[0.50, 0.20]
+    t =    50.00s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    50.00s     Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    50.03s     Check for interrupting elements affecting "Composer green" Application
+    t =    50.06s     Synthesize event
+    t =    50.06s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    50.09s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    50.11s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    50.42s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    50.42s Tap "chat-attachment-picker" Button
+    t =    50.42s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    50.42s     Find the "chat-attachment-picker" Button
+    t =    50.46s     Check for interrupting elements affecting "chat-attachment-picker" Button
+    t =    50.49s     Synthesize event
+    t =    50.78s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    50.78s Tap "Connectors" Button
+    t =    50.78s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    50.78s     Find the "Connectors" Button
+    t =    50.82s     Check for interrupting elements affecting "chat-composer-connectors" Button
+    t =    50.86s     Synthesize event
+    t =    51.15s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    51.16s Waiting 3.0s for "GitHub" Button to exist
+    t =    52.16s     Checking `Expect predicate `existsNoRetry == 1` for object "GitHub" Button`
+    t =    52.16s         Checking existence of `"GitHub" Button`
+    t =    52.21s Waiting 3.0s for "Linear" Button to exist
+    t =    53.21s     Checking `Expect predicate `existsNoRetry == 1` for object "Linear" Button`
+    t =    53.21s         Checking existence of `"Linear" Button`
+    t =    53.25s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    53.45s Added attachment named 'chat-composer-connectors'
+    t =    53.45s Tap "GitHub" Button
+    t =    53.45s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    53.45s     Find the "GitHub" Button
+    t =    53.49s     Check for interrupting elements affecting "checkmark.circle.fill" Button
+    t =    53.53s     Synthesize event
+    t =    53.83s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    53.83s Waiting 3.0s for "Enabled for this session" Button to exist
+    t =    54.83s     Checking `Expect predicate `existsNoRetry == 1` for object "Enabled for this session" Button`
+    t =    54.84s         Checking existence of `"Enabled for this session" Button`
+    t =    54.89s Waiting 3.0s for "Tool Access" Button to exist
+    t =    55.90s     Checking `Expect predicate `existsNoRetry == 1` for object "Tool Access" Button`
+    t =    55.90s         Checking existence of `"Tool Access" Button`
+    t =    55.94s Tap "Tool Access" Button
+    t =    55.95s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    55.95s     Find the "Tool Access" Button
+    t =    55.99s     Check for interrupting elements affecting "wrench.and.screwdriver" Button
+    t =    56.03s     Synthesize event
+    t =    56.33s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    56.33s Waiting 3.0s for "Search code" Button to exist
+    t =    57.36s     Checking `Expect predicate `existsNoRetry == 1` for object "Search code" Button`
+    t =    57.36s         Checking existence of `"Search code" Button`
+    t =    57.41s Waiting 3.0s for "Create issue" Button to exist
+    t =    58.45s     Checking `Expect predicate `existsNoRetry == 1` for object "Create issue" Button`
+    t =    58.45s         Checking existence of `"Create issue" Button`
+    t =    58.49s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    58.80s Added attachment named 'chat-composer-tool-access'
+    t =    58.80s Tap Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'[0.50, 0.20]
+    t =    58.80s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    58.81s     Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    58.83s     Check for interrupting elements affecting "Composer green" Application
+    t =    58.87s     Synthesize event
+    t =    58.87s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    58.89s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    58.92s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    59.23s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    59.23s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    59.63s Added attachment named 'chat-composer-compact'
+    t =    59.63s Tap "chat-message-input" TextView
+    t =    59.63s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    59.63s     Find the "chat-message-input" TextView
+    t =    59.68s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    59.71s     Synthesize event
+    t =    60.00s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    60.60s Type 'Draft a polished l...' into "chat-message-input" TextView
+    t =    60.60s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    60.60s     Find the "chat-message-input" TextView
+    t =    60.70s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    60.76s     Synthesize event
+    t =    62.93s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    63.97s Checking `Expect predicate `BLOCKPREDICATE(0x105a34390)` for object "chat-message-input" TextView`
+    t =    63.97s     Find the "chat-message-input" TextView
+    t =    64.04s Waiting 3.0s for "chat-send-message" Button to exist
+    t =    65.06s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-send-message" Button`
+    t =    65.06s         Checking existence of `"chat-send-message" Button`
+    t =    65.14s Waiting 3.0s for "chat-realtime-control" Button to not exist
+    t =    66.16s     Checking `Expect predicate `existsNoRetry == 0` for object "chat-realtime-control" Button`
+    t =    66.16s         Checking existence of `"chat-realtime-control" Button`
+    t =    66.23s Find the "chat-send-message" Button
+    t =    66.30s Find the "chat-send-message" Button
+    t =    66.37s Find the "chat-composer-surface" Other
+    t =    66.44s Find the "chat-message-input" TextView
+    t =    66.51s Find the "chat-attachment-picker" Button
+    t =    66.58s Find the "chat-attachment-picker" Button
+    t =    66.65s Find the "chat-dictation-control" Button
+    t =    66.72s Find the "chat-send-message" Button
+    t =    66.78s Find the "chat-dictation-control" Button
+    t =    66.85s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    67.13s Added attachment named 'chat-composer-expanded'
+    t =    67.14s Tap Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'[0.50, 0.20]
+    t =    67.14s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    67.14s     Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    67.18s     Check for interrupting elements affecting "Composer green" Application
+    t =    67.24s     Synthesize event
+    t =    67.24s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    67.28s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    67.33s         Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    67.66s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    67.67s Waiting 3.0s for Keyboard (First Match) to not exist
+    t =    68.67s     Checking `Expect predicate `existsNoRetry == 0` for object Keyboard (First Match)`
+    t =    68.67s         Checking existence of `Keyboard (First Match)`
+    t =    68.86s Tear Down
+    t =    68.86s     Terminate ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug:94209
+    t =    69.92s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to become Not Running
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testChatComposerStartsCompactAndGrowsWithDraft]' passed (69.942 seconds).
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testTextDraftKeepsStopAvailableDuringActiveResponse]' started.
+    t =     0.00s Start Test at 2026-11-07 00:25:55.499
+    t =     0.02s Set Up
+2026-11-07 00:25:55.520697+0800 OpenClawUITests-Runner[94144:8048603] Couldn't detect/set language...
+2026-11-07 00:25:55.521107+0800 OpenClawUITests-Runner[94144:8048603] Couldn't detect/set locale...
+2026-11-07 00:25:55.521383+0800 OpenClawUITests-Runner[94144:8048603] Couldn't detect/set launch_arguments...
+    t =     0.02s Open ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+    t =     0.02s     Launch ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+2026-11-07 00:25:55.525 xcodebuild[94060:8047436] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL
+2026-11-07 00:25:55.525 xcodebuild[94060:8047436] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     0.24s         Setting up automation session
+    t =     1.55s         Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     4.61s Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to become Running Foreground
+    t =     4.61s Waiting 8.0s for "RootTabs.Ready" Any to exist
+    t =     5.64s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Ready" Any`
+    t =     5.64s         Checking existence of `"RootTabs.Ready" Any`
+    t =     6.87s Checking `Expect predicate `value == "ready:chat"` for object "RootTabs.Ready" Any`
+    t =     6.87s     Find the "RootTabs.Ready" Any
+    t =     6.93s Waiting 8.0s for "chat-message-input" Any to exist
+    t =     7.95s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-message-input" Any`
+    t =     7.95s         Checking existence of `"chat-message-input" Any`
+    t =     8.01s Tap "chat-message-input" Any
+    t =     8.01s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     8.01s     Find the "chat-message-input" Any
+    t =     8.08s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =     8.13s     Synthesize event
+    t =     8.43s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     8.62s Type 'Keep this response...' into "chat-message-input" TextView
+    t =     8.62s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     8.63s     Find the "chat-message-input" TextView
+    t =     8.75s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =     8.81s     Synthesize event
+    t =     9.47s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    10.49s Checking `Expect predicate `enabled == 1` for object "chat-send-message" Button`
+    t =    10.49s     Find the "chat-send-message" Button
+    t =    10.59s Tap "chat-send-message" Button
+    t =    10.59s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    10.59s     Find the "chat-send-message" Button
+    t =    10.68s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    10.75s     Synthesize event
+    t =    11.05s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    11.08s Waiting 8.0s for "Stop response" Button to exist
+    t =    12.09s     Checking `Expect predicate `existsNoRetry == 1` for object "Stop response" Button`
+    t =    12.09s         Checking existence of `"Stop response" Button`
+    t =    13.19s Checking `Expect predicate `enabled == 1` for object "Stop response" Button`
+    t =    13.19s     Find the "Stop response" Button
+    t =    13.27s Tap "chat-message-input" TextView
+    t =    13.27s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    13.27s     Find the "chat-message-input" TextView
+    t =    13.34s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    13.39s     Synthesize event
+    t =    13.69s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    13.78s Type 'Keep this follow-u...' into "chat-message-input" TextView
+    t =    13.78s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    13.79s     Find the "chat-message-input" TextView
+    t =    13.87s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    13.93s     Synthesize event
+    t =    14.55s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    14.55s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    14.91s Added attachment named 'text-draft-during-active-response'
+    t =    14.92s Checking existence of `"stop.fill" Button`
+    t =    14.98s Find the "stop.fill" Button
+    t =    15.06s Checking existence of `"chat-send-message" Button`
+    t =    15.13s Find the "stop.fill" Button
+    t =    15.21s Find the "stop.fill" Button
+    t =    15.27s Find the "chat-send-message" Button
+    t =    15.35s Find the "stop.fill" Button
+    t =    15.43s Find the "stop.fill" Button
+    t =    15.50s Find the "chat-send-message" Button
+    t =    15.58s Tap "stop.fill" Button
+    t =    15.58s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    15.58s     Find the "stop.fill" Button
+    t =    15.65s     Check for interrupting elements affecting "stop.fill" Button
+    t =    15.71s     Synthesize event
+    t =    16.01s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    16.01s Waiting 8.0s for "stop.fill" Button to not exist
+    t =    17.03s     Checking `Expect predicate `existsNoRetry == 0` for object "stop.fill" Button`
+    t =    17.03s         Checking existence of `"stop.fill" Button`
+    t =    17.09s Find the "chat-message-input" TextView
+    t =    18.16s Checking `Expect predicate `enabled == 1` for object "chat-send-message" Button`
+    t =    18.16s     Find the "chat-send-message" Button
+    t =    18.23s Tap "chat-send-message" Button
+    t =    18.23s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    18.23s     Find the "chat-send-message" Button
+    t =    18.30s     Check for interrupting elements affecting "chat-send-message" Button
+    t =    18.37s     Synthesize event
+    t =    18.66s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    18.66s Waiting 8.0s for "Keep this follow-up draft" StaticText to exist
+    t =    19.67s     Checking `Expect predicate `existsNoRetry == 1` for object "Keep this follow-up draft" StaticText`
+    t =    19.67s         Checking existence of `"Keep this follow-up draft" StaticText`
+    t =    19.74s Tear Down
+    t =    19.74s     Terminate ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug:94525
+    t =    20.77s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to become Not Running
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testTextDraftKeepsStopAvailableDuringActiveResponse]' passed (20.794 seconds).
+Test Suite 'OpenClawSnapshotUITests' passed at 2026-11-07 00:26:16.292.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 90.736 (90.737) seconds
+Test Suite 'OpenClawUITests.xctest' passed at 2026-11-07 00:26:16.293.
+	 Executed 3 tests, with 1 test skipped and 0 failures (0 unexpected) in 101.456 (101.462) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 00:26:16.293.
+	 Executed 3 tests, with 1 test skipped and 0 failures (0 unexpected) in 101.456 (101.463) seconds
+2026-11-07 00:26:16.590 xcodebuild[94060:8047436] [MT] IDETestOperationsObserverDebug: 114.553 elapsed -- Testing started completed.
+2026-11-07 00:26:16.590 xcodebuild[94060:8047436] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-11-07 00:26:16.590 xcodebuild[94060:8047436] [MT] IDETestOperationsObserverDebug: 114.553 sec, +114.553 sec -- end
+
+Test session results, code coverage, and logs:
+	<local-path>
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

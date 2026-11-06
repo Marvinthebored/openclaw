@@ -1,0 +1,520 @@
+Fetching https://github.com/mgriebling/SwiftMath from cache
+Fetching https://github.com/groue/GRDB.swift.git from cache
+Fetching https://github.com/swiftlang/swift-markdown from cache
+Fetching https://github.com/steipete/ElevenLabsKit from cache
+Fetched https://github.com/mgriebling/SwiftMath from cache (4.71s)
+Fetched https://github.com/steipete/ElevenLabsKit from cache (4.72s)
+Fetched https://github.com/groue/GRDB.swift.git from cache (4.72s)
+Fetched https://github.com/swiftlang/swift-markdown from cache (4.73s)
+Computing version for https://github.com/swiftlang/swift-markdown
+Computed https://github.com/swiftlang/swift-markdown at 0.9.0 (6.30s)
+Fetching https://github.com/swiftlang/swift-cmark.git from cache
+Fetched https://github.com/swiftlang/swift-cmark.git from cache (3.91s)
+Computing version for https://github.com/mgriebling/SwiftMath
+Computed https://github.com/mgriebling/SwiftMath at 1.7.3 (4.67s)
+Computing version for https://github.com/groue/GRDB.swift.git
+Computed https://github.com/groue/GRDB.swift.git at 7.11.1 (0.56s)
+Computing version for https://github.com/steipete/ElevenLabsKit
+Computed https://github.com/steipete/ElevenLabsKit at 0.1.3 (0.65s)
+Computing version for https://github.com/swiftlang/swift-cmark.git
+Computed https://github.com/swiftlang/swift-cmark.git at 0.9.0 (0.45s)
+Creating working copy for https://github.com/mgriebling/SwiftMath
+Working copy of https://github.com/mgriebling/SwiftMath resolved at 1.7.3
+Creating working copy for https://github.com/steipete/ElevenLabsKit
+Working copy of https://github.com/steipete/ElevenLabsKit resolved at 0.1.3
+Creating working copy for https://github.com/groue/GRDB.swift.git
+Working copy of https://github.com/groue/GRDB.swift.git resolved at 7.11.1
+Creating working copy for https://github.com/swiftlang/swift-cmark.git
+Working copy of https://github.com/swiftlang/swift-cmark.git resolved at 0.9.0
+Creating working copy for https://github.com/swiftlang/swift-markdown
+Working copy of https://github.com/swiftlang/swift-markdown resolved at 0.9.0
+Building for debugging...
+[Computing dependencies]
+[Pre-planning 1 / 744]
+[Planning deferred tasks]
+[112 / 359] Markdown
+[139 / 359] SwiftMath_SwiftMath
+[155 / 359]
+[169 / 359] GRDB_GRDB
+[181 / 359]
+[183 / 365] cmark-gfm
+[186 / 376] OpenClawNativeState
+[187 / 417] Markdown
+[188 / 502] GRDB
+[189 / 515] ElevenLabsKit
+[190 / 537]
+[192 / 593]
+[193 / 593]
+[195 / 593]
+[200 / 629]
+[203 / 629]
+[207 / 629]
+[209 / 629]
+[213 / 629]
+[217 / 629]
+[220 / 629]
+[223 / 629]
+[226 / 629]
+[230 / 629]
+[234 / 629]
+[235 / 629]
+[237 / 629]
+[239 / 629]
+[242 / 629]
+[245 / 629]
+[248 / 629]
+[249 / 629]
+[253 / 629]
+[257 / 629]
+[258 / 629]
+[260 / 629]
+[261 / 629]
+[264 / 629]
+[265 / 629]
+[269 / 629]
+[271 / 629]
+[273 / 629]
+[275 / 629]
+[278 / 629]
+[281 / 629]
+[283 / 629]
+[284 / 629]
+[286 / 629]
+[289 / 629]
+[291 / 629]
+[293 / 629]
+[295 / 629]
+[297 / 629]
+[298 / 629]
+[300 / 629]
+[302 / 629]
+[305 / 629]
+[306 / 629]
+[307 / 629]
+[309 / 629]
+[311 / 629]
+[313 / 629]
+[314 / 629]
+[316 / 629]
+[318 / 629]
+[321 / 629] Markdown
+[322 / 629]
+[323 / 629] GRDB
+[324 / 629]
+[326 / 629]
+[333 / 629]
+[335 / 629]
+[337 / 629]
+[339 / 629] OpenClawProtocol
+[339 / 629] GRDB
+[340 / 629]
+[342 / 629] OpenClawNativeState
+[354 / 629]
+[356 / 629]
+[358 / 629]
+[359 / 629]
+[361 / 629]
+[362 / 629]
+[363 / 629]
+[365 / 629]
+[367 / 629]
+[368 / 629]
+[370 / 629]
+[371 / 629]
+[372 / 629]
+[373 / 629]
+[374 / 629]
+[375 / 629]
+[376 / 629]
+[378 / 629]
+[381 / 629] OpenClawProtocol
+[386 / 629]
+[388 / 629]
+[390 / 629]
+[392 / 629]
+[394 / 629] ElevenLabsKit
+[403 / 629]
+[406 / 630]
+[407 / 630] cmark-gfm-extensions
+[420 / 630]
+[425 / 632]
+[431 / 632] cmark-gfm-extensions
+[436 / 632] cmark-gfm
+[441 / 632] cmark-gfm
+[445 / 632] cmark-gfm
+[450 / 632] cmark-gfm
+[459 / 632] cmark-gfm
+[466 / 632] cmark-gfm
+[473 / 632] cmark-gfm
+[483 / 632] SwiftMath
+[484 / 632] SwiftMath
+[486 / 632] cmark-gfm
+[488 / 632] SwiftMath
+[489 / 632] SwiftMath
+[490 / 632] SwiftMath
+[491 / 632] SwiftMath
+[492 / 632] SwiftMath
+[493 / 632] SwiftMath
+[494 / 632] SwiftMath-product
+[495 / 632] SwiftMath-product
+[496 / 632] SwiftMath-product
+[498 / 632] SwiftMath
+[499 / 632] SwiftMath
+[501 / 632] SwiftMath
+[503 / 632] OpenClawProtocol
+[505 / 632] OpenClawProtocol-product
+[506 / 632] OpenClawProtocol-product
+[508 / 632] OpenClawProtocol
+[509 / 632] OpenClawNativeState
+[510 / 632] OpenClawNativeState
+[511 / 632] OpenClawNativeState
+[512 / 632] OpenClawNativeState
+[513 / 632] OpenClawNativeStateTests-product
+[515 / 632] OpenClawNativeState
+[516 / 632] OpenClawNativeState
+[517 / 632] Markdown
+[520 / 632] Markdown
+[521 / 632] Markdown
+[522 / 632] Markdown
+[523 / 632] Markdown
+[524 / 632] Markdown
+[525 / 632] Markdown
+[526 / 632] Markdown
+[527 / 632] Markdown
+[528 / 632] Markdown-product
+[529 / 632] Markdown-product
+[530 / 632] Markdown-product
+[532 / 632] Markdown
+[533 / 632] Markdown
+[534 / 632] Markdown
+[535 / 632] Markdown
+[536 / 632] GRDB
+[539 / 632] GRDB
+[540 / 632] GRDB
+[541 / 632] GRDB
+[542 / 632] GRDB
+[543 / 632] GRDB
+[544 / 632] GRDB
+[545 / 632] GRDB
+[546 / 632] GRDB-product
+[547 / 632] GRDB
+[548 / 632] GRDB-product
+[550 / 632] GRDB
+[551 / 632] GRDB
+[552 / 632] GRDB
+[553 / 632] GRDB
+[554 / 632] GRDB
+[557 / 632] ElevenLabsKit
+[559 / 632] ElevenLabsKit
+[560 / 632] ElevenLabsKit-product
+[561 / 632] ElevenLabsKit-product
+[563 / 632] OpenClawKit
+[565 / 632]
+[571 / 632] OpenClawNativeState
+[576 / 632]
+[581 / 634] OpenClawNativeStateTests-product
+[583 / 643] GRDB
+[585 / 678]
+[587 / 678]
+[591 / 678]
+[592 / 678]
+[595 / 678]
+[595 / 678] OpenClawNativeStateTests-product
+[598 / 678]
+[605 / 678]
+[606 / 678] OpenClawNativeStateTests-product
+[608 / 678]
+[608 / 678] OpenClawNativeStateTests-product
+[610 / 678] OpenClawNativeStateTests-product
+[611 / 678] OpenClawNativeStateTests-product
+[612 / 678] OpenClawNativeStateTests-product
+[613 / 678] OpenClawNativeStateTests-product
+[615 / 678] OpenClawNativeStateTests-product
+[622 / 678] OpenClawKit
+[624 / 678] OpenClawKit
+[624 / 678] OpenClawNativeStateTests-product
+[626 / 678] OpenClawKit
+[627 / 678] OpenClawKit
+[628 / 678] OpenClawKit
+[629 / 678] OpenClawKit
+[631 / 678] OpenClawKit-product
+[633 / 678] OpenClawKit
+[634 / 678] OpenClawKit
+[635 / 678] OpenClawKit
+[636 / 678] OpenClawKit
+[637 / 678] OpenClawKit
+[639 / 678] OpenClawKit
+[641 / 678] OpenClawProtocol-product
+[645 / 679]
+[648 / 706]
+[652 / 706]
+[655 / 706]
+[657 / 706] OpenClawKit
+[659 / 706] OpenClawChatUI
+[661 / 706] OpenClawChatUI
+[667 / 706] OpenClawChatUI
+[668 / 706] OpenClawKitTests-product
+[669 / 706] OpenClawKitTests-product
+[671 / 706] OpenClawChatUI
+[672 / 706] OpenClawChatUI
+[673 / 706] OpenClawChatUI
+[674 / 706] OpenClawChatUI
+[675 / 706] OpenClawChatUI
+[676 / 706] OpenClawChatUI
+[677 / 706] OpenClawChatUI
+[678 / 706] OpenClawChatUI
+[679 / 706] OpenClawChatUI
+[680 / 706] OpenClawChatUI
+[680 / 706]
+[684 / 706]
+[684 / 706] OpenClawChatUI
+[686 / 706] OpenClawChatUI
+[691 / 707] OpenClawKitTests-product
+[696 / 707] OpenClawKitTests-product
+[699 / 733]
+[702 / 733]
+[703 / 733]
+[706 / 733] OpenClawKitTests-product
+<local-path>:154:13: [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+[0;36m152 |[0;0m                 #", "archived":true,"participants":[{"identity":{"type":"profile","id":"bea"},"label":"Bea"}],"participantCount":1"#)
+[0;36m153 |[0;0m         func attribution(_ options: ChatSessionSidebarModel.ViewOptions) throws -> ChatSidebarOwnership.Attribution {
+[0;36m154 |[0;0m             try #require(ownership.attribution(
+    [0;36m|[0;0m             `- [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+[0;36m155 |[0;0m                 for: row, options: options, isChild: false, decorated: false, viewingProfileIDs: ["bea"]))
+[0;36m156 |[0;0m         }
+
+[#UnnecessaryEffectMarker]: <https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker>
+[707 / 733] OpenClawKitTests-product
+[709 / 733] OpenClawKitTests-product
+[715 / 733] OpenClawKitTests-product
+<local-path>:98:17: [1;33mwarning: [1;39m'current' mutated after capture by sendable closure[0;0m
+ [0;36m54 |[0;0m         let started = AsyncStream<Void>.makeStream()
+ [0;36m55 |[0;0m         var pendingLogin: CheckedContinuation<Data, Never>?
+ [0;36m56 |[0;0m         var current = true
+    [0;36m|[0;0m             `- [1;39mnote: [1;39mvariable defined here[0;0m
+ [0;36m57 |[0;0m         var admitted = false
+ [0;36m58 |[0;0m         var statusReads = 0
+    [0;36m:[0;0m
+ [0;36m87 |[0;0m                 }
+ [0;36m88 |[0;0m             },
+ [0;36m89 |[0;0m             isCurrent: { current })
+    [0;36m|[0;0m                        | `- [1;39mnote: [1;39mcapturing use[0;0m
+    [0;36m|[0;0m                        `- [1;39mnote: [1;39mvariable captured by sendable closure[0;0m
+ [0;36m90 |[0;0m         let model = ChatModelSignInModel(context: context, onAuthChanged: { newSessionCatalogRefreshes += 1 })
+ [0;36m91 |[0;0m         await model.refresh()
+    [0;36m:[0;0m
+ [0;36m96 |[0;0m         let oldSessionID = try #require(model.sessionID)
+ [0;36m97 |[0;0m         let response = try JSONEncoder().encode(WizardStartResult(sessionid: oldSessionID, done: false))
+ [0;36m98 |[0;0m         current = false
+    [0;36m|[0;0m                 `- [1;33mwarning: [1;39m'current' mutated after capture by sendable closure[0;0m
+ [0;36m99 |[0;0m         await model.close()
+[0;36m100 |[0;0m         admitted = true
+
+<local-path>:100:18: [1;33mwarning: [1;39m'admitted' mutated after capture by sendable closure[0;0m
+ [0;36m55 |[0;0m         var pendingLogin: CheckedContinuation<Data, Never>?
+ [0;36m56 |[0;0m         var current = true
+ [0;36m57 |[0;0m         var admitted = false
+    [0;36m|[0;0m             `- [1;39mnote: [1;39mvariable defined here[0;0m
+ [0;36m58 |[0;0m         var statusReads = 0
+ [0;36m59 |[0;0m         var newSessionCatalogRefreshes = 0
+    [0;36m:[0;0m
+ [0;36m61 |[0;0m         let context = OpenClawChatModelSignInContext(
+ [0;36m62 |[0;0m             agentID: "old-agent",
+ [0;36m63 |[0;0m             request: { method, params in
+    [0;36m|[0;0m                      `- [1;39mnote: [1;39mvariable captured by sendable closure[0;0m
+ [0;36m64 |[0;0m                 switch method {
+ [0;36m65 |[0;0m                 case "models.authStatus":
+    [0;36m:[0;0m
+ [0;36m76 |[0;0m                     try cancelledSessionIDs.append(#require(params["sessionId"]?.stringValue))
+ [0;36m77 |[0;0m                     #expect(params["closeInput"]?.value as? Bool == true)
+ [0;36m78 |[0;0m                     if !admitted {
+    [0;36m|[0;0m                         `- [1;39mnote: [1;39mcapturing use[0;0m
+ [0;36m79 |[0;0m                         throw GatewayResponseError(
+ [0;36m80 |[0;0m                             method: method, code: "INVALID_REQUEST", message: "Not admitted yet",
+    [0;36m:[0;0m
+ [0;36m98 |[0;0m         current = false
+ [0;36m99 |[0;0m         await model.close()
+[0;36m100 |[0;0m         admitted = true
+    [0;36m|[0;0m                  `- [1;33mwarning: [1;39m'admitted' mutated after capture by sendable closure[0;0m
+[0;36m101 |[0;0m         pendingLogin?.resume(returning: response)
+[0;36m102 |[0;0m         await login.value
+[717 / 733] OpenClawKitTests-product
+[718 / 733] OpenClawKitTests-product
+<local-path>:1825:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1823 |[0;0m         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ [0;36m1824 |[0;0m 
+ [0;36m1825 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1826 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1827 |[0;0m                 steps: [
+
+<local-path>:1865:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1863 |[0;0m         try await loadAndWaitBootstrap(vm: vm, sessionId: "sess-main")
+ [0;36m1864 |[0;0m         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ [0;36m1865 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1866 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1867 |[0;0m                 steps: [legacyPlanStep("Old gateway step", status: "in_progress")]))
+
+<local-path>:1875:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1873 |[0;0m         // Hold its capability reply until the unknown-capability assertions finish.
+ [0;36m1874 |[0;0m         _ = await capabilityPhase.increment()
+ [0;36m1875 |[0;0m         await MainActor.run [4;39m{ vm.handleTransportEvent(sequenceGap ? .seqGap : .routeChanged) }[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1876 |[0;0m         await capabilityGate.waitUntilBlocked()
+ [0;36m1877 |[0;0m         #expect(await MainActor.run { vm.progressCardStoreAvailable } == nil)
+
+<local-path>:1879:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1877 |[0;0m         #expect(await MainActor.run { vm.progressCardStoreAvailable } == nil)
+ [0;36m1878 |[0;0m 
+ [0;36m1879 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1880 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1881 |[0;0m                 steps: [legacyPlanStep("New gateway step", status: "in_progress")]))
+
+<local-path>:1896:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1894 |[0;0m         await waitForObservedState { vm.progressCardStoreAvailable == true }
+ [0;36m1895 |[0;0m 
+ [0;36m1896 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1897 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1898 |[0;0m                 steps: [legacyPlanStep("Ignored", status: "in_progress")]))
+
+<local-path>:1910:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1908 |[0;0m         try await loadAndWaitBootstrap(vm: vm, sessionId: "sess-main")
+ [0;36m1909 |[0;0m 
+ [0;36m1910 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1911 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1912 |[0;0m                 steps: [legacyPlanStep("Ignored", status: "in_progress")]))
+
+<local-path>:1950:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1948 |[0;0m         try await loadAndWaitBootstrap(vm: vm, sessionId: "sess-main")
+ [0;36m1949 |[0;0m         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ [0;36m1950 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1951 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1952 |[0;0m                 steps: [legacyPlanStep("Existing", status: "in_progress")]))
+
+<local-path>:1956:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1954 |[0;0m         #expect(await MainActor.run { vm.progressCard != nil })
+ [0;36m1955 |[0;0m 
+ [0;36m1956 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1957 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(steps: []))
+ [0;36m1958 |[0;0m         }
+
+<local-path>:1970:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1968 |[0;0m         await waitForObservedState { vm.progressCardStoreAvailable == false }
+ [0;36m1969 |[0;0m 
+ [0;36m1970 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1971 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1972 |[0;0m                 steps: [AnyCodable("First")],
+
+<local-path>:1978:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1976 |[0;0m         #expect(await MainActor.run { vm.progressCard?.steps?.first?.status.rawValue } == "pending")
+ [0;36m1977 |[0;0m 
+ [0;36m1978 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m1979 |[0;0m             vm.handleTransportEvent(legacyPlanEvent(
+ [0;36m1980 |[0;0m                 steps: [AnyCodable("Second")],
+
+<local-path>:2072:25: [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m2070 |[0;0m         await waitForObservedState { vm.progressCard?.revision == 5 }
+ [0;36m2071 |[0;0m 
+ [0;36m2072 |[0;0m         await MainActor.run [4;39m{[0;0m
+      [0;36m|[0;0m                         `- [1;33mwarning: [1;39mresult of call to 'run(resultType:body:)' is unused[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/no-usage\NoUsage]8;;\]
+ [0;36m2073 |[0;0m             vm.handleTransportEvent(.progressCardChanged(ProgressCardChangedEvent(
+ [0;36m2074 |[0;0m                 sessionkey: "agent:main:other",
+
+[#NoUsage]: <https://docs.swift.org/compiler/documentation/diagnostics/no-usage>
+[719 / 733] OpenClawKitTests-product
+[720 / 733] OpenClawKitTests-product
+<local-path>:343:18: [1;33mwarning: [1;39mweak variable 'weakSession' was never mutated; consider changing to 'let' constant[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/variable-never-mutated\VariableNeverMutated]8;;\::]8;;https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability\WeakMutability]8;;\]
+[0;36m341 |[0;0m         let ended = RealtimeRelayTestSignal<Void>(timeoutSeconds: 2)
+[0;36m342 |[0;0m         f.events.continuation.onTermination = { _ in ended.send(()) }
+[0;36m343 |[0;0m         weak var weakSession = f.session
+    [0;36m|[0;0m                  `- [1;33mwarning: [1;39mweak variable 'weakSession' was never mutated; consider changing to 'let' constant[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/variable-never-mutated\VariableNeverMutated]8;;\::]8;;https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability\WeakMutability]8;;\]
+[0;36m344 |[0;0m         f.session = nil
+[0;36m345 |[0;0m         #expect(weakSession == nil)
+
+[#VariableNeverMutated]: <https://docs.swift.org/compiler/documentation/diagnostics/variable-never-mutated>
+[#WeakMutability]: <https://docs.swift.org/compiler/documentation/diagnostics/weak-mutability>
+[721 / 733] OpenClawKitTests-product
+[722 / 733] OpenClawKitTests-product
+[723 / 733] OpenClawKitTests-product
+[724 / 733] OpenClawKitTests-product
+[725 / 733] OpenClawKitTests-product
+<local-path>:566:9: [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+ [0;36m564 |[0;0m         }
+ [0;36m565 |[0;0m         // Wait for the inputs, not the expected absence: a duplicate must fail an assertion, not hang.
+ [0;36m566 |[0;0m         try await harness.converge("both sources received") { vm in
+     [0;36m|[0;0m         `- [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+ [0;36m567 |[0;0m             vm.streamingAssistantText == text &&
+ [0;36m568 |[0;0m                 vm.transcriptMessages.contains { ChatMessageVisibleText.visibleText(in: $0) == text }
+
+<local-path>:580:9: [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+ [0;36m578 |[0;0m             runId: runId, seq: 4, stream: "tool", ts: now + 200,
+ [0;36m579 |[0;0m             data: ["phase": AnyCodable("start"), "name": AnyCodable("read"), "toolCallId": AnyCodable("read-1")])))
+ [0;36m580 |[0;0m         try await harness.converge("repeat delta consumed before tool start") { $0.pendingToolCalls.count == 1 }
+     [0;36m|[0;0m         `- [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+ [0;36m581 |[0;0m         host.layoutSubtreeIfNeeded()
+ [0;36m582 |[0;0m         #expect(Self.mathLabels(in: host).map(\.latex) == ["x = 1"])
+
+<local-path>:584:9: [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+ [0;36m582 |[0;0m         #expect(Self.mathLabels(in: host).map(\.latex) == ["x = 1"])
+ [0;36m583 |[0;0m         harness.transport.emit(replayAssistantDeltaEvent(runId: runId, cumulativeText: "$$y = 2$$", seq: 5))
+ [0;36m584 |[0;0m         try await harness.converge("different live text received") { $0.streamingAssistantText == "$$y = 2$$" }
+     [0;36m|[0;0m         `- [1;33mwarning: [1;39mno calls to throwing functions occur within 'try' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+ [0;36m585 |[0;0m         if let scheduledID = harness.vm.streamPacing.scheduledID {
+ [0;36m586 |[0;0m             harness.vm.flushStreamingAssistantDisplay(scheduledID: scheduledID)
+
+macro expansion #require:1:22: [1;33mwarning: [1;39mno 'async' operations occur within 'await' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+`- <local-path>:1296:51: [1;39mnote: [1;39mexpanded code originates here[0;0m
+[0;36m1294 |[0;0m         }
+[0;36m1295 |[0;0m         releaseHistory.finish()
+[0;36m1296 |[0;0m         try await [4;39m#require(await vm.bootstrapTask)[0;0m.value
+     [0;36m|[0;0m                   `- [1;39mnote: [1;39min expansion of macro 'require' here[0;0m
+[0;36m     +--- [0;0mmacro expansion #require [0;36m-------------------------------------[0;0m
+[0;36m     |[0;0m[0;36m1 |[0;0m Testing.__checkValue(await vm.bootstrapTask,expression: .__fromSyntaxNode("await vm.bootstrapTask"),comments: [],isRequired: true,sourceLocation: Testing.SourceLocation.__here()).__required()
+[0;36m     |[0;0m  [0;36m|[0;0m                      `- [1;33mwarning: [1;39mno 'async' operations occur within 'await' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+[0;36m     +-----------------------------[0;0m[0;36m-------------------------------------[0;0m
+[0;36m1297 |[0;0m         await restored.converge("cold-open history completed") { vm in
+[0;36m1298 |[0;0m             vm.healthOK && !vm.isLoading && !vm.isShowingCachedTranscript
+
+macro expansion #require:1:22: [1;33mwarning: [1;39mno 'async' operations occur within 'await' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+`- <local-path>:1314:82: [1;39mnote: [1;39mexpanded code originates here[0;0m
+[0;36m1312 |[0;0m         let harness = try await StreamReplayHarness.bootstrapped()
+[0;36m1313 |[0;0m         let runId = try await harness.send("please finish")
+[0;36m1314 |[0;0m         let runOwner = try [4;39m#require(await harness.vm.pendingRunOwnerTasks[runId])[0;0m
+     [0;36m|[0;0m                            `- [1;39mnote: [1;39min expansion of macro 'require' here[0;0m
+[0;36m     +--- [0;0mmacro expansion #require [0;36m-------------------------------------[0;0m
+[0;36m     |[0;0m[0;36m1 |[0;0m Testing.__checkValue(await harness.vm.pendingRunOwnerTasks[runId],expression: .__fromSyntaxNode("await harness.vm.pendingRunOwnerTasks[runId]"),comments: [],isRequired: true,sourceLocation: Testing.SourceLocation.__here()).__required()
+[0;36m     |[0;0m  [0;36m|[0;0m                      `- [1;33mwarning: [1;39mno 'async' operations occur within 'await' expression[0;0m [#]8;;https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker\UnnecessaryEffectMarker]8;;\]
+[0;36m     +-----------------------------[0;0m[0;36m-------------------------------------[0;0m
+[0;36m1315 |[0;0m 
+[0;36m1316 |[0;0m         await harness.streamCumulativeChunks(runId: runId, fullText: "Working on it", chunkLength: 5)
+
+[#UnnecessaryEffectMarker]: <https://docs.swift.org/compiler/documentation/diagnostics/unnecessary-effect-marker>
+[726 / 733] OpenClawKitTests-product
+[727 / 733] OpenClawKitTests-product
+[727 / 733] AllIncludingTests
+[727 / 733] OpenClawKitTests-product
+[729 / 733] OpenClawKitTests-product
+[730 / 733] OpenClawKitTests-product
+[731 / 733] OpenClawKitTests-product
+Build complete! (355.77 sec)
+◇ Test run started.
+↳ Testing Library Version: 2403
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite ChatInputResponsivenessTests started.
+◇ Test "draft edits do not invalidate the outer clean composer and its menus" started.
+✘ Test "draft edits do not invalidate the outer clean composer and its menus" recorded an issue at ChatComposerParityTests.swift:381:9: Expectation failed: probe.invalidations == 0
+↳ probe.invalidations == 0 → false
+↳   probe.invalidations → 1
+✘ Test "draft edits do not invalidate the outer clean composer and its menus" failed after 0.043 seconds with 1 issue.
+✘ Suite ChatInputResponsivenessTests failed after 0.043 seconds with 1 issue.
+✘ Test run with 1 test in 1 suite failed after 0.043 seconds with 1 issue.
+Note: Some test targets reported failures:
+  - OpenClawKitTests (Swift Testing)
