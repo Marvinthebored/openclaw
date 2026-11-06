@@ -1,0 +1,120 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project OpenClaw.xcodeproj -scheme OpenClawUITests -configuration Debug -destination "platform=iOS Simulator,id=8EFA6EC7-D34A-45F2-A0EF-9B5F1911B05A" -derivedDataPath <local-path> -jobs 2 CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=- -parallel-testing-enabled NO -resultBundlePath <local-path> "-only-testing:OpenClawUITests/OpenClawSnapshotUITests/testMountedComposerDraftIsolation"
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = -
+    CODE_SIGNING_ALLOWED = YES
+
+Resolve Package Graph
+Invalid Exclude '<local-path> File not found.Invalid Exclude '<local-path> File not found.Invalid Exclude '<local-path> File not found.failed to retrieve search paths with pkg-config; maybe pkg-config is not installedyou may be able to install libsodium using your system-packager:
+    brew install libsodium
+
+
+Resolved source packages:
+  SwiftMath: https://github.com/mgriebling/SwiftMath @ 1.7.3
+  cmark-gfm: https://github.com/swiftlang/swift-cmark.git @ 0.9.0
+  Sodium: https://github.com/jedisct1/swift-sodium.git @ cfd195c
+  swabble: <local-path>
+  Commander: https://github.com/steipete/Commander.git @ 0.3.0
+  SwiftProtobuf: https://github.com/apple/swift-protobuf.git @ 1.39.0
+  GRDB: https://github.com/groue/GRDB.swift.git @ 7.11.1
+  swift-markdown: https://github.com/swiftlang/swift-markdown @ 0.9.0
+  WebRTC: https://github.com/stasel/WebRTC.git @ 154.0.0
+  ElevenLabsKit: https://github.com/steipete/ElevenLabsKit @ 0.1.3
+  ESPProvision: <local-path>
+  OpenClawKit: <local-path>
+
+Writing result bundle at path:
+	<local-path>
+
+2026-11-07 02:37:59.720805+0800 OpenClawUITests-Runner[69392:8687246] [Default] Running tests...
+2026-11-07 02:37:59.741952+0800 OpenClawUITests-Runner[69392:8687423] [General] Failed to send CA Event for app launch measurements for ca_event_type: 0 event_name: com.apple.app_launch_measurement.FirstFramePresentationMetric
+2026-11-07 02:37:59.782254+0800 OpenClawUITests-Runner[69392:8687420] [General] Failed to send CA Event for app launch measurements for ca_event_type: 1 event_name: com.apple.app_launch_measurement.ExtendedLaunchMetrics
+objc[69392]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x10a33c310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x10a3b8398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+    t =      nans Interface orientation changed to Portrait
+Test Suite 'Selected tests' started at 2026-11-07 02:38:01.107.
+Test Suite 'OpenClawUITests.xctest' started at 2026-11-07 02:38:01.108.
+Test Suite 'OpenClawSnapshotUITests' started at 2026-11-07 02:38:01.108.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testMountedComposerDraftIsolation]' started.
+    t =     0.00s Start Test at 2026-11-07 02:38:01.108
+    t =     0.02s Set Up
+2026-11-07 02:38:01.132064+0800 OpenClawUITests-Runner[69392:8687246] Couldn't detect/set language...
+2026-11-07 02:38:01.132188+0800 OpenClawUITests-Runner[69392:8687246] Couldn't detect/set locale...
+2026-11-07 02:38:01.132270+0800 OpenClawUITests-Runner[69392:8687246] Couldn't detect/set launch_arguments...
+    t =     0.02s Open ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+    t =     0.03s     Launch ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug
+2026-11-07 02:38:01.398 xcodebuild[69345:8686609] [MT] IDELaunchParametersSnapshot: debugger version lookup failed for path '<nil>': noURL
+2026-11-07 02:38:01.398 xcodebuild[69345:8686609] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.12s         Setting up automation session
+    t =     1.70s         Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     3.99s Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to become Running Foreground
+    t =     3.99s Waiting 8.0s for "RootTabs.Ready" Any to exist
+    t =     5.08s     Checking `Expect predicate `existsNoRetry == 1` for object "RootTabs.Ready" Any`
+    t =     5.08s         Checking existence of `"RootTabs.Ready" Any`
+    t =     6.22s Checking `Expect predicate `value == "ready:chat"` for object "RootTabs.Ready" Any`
+    t =     6.22s     Find the "RootTabs.Ready" Any
+    t =     6.27s Waiting 8.0s for "chat-message-input" Any to exist
+    t =     7.35s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-message-input" Any`
+    t =     7.35s         Checking existence of `"chat-message-input" Any`
+    t =     7.39s Waiting 5.0s for "chat-realtime-control" Button to exist
+    t =     8.47s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-realtime-control" Button`
+    t =     8.47s         Checking existence of `"chat-realtime-control" Button`
+    t =     8.51s Checking existence of `"chat-send-message" Button`
+    t =     8.54s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =     8.65s Added attachment named 'mounted-empty-talk'
+    t =     8.65s Tap "chat-message-input" Any
+    t =     8.65s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     8.65s     Find the "chat-message-input" Any
+    t =     8.68s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =     8.70s     Synthesize event
+    t =     9.11s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =     9.42s Waiting 5.0s for Keyboard (First Match) to exist
+    t =    10.50s     Checking `Expect predicate `existsNoRetry == 1` for object Keyboard (First Match)`
+    t =    10.50s         Checking existence of `Keyboard (First Match)`
+    t =    10.52s Type 'mount' into "chat-message-input" TextView
+    t =    10.52s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    10.52s     Find the "chat-message-input" TextView
+    t =    10.58s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    10.61s     Synthesize event
+    t =    10.89s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    10.90s Find the "chat-message-input" TextView
+    t =    10.95s Waiting 5.0s for "chat-send-message" Button to exist
+    t =    12.03s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-send-message" Button`
+    t =    12.03s         Checking existence of `"chat-send-message" Button`
+    t =    12.08s Find the "chat-send-message" Button
+    t =    12.12s Checking existence of `"chat-realtime-control" Button`
+    t =    12.15s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    12.25s Added attachment named 'mounted-draft-send'
+    t =    12.25s Type '' into "chat-message-input" TextView
+    t =    12.25s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    12.26s     Find the "chat-message-input" TextView
+    t =    12.29s     Check for interrupting elements affecting "chat-message-input" TextView
+    t =    12.32s     Synthesize event
+    t =    12.61s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to idle
+    t =    12.61s Waiting 5.0s for "chat-realtime-control" Button to exist
+    t =    13.68s     Checking `Expect predicate `existsNoRetry == 1` for object "chat-realtime-control" Button`
+    t =    13.68s         Checking existence of `"chat-realtime-control" Button`
+    t =    13.73s Checking existence of `"chat-send-message" Button`
+    t =    13.77s Find the Target Application 'ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug'
+    t =    13.87s Added attachment named 'mounted-cleared-talk'
+MOUNTED_UI_PASS empty Talk -> mount Send enabled -> cleared Talk
+    t =    13.88s Tear Down
+    t =    13.88s     Terminate ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug:69418
+    t =    14.96s     Wait for ai.openclawfoundation.app.test.sanae-j37ac5qkvj.debug to become Not Running
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testMountedComposerDraftIsolation]' passed (14.989 seconds).
+Test Suite 'OpenClawSnapshotUITests' passed at 2026-11-07 02:38:16.098.
+	 Executed 1 test, with 0 failures (0 unexpected) in 14.989 (14.990) seconds
+Test Suite 'OpenClawUITests.xctest' passed at 2026-11-07 02:38:16.098.
+	 Executed 1 test, with 0 failures (0 unexpected) in 14.989 (14.991) seconds
+Test Suite 'Selected tests' passed at 2026-11-07 02:38:16.099.
+	 Executed 1 test, with 0 failures (0 unexpected) in 14.989 (14.991) seconds
+2026-11-07 02:38:16.392 xcodebuild[69345:8686609] [MT] IDETestOperationsObserverDebug: 20.634 elapsed -- Testing started completed.
+2026-11-07 02:38:16.392 xcodebuild[69345:8686609] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-11-07 02:38:16.392 xcodebuild[69345:8686609] [MT] IDETestOperationsObserverDebug: 20.634 sec, +20.634 sec -- end
+
+Test session results, code coverage, and logs:
+	<local-path>
+
+** TEST EXECUTE SUCCEEDED **
+
+Testing started

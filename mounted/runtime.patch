@@ -1,0 +1,95 @@
+--- a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatComposer.swift
++++ b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatComposer.swift
+@@ -78,6 +78,20 @@
+ 
+ /// Evaluates part of the composer in its own body. Debug builds keep every nested `some View` temporary on
+ /// the stack, and the whole composer evaluated in one body nearly fills the 1 MB main-thread stack of a device.
++@MainActor
++func composerMountedTrace(_ event: String) {
++    let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
++        .appendingPathComponent("composer-mounted.log")
++    let data = Data("\(Date().timeIntervalSince1970) \(event)\n".utf8)
++    if !FileManager.default.fileExists(atPath: url.path) {
++        try? data.write(to: url)
++    } else if let handle = try? FileHandle(forWritingTo: url) {
++        defer { try? handle.close() }
++        _ = try? handle.seekToEnd()
++        try? handle.write(contentsOf: data)
++    }
++}
++
+ struct ChatComposerSection<Content: View>: View {
+     @ViewBuilder let content: () -> Content
+ 
+@@ -158,6 +172,7 @@
+     @ScaledMetric(relativeTo: .body) private var scaledBodyLineHeight: CGFloat = 22
+ 
+     var body: some View {
++        let _ = composerMountedTrace("BODY composer")
+         VStack(alignment: .leading, spacing: 4) {
+             if self.usesDesktopModelMenu,
+                let message = self.viewModel.composerModelAvailabilityMessage
+@@ -852,7 +867,8 @@
+     }
+ 
+     private var editorOverlayContent: some View {
+-        ZStack(alignment: editorOverlayAlignment) {
++        let _ = composerMountedTrace("BODY editor length=\(self.viewModel.input.count)")
++        return ZStack(alignment: editorOverlayAlignment) {
+             #if !os(macOS)
+             if self.viewModel.input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                 Text(self.placeholderText)
+--- a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatComposer+CleanControls.swift
++++ b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatComposer+CleanControls.swift
+@@ -123,7 +123,8 @@
+     }
+ 
+     var cleanTrailingControls: some View {
+-        ViewThatFits(in: .horizontal) {
++        let _ = composerMountedTrace("BODY model-controls")
++        return ViewThatFits(in: .horizontal) {
+             self.cleanInlineControls(compactModel: false)
+             self.cleanInlineControls(compactModel: true)
+         }
+@@ -391,6 +392,7 @@
+ 
+     @ViewBuilder
+     private var cleanCaptureAndPrimaryContent: some View {
++        let _ = composerMountedTrace("BODY primary length=\(self.viewModel.input.count)")
+         if self.dictationControl != nil || self.voiceNoteControl != nil {
+             OpenClawChatMicButton(
+                 dictationControl: self.dictationControl,
+--- a/apps/ios/UITests/OpenClawSnapshotUITests.swift
++++ b/apps/ios/UITests/OpenClawSnapshotUITests.swift
+@@ -42,6 +42,31 @@
+     override func tearDownWithError() throws {
+         self.terminateCurrentApp()
+         try super.tearDownWithError()
++    }
++
++    func testMountedComposerDraftIsolation() throws {
++        self.launchApp(for: Self.chatScreenshotTarget)
++        let app = try XCTUnwrap(self.app)
++        let input = self.chatMessageInput(in: app)
++        XCTAssertTrue(input.waitForExistence(timeout: 8))
++        let talk = app.buttons["chat-realtime-control"]
++        let send = app.buttons["chat-send-message"]
++        XCTAssertTrue(talk.waitForExistence(timeout: 5))
++        XCTAssertFalse(send.exists)
++        self.attachScreenshot(named: "mounted-empty-talk")
++        input.tap()
++        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
++        input.typeText("mount")
++        XCTAssertEqual(input.value as? String, "mount")
++        XCTAssertTrue(send.waitForExistence(timeout: 5))
++        XCTAssertTrue(send.isEnabled)
++        XCTAssertFalse(talk.exists)
++        self.attachScreenshot(named: "mounted-draft-send")
++        input.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
++        XCTAssertTrue(talk.waitForExistence(timeout: 5))
++        XCTAssertFalse(send.exists)
++        self.attachScreenshot(named: "mounted-cleared-talk")
++        print("MOUNTED_UI_PASS empty Talk -> mount Send enabled -> cleared Talk")
+     }
+ 
+     func testReleaseControlScreenshot() {
