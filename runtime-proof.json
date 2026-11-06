@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-27",
+  "overlay": {
+    "session": {
+      "maintenance": {
+        "mode": "enforce",
+        "maxEntries": 2
+      }
+    }
+  },
+  "parent_model": "claude-cli (Claude Opus)",
+  "child_model": "an OpenAI model",
+  "trigger": "Session creation (new dashboard session + send) runs the cap pass. Ordinary writes do not.",
+  "red": {
+    "runs": [
+      {
+        "run": "R1",
+        "window_hit": false,
+        "note": "idle parent, 2 children; cap pass only after settlement",
+        "delivered": true,
+        "child_row_present_at_wake_settle": "n/a"
+      },
+      {
+        "run": "R2",
+        "window_hit": false,
+        "note": "busy parent (1 sleep); cap pass after turn end",
+        "delivered": "recorded delivered; result text never reached model (separate CLI mid-turn bug)",
+        "child_row_present_at_wake_settle": "n/a"
+      },
+      {
+        "run": "R3",
+        "label": "r3",
+        "window_hit": true,
+        "child_session_id": "04d09b1a-8cb6-49ab-92db-b3ae5fadb31b",
+        "cleanup_completed": "14:12:28.613",
+        "row_deleted": "14:12:36.041",
+        "wake_state_at_delete": "pending",
+        "wake_settled": "~14:13:24.7",
+        "delivered": "recorded delivered; text not seen by busy parent (separate bug)",
+        "child_row_present_at_wake_settle": false
+      },
+      {
+        "run": "R4",
+        "labels": [
+          "r4-fast",
+          "r4-slow"
+        ],
+        "window_hit": true,
+        "path": "sessions_yield batch",
+        "row_deleted": [
+          "14:14:10.159 (fast, wake pending)",
+          "14:15:11.353 (slow, wake dispatching)"
+        ],
+        "delivered": true,
+        "resumed_turn_tool_calls": "none",
+        "child_row_present_at_wake_settle": false
+      },
+      {
+        "run": "R5",
+        "labels": [
+          "r5-fast",
+          "r5-slow"
+        ],
+        "window_hit": true,
+        "path": "sessions_yield batch, resumed turn uses tools",
+        "row_deleted": [
+          "14:15:51.241 (fast, wake pending)",
+          "14:16:40.590 (slow, wake dispatching)"
+        ],
+        "delivered": true,
+        "resumed_turn": "exec ok; sessions_history(r5-fast) -> 'No session found: agent:main:subagent:6c234255-99c9-45d6-aa20-27d51f9ba470' despite cleanup=keep",
+        "child_row_present_at_wake_settle": false
+      }
+    ],
+    "policy_rejection_logged": false,
+    "build": "upstream main 95a3ccde141 plus other pending patches that do not touch the subagent registry or session maintenance"
+  },
+  "green": {
+    "runs": [
+      {
+        "run": "G1",
+        "window_hit": false,
+        "delivered": true
+      },
+      {
+        "run": "G2",
+        "window_hit": false,
+        "delivered": "recorded delivered; text not seen by busy parent (separate bug)"
+      },
+      {
+        "run": "G3",
+        "label": "g3",
+        "window_hit": true,
+        "child_session_id": "f06d99ca-61b1-4f2f-bb0d-230d7691cec3",
+        "survived_creation_with_wake_pending": true,
+        "wake_settled": "14:13:32.1",
+        "row_released": "14:13:34.144",
+        "child_row_present_at_wake_settle": true
+      },
+      {
+        "run": "G4",
+        "labels": [
+          "g4-fast",
+          "g4-slow"
+        ],
+        "window_hit": true,
+        "survived_creation_with_wake_pending": true,
+        "delivered_and_settled": "14:15:25.750",
+        "row_released": "14:15:27.671/.684",
+        "delivered": true,
+        "child_row_present_at_wake_settle": true
+      },
+      {
+        "run": "G5",
+        "labels": [
+          "g5-fast",
+          "g5-slow"
+        ],
+        "window_hit": true,
+        "survived_creation_with_wake_pending": true,
+        "delivered_and_settled": "14:16:54.089",
+        "row_released": "14:16:56.163/.176",
+        "delivered": true,
+        "resumed_turn": "exec ok; sessions_history(g5-fast) ok",
+        "child_row_present_at_wake_settle": true
+      }
+    ],
+    "policy_rejection_logged": false,
+    "build": "the red build plus this PR's source change, nothing else"
+  },
+  "verdict": "RED deletes cleanup=keep child rows while requesterSettleWake is pending (3/3 window runs); the resumed parent then cannot read its kept child (R5). GREEN preserved the row in 3/3 window runs and released it on the first cap pass after settlement.",
+  "gaps": [
+    "The historical 'policy rejection / Native hook relay unavailable' fail-closed log line was not reproduced on RED; the user-visible symptom reproduced was the missing kept session.",
+    "Separate bug on both builds: a busy Claude CLI parent receives mid-turn child completions as a bare 'Continue the OpenClaw runtime event.' without result text, while the run records delivered."
+  ],
+  "timezone": "row times are local UTC+8"
+}
