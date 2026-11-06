@@ -1,0 +1,6 @@
+JOB=pr191878-cues-r1
+SOURCE_SHA256=42d7b3f09e1d296e
+LINT_BYPASS=1
+KIT_TESTS=✔ Test run with 44 tests in 4 suites passed after 0.033 seconds.
+SIM_TESTS=xctest=1 swift-testing=0 rc=0
+STATUS=PASS
