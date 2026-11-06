@@ -1,0 +1,54 @@
+{
+  "baseline": {
+    "visible": {
+      "seconds": 3.25,
+      "inputs": 78,
+      "publications": 20,
+      "intervals": [
+        0.15
+      ]
+    },
+    "covered": {
+      "seconds": 3.25,
+      "inputs": 78,
+      "publications": 20,
+      "intervals": [
+        0.15
+      ]
+    },
+    "revealed": {
+      "seconds": 3.25,
+      "inputs": 78,
+      "publications": 21,
+      "intervals": [
+        0.15
+      ]
+    }
+  },
+  "candidate": {
+    "visible": {
+      "seconds": 3.25,
+      "inputs": 79,
+      "publications": 21,
+      "intervals": [
+        0.15
+      ]
+    },
+    "covered": {
+      "seconds": 3.25,
+      "inputs": 78,
+      "publications": 7,
+      "intervals": [
+        0.5
+      ]
+    },
+    "revealed": {
+      "seconds": 3.25,
+      "inputs": 80,
+      "publications": 23,
+      "intervals": [
+        0.15
+      ]
+    }
+  }
+}

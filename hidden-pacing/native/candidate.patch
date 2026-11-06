@@ -1,0 +1,48 @@
+diff --git a/apps/ios/Sources/RootTabs.swift b/apps/ios/Sources/RootTabs.swift
+index c9f6aa9c6c4..669de925c43 100644
+--- a/apps/ios/Sources/RootTabs.swift
++++ b/apps/ios/Sources/RootTabs.swift
+@@ -198,7 +198,8 @@ struct RootTabs: View {
+                 onShow: self.showSidebar,
+                 onHide: self.hideSidebar,
+                 sidebar: self.sidebarColumn(drawerSafeAreaInsets: isDrawerLayout ? proxy.safeAreaInsets : nil),
+-                detail: self.sidebarDetailNavigationShell,
++                detail: self.sidebarDetailNavigationShell
++                    .environment(\.openClawChatIsObscured, isDrawerLayout && self.isSidebarVisible),
+                 contentSafeAreaInsets: proxy.safeAreaInsets)
+                 .onChange(of: layoutMode, initial: true) { _, mode in
+                     self.updateSidebarLayout(mode)
+diff --git a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift
+index de9c5ecfd99..726834b0f6b 100644
+--- a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift
++++ b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatView.swift
+@@ -6,6 +6,10 @@ import AppKit
+ import UIKit
+ #endif
+ 
++extension EnvironmentValues {
++    @Entry public var openClawChatIsObscured: Bool = false
++}
++
+ enum ChatReaderUserTransition: Equatable {
+     case unchanged
+     case added(UUID)
+@@ -111,6 +115,7 @@ public struct OpenClawChatView: View {
+     private let viewModel: OpenClawChatViewModel
+     private let resolveComposerModel: (@MainActor () -> OpenClawChatViewModel?)?
+     @Environment(\.scenePhase) private var scenePhase
++    @Environment(\.openClawChatIsObscured) private var isObscured
+     @Environment(\.openClawChatDesktopLayout) private var isDesktopLayout
+     #if os(iOS)
+     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+@@ -269,6 +274,10 @@ public struct OpenClawChatView: View {
+         }
+         .onChange(of: ObjectIdentifier(self.viewModel)) { _, _ in
+             self.viewModel.refreshSourceContext()
++            self.viewModel.streamPacing.interval = self.isObscured ? 0.5 : 0.15
++        }
++        .onChange(of: self.isObscured, initial: true) { _, obscured in
++            self.viewModel.streamPacing.interval = obscured ? 0.5 : 0.15
+         }
+         .onChange(of: self.turnRecapObservation, initial: true) { _, observation in
+             self.updateTurnRecap(observation)

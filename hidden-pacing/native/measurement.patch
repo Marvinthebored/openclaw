@@ -1,0 +1,133 @@
+--- a/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel.swift
++++ b/apps/shared/OpenClawKit/Sources/OpenClawChatUI/ChatViewModel.swift
+@@ -792,6 +792,7 @@
+ 
+     func updateStreamingAssistantText(_ text: String?) {
+         guard self.streamingAssistantText != text else { return }
++        pacingProofRecord("input", value: text, interval: self.streamPacing.interval)
+         self.streamingAssistantText = text
+         self.scheduleStreamingAssistantDisplay(text)
+     }
+@@ -801,6 +802,7 @@
+         // Compare both projections against current history: a durable row may have suppressed
+         // the previous live words since the last stream update.
+         let previousShape = self.streamingTextShape(self.displayedStreamingAssistantTextUntracked)
++        pacingProofRecord("display", value: text, interval: self.streamPacing.interval)
+         self.displayedStreamingAssistantText = text
+         self.displayedStreamingAssistantTextUntracked = text
+         guard self.streamingTextShape(text) != previousShape else { return }
+@@ -1671,3 +1673,14 @@
+         return (modelRef, nil)
+     }
+ }
++
++// Temporary measurement instrumentation; identical in both native simulator variants.
++public func pacingProofRecord(_ event: String, value: String?, interval: Double) {
++    guard let path = ProcessInfo.processInfo.environment["OPENCLAW_PACING_PROOF_PATH"] else { return }
++    let row: [String: Any] = ["event": event, "t": ProcessInfo.processInfo.systemUptime,
++        "count": value?.count ?? -1, "interval": interval]
++    guard let data = try? JSONSerialization.data(withJSONObject: row),
++          let file = FileHandle(forWritingAtPath: path) else { return }
++    defer { try? file.close() }
++    do { try file.seekToEnd(); try file.write(contentsOf: data + Data([10])) } catch { }
++}
+--- a/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
++++ b/apps/ios/Sources/Chat/AppleReviewDemoChatTransport.swift
+@@ -630,6 +630,20 @@
+             idempotencyKey: "\(runId):user")
+         self.messages.append(userMessage)
+         self.publishReactions(for: userMessage, sessionKey: sessionKey)
++        if ProcessInfo.processInfo.arguments.contains("--openclaw-pacing-proof") {
++            self.activeRunID = runId
++            Task {
++                try? await Task.sleep(for: .milliseconds(500))
++                for seq in 1...600 {
++                    guard self.activeRunID == runId else { return }
++                    self.emitDuplicateAgentEvent(runId: runId, seq: seq, stream: "assistant",
++                        timestamp: Date().timeIntervalSince1970 * 1000,
++                        data: ["text": "Native pacing measurement " + String(repeating: "word ", count: seq)])
++                    try? await Task.sleep(for: .milliseconds(40))
++                }
++            }
++            return OpenClawChatSendResponse(runId: runId, status: "started")
++        }
+         if ProcessInfo.processInfo.arguments.contains("--openclaw-dup-filter-fixture"),
+            self.fixture.sessionIDPrefix == "screenshot-fixture"
+         {
+--- a/apps/ios/UITests/OpenClawSnapshotUITests.swift
++++ b/apps/ios/UITests/OpenClawSnapshotUITests.swift
+@@ -2832,3 +2832,74 @@
+         }
+     }
+ }
++
++
++@MainActor
++final class NativePacingMeasurementUITests: XCTestCase {
++    func testNativeStreamThroughDrawer() throws {
++        continueAfterFailure = false
++        let path = "/Users/Shared/ios-work/native-pacing-measurement.jsonl"
++        FileManager.default.createFile(atPath: path, contents: Data())
++        let app = XCUIApplication()
++        setupSnapshot(app)
++        app.launchEnvironment["OPENCLAW_PACING_PROOF_PATH"] = path
++        app.launchArguments += ["--openclaw-initial-tab", "chat",
++            "--openclaw-initial-destination", "chat", "--openclaw-sidebar-visibility", "hidden",
++            "--openclaw-screenshot-mode", "--openclaw-empty-chat-fixture", "--openclaw-pacing-proof"]
++        app.launch()
++        defer { app.terminate() }
++        let show = app.buttons["RootTabs.Sidebar.Show"]
++        XCTAssertTrue(show.waitForExistence(timeout: 15))
++        let input = app.descendants(matching: .any)["chat-message-input"]
++        XCTAssertTrue(input.waitForExistence(timeout: 10))
++        input.tap(); input.typeText("Measure native pacing")
++        app.buttons["chat-send-message"].tap()
++        self.phase("visible", path: path)
++        self.measureWindow()
++        self.capture(app, "native-stream-visible")
++        show.tap()
++        let hide = app.buttons["RootTabs.Sidebar.Hide"]
++        XCTAssertTrue(hide.waitForExistence(timeout: 5))
++        self.phase("covered", path: path)
++        self.measureWindow()
++        self.capture(app, "native-stream-covered")
++        hide.tap()
++        XCTAssertTrue(show.waitForExistence(timeout: 5))
++        self.phase("revealed", path: path)
++        self.measureWindow()
++        self.capture(app, "native-stream-revealed")
++        let stop = app.buttons["Stop response"]
++        XCTAssertTrue(stop.waitForExistence(timeout: 5))
++        self.phase("stop", path: path)
++        stop.tap()
++        self.measureWindow()
++        let data = try Data(contentsOf: URL(fileURLWithPath: path))
++        let attachment = XCTAttachment(data: data, uniformTypeIdentifier: "public.json")
++        attachment.name = "native-publications.jsonl"; attachment.lifetime = .keepAlways
++        self.add(attachment)
++        let rows = try String(decoding: data, as: UTF8.self).split(separator: "\n").map {
++            try JSONSerialization.jsonObject(with: Data($0.utf8)) as! [String: Any]
++        }
++        XCTAssertTrue(rows.contains { $0["event"] as? String == "input" })
++        XCTAssertTrue(rows.contains { $0["event"] as? String == "display" && ($0["count"] as? Int ?? 0) > 0 })
++        XCTAssertTrue(rows.contains { $0["event"] as? String == "display" && $0["count"] as? Int == -1 })
++        print("NATIVE_PACING_DATA " + String(decoding: data, as: UTF8.self))
++    }
++    private func phase(_ name: String, path: String) {
++        let row: [String: Any] = ["event": name, "t": ProcessInfo.processInfo.systemUptime]
++        let file = FileHandle(forWritingAtPath: path)!
++        defer { try? file.close() }
++        file.seekToEndOfFile()
++        file.write(try! JSONSerialization.data(withJSONObject: row) + Data([10]))
++    }
++    private func measureWindow() {
++        // Performance evidence only; not committed regression coverage.
++        let done = expectation(description: "measurement window")
++        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { done.fulfill() }
++        wait(for: [done], timeout: 6)
++    }
++    private func capture(_ app: XCUIApplication, _ name: String) {
++        let a = XCTAttachment(screenshot: app.screenshot())
++        a.name = name; a.lifetime = .keepAlways; self.add(a)
++    }
++}
