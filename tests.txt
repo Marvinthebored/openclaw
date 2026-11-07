@@ -1,0 +1,5 @@
+Same simulator UI test, testUnknownOutcomeStepUsesLocalToolTitle.
+Red: assistant normalization branch removed; 1 XCTest, 1 failure at prepared-outcome assertion for printf ready; rc65.
+Green: assistant normalization retained; 1 XCTest, 0 failures; rc0.
+Both use identical nested fixture. Builds use lint-phase stubs.
+Screenshots visually inspected: ready appears inside expanded call, Outcome unknown; missing control No result; complete control no mobile success badge.

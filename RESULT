@@ -1,6 +1,9 @@
-JOB=pr191878-cues-r1
+JOB=pr191878-nested-r2
 SOURCE_SHA256=42d7b3f09e1d296e
 LINT_BYPASS=1
-KIT_TESTS=✔ Test run with 44 tests in 4 suites passed after 0.033 seconds.
-SIM_TESTS=xctest=1 swift-testing=0 rc=0
+V_red_SIM=xctest=1 swift-testing=0 rc=65
+V_red_DONE=08:09:41
+LINT_BYPASS=1
+V_green_SIM=xctest=1 swift-testing=0 rc=0
+V_green_DONE=08:10:21
 STATUS=PASS

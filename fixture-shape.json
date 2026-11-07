@@ -1,0 +1,29 @@
+{
+  "messages": [
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolCall",
+          "id": "fixture-exec",
+          "name": "exec",
+          "arguments": {
+            "command": "printf ready"
+          }
+        },
+        {
+          "type": "tool_result",
+          "id": "fixture-exec",
+          "name": "exec",
+          "content": [
+            {
+              "type": "text",
+              "text": "ready"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "note": "Sanitized fixture excerpt; call and nested result share one assistant message. No top-level text on result. Activity ends without success/failure classification."
+}
