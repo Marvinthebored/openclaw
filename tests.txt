@@ -1,5 +1,8 @@
-Same simulator UI test, testUnknownOutcomeStepUsesLocalToolTitle.
-Red: assistant normalization branch removed; 1 XCTest, 1 failure at prepared-outcome assertion for printf ready; rc65.
-Green: assistant normalization retained; 1 XCTest, 0 failures; rc0.
-Both use identical nested fixture. Builds use lint-phase stubs.
-Screenshots visually inspected: ready appears inside expanded call, Outcome unknown; missing control No result; complete control no mobile success badge.
+Head: a0036e071b80262f50dc069de5b5d8e6b1b5a332
+Lint phases stubbed. Two Xcode workers.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testUnknownOutcomeStepUsesLocalToolTitle]' started.
+Test Case '-[OpenClawUITests.OpenClawSnapshotUITests testUnknownOutcomeStepUsesLocalToolTitle]' passed (19.335 seconds).
+	 Executed 1 test, with 0 failures (0 unexpected) in 19.335 (19.335) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 19.335 (19.336) seconds
+	 Executed 1 test, with 0 failures (0 unexpected) in 19.335 (19.337) seconds
+** TEST EXECUTE SUCCEEDED **

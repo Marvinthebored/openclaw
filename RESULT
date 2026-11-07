@@ -1,9 +1,6 @@
-JOB=pr191878-nested-r2
-SOURCE_SHA256=42d7b3f09e1d296e
+JOB=pr191878-current-r1
+SOURCE_URL=https://codeload.github.com/Marvinthebored/openclaw/tar.gz/a0036e071b80262f50dc069de5b5d8e6b1b5a332
+SOURCE_SHA256=420668045933fac6
 LINT_BYPASS=1
-V_red_SIM=xctest=1 swift-testing=0 rc=65
-V_red_DONE=08:09:41
-LINT_BYPASS=1
-V_green_SIM=xctest=1 swift-testing=0 rc=0
-V_green_DONE=08:10:21
+SIM_TESTS=xctest=1 swift-testing=0 rc=0
 STATUS=PASS
