@@ -1,0 +1,61 @@
+{
+  "build": "9bda4788c4a8d7606441772d77ddae9127a6b032",
+  "request": {
+    "method": "talk.client.toolCall",
+    "consultThinkingLevel": "off",
+    "model": "opencode-go/grok-4.7",
+    "question": "Reply with exactly TALK_CONSULT_OK_194184. Do not call tools."
+  },
+  "events": [
+    {
+      "type": "res",
+      "id": "proof-consult-before-paired",
+      "ok": true,
+      "payload": {
+        "runId": "talk-f9db052930d9621579ef253bf8790f139b230c0f44cd864f4fe63368507de6e3",
+        "idempotencyKey": "talk-f9db052930d9621579ef253bf8790f139b230c0f44cd864f4fe63368507de6e3",
+        "agentId": "main",
+        "agentSessionKey": "agent:main:talk-thinking-proof"
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-f9db052930d9621579ef253bf8790f139b230c0f44cd864f4fe63368507de6e3",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "seq": 1,
+        "state": "final",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Thinking level \"off\" is not supported for opencode-go/grok-4.7. Use one of: low, medium, high, xhigh, ultra."
+            }
+          ],
+          "timestamp": 1794009950570,
+          "stopReason": "stop",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "totalTokens": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "api": "openai-responses",
+          "provider": "openclaw",
+          "model": "gateway-injected",
+          "idempotencyKey": "talk-f9db052930d9621579ef253bf8790f139b230c0f44cd864f4fe63368507de6e3"
+        }
+      }
+    }
+  ]
+}

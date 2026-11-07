@@ -1,0 +1,269 @@
+{
+  "build": "b45e573e640aa7de70606f7e541eacc5aeada0a8",
+  "request": {
+    "method": "talk.client.toolCall",
+    "consultThinkingLevel": "off",
+    "model": "opencode-go/grok-4.7",
+    "question": "Reply with exactly TALK_CONSULT_OK_194184. Do not call tools."
+  },
+  "events": [
+    {
+      "type": "res",
+      "id": "proof-consult-after-paired",
+      "ok": true,
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "idempotencyKey": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "agentId": "main",
+        "agentSessionKey": "agent:main:talk-thinking-proof"
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 1,
+        "state": "status",
+        "phase": "preparing_workspace"
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 2,
+        "state": "status",
+        "phase": "preparing_context"
+      }
+    },
+    {
+      "type": "event",
+      "event": "agent",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "sessionId": "e2c8116c-b5fe-4d49-8e3e-de7feeba9ce1",
+        "agentId": "main",
+        "stream": "lifecycle",
+        "data": {
+          "phase": "start",
+          "startedAt": 1794009951702
+        },
+        "seq": 3,
+        "ts": 1794009951702
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 4,
+        "state": "status",
+        "phase": "starting_model"
+      }
+    },
+    {
+      "type": "event",
+      "event": "agent",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "sessionId": "e2c8116c-b5fe-4d49-8e3e-de7feeba9ce1",
+        "agentId": "main",
+        "stream": "lifecycle",
+        "data": {
+          "phase": "model",
+          "provider": "opencode-go",
+          "model": "grok-4.7"
+        },
+        "seq": 5,
+        "ts": 1794009953778
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 6,
+        "state": "delta",
+        "deltaText": "T",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "T"
+            }
+          ],
+          "timestamp": 1794009955151
+        }
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 9,
+        "state": "delta",
+        "deltaText": "ALK_CONSULT"
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 13,
+        "state": "delta",
+        "deltaText": "_OK_194184"
+      }
+    },
+    {
+      "type": "event",
+      "event": "agent",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "sessionId": "e2c8116c-b5fe-4d49-8e3e-de7feeba9ce1",
+        "agentId": "main",
+        "stream": "lifecycle",
+        "data": {
+          "phase": "finishing",
+          "stopReason": "stop",
+          "aborted": false,
+          "livenessState": "working",
+          "endedAt": 1794009955390
+        },
+        "seq": 15,
+        "ts": 1794009955390
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 15,
+        "state": "delta",
+        "deltaText": "",
+        "replace": true,
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": ""
+            }
+          ],
+          "timestamp": 1794009955394
+        }
+      }
+    },
+    {
+      "type": "event",
+      "event": "agent",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "agentId": "main",
+        "sessionId": "e2c8116c-b5fe-4d49-8e3e-de7feeba9ce1",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "sessionLifecycleRevision": "21fbb3e4-c416-4a3c-9233-7121e07e3433",
+        "lane": "main",
+        "stream": "lifecycle",
+        "data": {
+          "phase": "model",
+          "provider": null,
+          "model": null
+        },
+        "seq": 16,
+        "ts": 1794009955449
+      }
+    },
+    {
+      "type": "event",
+      "event": "agent",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "stream": "lifecycle",
+        "data": {
+          "stopReason": "stop",
+          "aborted": false,
+          "livenessState": "working",
+          "phase": "end",
+          "endedAt": 1794009955452,
+          "startedAt": 1794009951702,
+          "replayInvalid": false,
+          "terminalReply": {
+            "disposition": "visible",
+            "text": "TALK_CONSULT_OK_194184"
+          },
+          "terminalReceipt": {
+            "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+            "sessionId": "e2c8116c-b5fe-4d49-8e3e-de7feeba9ce1",
+            "turnId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+            "requested": {
+              "provider": "opencode-go",
+              "model": "grok-4.7"
+            },
+            "effective": {
+              "provider": "opencode-go",
+              "model": "grok-4.7",
+              "responseModel": "grok-4.7"
+            },
+            "successfulToolNames": [],
+            "rerouted": false,
+            "terminalDisposition": "visible"
+          },
+          "executionSettled": true
+        },
+        "sessionId": "e2c8116c-b5fe-4d49-8e3e-de7feeba9ce1",
+        "agentId": "main",
+        "seq": 17,
+        "ts": 1794009955452
+      }
+    },
+    {
+      "type": "event",
+      "event": "chat",
+      "payload": {
+        "runId": "talk-61d7a39e7fd43ce53f091283b2228d84fd9ada468da063000d8c027374101be7",
+        "sessionKey": "agent:main:talk-thinking-proof",
+        "agentId": "main",
+        "seq": 17,
+        "state": "final",
+        "stopReason": "stop",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "TALK_CONSULT_OK_194184"
+            }
+          ],
+          "timestamp": 1794009955455,
+          "openclawDisplayContent": []
+        }
+      }
+    }
+  ]
+}
