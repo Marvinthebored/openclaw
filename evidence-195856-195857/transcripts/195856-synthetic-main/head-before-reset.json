@@ -1,0 +1,421 @@
+{
+  "sessionKey": "agent:main:dashboard:33d48238-7e7e-4026-9cd0-d84c29fa0399",
+  "sessionId": "99e7b0ec-662b-44e3-ac0e-23c8ffd4a00b",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Durability test A head. First send the standalone user-addressed paragraph 'MID_A_HEAD_2020: The requested analysis is ready for review.' Then use OpenClaw exec to run printf 'TOOL_A_HEAD_2020\\n' (not native Bash). After the tool result, finish with exactly FINAL_A_HEAD_2020. Do not use any other tools.",
+      "timestamp": 1794226803637,
+      "idempotencyKey": "30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "83b0a7c4eaff46cf183ca7f13a27bd4281110fb999f14e4cdf5db48484f9347a",
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "id": "5d4df665-9356-47f4-9dc6-8fa2265314ae",
+        "idempotencyKey": "30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe:user",
+        "recordTimestampMs": 1794226803748,
+        "transcriptPosition": {
+          "source": "_X8kltQG5ssh0NTdxrJaludiNvSpqTPGMKRIaF7NsOk",
+          "rawSeq": 1
+        },
+        "seq": 1,
+        "importedFrom": "claude-cli",
+        "externalId": "8d6b659d-a6ea-43d4-8c3b-18efb233a58c",
+        "cliSessionId": "f30e3242-710b-4509-a3a1-5f6dc46a0789",
+        "senderProfileAvatarUrl": "/api/users/6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9/avatar?v=1794220241625"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "CAQS4AYKEAgTGAI4AUIIdGhpbmtpbmcSDNA83efsZOQnKCNylRoMPypoEA81vOR0BqJjIjBLD+v5Wt5KiTJ7cjB7BFi5Nfzd/WCH0lSQ0QsdLxBMFDaNzE1kQtMP26SrekkBSRgq/QVsAXig7YZ3AFs4DsKp7wWVQdbP1q4sIhdahk+h/AdQSdRxSFel3R5rFWlPXY5PxMZhNkjWT+f3TQ/Jr/zroqblqupyO86t+WYd7IgdS09YCjHTeFHSn5IGb6w4H7qs/lV9nAzPolFzbcO7NAuZqj5J/OZ5H+SceQF46HPHMDR/pt9ObTr2B+fsF5Vm9tBPgPdq+HLY8qIQUuPJg/1Z7HT/YhPROn8i7Y6ItyZ07MroEYZyfomB7X9I4UHX8Sbu9RX61ycXGH16d4Z8GYt3CtXjm4L9xyH6qxL1rSxpiWVz+2HYq+iJ4u5aSZ8+o2xjTQfcuZastHEvyfX6hCuZJYoHA9WIhnHKSSRfN/MSDHKdKlSpFvVYtLrlm8G/UtaIM4lOcgtWyxRrnq805CMY3OcXUi0Ln1zFFVaSd2Vr0xPcVMSLpwyoLL3bWUJXsF7mI8OX5OY7cKRTVp/k4ha2eb+pVzKYvuA0OHx4gytsWaf4ThjCBhuaJcuiwO7JJTVZnXbR7T6ebirCeRX93pdCPJXFmgb4cFCqldMer73Xtpts4zutyKGucCG/7NaQPgkl3ozwScxKwhPIpVXOZERdkKoimn+ptBH+E0itcKEq8h7KdMvSmAcAu82GeKh7JzRxwMkKcb1hKq3h05GQNByDKQVvn2kOall/25AXBk6NikgJ6WtSRH4SXKt8G3nMVL7YG7Sx/oWCimUpwCu7Vls5ppdNsCHoFeXPyQysgC/jIVTURPMTAFd5S+ibH6m8Ld5OIAZzT1wVjVBId+zM/qiLtfwbDeCK/frzdoMtKWE9ecHqL149mlP85a4QSiaduZ478qEahJRo5wNv++6xFSdOhxbuqMSOIMaB16dhtE2K8TpLA1QO5phQ9pW512qo6PfrayVVoiQX2FEGPesOwFigsRWp/tVb48+f7E0bevvdq3RPxF/91ouxidwpZORhPCMDjun+KSJhS4wyACAS352Q9a3QhIVTf0tCCvQ/AJnG8bWapn2ezOX73kHNLuaMQKAYAQ=="
+        }
+      ],
+      "api": "anthropic-messages",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "stopReason": "tool_use",
+      "usage": {
+        "input": 2,
+        "output": 191,
+        "cacheRead": 1502,
+        "cacheWrite": 22296
+      },
+      "timestamp": 1794226811042,
+      "__openclaw": {
+        "id": "95f86fab-5321-4d38-abe5-7e89eae15ae7",
+        "importedFrom": "claude-cli",
+        "cliSessionId": "f30e3242-710b-4509-a3a1-5f6dc46a0789",
+        "externalId": "95f86fab-5321-4d38-abe5-7e89eae15ae7"
+      }
+    },
+    {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "f30e3242-710b-4509-a3a1-5f6dc46a0789",
+        "externalId": "1a6698d3-a468-48dc-b12b-67072ad2f7e2",
+        "runId": "30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe",
+        "id": "caec97c9-7b00-491f-a4f6-1f580a7584bf",
+        "idempotencyKey": "cli-assistant:30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe:seg:f30e3242-710b-4509-a3a1-5f6dc46a0789:1a6698d3-a468-48dc-b12b-67072ad2f7e2",
+        "recordTimestampMs": 1794226811100,
+        "transcriptPosition": {
+          "source": "_X8kltQG5ssh0NTdxrJaludiNvSpqTPGMKRIaF7NsOk",
+          "rawSeq": 2
+        },
+        "seq": 2
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "MID_A_HEAD_2020: The requested analysis is ready for review."
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "timestamp": 1794226811072,
+      "idempotencyKey": "cli-assistant:30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe:seg:f30e3242-710b-4509-a3a1-5f6dc46a0789:1a6698d3-a468-48dc-b12b-67072ad2f7e2"
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolcall",
+          "id": "toolu_014CmfcpECiQu4ieBbxiy2k2",
+          "name": "ToolSearch",
+          "caller": {
+            "type": "direct"
+          },
+          "arguments": {
+            "query": "select:mcp__openclaw__exec",
+            "max_results": 1
+          }
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_014CmfcpECiQu4ieBbxiy2k2",
+          "content": [
+            {
+              "type": "tool_reference",
+              "tool_name": "mcp__openclaw__exec"
+            }
+          ],
+          "name": "ToolSearch"
+        }
+      ],
+      "api": "anthropic-messages",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "stopReason": "tool_use",
+      "usage": {
+        "input": 2,
+        "output": 191,
+        "cacheRead": 1502,
+        "cacheWrite": 22296
+      },
+      "timestamp": 1794226811185,
+      "__openclaw": {
+        "id": "a6c40fc8-c2a4-4de4-b4e4-dcdb64765ad6",
+        "importedFrom": "claude-cli",
+        "cliSessionId": "f30e3242-710b-4509-a3a1-5f6dc46a0789",
+        "externalId": "a6c40fc8-c2a4-4de4-b4e4-dcdb64765ad6"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolcall",
+          "id": "toolu_011UfgFmmn5fJz7nbUCDuYec",
+          "name": "mcp__openclaw__exec",
+          "caller": {
+            "type": "direct"
+          },
+          "arguments": {
+            "command": "printf 'TOOL_A_HEAD_2020\\n'",
+            "title": "Print durability test marker"
+          }
+        },
+        {
+          "tool_use_id": "toolu_011UfgFmmn5fJz7nbUCDuYec",
+          "type": "tool_result",
+          "content": [
+            {
+              "type": "text",
+              "text": "TOOL_A_HEAD_2020"
+            }
+          ],
+          "name": "mcp__openclaw__exec"
+        }
+      ],
+      "api": "anthropic-messages",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "stopReason": "tool_use",
+      "usage": {
+        "input": 4,
+        "output": 102,
+        "cacheRead": 23798,
+        "cacheWrite": 1212
+      },
+      "timestamp": 1794226816736,
+      "__openclaw": {
+        "id": "fe5804ba-408c-4f2d-8964-383b3b79fe03",
+        "importedFrom": "claude-cli",
+        "cliSessionId": "f30e3242-710b-4509-a3a1-5f6dc46a0789",
+        "externalId": "fe5804ba-408c-4f2d-8964-383b3b79fe03"
+      }
+    },
+    {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "f30e3242-710b-4509-a3a1-5f6dc46a0789",
+        "externalId": "ae90baae-0147-4ca4-9ef2-b292be955535",
+        "runId": "30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe",
+        "id": "cc916b96-a93d-44a1-80e5-9ef9fd689e98",
+        "idempotencyKey": "cli-assistant:30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe:seg:f30e3242-710b-4509-a3a1-5f6dc46a0789:ae90baae-0147-4ca4-9ef2-b292be955535",
+        "recordTimestampMs": 1794226819708,
+        "transcriptPosition": {
+          "source": "_X8kltQG5ssh0NTdxrJaludiNvSpqTPGMKRIaF7NsOk",
+          "rawSeq": 3
+        },
+        "seq": 3
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "FINAL_A_HEAD_2020"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 8,
+        "output": 309,
+        "totalTokens": 74258,
+        "cacheRead": 50310,
+        "cacheWrite": 23631,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 25135,
+          "totalTokens": 25151
+        }
+      },
+      "timestamp": 1794226819694,
+      "idempotencyKey": "cli-assistant:30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe:seg:f30e3242-710b-4509-a3a1-5f6dc46a0789:ae90baae-0147-4ca4-9ef2-b292be955535"
+    }
+  ],
+  "activity": [
+    {
+      "messageId": "a6c40fc8-c2a4-4de4-b4e4-dcdb64765ad6",
+      "items": [
+        {
+          "itemId": "tool:toolu_014CmfcpECiQu4ieBbxiy2k2",
+          "toolCallId": "toolu_014CmfcpECiQu4ieBbxiy2k2",
+          "name": "ToolSearch",
+          "kind": "tool",
+          "phase": "end",
+          "title": "ToolSearch select:mcp__openclaw__exec",
+          "summary": "Outcome unknown",
+          "meta": "select:mcp__openclaw__exec",
+          "commandBearing": false
+        }
+      ]
+    },
+    {
+      "messageId": "fe5804ba-408c-4f2d-8964-383b3b79fe03",
+      "items": [
+        {
+          "itemId": "tool:toolu_011UfgFmmn5fJz7nbUCDuYec",
+          "toolCallId": "toolu_011UfgFmmn5fJz7nbUCDuYec",
+          "name": "exec",
+          "kind": "tool",
+          "phase": "end",
+          "title": "Exec Print durability test marker",
+          "summary": "Outcome unknown",
+          "meta": "Print durability test marker",
+          "commandBearing": true
+        }
+      ]
+    }
+  ],
+  "hasMore": false,
+  "totalMessages": 6,
+  "pendingInputs": {
+    "items": [],
+    "total": 0,
+    "queuedCount": 0
+  },
+  "defaults": {
+    "modelProvider": "anthropic",
+    "model": "claude-opus-5-5",
+    "contextTokens": 1000000,
+    "agentRuntime": {
+      "id": "claude-cli",
+      "cloudPlacementSupported": false,
+      "devicePlacementSupported": false,
+      "source": "model"
+    },
+    "thinkingDefault": "medium",
+    "communication": {
+      "send": "always",
+      "receive": "always"
+    },
+    "modelSelectionTarget": "session"
+  },
+  "sessionInfo": {
+    "key": "agent:main:dashboard:33d48238-7e7e-4026-9cd0-d84c29fa0399",
+    "sessionModelRevision": "C1psi7ipby48FphipaZthBj8F03d4pT39eiKkCUw5ko",
+    "visibility": "shared",
+    "effectiveCommunication": {
+      "send": "always",
+      "receive": "always"
+    },
+    "permissionModePending": false,
+    "spawnDepth": 0,
+    "createdVia": "operator",
+    "createdActor": {
+      "type": "human",
+      "id": "6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9",
+      "identity": {
+        "type": "profile",
+        "id": "6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9"
+      },
+      "label": "peter",
+      "avatarUrl": "/api/users/6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9/avatar?v=1794220241625"
+    },
+    "owner": {
+      "actor": {
+        "type": "human",
+        "id": "6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9",
+        "identity": {
+          "type": "profile",
+          "id": "6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9"
+        },
+        "label": "peter",
+        "avatarUrl": "/api/users/6a3e9d7c-7d57-49a4-b83d-c86bf7155cd9/avatar?v=1794220241625"
+      }
+    },
+    "createdAt": 1794226803467,
+    "kind": "direct",
+    "classification": "direct",
+    "agentId": "main",
+    "isMain": false,
+    "isDock": false,
+    "isBackground": false,
+    "displayName": "Durability test A head run",
+    "chatType": "direct",
+    "updatedAt": 1794226819940,
+    "archived": false,
+    "pinned": false,
+    "sidebarRoot": false,
+    "unread": false,
+    "lastReadAt": 1794226819872,
+    "lastInteractionAt": 1794226803692,
+    "lastActivityAt": 1794226819807,
+    "sessionId": "99e7b0ec-662b-44e3-ac0e-23c8ffd4a00b",
+    "lifecycleRevision": "56974716-02f9-4eea-af83-7cbd441ec06e",
+    "systemSent": true,
+    "abortedLastRun": false,
+    "thinkingDefault": "medium",
+    "effectiveFastMode": false,
+    "effectiveFastModeSource": "default",
+    "fastAutoOnSeconds": 60,
+    "inputTokens": 2,
+    "outputTokens": 16,
+    "lastRunId": "30d710bf-b1fb-47c7-b6ec-b1ac78b2fabe",
+    "parentSessionKey": "agent:main:main",
+    "effectiveResponseUsage": "full",
+    "effectiveQueueMode": "steer",
+    "modelProvider": "anthropic",
+    "model": "claude-opus-5-5",
+    "modelOverrideSource": null,
+    "runtimeSelectionLocked": false,
+    "agentRuntime": {
+      "id": "claude-cli",
+      "cloudPlacementSupported": false,
+      "devicePlacementSupported": false,
+      "source": "model"
+    },
+    "contextTokens": 1000000,
+    "snapshotAt": 1794227488768,
+    "status": "done",
+    "suppressErrorNotice": false,
+    "startedAt": 1794226805127,
+    "endedAt": 1794226819807,
+    "runtimeMs": 14680,
+    "totalTokens": 25151,
+    "totalTokensFresh": true,
+    "estimatedCostUsd": 0.006314,
+    "activitySummary": {
+      "text": "Sent the standalone paragraph \"MID_A_HEAD_2020: The requested analysis is ready for review.\" Then ran the requested printf command through OpenClaw exec, not native Bash, and finished with FINAL_A_HEAD_2020. Done; no other tools were used.",
+      "updatedAt": 1794226823950,
+      "state": "current",
+      "canEnsure": true
+    },
+    "hasBoard": false,
+    "titlePending": false,
+    "childOwnerSessionKeys": [
+      "agent:main:main"
+    ],
+    "hiddenFromInvolvingMe": false,
+    "sharingRole": "owner",
+    "sendDisabledReason": null,
+    "workspaceReadDisabledReason": null,
+    "hasActiveRun": false,
+    "activeRunIds": [],
+    "activeLeafEntryId": "cc916b96-a93d-44a1-80e5-9ef9fd689e98",
+    "verboseLevel": "off"
+  },
+  "thinkingLevel": "medium",
+  "verboseLevel": "off"
+}
