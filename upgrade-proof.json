@@ -1,0 +1,77 @@
+{
+  "stable": {
+    "build": {
+      "version": "2026.11.2",
+      "buildId": "2026.11.2-b556fdf457b0-2026-11-09T18-25-37.329Z",
+      "controlUiBuildSource": "bundled"
+    },
+    "sessions": [
+      {
+        "key": "agent:main:discord:channel:223456789012345680",
+        "label": "Second profile proof",
+        "sessionId": "0cf06961-d71c-40be-ac63-413ff0b5a784",
+        "owner": "b3562a99-ef24-4792-a970-a3a12fed181d",
+        "creator": "b3562a99-ef24-4792-a970-a3a12fed181d"
+      },
+      {
+        "key": "agent:main:discord:channel:223456789012345679",
+        "label": "Viewer owned proof",
+        "sessionId": "0568b276-2aaa-47ff-891a-f55df69c0970",
+        "owner": "a51026b8-eb7c-430f-b54a-ede4ba14f623",
+        "creator": "a51026b8-eb7c-430f-b54a-ede4ba14f623"
+      },
+      {
+        "key": "agent:main:discord:channel:223456789012345678",
+        "label": "Legacy channel without owner",
+        "sessionId": "a147a485-b49a-48e7-a89e-81eacd64e287",
+        "owner": null,
+        "creator": null
+      }
+    ],
+    "savedFilter": [
+      "owner:a51026b8-eb7c-430f-b54a-ede4ba14f623"
+    ]
+  },
+  "upgraded": {
+    "build": {
+      "version": "2026.11.1",
+      "buildId": "2026.11.1-28d180f46e72-2026-11-09T16-51-37.268Z",
+      "commit": "ad26f30",
+      "builtAt": "2026-11-09T16:51:37.268Z",
+      "controlUiBuildSource": "bundled"
+    },
+    "sessions": [
+      {
+        "key": "agent:main:discord:channel:223456789012345680",
+        "label": "Second profile proof",
+        "sessionId": "0cf06961-d71c-40be-ac63-413ff0b5a784",
+        "owner": "b3562a99-ef24-4792-a970-a3a12fed181d",
+        "creator": "b3562a99-ef24-4792-a970-a3a12fed181d"
+      },
+      {
+        "key": "agent:main:discord:channel:223456789012345679",
+        "label": "Viewer owned proof",
+        "sessionId": "0568b276-2aaa-47ff-891a-f55df69c0970",
+        "owner": "a51026b8-eb7c-430f-b54a-ede4ba14f623",
+        "creator": "a51026b8-eb7c-430f-b54a-ede4ba14f623"
+      },
+      {
+        "key": "agent:main:discord:channel:223456789012345678",
+        "label": "Legacy channel without owner",
+        "sessionId": "a147a485-b49a-48e7-a89e-81eacd64e287",
+        "owner": null,
+        "creator": null
+      }
+    ],
+    "savedFilter": [
+      "owner:a51026b8-eb7c-430f-b54a-ede4ba14f623"
+    ]
+  },
+  "verified": {
+    "sameSessionIdsAndOwners": true,
+    "savedFilterUnchanged": true,
+    "agentSchemaMigration": "27 to 41",
+    "freshBrowserView": "All owners; all three rows rendered",
+    "testInstanceConfig": "utilityModel string; toolSearch true, stable schema adjustment"
+  }
+}
