@@ -1,0 +1,682 @@
+[
+  {
+    "type": "message",
+    "id": "d29aae6e-0add-4eb9-8d92-f73959323a67",
+    "parentId": "7115373a-f0b1-43b7-bc2e-be6aa44558b2",
+    "timestamp": "2026-11-09T09:56:37.915Z",
+    "message": {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "bac07bd5-42f5-4453-9863-3ba20af2565a",
+        "externalId": "d99c71cf-0a8d-4815-a0c2-479da607293c",
+        "runId": "abd2cc60-21f4-43c6-bbaa-c8dbd18db1f0"
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Answer ready.\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-1.png\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-2.png\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-3.png"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 6,
+        "output": 353,
+        "cacheRead": 77750,
+        "cacheWrite": 2175,
+        "totalTokens": 80284,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "cacheWrite1h": 2175,
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 26767,
+          "totalTokens": 26939
+        }
+      },
+      "timestamp": 1794218197902,
+      "idempotencyKey": "cli-assistant:abd2cc60-21f4-43c6-bbaa-c8dbd18db1f0",
+      "openclawDelivery": {
+        "mediaUrls": [
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png",
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-1.png",
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-2.png",
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-3.png"
+        ]
+      },
+      "openclawDisplayContent": [
+        {
+          "type": "text",
+          "text": "Checking files.\n\nRendering images.\n\nAnswer ready.\nanthropic🤖claude-opus-5-5📌🌗🐌 | 📚[⡀⠐⠐⠐⠐]1.0m 💰0.0098"
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_b3fd9616-23b6-4564-bb49-4e2dbb6e3855",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/b3fd9616-23b6-4564-bb49-4e2dbb6e3855/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/b3fd9616-23b6-4564-bb49-4e2dbb6e3855/full",
+          "alt": "proof-0.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_e12e656d-16f5-4fd0-b2a0-4aa1e806a4e5",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/e12e656d-16f5-4fd0-b2a0-4aa1e806a4e5/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/e12e656d-16f5-4fd0-b2a0-4aa1e806a4e5/full",
+          "alt": "proof-1.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_d47e7d69-44e0-4688-84d6-175b31f2dc99",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/d47e7d69-44e0-4688-84d6-175b31f2dc99/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/d47e7d69-44e0-4688-84d6-175b31f2dc99/full",
+          "alt": "proof-2.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_82da14ed-337e-452d-ab22-8774b8ec4f09",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/82da14ed-337e-452d-ab22-8774b8ec4f09/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/82da14ed-337e-452d-ab22-8774b8ec4f09/full",
+          "alt": "proof-3.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        }
+      ]
+    }
+  },
+  {
+    "type": "message",
+    "id": "7115373a-f0b1-43b7-bc2e-be6aa44558b2",
+    "parentId": "37a7a760-54b6-4259-8438-849d84963144",
+    "timestamp": "2026-11-09T09:56:27.048Z",
+    "message": {
+      "role": "user",
+      "content": "Run the four-image regression now: Say Checking files. then exec pwd. Say Rendering images. then exec ls proof-*.png. Final exactly Answer ready. then four MEDIA lines for /Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png through proof-3.png. Two separate tool calls. No message tool.",
+      "timestamp": 1794218187001,
+      "idempotencyKey": "abd2cc60-21f4-43c6-bbaa-c8dbd18db1f0:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "2aa119f0-4e05-4084-9922-b5deed235663"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "e572ffe2fdf212bb600589c95fa3b3a990fbf7571f28350db7230f3f2bcf7983",
+        "chatSendDelivery": {
+          "deliver": false
+        },
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5",
+          "previous": {
+            "provider": "anthropic",
+            "model": "claude-opus-5-5"
+          }
+        },
+        "requesterOrigin": {
+          "sessionKey": "agent:main:dashboard:4993222a-b443-423c-8330-2ca0787085cf",
+          "operatorProfileId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "messageProvider": "webchat",
+          "chatType": "direct",
+          "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "senderName": "peter"
+        }
+      }
+    }
+  },
+  {
+    "type": "message",
+    "id": "37a7a760-54b6-4259-8438-849d84963144",
+    "parentId": "b4deea83-5fb4-44d4-8ed4-b65bb32956cc",
+    "timestamp": "2026-11-09T09:55:04.443Z",
+    "message": {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "bac07bd5-42f5-4453-9863-3ba20af2565a",
+        "externalId": "0f6bcf25-9e6f-45f8-b950-1f76dde66e4e",
+        "runId": "e21df2f1-0cf5-4373-962c-d43eca118ada"
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Answer ready.\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 10,
+        "output": 321,
+        "cacheRead": 73592,
+        "cacheWrite": 23088,
+        "totalTokens": 97011,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "cacheWrite1h": 23088,
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 24592,
+          "totalTokens": 24641
+        }
+      },
+      "timestamp": 1794218104435,
+      "idempotencyKey": "cli-assistant:e21df2f1-0cf5-4373-962c-d43eca118ada",
+      "openclawDelivery": {
+        "mediaUrls": [
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png"
+        ]
+      },
+      "openclawDisplayContent": [
+        {
+          "type": "text",
+          "text": "Checking files.\n\nRendering images.\n\nAnswer ready.\nanthropic🤖claude-opus-5-5📌🌗🐌 | 📚[⡀⠐⠐⠐⠐]1.0m 💰0.0068"
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_da0a13a4-8da0-4d62-aca4-3fed7e81d8a8",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/da0a13a4-8da0-4d62-aca4-3fed7e81d8a8/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Adashboard%3A4993222a-b443-423c-8330-2ca0787085cf/da0a13a4-8da0-4d62-aca4-3fed7e81d8a8/full",
+          "alt": "proof-0.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        }
+      ]
+    }
+  },
+  {
+    "type": "message",
+    "id": "b4deea83-5fb4-44d4-8ed4-b65bb32956cc",
+    "parentId": null,
+    "timestamp": "2026-11-09T09:54:43.758Z",
+    "message": {
+      "role": "user",
+      "content": "Transcript regression: Say Checking files. then exec pwd. Say Rendering images. then exec ls proof-0.png. Final exactly Answer ready. plus MEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png . Two separate tool calls. No message tool.",
+      "timestamp": 1794218083739,
+      "idempotencyKey": "e21df2f1-0cf5-4373-962c-d43eca118ada:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "2aa119f0-4e05-4084-9922-b5deed235663"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "e42caeafb153ae0148ff9f346fa57c885efb0d5012b59d60181b1f32efd0864a",
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "requesterOrigin": {
+          "sessionKey": "agent:main:dashboard:4993222a-b443-423c-8330-2ca0787085cf",
+          "operatorProfileId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "messageProvider": "webchat",
+          "chatType": "direct",
+          "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "senderName": "peter"
+        }
+      }
+    }
+  },
+  {
+    "type": "session",
+    "version": 4,
+    "id": "4be72082-f603-4cf3-978b-c7fb9b40473f",
+    "timestamp": "2026-11-09T09:54:43.705Z",
+    "cwd": "/Users/admin/openclaw-proof/instances/media195857-base/workspace"
+  },
+  {
+    "type": "message",
+    "id": "81175145-7ad1-45e7-867f-7cebc33cae4e",
+    "parentId": "c8cbaa69-65fa-4d8d-ac1b-df2a9510143b",
+    "timestamp": "2026-11-09T09:53:45.363Z",
+    "message": {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "96e00dbe-a988-4b77-a031-37057a0c6bfc",
+        "externalId": "9036261f-f8ff-480f-b5cc-5f3d60beefe0",
+        "runId": "96d75a4e-ec56-465f-9311-2de87f9c3da0"
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Answer ready. Both exec calls worked: `pwd` printed the workspace path and `ls` found `proof-0.png`.\n\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 10,
+        "output": 422,
+        "cacheRead": 75606,
+        "cacheWrite": 23777,
+        "totalTokens": 99815,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "cacheWrite1h": 23777,
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 25281,
+          "totalTokens": 25366
+        }
+      },
+      "timestamp": 1794218025344,
+      "idempotencyKey": "cli-assistant:96d75a4e-ec56-465f-9311-2de87f9c3da0",
+      "openclawDelivery": {
+        "mediaUrls": [
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png"
+        ]
+      },
+      "openclawDisplayContent": [
+        {
+          "type": "text",
+          "text": "Checking files.\n\nRendering images.\n\nAnswer ready. Both exec calls worked: `pwd` printed the workspace path and `ls` found `proof-0.png`.\nanthropic🤖claude-opus-5-5🌗🐌 | 📚[⡀⠐⠐⠐⠐]1.0m 💰0.0076"
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_8e7a7816-d57d-401e-80bc-752461c5dea2",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Amain/8e7a7816-d57d-401e-80bc-752461c5dea2/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Amain/8e7a7816-d57d-401e-80bc-752461c5dea2/full",
+          "alt": "proof-0.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        }
+      ]
+    }
+  },
+  {
+    "type": "message",
+    "id": "c8cbaa69-65fa-4d8d-ac1b-df2a9510143b",
+    "parentId": "aa24c9b7-74f6-47f6-a84b-f040ae2f0bc2",
+    "timestamp": "2026-11-09T09:53:07.087Z",
+    "message": {
+      "role": "user",
+      "content": "Run the one-image regression again. Say Checking files. then exec pwd. Say Rendering images. then exec ls proof-0.png. Final: Answer ready. plus MEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png . Two tool calls, no message tool.",
+      "timestamp": 1794217980998,
+      "idempotencyKey": "96d75a4e-ec56-465f-9311-2de87f9c3da0:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "2aa119f0-4e05-4084-9922-b5deed235663"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "b18a9d38a1291d7024182325871b57bd0673a910fca2d5cb9e88ec99dcca113a",
+        "chatSendDelivery": {
+          "deliver": false
+        },
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5",
+          "previous": {
+            "provider": "anthropic",
+            "model": "claude-opus-5-5"
+          }
+        },
+        "requesterOrigin": {
+          "sessionKey": "agent:main:main",
+          "operatorProfileId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "messageProvider": "webchat",
+          "chatType": "direct",
+          "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "senderName": "peter"
+        }
+      }
+    }
+  },
+  {
+    "type": "message",
+    "id": "aa24c9b7-74f6-47f6-a84b-f040ae2f0bc2",
+    "parentId": "76a4aad7-a9c2-4c5e-98f8-da9c5c1563f6",
+    "timestamp": "2026-11-09T09:51:06.230Z",
+    "message": {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "c00c15b7-224b-425d-a177-29ea65b627f7",
+        "externalId": "8e22bdb3-a4ee-46da-a10f-498f6b982e2d",
+        "runId": "54d7976a-cc59-4fce-b38a-eddeabe1b1d3"
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Answer ready.\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-1.png\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-2.png\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-3.png"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 6,
+        "output": 353,
+        "cacheRead": 79566,
+        "cacheWrite": 2228,
+        "totalTokens": 82153,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "cacheWrite1h": 2228,
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 27390,
+          "totalTokens": 27562
+        }
+      },
+      "timestamp": 1794217866198,
+      "idempotencyKey": "cli-assistant:54d7976a-cc59-4fce-b38a-eddeabe1b1d3",
+      "openclawDelivery": {
+        "mediaUrls": [
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png",
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-1.png",
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-2.png",
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-3.png"
+        ]
+      },
+      "openclawDisplayContent": [
+        {
+          "type": "text",
+          "text": "Checking files.\n\nRendering images.\n\nAnswer ready.\nanthropic🤖claude-opus-5-5🌗🐌 | 📚[⡀⠐⠐⠐⠐]1.0m 💰0.0099"
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_5cecd31e-2a93-48dc-b08f-b0840a8050fe",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Amain/5cecd31e-2a93-48dc-b08f-b0840a8050fe/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Amain/5cecd31e-2a93-48dc-b08f-b0840a8050fe/full",
+          "alt": "proof-0.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_b52ae7f3-60b0-47a1-9865-71362df77219",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Amain/b52ae7f3-60b0-47a1-9865-71362df77219/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Amain/b52ae7f3-60b0-47a1-9865-71362df77219/full",
+          "alt": "proof-1.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_c8f02e93-3f31-4cc1-957f-7ef816774425",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Amain/c8f02e93-3f31-4cc1-957f-7ef816774425/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Amain/c8f02e93-3f31-4cc1-957f-7ef816774425/full",
+          "alt": "proof-2.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_73a08423-fba3-4375-b13a-473222af4767",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Amain/73a08423-fba3-4375-b13a-473222af4767/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Amain/73a08423-fba3-4375-b13a-473222af4767/full",
+          "alt": "proof-3.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        }
+      ]
+    }
+  },
+  {
+    "type": "message",
+    "id": "76a4aad7-a9c2-4c5e-98f8-da9c5c1563f6",
+    "parentId": "034c4579-c310-470d-b5fc-4852b108e4c2",
+    "timestamp": "2026-11-09T09:50:53.488Z",
+    "message": {
+      "role": "user",
+      "content": "Repeat the regression test: say Checking files. then use exec pwd; say Rendering images. then use exec ls proof-*.png (two separate tool calls). Final reply exactly Answer ready. followed by four MEDIA lines, one each for /Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png through proof-3.png. No message tool.",
+      "timestamp": 1794217853445,
+      "idempotencyKey": "54d7976a-cc59-4fce-b38a-eddeabe1b1d3:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "2aa119f0-4e05-4084-9922-b5deed235663"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "1575f5f4eac7b83df9e3c2a6fb7d12fe2c038b62ab64f348f03a2d66a27a2f96",
+        "chatSendDelivery": {
+          "deliver": false
+        },
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5",
+          "previous": {
+            "provider": "anthropic",
+            "model": "claude-opus-5-5"
+          }
+        },
+        "requesterOrigin": {
+          "sessionKey": "agent:main:main",
+          "operatorProfileId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "messageProvider": "webchat",
+          "chatType": "direct",
+          "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "senderName": "peter"
+        }
+      }
+    }
+  },
+  {
+    "type": "message",
+    "id": "034c4579-c310-470d-b5fc-4852b108e4c2",
+    "parentId": "526a4e79-f570-4e32-8bad-3a3b8c2b48ab",
+    "timestamp": "2026-11-09T09:50:16.569Z",
+    "message": {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "c00c15b7-224b-425d-a177-29ea65b627f7",
+        "externalId": "be1b8017-7d4a-4b10-8982-8fbb04884bfc",
+        "runId": "f17a1b54-5e89-4e37-ba33-e12a6999e7c2"
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Answer ready.\nMEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 10,
+        "output": 345,
+        "cacheRead": 75290,
+        "cacheWrite": 23658,
+        "totalTokens": 99303,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "cacheWrite1h": 23658,
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 25162,
+          "totalTokens": 25211
+        }
+      },
+      "timestamp": 1794217816557,
+      "idempotencyKey": "cli-assistant:f17a1b54-5e89-4e37-ba33-e12a6999e7c2",
+      "openclawDelivery": {
+        "mediaUrls": [
+          "/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png"
+        ]
+      },
+      "openclawDisplayContent": [
+        {
+          "type": "text",
+          "text": "Checking files.\n\nRendering images.\n\nAnswer ready.\nanthropic🤖claude-opus-5-5🌗🐌 | 📚[⡀⠐⠐⠐⠐]1.0m 💰0.0069"
+        },
+        {
+          "type": "image",
+          "artifactId": "artifact_managed_image_b30b7c12-ab0e-4ff4-9bbc-ff0b99e05fc0",
+          "url": "/api/chat/media/outgoing/agent%3Amain%3Amain/b30b7c12-ab0e-4ff4-9bbc-ff0b99e05fc0/full",
+          "openUrl": "/api/chat/media/outgoing/agent%3Amain%3Amain/b30b7c12-ab0e-4ff4-9bbc-ff0b99e05fc0/full",
+          "alt": "proof-0.png",
+          "mimeType": "image/jpeg",
+          "width": 946,
+          "height": 2047,
+          "sizeBytes": 162916
+        }
+      ]
+    }
+  },
+  {
+    "type": "session",
+    "version": 4,
+    "id": "67c90933-a650-4c1b-b95f-73d07964b006",
+    "timestamp": "2026-11-09T09:49:56.153Z",
+    "cwd": "/Users/admin/openclaw-proof/instances/media195857-base/workspace"
+  },
+  {
+    "type": "message",
+    "id": "526a4e79-f570-4e32-8bad-3a3b8c2b48ab",
+    "parentId": null,
+    "timestamp": "2026-11-09T09:49:56.153Z",
+    "message": {
+      "role": "user",
+      "content": "This is an isolated transcript regression test. Say 'Checking files.' then make a shell tool call to pwd. Say 'Rendering images.' then make a separate shell tool call to ls proof-0.png. Finish with exactly 'Answer ready.' and a newline MEDIA:/Users/admin/openclaw-proof/instances/media195857-base/workspace/proof-0.png . Do not use message tools. Do both tool calls and progress messages, then the final image.",
+      "timestamp": 1794217788840,
+      "idempotencyKey": "f17a1b54-5e89-4e37-ba33-e12a6999e7c2:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "2aa119f0-4e05-4084-9922-b5deed235663"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "8799c2354e729390b61261125bc94745fa9deefa56d18620435c6dabc6a2d959",
+        "chatSendDelivery": {
+          "deliver": false
+        },
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "requesterOrigin": {
+          "sessionKey": "agent:main:main",
+          "operatorProfileId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "messageProvider": "webchat",
+          "chatType": "direct",
+          "senderId": "2aa119f0-4e05-4084-9922-b5deed235663",
+          "senderName": "peter"
+        }
+      }
+    }
+  }
+]
