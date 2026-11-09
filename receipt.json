@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "simulator": "465ABFB0-0819-49F2-8E86-00686C7B94B8",
+  "bundleID": "ai.openclawfoundation.app.upgrade167173.debug",
+  "candidateCommit": "39f78f996ef9c3842deb5e14c53350665b670e7d",
+  "migration": 0,
+  "controls": 0,
+  "relaunch": 0
+}
