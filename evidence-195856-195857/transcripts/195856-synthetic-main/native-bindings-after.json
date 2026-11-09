@@ -1,0 +1,50 @@
+{
+  "base": {
+    "cliSessionIds": {
+      "claude-cli": "7f8fe874-3369-424a-86cd-4719fd25ee5c"
+    },
+    "cliSessionBindings": {
+      "claude-cli": {
+        "sessionId": "7f8fe874-3369-424a-86cd-4719fd25ee5c",
+        "resumeCheckpointId": "586dccae-d8fe-4770-a2ea-fa3203495684",
+        "authEpochVersion": 7,
+        "transcriptCursor": {
+          "localSessionId": "853e1584-aab5-4800-85cf-2ea0ca8c7bb5",
+          "entryId": "9d416994-279b-4eed-9b91-e0fdae3258be",
+          "runId": "76748f98-6caa-4782-840e-26524878a51f",
+          "userEntryId": "dced240a-7252-4318-b5d4-acf2f19a6e91"
+        },
+        "extraSystemPromptHash": "00db48947d7ce6bfdc69f84ec25b40ece4b651787786d55aa03bba81ea3a3211",
+        "messageToolPolicyHash": "3ae4a9801e78dd74aa01b3ccad9fb6ab5628c39000b88276f651ed7fb9bdb555",
+        "promptToolNamesHash": "2e1d8d3f308773e2a3447b78d998d93f30dd29b56c9a139a78b37606ec89bac9",
+        "cwdHash": "35c0c54fe19701932c2b5f1a861c8e0ea0c8f7626db9c24ad4e63fab83f0a13d",
+        "mcpConfigHash": "13953c3537bf14544dd1a40bcbe37e3f12549ed63c7cc01064dbb6d46992c602",
+        "mcpResumeHash": "7d6c5d334c685a67bbeb20ea3c3ffa20d995ded61b21be74c46f3000f2f96713"
+      }
+    }
+  },
+  "head": {
+    "cliSessionIds": {
+      "claude-cli": "57ce0b18-3b2d-4d03-a98f-2120e26ff3a0"
+    },
+    "cliSessionBindings": {
+      "claude-cli": {
+        "sessionId": "57ce0b18-3b2d-4d03-a98f-2120e26ff3a0",
+        "resumeCheckpointId": "171c184f-6f35-42de-ae42-222397604f8d",
+        "authEpochVersion": 7,
+        "transcriptCursor": {
+          "localSessionId": "99e7b0ec-662b-44e3-ac0e-23c8ffd4a00b",
+          "entryId": "cc916b96-a93d-44a1-80e5-9ef9fd689e98",
+          "runId": "de220b3a-31a5-46fc-a866-b8e2a08ca0de",
+          "userEntryId": "2f96f7bc-5ecd-47f1-81ae-4fae0f780976"
+        },
+        "extraSystemPromptHash": "00db48947d7ce6bfdc69f84ec25b40ece4b651787786d55aa03bba81ea3a3211",
+        "messageToolPolicyHash": "3ae4a9801e78dd74aa01b3ccad9fb6ab5628c39000b88276f651ed7fb9bdb555",
+        "promptToolNamesHash": "2e1d8d3f308773e2a3447b78d998d93f30dd29b56c9a139a78b37606ec89bac9",
+        "cwdHash": "4c44dbd763a53aa9a40609c62b4b59075a606af620efd8dfc870d69e2560b108",
+        "mcpConfigHash": "8feb10e94920cdef48a6fa0a92b0e4839121b9e847f4f612a12cc08596601b48",
+        "mcpResumeHash": "7d6c5d334c685a67bbeb20ea3c3ffa20d995ded61b21be74c46f3000f2f96713"
+      }
+    }
+  }
+}
