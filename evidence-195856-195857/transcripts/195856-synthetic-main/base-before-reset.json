@@ -1,0 +1,502 @@
+{
+  "sessionKey": "agent:main:dashboard:56bf344c-9f06-4a2b-a0df-c2b2b01525c3",
+  "sessionId": "853e1584-aab5-4800-85cf-2ea0ca8c7bb5",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Durability test A base. First send the standalone user-addressed paragraph 'MID_A_BASE_2015: The requested analysis is ready for review.' Then use OpenClaw exec to run printf 'TOOL_A_BASE_2015\\n' (not native Bash). After the tool result, finish with exactly FINAL_A_BASE_2015. Do not use any other tools.",
+      "timestamp": 1794226504460,
+      "idempotencyKey": "74686784-111b-4582-8bf6-ec45c2492c35:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "4e9981ec-9923-4557-92cc-f9a9ea3e045b",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "13307209a67017c6f0ca52f6601ffca7c8d7bc87fc282307a2a48cf13bc66e90",
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "id": "f3b4cf4a-7168-4b67-9e66-9f96ac4a7fe2",
+        "idempotencyKey": "74686784-111b-4582-8bf6-ec45c2492c35:user",
+        "recordTimestampMs": 1794226504602,
+        "transcriptPosition": {
+          "source": "hEiBf-Gh9-8IixiMLiQ15o5gyNhttqdO8JdG0507f14",
+          "rawSeq": 1
+        },
+        "seq": 1,
+        "importedFrom": "claude-cli",
+        "externalId": "00995043-9f74-4939-bfaf-23457419a22c",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "senderProfileAvatarUrl": "/api/users/4e9981ec-9923-4557-92cc-f9a9ea3e045b/avatar?v=1794217481115"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "CAQSqAgKEAgTGAI4AUIIdGhpbmtpbmcSDAcu8uR78sRmghg4LRoMZnsx9SwoaOERd/jJIjDgEmdQRBp/bf/M8VtSWImgPEtvkBpfeUUCPoTM4muZQlWU/KGQtkoFB+duX9LaA2gqxQcn8SZ9jeh0ryEy41Ka8u9M73jJsaK4xdZwdGoJiTm1Vp6M4o+Wa6GTO7WYJBxlL4Tnz/hQWuqXeTHRkRg/WwZ/RIy2Syt4aPjniJs9/Wfcn9xVjy+g4gMTb516SkQoLAgAF5tDtc/XZijZoy6VWgs2wt5Aqr3C33H3awQSja/9QdvZH8DG8hQc+FIILhjmzTdbtO1XMBK1MmyVvGUiBzCdPc4xcv8oTAH8q/oKHgpJiYRpJZIqhROXvoDrmZFYei/rCkn2dhYDJHeR40/s9olXv2ERoPVTnooG5sWIOZ0+L/aq+amI15EzN6rS4Pm+3Rk7hjuyQdnKjrxeoi6T+6uv51Ae4PUMaHvfgFmlhG8HfFItUlxa+4v4nPAO1pa7dhW3fzyl1t5roWy3D3pcj5N+PsqpE74WfQZpXIZxV2aUSaT6J46NOTtcdeRx/PVAu38UMm8NfCgBEr3VFGYcNZ8vClQiwGfv5Mc8J2IFMSxerMQ91/VWIc+2JBe4mWt2b280T886bR8Df1zk43pqD+i0/E+u0kmPN5opRqDaFnXhhAzpRIIAKUlo2gZtxYEemk4ejSt6JqgDofBVNIyt5asm5CNysgasKErN90UH5geLanK6d0LYsbE3iAf/9Of0fjzDwl1xkkPgc85XjfJyfZgHcOFOeArjD2u4lEj9mIR/Ny/YTklw8vCAvCOFPcHuk99H2c3pbprUnirlwE1EPlh76TcRGQL/JphThNSEKE4X1hK2tsvBLnyBFKJ8oXpBRXXjTA1jZLBUXr0Lu8bK6Zwy2jhIssMw4bOUXbwWMEOwGyx85vV/fbDsxo00RvpmLKRDfZUkpwXxzNnuDbDBFVX7yTUDo/p3J3anmllVqTd/Ip9pnOt/Ka0fkfHJirVuanlW/XBugY4TUUqvEe5dj5q+0WrISEyINeGemZcuYkyimSrmX5UpSjLKNybYSUtx+2X1v/vp5yIz5lg52uJfemj50qF1Q+63PjGznAcRmkrkHYLVeohSm9vbnxhJL+KssEto6YjcpjSPMU8hbEVB3tV8ecVOF/PSqZCRxwThFSyl0DhnOhjtjpwTh3FNjujDPlWDTCcPV4z0oCdec1hMm6sDvdV9XKElP8+ge8xSs6PuqtjoQvw30jshZJZzgCRK6Q+LBVpKqQmvW7EFqd0QGH8rfWm6q61pbTFX1zmAAL48QiAZbvtWn0jvt2h4QyX+u7GIl4ZUKdhsAD/wyh2OrGK32YTweyW9IQAWi2FdETZfbeq9HQmxbpyC8m6v+57zlOiTU2rPvxgB"
+        }
+      ],
+      "api": "anthropic-messages",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "stopReason": "tool_use",
+      "usage": {
+        "input": 2,
+        "output": 264,
+        "cacheRead": 1502,
+        "cacheWrite": 21786
+      },
+      "timestamp": 1794226512117,
+      "__openclaw": {
+        "id": "3fde207c-144a-4b4b-bf14-8478df258943",
+        "importedFrom": "claude-cli",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "externalId": "3fde207c-144a-4b4b-bf14-8478df258943"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "MID_A_BASE_2015: The requested analysis is ready for review."
+        }
+      ],
+      "api": "anthropic-messages",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "stopReason": "tool_use",
+      "usage": {
+        "input": 2,
+        "output": 264,
+        "cacheRead": 1502,
+        "cacheWrite": 21786
+      },
+      "timestamp": 1794226512472,
+      "__openclaw": {
+        "id": "15633af1-95a2-4ab8-b24f-eb67429715ee",
+        "importedFrom": "claude-cli",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "externalId": "15633af1-95a2-4ab8-b24f-eb67429715ee"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolcall",
+          "id": "toolu_01Mo9Q5XrnkKjjSyry5LxiWu",
+          "name": "ToolSearch",
+          "caller": {
+            "type": "direct"
+          },
+          "arguments": {
+            "query": "select:mcp__openclaw__exec",
+            "max_results": 1
+          }
+        },
+        {
+          "type": "tool_result",
+          "tool_use_id": "toolu_01Mo9Q5XrnkKjjSyry5LxiWu",
+          "content": [
+            {
+              "type": "tool_reference",
+              "tool_name": "mcp__openclaw__exec"
+            }
+          ],
+          "name": "ToolSearch"
+        }
+      ],
+      "api": "anthropic-messages",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "stopReason": "tool_use",
+      "usage": {
+        "input": 2,
+        "output": 264,
+        "cacheRead": 1502,
+        "cacheWrite": 21786
+      },
+      "timestamp": 1794226512841,
+      "__openclaw": {
+        "id": "c652e2de-3882-4be6-aa87-ee57ba3647ad",
+        "importedFrom": "claude-cli",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "externalId": "c652e2de-3882-4be6-aa87-ee57ba3647ad"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolcall",
+          "id": "toolu_017WqTa9CpubsvVcFJpu9M8U",
+          "name": "mcp__openclaw__exec",
+          "caller": {
+            "type": "direct"
+          },
+          "arguments": {
+            "command": "printf 'TOOL_A_BASE_2015\\n'",
+            "title": "Print durability test marker"
+          }
+        },
+        {
+          "tool_use_id": "toolu_017WqTa9CpubsvVcFJpu9M8U",
+          "type": "tool_result",
+          "content": [
+            {
+              "type": "text",
+              "text": "TOOL_A_BASE_2015"
+            }
+          ],
+          "name": "mcp__openclaw__exec"
+        }
+      ],
+      "api": "anthropic-messages",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "stopReason": "tool_use",
+      "usage": {
+        "input": 4,
+        "output": 101,
+        "cacheRead": 23288,
+        "cacheWrite": 1285
+      },
+      "timestamp": 1794226515498,
+      "__openclaw": {
+        "id": "31af8a13-71d9-4b29-b362-00a44f30f973",
+        "importedFrom": "claude-cli",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "externalId": "31af8a13-71d9-4b29-b362-00a44f30f973"
+      }
+    },
+    {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "externalId": "8317b7dc-a870-464d-ae1e-3cef10fff242",
+        "runId": "74686784-111b-4582-8bf6-ec45c2492c35",
+        "id": "a60d1cea-bc80-4e11-bd32-b65c807966ef",
+        "idempotencyKey": "cli-assistant:74686784-111b-4582-8bf6-ec45c2492c35",
+        "recordTimestampMs": 1794226517468,
+        "transcriptPosition": {
+          "source": "hEiBf-Gh9-8IixiMLiQ15o5gyNhttqdO8JdG0507f14",
+          "rawSeq": 2
+        },
+        "seq": 2
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "FINAL_A_BASE_2015"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 8,
+        "output": 380,
+        "totalTokens": 72943,
+        "cacheRead": 49363,
+        "cacheWrite": 23192,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 24696,
+          "totalTokens": 24711
+        }
+      },
+      "timestamp": 1794226517455,
+      "idempotencyKey": "cli-assistant:74686784-111b-4582-8bf6-ec45c2492c35"
+    },
+    {
+      "role": "user",
+      "content": "Reply exactly RESET_A_BASE_2015. No tools.",
+      "timestamp": 1794226615458,
+      "idempotencyKey": "13e0c4ba-85fd-4c89-bf86-8c222eac737b:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "4e9981ec-9923-4557-92cc-f9a9ea3e045b",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "154662f4d6a8104335f81e464c6166dd8eaf14db486e484c619036351606732b",
+        "chatSendDelivery": {
+          "deliver": false
+        },
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5",
+          "previous": {
+            "provider": "anthropic",
+            "model": "claude-opus-5-5"
+          }
+        },
+        "id": "0be405f4-60f7-4240-bcae-f39af644d184",
+        "idempotencyKey": "13e0c4ba-85fd-4c89-bf86-8c222eac737b:user",
+        "recordTimestampMs": 1794226615509,
+        "transcriptPosition": {
+          "source": "hEiBf-Gh9-8IixiMLiQ15o5gyNhttqdO8JdG0507f14",
+          "rawSeq": 3
+        },
+        "seq": 3,
+        "importedFrom": "claude-cli",
+        "externalId": "fcba6963-a5a8-4192-a45d-3c6c6db76e9e",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "senderProfileAvatarUrl": "/api/users/4e9981ec-9923-4557-92cc-f9a9ea3e045b/avatar?v=1794217481115"
+      }
+    },
+    {
+      "__openclaw": {
+        "importedFrom": "claude-cli",
+        "cliSessionId": "676506fa-2372-4380-a77d-e28c08dae8d2",
+        "externalId": "1c286735-18e8-481c-a8a7-955dc15f487f",
+        "runId": "13e0c4ba-85fd-4c89-bf86-8c222eac737b",
+        "id": "9d416994-279b-4eed-9b91-e0fdae3258be",
+        "idempotencyKey": "cli-assistant:13e0c4ba-85fd-4c89-bf86-8c222eac737b",
+        "recordTimestampMs": 1794226618786,
+        "transcriptPosition": {
+          "source": "hEiBf-Gh9-8IixiMLiQ15o5gyNhttqdO8JdG0507f14",
+          "rawSeq": 4
+        },
+        "seq": 4
+      },
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "RESET_A_BASE_2015"
+        }
+      ],
+      "stopReason": "stop",
+      "api": "cli",
+      "provider": "claude-cli",
+      "model": "claude-opus-5-5",
+      "usage": {
+        "input": 2,
+        "output": 14,
+        "totalTokens": 25369,
+        "cacheRead": 24694,
+        "cacheWrite": 659,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        },
+        "contextUsage": {
+          "state": "available",
+          "promptTokens": 25355,
+          "totalTokens": 25363
+        }
+      },
+      "timestamp": 1794226618777,
+      "idempotencyKey": "cli-assistant:13e0c4ba-85fd-4c89-bf86-8c222eac737b"
+    }
+  ],
+  "activity": [
+    {
+      "messageId": "c652e2de-3882-4be6-aa87-ee57ba3647ad",
+      "items": [
+        {
+          "itemId": "tool:toolu_01Mo9Q5XrnkKjjSyry5LxiWu",
+          "toolCallId": "toolu_01Mo9Q5XrnkKjjSyry5LxiWu",
+          "name": "ToolSearch",
+          "kind": "tool",
+          "phase": "end",
+          "title": "ToolSearch select:mcp__openclaw__exec",
+          "summary": "Outcome unknown",
+          "meta": "select:mcp__openclaw__exec",
+          "commandBearing": false
+        }
+      ]
+    },
+    {
+      "messageId": "31af8a13-71d9-4b29-b362-00a44f30f973",
+      "items": [
+        {
+          "itemId": "tool:toolu_017WqTa9CpubsvVcFJpu9M8U",
+          "toolCallId": "toolu_017WqTa9CpubsvVcFJpu9M8U",
+          "name": "exec",
+          "kind": "tool",
+          "phase": "end",
+          "title": "Exec Print durability test marker",
+          "summary": "Outcome unknown",
+          "meta": "Print durability test marker",
+          "commandBearing": true
+        }
+      ]
+    }
+  ],
+  "hasMore": false,
+  "totalMessages": 8,
+  "pendingInputs": {
+    "items": [],
+    "total": 0,
+    "queuedCount": 0
+  },
+  "defaults": {
+    "modelProvider": "anthropic",
+    "model": "claude-opus-5-5",
+    "contextTokens": 1000000,
+    "agentRuntime": {
+      "id": "claude-cli",
+      "cloudPlacementSupported": false,
+      "devicePlacementSupported": false,
+      "source": "model"
+    },
+    "thinkingDefault": "medium",
+    "communication": {
+      "send": "always",
+      "receive": "always"
+    },
+    "modelSelectionTarget": "session"
+  },
+  "sessionInfo": {
+    "key": "agent:main:dashboard:56bf344c-9f06-4a2b-a0df-c2b2b01525c3",
+    "sessionModelRevision": "A8Bek5HihyflvhZjRyzkg5HZRe8grt5gVxDuRm2Ic9o",
+    "visibility": "shared",
+    "effectiveCommunication": {
+      "send": "always",
+      "receive": "always"
+    },
+    "permissionModePending": false,
+    "spawnDepth": 0,
+    "createdVia": "operator",
+    "createdActor": {
+      "type": "human",
+      "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b",
+      "identity": {
+        "type": "profile",
+        "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b"
+      },
+      "label": "peter",
+      "avatarUrl": "/api/users/4e9981ec-9923-4557-92cc-f9a9ea3e045b/avatar?v=1794217481115"
+    },
+    "owner": {
+      "actor": {
+        "type": "human",
+        "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b",
+        "identity": {
+          "type": "profile",
+          "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b"
+        },
+        "label": "peter",
+        "avatarUrl": "/api/users/4e9981ec-9923-4557-92cc-f9a9ea3e045b/avatar?v=1794217481115"
+      }
+    },
+    "createdAt": 1794226504139,
+    "kind": "direct",
+    "classification": "direct",
+    "agentId": "main",
+    "isMain": false,
+    "isDock": false,
+    "isBackground": false,
+    "displayName": "Durability test A base run",
+    "chatType": "direct",
+    "updatedAt": 1794226675226,
+    "archived": false,
+    "pinned": false,
+    "sidebarRoot": false,
+    "unread": false,
+    "lastReadAt": 1794226618885,
+    "lastInteractionAt": 1794226615499,
+    "lastActivityAt": 1794226618818,
+    "sessionId": "853e1584-aab5-4800-85cf-2ea0ca8c7bb5",
+    "lifecycleRevision": "220dbe44-d681-482c-9ae6-1105b141cfe7",
+    "systemSent": true,
+    "abortedLastRun": false,
+    "thinkingDefault": "medium",
+    "effectiveFastMode": false,
+    "effectiveFastModeSource": "default",
+    "fastAutoOnSeconds": 60,
+    "inputTokens": 2,
+    "outputTokens": 8,
+    "lastRunId": "13e0c4ba-85fd-4c89-bf86-8c222eac737b",
+    "parentSessionKey": "agent:main:main",
+    "effectiveResponseUsage": "full",
+    "effectiveQueueMode": "steer",
+    "modelProvider": "anthropic",
+    "model": "claude-opus-5-5",
+    "modelOverrideSource": null,
+    "runtimeSelectionLocked": false,
+    "agentRuntime": {
+      "id": "claude-cli",
+      "cloudPlacementSupported": false,
+      "devicePlacementSupported": false,
+      "source": "model"
+    },
+    "contextTokens": 1000000,
+    "snapshotAt": 1794227427741,
+    "status": "done",
+    "suppressErrorNotice": false,
+    "startedAt": 1794226615697,
+    "endedAt": 1794226618818,
+    "runtimeMs": 3121,
+    "totalTokens": 25363,
+    "totalTokensFresh": true,
+    "estimatedCostUsd": 0.0103788,
+    "activitySummary": {
+      "text": "The assistant replied with the exact string \"RESET_A_BASE_2015\" as requested, without using any tools. The request is complete.",
+      "updatedAt": 1794226623288,
+      "state": "current",
+      "canEnsure": true
+    },
+    "hasBoard": false,
+    "titlePending": false,
+    "childOwnerSessionKeys": [
+      "agent:main:main"
+    ],
+    "hiddenFromInvolvingMe": false,
+    "sharingRole": "owner",
+    "sendDisabledReason": null,
+    "workspaceReadDisabledReason": null,
+    "hasActiveRun": false,
+    "activeRunIds": [],
+    "activeLeafEntryId": "9d416994-279b-4eed-9b91-e0fdae3258be",
+    "verboseLevel": "off"
+  },
+  "thinkingLevel": "medium",
+  "verboseLevel": "off"
+}
