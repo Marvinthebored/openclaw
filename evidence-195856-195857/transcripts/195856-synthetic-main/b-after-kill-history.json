@@ -1,0 +1,427 @@
+{
+  "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+  "sessionId": "736e5fbb-7c13-4c80-b701-80806b447471",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Durability interruption B base. Send this complete user-addressed paragraph before any command: MID_B_BASE_2018: The requested report is ready for review. Then use OpenClaw exec to run sleep 120 with yieldMs=1000. After that call returns, keep working by using exec sleep 120 again. Do not send a final reply until both sleeps complete. This is an authorized interruption test.",
+      "timestamp": 1794226691875,
+      "idempotencyKey": "906574e9-9a41-425b-8eec-efbbb00abe28:user",
+      "provenance": {
+        "kind": "external_user"
+      },
+      "__openclaw": {
+        "senderIsOwner": true,
+        "senderId": "4e9981ec-9923-4557-92cc-f9a9ea3e045b",
+        "senderName": "peter",
+        "senderIdentity": {
+          "type": "profile",
+          "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b"
+        },
+        "transport": {
+          "clients": [
+            {
+              "id": "openclaw-control-ui",
+              "mode": "webchat"
+            }
+          ]
+        },
+        "chatRequestIdentity": "b7d52b4fa8c41493f6ae27ba4dfb69af165d0a0158a3edd7cfd26bdce9aa072c",
+        "modelSelection": {
+          "provider": "anthropic",
+          "model": "claude-opus-5-5"
+        },
+        "id": "2f881b55-5fe7-48e6-89d9-de1f65e9abed",
+        "idempotencyKey": "906574e9-9a41-425b-8eec-efbbb00abe28:user",
+        "recordTimestampMs": 1794226691899,
+        "transcriptPosition": {
+          "source": "cvynheYD0l2q6RveCQyy-ApmX10iswT1rdFzVybot-Y",
+          "rawSeq": 1
+        },
+        "seq": 1,
+        "senderProfileAvatarUrl": "/api/users/4e9981ec-9923-4557-92cc-f9a9ea3e045b/avatar?v=1794217481115"
+      }
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Model switched from anthropic/claude-opus-5-5 to opencode-go/muse-spark-1.3-contributor."
+        }
+      ],
+      "api": "openclaw-transcript",
+      "provider": "openclaw",
+      "model": "delivery-mirror",
+      "usage": {
+        "input": 0,
+        "output": 0,
+        "totalTokens": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0,
+        "cost": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "total": 0
+        }
+      },
+      "stopReason": "stop",
+      "timestamp": 1794226718695,
+      "openclawDeliveryMirror": {
+        "kind": "model-fallback",
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "fromModel": "anthropic/claude-opus-5-5",
+        "toModel": "opencode-go/muse-spark-1.3-contributor"
+      },
+      "idempotencyKey": "model-fallback:da12a9614e976b0208bed22fea86018d469279398ecf186b26fd3cb9e16606fd",
+      "__openclaw": {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "id": "c4b34c45-f023-4f21-87e5-1c393b9e25b8",
+        "idempotencyKey": "model-fallback:da12a9614e976b0208bed22fea86018d469279398ecf186b26fd3cb9e16606fd",
+        "recordTimestampMs": 1794226718702,
+        "transcriptPosition": {
+          "source": "cvynheYD0l2q6RveCQyy-ApmX10iswT1rdFzVybot-Y",
+          "rawSeq": 2
+        },
+        "seq": 2
+      }
+    }
+  ],
+  "hasMore": false,
+  "totalMessages": 2,
+  "pendingInputs": {
+    "items": [],
+    "total": 0,
+    "queuedCount": 0
+  },
+  "deltaCursor": "eyJhZ2VudElkIjoibWFpbiIsImdlbmVyYXRpb24iOiIzZjFkNjMwODFlZTk0YzIwOGM1MmZjODQ1YTg4MTVkZSIsImxhc3RTZXEiOjUsInNlc3Npb25JZCI6IjczNmU1ZmJiLTdjMTMtNGM4MC1iNzAxLTgwODA2YjQ0NzQ3MSIsInZlcnNpb24iOjF9",
+  "defaults": {
+    "modelProvider": "anthropic",
+    "model": "claude-opus-5-5",
+    "contextTokens": 1000000,
+    "agentRuntime": {
+      "id": "claude-cli",
+      "cloudPlacementSupported": false,
+      "devicePlacementSupported": false,
+      "source": "model"
+    },
+    "thinkingDefault": "medium",
+    "communication": {
+      "send": "always",
+      "receive": "always"
+    },
+    "modelSelectionTarget": "session"
+  },
+  "sessionInfo": {
+    "key": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+    "sessionModelRevision": "RUkbOQFpX9bdqto7v1MpS3AUY5-S4yLfu_LdssfqPqo",
+    "visibility": "shared",
+    "effectiveCommunication": {
+      "send": "always",
+      "receive": "always"
+    },
+    "permissionModePending": false,
+    "spawnDepth": 0,
+    "createdVia": "operator",
+    "createdActor": {
+      "type": "human",
+      "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b",
+      "identity": {
+        "type": "profile",
+        "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b"
+      },
+      "label": "peter",
+      "avatarUrl": "/api/users/4e9981ec-9923-4557-92cc-f9a9ea3e045b/avatar?v=1794217481115"
+    },
+    "owner": {
+      "actor": {
+        "type": "human",
+        "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b",
+        "identity": {
+          "type": "profile",
+          "id": "4e9981ec-9923-4557-92cc-f9a9ea3e045b"
+        },
+        "label": "peter",
+        "avatarUrl": "/api/users/4e9981ec-9923-4557-92cc-f9a9ea3e045b/avatar?v=1794217481115"
+      }
+    },
+    "createdAt": 1794226691806,
+    "kind": "direct",
+    "classification": "direct",
+    "agentId": "main",
+    "isMain": false,
+    "isDock": false,
+    "isBackground": false,
+    "displayName": "Durability interruption B base test",
+    "chatType": "direct",
+    "updatedAt": 1794226718706,
+    "archived": false,
+    "pinned": false,
+    "sidebarRoot": false,
+    "unread": false,
+    "lastReadAt": 1794226692197,
+    "observerDigest": {
+      "agentId": "main",
+      "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+      "headline": "Interruption test finished and report marked ready",
+      "health": "done",
+      "updatedAt": 1794226710467,
+      "revision": 1
+    },
+    "lastInteractionAt": 1794226691891,
+    "sessionId": "736e5fbb-7c13-4c80-b701-80806b447471",
+    "lifecycleRevision": "f90dc879-5347-43f7-8c3c-9a051c28c148",
+    "systemSent": true,
+    "abortedLastRun": false,
+    "thinkingDefault": "medium",
+    "effectiveFastMode": false,
+    "effectiveFastModeSource": "default",
+    "fastAutoOnSeconds": 60,
+    "parentSessionKey": "agent:main:main",
+    "effectiveResponseUsage": "full",
+    "effectiveQueueMode": "steer",
+    "modelProvider": "anthropic",
+    "model": "claude-opus-5-5",
+    "modelOverrideSource": null,
+    "runtimeSelectionLocked": false,
+    "agentRuntime": {
+      "id": "claude-cli",
+      "cloudPlacementSupported": false,
+      "devicePlacementSupported": false,
+      "source": "model"
+    },
+    "contextTokens": 1000000,
+    "snapshotAt": 1794226729697,
+    "backgroundProcessCount": 1,
+    "status": "running",
+    "suppressErrorNotice": false,
+    "startedAt": 1794226691891,
+    "totalTokens": 28753,
+    "totalTokensFresh": true,
+    "activeModelProvider": "opencode-go",
+    "activeModel": "muse-spark-1.3-contributor",
+    "placement": {
+      "state": "local",
+      "generation": 0,
+      "createdAtMs": 1794226692125,
+      "updatedAtMs": 1794226718726,
+      "stateChangedAtMs": 1794226692125
+    },
+    "activitySummary": {
+      "state": "stale",
+      "canEnsure": true
+    },
+    "hasBoard": false,
+    "titlePending": false,
+    "childOwnerSessionKeys": [
+      "agent:main:main"
+    ],
+    "hiddenFromInvolvingMe": false,
+    "sharingRole": "owner",
+    "sendDisabledReason": null,
+    "workspaceReadDisabledReason": null,
+    "hasActiveRun": true,
+    "activeRunIds": [
+      "906574e9-9a41-425b-8eec-efbbb00abe28"
+    ],
+    "activeLeafEntryId": "135024aa-735c-4f24-8548-c646a577629f",
+    "verboseLevel": "off"
+  },
+  "thinkingLevel": "medium",
+  "verboseLevel": "off",
+  "inFlightRun": {
+    "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+    "text": "MID_B_BASE_2018: The requested report is ready for review.",
+    "startedAt": 1794226692149,
+    "events": [
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 9,
+        "stream": "tool",
+        "ts": 1794226698035,
+        "data": {
+          "phase": "start",
+          "name": "ToolSearch",
+          "toolCallId": "toolu_017Hm7WtitWxzqUVCUX8t63c",
+          "args": {
+            "query": "select:mcp__openclaw__exec,mcp__openclaw__process",
+            "max_results": 2
+          }
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 10,
+        "stream": "tool",
+        "ts": 1794226698053,
+        "data": {
+          "phase": "result",
+          "name": "ToolSearch",
+          "toolCallId": "toolu_017Hm7WtitWxzqUVCUX8t63c",
+          "isError": false,
+          "result": [
+            {
+              "type": "tool_reference",
+              "tool_name": "mcp__openclaw__exec"
+            },
+            {
+              "type": "tool_reference",
+              "tool_name": "mcp__openclaw__process"
+            }
+          ]
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 11,
+        "stream": "item",
+        "ts": 1794226698053,
+        "data": {
+          "itemId": "tool:toolu_017Hm7WtitWxzqUVCUX8t63c",
+          "toolCallId": "toolu_017Hm7WtitWxzqUVCUX8t63c",
+          "name": "ToolSearch",
+          "kind": "tool",
+          "phase": "end",
+          "title": "ToolSearch select:mcp__openclaw__exec,mcp__openclaw__process",
+          "status": "completed",
+          "meta": "select:mcp__openclaw__exec,mcp__openclaw__process",
+          "commandBearing": false
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 13,
+        "stream": "tool",
+        "ts": 1794226700507,
+        "data": {
+          "phase": "start",
+          "name": "exec",
+          "toolCallId": "toolu_01Xkv5yi5fQ66vQv1cTa9i9s",
+          "args": {
+            "command": "sleep 120",
+            "yieldMs": 1000,
+            "title": "Interruption test sleep 1"
+          }
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 14,
+        "stream": "tool",
+        "ts": 1794226701579,
+        "data": {
+          "phase": "result",
+          "name": "exec",
+          "toolCallId": "toolu_01Xkv5yi5fQ66vQv1cTa9i9s",
+          "isError": false,
+          "result": [
+            {
+              "type": "text",
+              "text": "Command still running (session fresh-cedar:35f1dee4e36f, pid 42092). Automatic stop will be requested at 2026-11-09T12:48:20.555Z; the process may exit earlier. Use process (list/poll/log/write/send-keys/submit/paste/kill/clear/remove) for follow-up. Automatic completion wake, when enabled, occurs only after exit. New output while this command is running does not automatically start another turn. Ending the turn does not stop it; use process kill when it is no longer needed. Completion and the configured timeout still apply; this is not a saved, restartable automation. Completion wakes this conversation on output or failure; empty successful jobs are silent (tools.exec.notifyOnExitEmptySuccess=false). Arrange continuation or collect the result before ending the turn if empty success matters."
+            }
+          ]
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 15,
+        "stream": "item",
+        "ts": 1794226701580,
+        "data": {
+          "itemId": "tool:toolu_01Xkv5yi5fQ66vQv1cTa9i9s",
+          "toolCallId": "toolu_01Xkv5yi5fQ66vQv1cTa9i9s",
+          "name": "exec",
+          "kind": "tool",
+          "phase": "end",
+          "title": "Exec Interruption test sleep 1",
+          "status": "completed",
+          "meta": "Interruption test sleep 1",
+          "commandBearing": true
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 18,
+        "stream": "tool",
+        "ts": 1794226705008,
+        "data": {
+          "phase": "start",
+          "name": "exec",
+          "toolCallId": "toolu_01Tkzx2Z3fTadLAAV5jgzwq2",
+          "args": {
+            "command": "sleep 120",
+            "title": "Interruption test sleep 2",
+            "awaitResults": true
+          }
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 19,
+        "stream": "tool",
+        "ts": 1794226718112,
+        "data": {
+          "phase": "result",
+          "name": "exec",
+          "toolCallId": "toolu_01Tkzx2Z3fTadLAAV5jgzwq2",
+          "isError": true,
+          "result": "MCP server \"openclaw\" connection closed before the tool call was answered. The tool may have run: check whether it did before running it again."
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 20,
+        "stream": "item",
+        "ts": 1794226718112,
+        "data": {
+          "itemId": "tool:toolu_01Tkzx2Z3fTadLAAV5jgzwq2",
+          "toolCallId": "toolu_01Tkzx2Z3fTadLAAV5jgzwq2",
+          "name": "exec",
+          "kind": "tool",
+          "phase": "end",
+          "title": "Exec Interruption test sleep 2",
+          "status": "failed",
+          "meta": "Interruption test sleep 2",
+          "commandBearing": true
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      },
+      {
+        "runId": "906574e9-9a41-425b-8eec-efbbb00abe28",
+        "seq": 22,
+        "stream": "lifecycle",
+        "ts": 1794226718690,
+        "data": {
+          "phase": "fallback_step",
+          "fallbackStepType": "fallback_step",
+          "fallbackStepFromModel": "anthropic/claude-opus-5-5",
+          "fallbackStepToModel": "opencode-go/muse-spark-1.3-contributor",
+          "fallbackStepFromFailureDetail": "Claude Code process exited with code 143",
+          "fallbackStepChainPosition": 1,
+          "fallbackStepFinalOutcome": "next_fallback"
+        },
+        "sessionKey": "agent:main:dashboard:af5d5688-f05c-4b2e-96b4-0ca784d54640",
+        "agentId": "main"
+      }
+    ]
+  }
+}
