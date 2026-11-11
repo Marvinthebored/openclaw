@@ -215,7 +215,7 @@ it("preserves malformed user content", () => {
   }
 });
 
-it("keeps media visible and folds commentary after replacement", () => {
+it("keeps media and unlabelled replacement text visible", () => {
   const preview = message(
     "assistant",
     [{ type: "image", url: "https://example.com/diagram.png" }],
@@ -231,8 +231,8 @@ it("keeps media visible and folds commentary after replacement", () => {
   const replacement = { ...preview, content: [{ type: "text", text: "Preparing a diagram" }] };
   expectHistory(
     messages.map((entry) => (entry === preview ? replacement : entry)),
-    [0, 3],
-    [1, 2],
+    [0, 1, 3],
+    [2],
   );
 });
 it.each([true, false])(
@@ -268,8 +268,8 @@ it.each([true, false])(
 it.each<[string, object, boolean, boolean?]>([
   ["settled terminal", {}, true],
   ["explicit commentary", { phase: "commentary" }, false],
-  ["interrupted text", { openclawAbort: { aborted: true } }, false],
-  ["legacy unphased reply", {}, false, true],
+  ["interrupted text", { openclawAbort: { aborted: true } }, true],
+  ["legacy unphased reply", {}, true, true],
 ])("preserves %s through history reload", (_name, extra, preserved, legacy) => {
   const run = { runId: "completed-run" };
   const messages = [
@@ -381,8 +381,7 @@ it("retains prepared tool outcomes without content blocks as activity", () => {
   ]);
 });
 
-// One completed turn folds its preamble, narration and tool work into a single
-// rollup above the answer; the transcript itself keeps every envelope intact.
+// Explicit commentary and tools fold; unlabelled text remains visible.
 describe("completed-turn rollup", () => {
   const run = { runId: "rollup-run" };
   const ask = message("user", "Inspect the layout", 1, run);
@@ -399,7 +398,7 @@ describe("completed-turn rollup", () => {
         { type: "toolCall", id, name, arguments: { path: `${id}.ts` } },
       ],
       timestamp,
-      run,
+      { ...run, ...(narration ? { phase: "commentary" } : {}) },
     );
   function expectOneRollup(messages: unknown[], ordered: string[] = []) {
     for (const history of [messages, structuredClone(messages)]) {
@@ -413,7 +412,7 @@ describe("completed-turn rollup", () => {
     }
   }
 
-  it("keeps Markdown and plain narration in one ordered rollup", () => {
+  it("keeps explicitly labelled Markdown and plain commentary in one ordered rollup", () => {
     const markdown = message(
       "assistant",
       [
@@ -423,7 +422,7 @@ describe("completed-turn rollup", () => {
         { type: "toolCall", id: "second", name: "read", arguments: {} },
       ],
       2,
-      run,
+      { ...run, phase: "commentary" },
     );
     expectOneRollup(
       [
@@ -521,6 +520,7 @@ it("keeps each run's reply visible when completions answer without new user inpu
     entries.map((entry) => (entry as { content?: unknown }).content);
   expect(text(messagesOf(groupsOf(items)))).toEqual([
     "Start two subagents",
+    "Spawning both.",
     "Both started.",
     "Child A finished.",
     "Child B finished.",
@@ -528,7 +528,6 @@ it("keeps each run's reply visible when completions answer without new user inpu
   ]);
   const rollup = items.find((item) => item.kind === "work-group");
   expect(rollup?.kind === "work-group" ? text(messagesOf(rollup.groups)) : []).toEqual([
-    "Spawning both.",
     "ok",
     "ok",
   ]);
@@ -601,4 +600,93 @@ it("times completed work only against the run that owns it", () => {
   // The rollup belongs to the user's run; a later completion run's runtime is not its time.
   expect(durationFor("run-user")).toBe(7_000);
   expect(durationFor("announce:v1:child-a")).toBeNull();
+});
+
+describe("non-commentary reply folding regressions", () => {
+  it.each(["Whisper transcription answer", "Puck reply before a steer"])(
+    "preserves %s and a closing reply in the same run",
+    (answerText) => {
+      const run = { runId: "same-run" };
+      const history = [
+        message("user", "Please check", 1, run),
+        message("assistant", answerText, 2, run),
+        tool("inspect", 3, run),
+        message("assistant", "Closing reply", 4, run),
+      ];
+      for (const input of [history, structuredClone(history)]) {
+        const before = cachedGroups(input);
+        const items = projected(input);
+        expect(visible(items)).toEqual([history[0], history[1], history[3]]);
+        expect(work(items)).toEqual([history[2]]);
+        const disclosures = items.filter((item) => item.kind === "work-group");
+        expect(disclosures).toHaveLength(1);
+        expect(items[1]).toBe(disclosures[0]);
+        // Existing key is owned by the terminal reply; its placement stays at segment start.
+        expect(disclosures[0]?.key).toBe(`work:${before.at(-1)!.key}`);
+      }
+    },
+  );
+
+  it("removes empty Worked when formerly folded text is all visible", () => {
+    expectHistory(
+      [
+        message("user", "Two replies", 1),
+        message("assistant", "First delivered answer", 2),
+        message("assistant", "Closing answer", 3),
+      ],
+      [0, 1, 2],
+      [],
+    );
+  });
+
+  it("folds explicit OpenAI commentary and reasoning/tools", () => {
+    const run = { runId: "openai-run", provider: "openai" };
+    const history = [
+      message("user", "Inspect", 1, run),
+      message("assistant", "Checking", 2, { ...run, phase: "commentary" }),
+      message("assistant", [{ type: "thinking", thinking: "Inspect evidence" }], 3, run),
+      tool("read", 4, run),
+      message("assistant", "Delivered answer", 5, run),
+    ];
+    const items = coalesceActivityRuns(
+      collapseCompletedTurnWork(groupHistory(history, true), {
+        sessionKey,
+        runWorking: false,
+      }),
+    );
+    expect(visible(items)).toEqual([history[0], history[4]]);
+    expect(work(items)).toEqual(history.slice(1, 4));
+    expect(items.filter((item) => item.kind === "work-group")).toHaveLength(1);
+  });
+});
+
+it("keeps both Puck replies above a trailing same-run steer", () => {
+  const runId = "puck-steered";
+  const history = [
+    nativeMessage("user", "Check Puck", 1, { idempotencyKey: runId + ":user" }),
+    message("assistant", "Puck is ready", 2, { runId }),
+    tool("puck-check", 3, { runId }),
+    message("assistant", "Closing Puck reply", 4, { runId }),
+    nativeMessage("user", "Also check steer", 5, {
+      idempotencyKey: "steer:user",
+      steerTargetRunId: runId,
+    }),
+  ];
+  const items = collapseCompletedTurnWork(groupHistory(history), { sessionKey, runWorking: false });
+  expect(visible(items)).toEqual([history[0], history[1], history[3], history[4]]);
+  expect(work(items)).toEqual([history[2]]);
+  expect(items.filter((item) => item.kind === "work-group")).toHaveLength(1);
+});
+
+it("does not fold a mixed assistant text group when any message is unlabelled", () => {
+  const user = message("user", "Check", 1);
+  const commentary = message("assistant", "Checking", 2, { phase: "commentary" });
+  const delivered = message("assistant", "Delivered", 3);
+  const answer = message("assistant", "Closing", 5);
+  const groups = cachedGroups([user, commentary, tool("read", 4), answer]);
+  const textGroup = groups[1]!;
+  textGroup.messages.push({ key: "unlabelled", message: delivered, hasVisibleContent: true });
+  const items = collapseCompletedTurnWork(groups, { sessionKey, runWorking: false });
+  expect(visible(items)).toEqual([user, commentary, delivered, answer]);
+  expect(work(items)).toEqual([groups[2]!.messages[0]!.message]);
 });

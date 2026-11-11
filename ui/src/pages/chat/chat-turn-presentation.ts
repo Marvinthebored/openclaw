@@ -106,6 +106,9 @@ function isCollapsibleWorkGroup(item: TurnRenderItem): item is MessageGroup {
     item.kind !== "group" ||
     item.isStreaming ||
     groupHasVisibleReplyContent(item, false) ||
+    (item.role.toLowerCase() === "assistant" &&
+      item.visibleContent === "text" &&
+      item.messages.some(({ message }) => resolveAssistantReplyPhase(message) !== "commentary")) ||
     item.messages.some(({ message }) => isProviderVoiceTranscript(message))
   ) {
     return false;
