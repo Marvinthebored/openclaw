@@ -1,0 +1,6 @@
+JOB=vyctor192232-ipad-clean-r28
+SOURCE_URL=https://codeload.github.com/Marvinthebored/openclaw/tar.gz/51452ed7dd1d078d4a8943d4ab5f4168853eb417
+SOURCE_SHA256=59fdda4cba99d0f5
+LINT_BYPASS=1
+SIM_TESTS=xctest=1 swift-testing=0 rc=0
+STATUS=PASS
