@@ -1,0 +1,320 @@
+{
+  "modes": [
+    "realtime",
+    "stt-tts",
+    "transcription"
+  ],
+  "transports": [
+    "webrtc",
+    "provider-websocket",
+    "gateway-relay",
+    "managed-room"
+  ],
+  "brains": [
+    "agent-consult",
+    "direct-tools",
+    "none"
+  ],
+  "speech": {
+    "providers": [
+      {
+        "id": "openai",
+        "label": "OpenAI",
+        "configured": false,
+        "modes": [
+          "stt-tts"
+        ],
+        "brains": [
+          "agent-consult"
+        ],
+        "models": [
+          "gpt-4o-mini-tts",
+          "gpt-4o-mini-tts-2025-12-15",
+          "tts-1",
+          "tts-1-hd"
+        ],
+        "voices": [
+          "alloy",
+          "ash",
+          "ballad",
+          "cedar",
+          "coral",
+          "echo",
+          "fable",
+          "juniper",
+          "marin",
+          "onyx",
+          "nova",
+          "sage",
+          "shimmer",
+          "verse"
+        ]
+      },
+      {
+        "id": "xai",
+        "label": "xAI",
+        "configured": false,
+        "modes": [
+          "stt-tts"
+        ],
+        "brains": [
+          "agent-consult"
+        ],
+        "models": [],
+        "voices": [
+          "ara",
+          "eve",
+          "leo",
+          "rex",
+          "sal"
+        ]
+      },
+      {
+        "id": "openrouter",
+        "label": "OpenRouter",
+        "configured": true,
+        "modes": [
+          "stt-tts"
+        ],
+        "brains": [
+          "agent-consult"
+        ],
+        "models": [
+          "hexgrad/kokoro-82m",
+          "elevenlabs/eleven-turbo-v2",
+          "google/gemini-3.1-flash-tts-preview",
+          "mistralai/voxtral-mini-tts-2603"
+        ],
+        "voices": [
+          "af_alloy"
+        ]
+      }
+    ]
+  },
+  "transcription": {
+    "ready": false,
+    "providers": [
+      {
+        "id": "openai",
+        "label": "OpenAI Realtime Transcription",
+        "configured": false,
+        "modes": [
+          "transcription"
+        ],
+        "transports": [
+          "gateway-relay"
+        ],
+        "brains": [
+          "none"
+        ],
+        "defaultModel": "gpt-4o-transcribe",
+        "aliases": [
+          "openai-realtime"
+        ]
+      },
+      {
+        "id": "xai",
+        "label": "xAI Realtime Transcription",
+        "configured": false,
+        "modes": [
+          "transcription"
+        ],
+        "transports": [
+          "gateway-relay"
+        ],
+        "brains": [
+          "none"
+        ],
+        "aliases": [
+          "xai-realtime",
+          "grok-stt-streaming"
+        ]
+      }
+    ]
+  },
+  "realtime": {
+    "ready": false,
+    "activeProvider": "openai",
+    "providers": [
+      {
+        "id": "openai",
+        "label": "OpenAI Realtime Voice",
+        "configured": false,
+        "modes": [
+          "realtime"
+        ],
+        "brains": [
+          "agent-consult"
+        ],
+        "supportsBrowserSession": true,
+        "defaultModel": "gpt-live-1",
+        "models": [
+          "gpt-realtime-2.1",
+          "gpt-realtime-2.1-mini",
+          "gpt-realtime-2",
+          "gpt-live-1",
+          "gpt-live-1-codex"
+        ],
+        "voices": [
+          "alloy",
+          "ash",
+          "ballad",
+          "coral",
+          "echo",
+          "sage",
+          "shimmer",
+          "verse",
+          "marin",
+          "cedar"
+        ],
+        "activeVoices": [
+          "alloy",
+          "ash",
+          "ballad",
+          "beacon",
+          "bossa",
+          "cedar",
+          "cinder",
+          "coral",
+          "delta",
+          "echo",
+          "gleam",
+          "marin",
+          "meridian",
+          "quartz",
+          "ripple",
+          "sage",
+          "shimmer",
+          "stone",
+          "tempo",
+          "verse",
+          "vesper",
+          "willow"
+        ],
+        "activeVoiceSelectionPolicy": "allowlist-default",
+        "voicesByModel": {
+          "gpt-live-1": [
+            "alloy",
+            "ash",
+            "ballad",
+            "beacon",
+            "bossa",
+            "cedar",
+            "cinder",
+            "coral",
+            "delta",
+            "echo",
+            "gleam",
+            "marin",
+            "meridian",
+            "quartz",
+            "ripple",
+            "sage",
+            "shimmer",
+            "stone",
+            "tempo",
+            "verse",
+            "vesper",
+            "willow"
+          ],
+          "gpt-live-1-codex": [
+            "arbor",
+            "breeze",
+            "cove",
+            "ember",
+            "juniper",
+            "maple",
+            "sol",
+            "spruce",
+            "vale"
+          ]
+        },
+        "transports": [
+          "webrtc",
+          "gateway-relay"
+        ],
+        "inputAudioFormats": [
+          {
+            "encoding": "g711_ulaw",
+            "sampleRateHz": 8000,
+            "channels": 1
+          },
+          {
+            "encoding": "pcm16",
+            "sampleRateHz": 24000,
+            "channels": 1
+          }
+        ],
+        "outputAudioFormats": [
+          {
+            "encoding": "g711_ulaw",
+            "sampleRateHz": 8000,
+            "channels": 1
+          },
+          {
+            "encoding": "pcm16",
+            "sampleRateHz": 24000,
+            "channels": 1
+          }
+        ],
+        "supportsBargeIn": false,
+        "supportsToolCalls": false,
+        "supportsVideoFrames": false
+      },
+      {
+        "id": "xai",
+        "label": "xAI Grok Voice",
+        "configured": false,
+        "modes": [
+          "realtime"
+        ],
+        "brains": [
+          "agent-consult"
+        ],
+        "supportsBrowserSession": false,
+        "defaultModel": "grok-voice-latest",
+        "voices": [
+          "eve",
+          "ara",
+          "rex",
+          "sal",
+          "leo"
+        ],
+        "aliases": [
+          "xai-realtime-voice",
+          "grok-voice"
+        ],
+        "transports": [
+          "gateway-relay"
+        ],
+        "inputAudioFormats": [
+          {
+            "encoding": "g711_ulaw",
+            "sampleRateHz": 8000,
+            "channels": 1
+          },
+          {
+            "encoding": "pcm16",
+            "sampleRateHz": 24000,
+            "channels": 1
+          }
+        ],
+        "outputAudioFormats": [
+          {
+            "encoding": "g711_ulaw",
+            "sampleRateHz": 8000,
+            "channels": 1
+          },
+          {
+            "encoding": "pcm16",
+            "sampleRateHz": 24000,
+            "channels": 1
+          }
+        ],
+        "supportsBargeIn": true,
+        "supportsToolCalls": true,
+        "supportsSessionResumption": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "provider": "openai",
+  "transport": "webrtc"
+}

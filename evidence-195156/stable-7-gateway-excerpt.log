@@ -1,0 +1,8 @@
+2026-11-12T11:04:50.860+08:00 [reload] config change detected; evaluating reload (talk.realtime.provider, talk.realtime.transport, meta)
+2026-11-12T11:04:51.822+08:00 [reload] config hot reload applied (talk.realtime.provider)
+2026-11-12T11:05:29.581+08:00 [reload] config change detected; evaluating reload (talk.realtime.provider)
+2026-11-12T11:05:30.305+08:00 [reload] config hot reload applied (talk.realtime.provider)
+2026-11-12T11:06:01.766+08:00 [ws] ⇄ res ✗ talk.client.create 34ms errorCode=INVALID_REQUEST errorMessage=talk.client.create is client-owned; use talk.session.create for gateway-relay bytes=196 conn=cc2b28d4…b644 id=2:5b0d9bbb-b…c636
+2026-11-12T11:06:02.376+08:00 [ws] ⇄ res ✗ talk.session.create 16ms errorCode=UNAVAILABLE errorMessage=Error: Realtime voice provider "openai" is not configured bytes=320 conn=d76983ba…775c id=2:daac14e0-e…98f4
+2026-11-12T11:06:33.136+08:00 [reload] config change detected; evaluating reload (talk.realtime.provider)
+2026-11-12T11:06:34.054+08:00 [reload] config hot reload applied (talk.realtime.provider)

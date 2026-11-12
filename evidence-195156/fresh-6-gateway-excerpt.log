@@ -1,0 +1,5 @@
+2026-11-12T11:15:01.361+08:00 [reload] config change detected; evaluating reload (talk.realtime.provider, talk.realtime.transport)
+2026-11-12T11:15:02.653+08:00 [reload] config hot reload applied (talk.realtime.provider)
+2026-11-12T11:15:29.852+08:00 [reload] config change detected; evaluating reload (talk.realtime.provider, talk.realtime.transport)
+2026-11-12T11:15:30.881+08:00 [reload] config hot reload applied (talk.realtime.provider)
+2026-11-12T11:16:21.523+08:00 [ws] ⇄ res ✗ talk.client.create 56ms errorCode=UNAVAILABLE errorMessage=Error: Realtime voice provider "openai" is not configured bytes=174 conn=d53f9d31…bad6 id=2:ecbcf6e4-3…b3c3

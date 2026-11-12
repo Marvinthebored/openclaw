@@ -1,0 +1,19 @@
+PR 195156 upgrade preservation (12 Nov 2026, scratch Gateways on marv1).
+
+BASE: main-without-PR 64e82b39243dda0131cb960bad96ea933b66e8e9 (v2026.11.1),
+clean build. HEAD: PR 30053f31244633bc7e173ee4ffcbe670ac33343b, clean build.
+
+Baseline set on BASE via Settings UI (xAI Grok Voice):
+  talk.realtime = {"provider":"xai","transport":"gateway-relay"}
+Upgraded with `proofgw code <id> <PR-head-build>` + restart (state dir untouched).
+Post-upgrade on HEAD:
+  talk.realtime = {"provider":"xai","transport":"gateway-relay"} (unchanged)
+  full openclaw.json sha256 identical pre/post:
+  66c3e2586f163759fd50887e1912333d000b64916ea28dd82c92000531ac2e1c
+
+Note: a v2026.11.3-stable instance could not be code-switched to this PR build:
+the future-version guard refuses (binary 2026.11.1 older than config touched by
+2026.11.3; service startup ignores the intentional-downgrade override by design).
+Real users upgrade stable -> a future release containing this PR (newer binary),
+so no guard trip. Stable-side bug behavior was captured separately on the
+stable build (stable-*.png/json/log in the workspace proof pack).
