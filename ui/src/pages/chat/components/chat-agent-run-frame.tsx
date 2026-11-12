@@ -376,13 +376,6 @@ function RunFrame(props: FrameProps) {
                       browserTabPreviews: options().workPreviews.get(work().key),
                     }}
                   />
-                  <Show when={!props.frame.fragment && options().isWorkExpanded(work().key)}>
-                    <For each={work().groups} keyed={(group) => group.key}>
-                      {(group) => (
-                        <MessageGroupContent group={group()} options={groupOptions(group())} />
-                      )}
-                    </For>
-                  </Show>
                 </>
               )}
             </Match>
