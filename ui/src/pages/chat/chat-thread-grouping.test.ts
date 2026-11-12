@@ -690,3 +690,22 @@ it("does not fold a mixed assistant text group when any message is unlabelled", 
   expect(visible(items)).toEqual([user, commentary, delivered, answer]);
   expect(work(items)).toEqual([groups[2]!.messages[0]!.message]);
 });
+
+it("keeps rollup ownership and timing when unscoped text stays visible", () => {
+  const history = [
+    message("user", "Ask", 1),
+    message("assistant", "Unscoped preamble", 2),
+    tool("read", 3, { runId: "a" }),
+    message("assistant", "First run answer", 4, { runId: "a" }),
+    message("assistant", "Completion answer", 5, { runId: "b" }),
+  ];
+  const items = collapseCompletedTurnWork(cachedGroups(history), {
+    sessionKey,
+    runWorking: false,
+    runDurations: new Map([["a", 1234]]),
+  });
+  const rollup = items.find((item) => item.kind === "work-group");
+  expect(rollup).toMatchObject({ replyRunId: "a", durationMs: 1234 });
+  expect(rollup).not.toHaveProperty("ownerless");
+  expect(visible(items)).toEqual([history[0], history[1], history[3], history[4]]);
+});

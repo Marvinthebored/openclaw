@@ -101,14 +101,28 @@ function isTurnOutputGroup(item: TurnRenderItem): item is MessageGroup {
   );
 }
 
+// Assistant text stays out of completed work unless its provider labels all of it
+// commentary. An absent phase is unknown, and a toolUse stop is not narration.
+function isUnlabelledAssistantText(item: TurnRenderItem): item is MessageGroup {
+  return (
+    item.kind === "group" &&
+    item.role.toLowerCase() === "assistant" &&
+    item.visibleContent === "text" &&
+    item.messages.some(({ message }) => resolveAssistantReplyPhase(message) !== "commentary")
+  );
+}
+
 function isCollapsibleWorkGroup(item: TurnRenderItem): item is MessageGroup {
+  return isLegacyWorkGroup(item) && !isUnlabelledAssistantText(item);
+}
+
+// The pre-existing work classification. Placement and run ownership still follow it,
+// so text that now stays visible keeps the position and timing it had as work.
+function isLegacyWorkGroup(item: TurnRenderItem): item is MessageGroup {
   if (
     item.kind !== "group" ||
     item.isStreaming ||
     groupHasVisibleReplyContent(item, false) ||
-    (item.role.toLowerCase() === "assistant" &&
-      item.visibleContent === "text" &&
-      item.messages.some(({ message }) => resolveAssistantReplyPhase(message) !== "commentary")) ||
     item.messages.some(({ message }) => isProviderVoiceTranscript(message))
   ) {
     return false;
@@ -329,7 +343,7 @@ export function collapseCompletedTurnWork(
         trailing.length > 0 &&
         trailing.every(
           (item) =>
-            isCollapsibleWorkGroup(item) &&
+            isLegacyWorkGroup(item) &&
             item.runId === terminalReply.runId &&
             !groupHasFailedResult(item) &&
             !groupEndsRunInFailure(item),
@@ -431,7 +445,17 @@ export function collapseCompletedTurnWork(
     // runs keep their replies, the rollup sits above the first of them; that
     // reply owns it only when all of the work belongs to its run. Work across
     // several runs stays outside any run frame.
-    const firstAnswer = answers.find((answer): answer is MessageGroup => answer.kind === "group");
+    // Text that is visible only because it lacks a commentary label never owns the
+    // rollup: ownership and elapsed time stay with the replies that owned them before.
+    const ownerCandidates = answers.filter(
+      (answer) =>
+        answer === terminalReply ||
+        earlierRunReplies.has(answer as MessageGroup) ||
+        !(isLegacyWorkGroup(answer) && isUnlabelledAssistantText(answer)),
+    );
+    const firstAnswer = ownerCandidates.find(
+      (answer): answer is MessageGroup => answer.kind === "group",
+    );
     const ownerReply =
       earlierRunReplies.size === 0
         ? terminalReply
@@ -442,8 +466,8 @@ export function collapseCompletedTurnWork(
       ownerReply &&
       !hasForwardedSource(ownerReply) &&
       !groups.some(hasForwardedSource) &&
-      answers
-        .slice(0, answers.indexOf(ownerReply))
+      ownerCandidates
+        .slice(0, ownerCandidates.indexOf(ownerReply))
         .every(
           (answer) =>
             answer.kind === "group" &&
