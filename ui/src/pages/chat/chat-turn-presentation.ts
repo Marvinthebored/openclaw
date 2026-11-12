@@ -108,6 +108,7 @@ function isUnlabelledAssistantText(item: TurnRenderItem): item is MessageGroup {
     item.kind === "group" &&
     item.role.toLowerCase() === "assistant" &&
     item.visibleContent === "text" &&
+    !groupEndsRunInFailure(item) &&
     item.messages.some(({ message }) => resolveAssistantReplyPhase(message) !== "commentary")
   );
 }
