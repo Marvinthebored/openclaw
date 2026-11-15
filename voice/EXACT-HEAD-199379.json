@@ -1,0 +1,92 @@
+{
+  "head": "1614464a2a5177e8442fec7e9fadb575d4a3bdbe",
+  "scope": "Authenticated relay/API and saved PCM",
+  "runs": [
+    {
+      "scenario": "exact-cli-1614464-v2",
+      "finalSpokenTranscripts": [
+        " Got it\u2014thanks.",
+        " There are five Markdown files at the top level of that workspace: AGENTS, BOOTSTRAP, IDENTITY, SOUL, and USER."
+      ],
+      "countAnswerPresent": true,
+      "pcmBytes": 1631986,
+      "pcmSha256": "d2f442a25920ac3148b1567a53896995b9ab5a469527a45778a9796a77da9ced",
+      "toolCountVerified": true,
+      "runtime": {
+        "id": "claude-cli",
+        "cloudPlacementSupported": false,
+        "devicePlacementSupported": false,
+        "source": "session-key"
+      },
+      "locked": null,
+      "cleanup": [
+        "DELETE"
+      ],
+      "exit": "0"
+    },
+    {
+      "scenario": "exact-locked-1614464",
+      "finalSpokenTranscripts": [
+        " Got it, heard you.",
+        " Five Markdown files in the top level."
+      ],
+      "countAnswerPresent": true,
+      "pcmBytes": 1541746,
+      "pcmSha256": "c785d9c604851b845ea6c8ff1abeaf1072737fd3c2712cd4d3032a8dc1b96f97",
+      "toolCountVerified": true,
+      "runtime": {
+        "id": "codex",
+        "cloudPlacementSupported": true,
+        "cloudPlacementExecutionMode": "remote-exec",
+        "devicePlacement": {
+          "requiredNodeCommands": [
+            "codex.exec-server.stdio.v1"
+          ],
+          "consumesWorkerSlot": false
+        },
+        "devicePlacementSupported": true,
+        "source": "session"
+      },
+      "locked": true,
+      "cleanup": [
+        "RESTORE_MODEL",
+        "ARCHIVE",
+        "ARCHIVE_VERIFIED"
+      ],
+      "exit": "0"
+    }
+  ],
+  "restoration": {
+    "originalCommit": "5fa372eb83dbdd34f525df7250256c4dd3a39ff4",
+    "ready": 200,
+    "modelAndFallbacksRetained": true,
+    "slotReleased": true
+  },
+  "artifact": {
+    "head": "1614464a2a5177e8442fec7e9fadb575d4a3bdbe",
+    "trackedDiffEmpty": true,
+    "sha256": {
+      "dist/index.js": "15391648f652027863ba3adbf84c3904727369c86e6141f13ccce8fc11297c8d",
+      "dist/entry.js": "afdeeb952c9bcb83558b0e084205ade0b9450f194d639c056579be54d65f0724",
+      "dist/build-info.json": "4d64ee21830c6912f2acccd44ed5b24186a0290d53aeeed61827bf3494dce2f5",
+      "dist/.buildstamp": "72f6a120e2d7737ba5678d62bbbbd198d3c8ac21829bdd206eb1c4c6b94aba9d",
+      "dist/.runtime-postbuildstamp": "6df12dbe4461e3627dddad9182671e90364d11565647fbf6f640784720498249"
+    }
+  },
+  "build": {
+    "command": "pnpm build:runtime",
+    "exit": 0,
+    "durationSeconds": 133.2,
+    "workerBudgets": {
+      "identity": "203/220",
+      "catalog": "67/100"
+    },
+    "sourceChanges": false,
+    "scope": "Runtime profile, not a separate package-profile build or full CI."
+  },
+  "limitations": [
+    "Synthetic audio through authenticated relay/API; no rendered browser or iOS acceptance.",
+    "Earlier upgrade proof used an older candidate, not this exact head.",
+    "Raw logs and audio retained privately; hashes independently rechecked before publication."
+  ]
+}
