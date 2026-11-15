@@ -1,0 +1,7 @@
+JOB=personal-pins-review-1116-r7
+STACK_BASE=warm f0e04c2f13af
+SOURCE_SHA256=base=f0e04c2f13af patches=419dd8fc458b616e
+LINT_BYPASS=0
+KIT_TESTS=✔ Test run with 13 tests in 1 suite passed after 0.001 seconds.
+SIM_TESTS=xctest=0 swift-testing=19 rc=0
+STATUS=PASS
