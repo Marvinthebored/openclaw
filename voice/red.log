@@ -1,0 +1,144 @@
+
+ RUN  v5.0.5 <checkout>
+
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > waits for the GA sideband before returning an audio-only SDP answer and hangs up once 517ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > hangs up after GA sideband startup fails 207ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > hangs up after GA answer delivery fails 176ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > rejects a bounded GA sideband SDP with no active audio before provider creation 2ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > rejects a bounded GA sideband SDP with oversized line before provider creation 2ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > survives a connecting socket that errors during retry teardown 175ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > buffers sideband messages that arrive with the open handshake 167ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > fails safely when the sideband emits error immediately after opening 167ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > fails safely when the sideband emits close immediately after opening 188ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > keeps nonfatal error frames alive but closes on fatal auth errors 168ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > enforces CORS for https://control.example on preflight and POST 3ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > enforces CORS for http://192.168.1.24:18789 on preflight and POST 7ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > enforces CORS for https://untrusted.example on preflight and POST 2ms
+ × |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > grounds client-owned WebRTC acknowledgments without host-control policy 185ms
+   → expected 'Keep my answers brief.' to contain 'Do not invent acknowledgments or prog…'
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > uses a relative single-use offer route and normalizes voice 171ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > rejects expired tokens, unsupported methods, and content types 4ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > expires an unused Gateway-control offer despite a throwing callback 15ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > releases a reservation after an empty SDP offer 5ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > aborts a redeemed offer when its browser session is canceled 179ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > keeps broker registration independent of cold SDK host composition 891ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > keeps history separate from live controls (classified=true) 178ms
+ × |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > keeps history separate from live controls (classified=false) 168ms
+   → expected 'Keep my answers brief.' to contain 'Do not invent acknowledgments or prog…'
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > rejects native application media and closes its owner without upstream work 2ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > counts negotiated native reservations per owner and restores capacity on cancellation 3ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > reports readiness and fences callbacks with negotiated control 168ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > reports throwing error callback once and releases the active browser owner 165ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > reports binary protocol failure once and releases the active browser owner 317ms
+stderr | unknown test
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.agentDatabaseReaders
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.stateDatabaseLifecycle
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.stateSnapshotOwners
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.sqliteWalCheckpointListeners
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.stateDomainPublication.personal-model-credentials
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.stateDomainPublication.auth-profile-credentials
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.agentDatabaseLifecycle
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.agentDatabaseBorrowers
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.stateDomainPublication.plugin-state
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.pluginStatePublication
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-session.test.ts: retiring openclaw.pluginStateNamespaceOwner
+
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > releases browser transport while accepted delegation work finishes without late delivery 153ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > retains early readiness until the WebRTC answer is accepted 172ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > retains early readiness until the WebRTC answer is rejected 150ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > rejects a terminated startup without announcing buffered readiness 216ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > preserves the call on media errors without logging raw error details 219ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > discards queued microphone audio when media peer creation fails 53ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > settles the failed peer when onError performs reentrant close 53ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > settles the failed peer when onError performs throw 53ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > closes a sideband that opens in the abort handoff 158ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > bounds sideband frames and aggregate pre-open buffering 157ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > bounds peer creation and closes a peer that resolves after the deadline 59ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > uses released Platform WebRTC, delegates, drops sideband audio, and tears down 183ms
+stderr | unknown test
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.agentDatabaseReaders
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.stateDatabaseLifecycle
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.stateSnapshotOwners
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.sqliteWalCheckpointListeners
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.stateDomainPublication.personal-model-credentials
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.stateDomainPublication.auth-profile-credentials
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.agentDatabaseLifecycle
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.agentDatabaseBorrowers
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.stateDomainPublication.plugin-state
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.pluginStatePublication
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-gateway-bridge.test.ts: retiring openclaw.pluginStateNamespaceOwner
+
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-gateway-bridge.test.ts > GPT-Live gateway relay bridge > treats a normal upstream sideband close as completion 152ms
+ × |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > keeps progress claims grounded with hostControlsInput=undefined 3ms
+   → expected '' to contain 'Do not invent acknowledgments or prog…'
+ × |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > keeps progress claims grounded with hostControlsInput=false 2ms
+   → expected '' to contain 'Do not invent acknowledgments or prog…'
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > keeps progress claims grounded with hostControlsInput=true 1ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > bounds shared background UTF-8 without splitting emoji 2ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > maps 403: Voice session access denied. 165ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > maps 400: {"error":{"code":"model_not_found"}} 152ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > maps 400: session.model not allowed 169ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > bounds and cancels an oversized streaming GA realtime error response 143ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > falls back to openai-session-id for Location http://[invalid 150ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > falls back to openai-session-id for Location /v1/live/not-a-call 188ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > rejects private detail 173ms
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > rejects empty SDP 176ms
+stderr | unknown test
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.agentDatabaseReaders
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.stateDatabaseLifecycle
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.stateSnapshotOwners
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.sqliteWalCheckpointListeners
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.stateDomainPublication.personal-model-credentials
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.stateDomainPublication.auth-profile-credentials
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.agentDatabaseLifecycle
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.agentDatabaseBorrowers
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.stateDomainPublication.plugin-state
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.pluginStatePublication
+[sqlite-test-lifecycle] extensions/openai/realtime-quicksilver-wire.test.ts: retiring openclaw.pluginStateNamespaceOwner
+
+ ✓ |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > Realtime call creation > rejects oversized SDP 154ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live offer broker > grounds client-owned WebRTC acknowledgments without host-control policy
+ FAIL  |extension-provider-openai| extensions/openai/realtime-quicksilver-session.test.ts > GPT-Live browser session lifecycle > keeps history separate from live controls (classified=false)
+AssertionError: expected 'Keep my answers brief.' to contain 'Do not invent acknowledgments or prog…'
+
+Expected: "Do not invent acknowledgments or progress claims."
+Received: "Keep my answers brief."
+
+ ❯ extensions/openai/realtime-quicksilver-session.test.ts:<redacted len=6>
+    353|     expect((await post(realtime, { token: <redacted len=24> }))…
+    354|     const body = fetchImpl.mock.calls[0]?.[1]?.body;
+    355|     assert(typeof body === "string");
+       |                                  ^
+    356|     const { session } = JSON.parse(body);
+    357|     expect(session.instructions).toContain("Do not invent acknowledgme…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > keeps progress claims grounded with hostControlsInput=undefined
+ FAIL  |extension-provider-openai| extensions/openai/realtime-quicksilver-wire.test.ts > keeps progress claims grounded with hostControlsInput=false
+AssertionError: expected '' to contain 'Do not invent acknowledgments or prog…'
+
+- Expected
++ Received
+
+- Do not invent acknowledgments or progress claims.
+
+ ❯ extensions/openai/realtime-quicksilver-wire.test.ts:39:34
+     37|   (hostControlsInput) => {
+     38|     const session =<redacted len=52>
+     39|     expect(session.instructions).toContain("Do not invent acknowledgme…
+       |                                  ^
+     40|     expect(session.instructions).toContain(
+     41|       "When the host explicitly requests a natural launch acknowledgme…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  4 failed | 49 passed (53)
+   Start at  09:37:26
+   Duration  21.62s (transform 50%, tests 35%, import 9%, worker 4%, setup 1%)
+
