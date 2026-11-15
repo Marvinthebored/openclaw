@@ -1,0 +1,84 @@
+{
+  "head": "00b6ce70f559c551822506bf392e3890b05713cc",
+  "artifact": {
+    "commit": "00b6ce70f559c551822506bf392e3890b05713cc",
+    "trackedDiff": "",
+    "buildExit": 0,
+    "artifacts": {
+      "dist/index.js": {
+        "bytes": 5808,
+        "sha256": "d44a8b54f8192899d25d593a677839e928ff3ae83f24d6052963e58ae5ddcf00"
+      },
+      "dist/entry.js": {
+        "bytes": 12944,
+        "sha256": "9e004db5d458e8a59235bfef35ad1d2c55dc11a2fecf5f5c3f4b05dc2558adab"
+      },
+      "dist/.buildstamp": {
+        "bytes": 179,
+        "sha256": "0817f74f526a27797050b0c919cc98b624017ecd2eac4ad5f31c44605fa5fc03"
+      },
+      "dist/build-info.json": {
+        "bytes": 190,
+        "sha256": "af513903034d6cbd1e34c1e72df24157ca506585b3ef8150804ccccf37e92b63"
+      }
+    }
+  },
+  "tests": {
+    "red": "old adapter/consult fails completion claim; 1 failed, 3 passed",
+    "green": "successor-source matrix and real Gateway runtime siblings; 13 passed"
+  },
+  "lint": "scoped type-aware pass",
+  "build": {
+    "exit": 0,
+    "seconds": 80.3,
+    "budgets": {
+      "identity": "203/220",
+      "catalog": "67/100"
+    }
+  },
+  "speech": {
+    "cli": {
+      "exit": 0,
+      "countToolOutput5": true,
+      "completedToolObserved": true,
+      "finalSpeech": [
+        " Got it, heard you.",
+        " There are five Markdown files at the top level of the workspace."
+      ],
+      "pcmBytes": 1430386,
+      "pcmSha256": "0ce03c0aef25642305d93add8a9151578eeab2099592250d859615e61d447807",
+      "rms": 726.46,
+      "cleanupObserved": true
+    },
+    "locked": {
+      "exit": 0,
+      "countToolOutput5": true,
+      "completedToolObserved": true,
+      "finalSpeech": [
+        " Got it, I hear you.",
+        " There are five Markdown files at the top level of the workspace."
+      ],
+      "pcmBytes": 1528306,
+      "pcmSha256": "2efb19d388ea83846b4fc1d8b5e4051cb6dc52f894f2efccc6d438052e3b6fb0",
+      "rms": 691.57,
+      "cleanupObserved": true,
+      "firstAttempt": "provider stream session.error; retained privately; bounded retry passed",
+      "runtimeSelectionLockedBefore": true,
+      "runtimeSelectionLockedAfter": true,
+      "archivedAfter": true,
+      "model": "openai/gpt-6.1-sol"
+    }
+  },
+  "limitations": [
+    "Synthetic authenticated relay audio, no rendered UI or phone claim.",
+    "The successor regression models the command callback; no live compaction claimed.",
+    "Latest-stable fresh/existing-state voice upgrade matrix remains unproved; new native OAuth fixture requires Settings authorization. Existing authorized test auth was used in place, not copied."
+  ],
+  "restoration": {
+    "originalCommit": "5fa372eb83d",
+    "readyHttp": 200,
+    "modelAndFallbacksMatch": true,
+    "talkSettingsMatch": true,
+    "credentialCopy": false
+  }
+}
