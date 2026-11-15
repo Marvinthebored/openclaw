@@ -1,0 +1,85 @@
+{
+  "headCommit": "6f7f68c4092718ceec5ff99a0694cc20b6291e02",
+  "regressions": {
+    "baselineCommit": "00b6ce70f559c551822506bf392e3890b05713cc",
+    "redFailures": [
+      "Supported CLI follow-up refused instead of queued",
+      "Real consultation/relay composition cannot claim committed successor speech"
+    ],
+    "green": {
+      "testFiles": 3,
+      "passed": 44
+    },
+    "scope": "Real CLI admission/policy/backend/transcript owners with simulated subprocess; real consultation and production relay registration with simulated committed command callback. No live compaction claim."
+  },
+  "lint": {
+    "officialTypeAware": true,
+    "exitCode": 0,
+    "threads": 1
+  },
+  "build": {
+    "commit": "6f7f68c4092718ceec5ff99a0694cc20b6291e02",
+    "buildExit": 0,
+    "runtimeBuildSeconds": 77.2,
+    "artifacts": {
+      "dist/index.js": {
+        "bytes": 5808,
+        "sha256": "65d0849a0b1d6e3b00d7d3bf8ec4a13ca4165e95719990b4591cf11df0b8ad9a"
+      },
+      "dist/entry.js": {
+        "bytes": 12944,
+        "sha256": "1d5bb8cc40a30c02241bb47d80d048cdb04270c2e06d163bb016851c112e0186"
+      },
+      "dist/.buildstamp": {
+        "bytes": 179,
+        "sha256": "7d232279ee0463e65258a8584ea5ef1e5f79ec46cd8b52cc3a348f11fd6d4533"
+      },
+      "dist/build-info.json": {
+        "bytes": 190,
+        "sha256": "e52cf6e5fe95e9a6184baf1385dee79b1523774222b07c6823ddcfe2b6cc0286"
+      }
+    }
+  },
+  "live": {
+    "candidateCommit": "6f7f68c4092718ceec5ff99a0694cc20b6291e02",
+    "environment": "Clean environment; no envbundle or credential import. Existing Settings authorization used in place in one isolated test instance.",
+    "sessions": {
+      "cli": {
+        "exitCode": 0,
+        "toolOutput": "5 top-level Markdown files",
+        "toolNames": [
+          "mcp__openclaw__exec"
+        ],
+        "finalSpeechTranscript": " There are five: AGENTS, BOOTSTRAP, IDENTITY, SOUL, and USER.",
+        "pcmBytes": 1524466,
+        "pcmSha256": "323caef0460eaa61ccfe6b855cdf649502707928508e0faf871702600f5a96a9",
+        "voiceClosed": true,
+        "deletedAfter": true
+      },
+      "locked": {
+        "exitCode": 0,
+        "toolOutput": "5 top-level Markdown files",
+        "toolNames": [
+          "bash",
+          "exec"
+        ],
+        "finalSpeechTranscript": " There are five markdown files at that level.",
+        "pcmBytes": 1592626,
+        "pcmSha256": "381e137245c22d9c1c7ebdf20377c9c7c877ef6948f2ab3f0df27db71e851176",
+        "voiceClosed": true,
+        "nativeLockBeforeAndAfter": true,
+        "archivedAfter": true
+      }
+    }
+  },
+  "restoration": {
+    "originalCommit": "5fa372eb83dbdd34f525df7250256c4dd3a39ff4",
+    "ready": true,
+    "fullModelIncludingFallbacksAndTalkSettingsMatch": true,
+    "supervision": "Clean-environment supervisor retained with a two-hour hard lifetime and self-unload; original test code restored."
+  },
+  "gaps": [
+    "Latest-stable fresh and existing-state voice acceptance requires the new fixture's own Settings authorization. No credentials were copied.",
+    "No rendered browser/phone acceptance or live foreground-compaction claim."
+  ]
+}
