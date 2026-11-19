@@ -1,0 +1,3 @@
+PROOF_CHECKPOINT phase=0 sentinel=true target=false sharedPinned=false pinnedAtPresent=false sharedSame=true
+PROOF_CHECKPOINT phase=1 sentinel=true target=true sharedPinned=false pinnedAtPresent=false sharedSame=true
+PROOF_CHECKPOINT phase=2 sentinel=true target=false sharedPinned=false pinnedAtPresent=false sharedSame=true
