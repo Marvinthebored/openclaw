@@ -1,0 +1,3 @@
+{"phase":"/external-pin","ownerX":true,"ownerY":false}
+{"phase":"/external-read","ownerX":false,"ownerY":false}
+Test Case '-[OpenClawUITests.ProfilelessPinUITests testProfilelessPinRejected]' passed (46.921 seconds).

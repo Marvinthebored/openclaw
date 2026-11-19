@@ -1,0 +1,5 @@
+    t =    30.90s     Check for interrupting elements affecting "Existing shared pin, chat, 20 min. ago, recent" Button
+    t =    33.90s Added attachment named 'upgrade-shared'
+    t =    38.40s     Check for interrupting elements affecting "Existing personal shortcut, chat, 20 min. ago, recent" Button
+    t =    43.14s Added attachment named 'upgrade-personal'
+Test Case '-[OpenClawUITests.ProfilelessPinUITests testProfilelessPinRejected]' passed (45.688 seconds).

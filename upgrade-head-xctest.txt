@@ -1,0 +1,4 @@
+    t =    11.98s Added attachment named 'saved-gateway-navigation'
+    t =    34.18s Added attachment named 'upgrade-shared'
+    t =    40.50s Added attachment named 'upgrade-personal'
+Test Case '-[OpenClawUITests.ProfilelessPinUITests testProfilelessPinRejected]' passed (44.064 seconds).

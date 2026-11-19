@@ -1,0 +1,3 @@
+{"phase":"before","owner":null,"b":null,"distinctStoredProfiles":0,"storedValues":[]}
+{"phase":"owner-writes-x","owner":["session:agent:main:pin-proof-x"],"b":null,"distinctStoredProfiles":1,"storedValues":[["session:agent:main:pin-proof-x"]]}
+{"phase":"b-writes-y","owner":["session:agent:main:pin-proof-x"],"b":["session:agent:main:pin-proof-y"],"distinctStoredProfiles":2,"storedValues":[["session:agent:main:pin-proof-y"],["session:agent:main:pin-proof-x"]]}
