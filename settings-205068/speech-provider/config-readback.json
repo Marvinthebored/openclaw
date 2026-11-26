@@ -1,0 +1,13 @@
+{
+  "before": {
+    "provider": "edge",
+    "silenceTimeoutMs": 1500,
+    "providerMapPresent": false
+  },
+  "after": {
+    "provider": "edge",
+    "silenceTimeoutMs": 1800,
+    "providerMapPresent": false
+  },
+  "acceptedConfigWrite": true
+}
