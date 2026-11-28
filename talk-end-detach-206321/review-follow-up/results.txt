@@ -1,0 +1,53 @@
+Revisions: base c44c610d326; head e66ca8a7827. Times below are UTC.
+
+=== retry-openai-direct ===
+2026-11-28T12:51:46.121Z consult accepted true Stop visible
+["2026-11-28T12:51:23.859Z","rtc","connecting"]
+["2026-11-28T12:51:24.190Z","rtc","connected"]
+["2026-11-28T12:51:46.252Z","req",{"m":"talk.client.close"}]
+["2026-11-28T12:51:46.262Z","res",{"m":"talk.client.close","ok":true}]
+["2026-11-28T12:51:58.872Z","chat-state","final"]
+2026-11-28T20:51:58.715+08:00 [agent/cli-backend] cli turn: durationMs=12577
+
+=== forced-webrtc-loss ===
+2026-11-28T13:03:23.700Z consult accepted true Stop visible
+2026-11-28T13:03:23.762Z forced WebRTC close; notified transport listener
+["2026-11-28T13:03:01.240Z","rtc","connecting"]
+["2026-11-28T13:03:01.577Z","rtc","connected"]
+["2026-11-28T13:03:23.756Z","rtc","closed"]
+["2026-11-28T13:03:23.761Z","req",{"m":"talk.client.close"}]
+["2026-11-28T13:03:23.785Z","res",{"m":"talk.client.close","ok":true}]
+["2026-11-28T13:03:45.494Z","chat-state","final"]
+2026-11-28T21:03:44.121+08:00 [agent/cli-backend] cli turn: durationMs=20350
+
+=== persisted-stop ===
+2026-11-28T13:04:16.480Z consult accepted true Stop visible
+2026-11-28T13:04:17.367Z stop entry survived reload
+2026-11-28T21:04:16.600+08:00 [gateway] sessions.abort requested
+
+=== retry-head-legacy ===
+2026-11-28T12:56:30.783Z consult accepted true Stop visible
+["2026-11-28T12:56:30.896Z","req",{"m":"talk.session.close"}]
+["2026-11-28T12:56:30.988Z","res",{"m":"talk.session.close","ok":true}]
+["2026-11-28T12:56:40.883Z","chat-state","final"]
+2026-11-28T20:56:40.761+08:00 [agent/cli-backend] cli turn: durationMs=9642
+
+=== retry-base-legacy ===
+2026-11-28T12:58:19.631Z consult accepted true Stop visible
+["2026-11-28T12:58:19.761Z","req",{"m":"talk.session.close"}]
+["2026-11-28T12:58:19.828Z","res",{"m":"talk.session.close","ok":true}]
+
+=== retry-google-direct ===
+["2026-11-28T12:54:50.845Z","provider-close",1011]
+["2026-11-28T12:54:50.847Z","req",{"m":"talk.client.close"}]
+["2026-11-28T12:54:50.870Z","res",{"m":"talk.client.close","ok":true}]
+
+=== Focused regression summaries ===
+--- base-ui-tests ---
+EXIT=1
+--- head-ui-tests ---
+EXIT=0
+--- base-relay-final ---
+EXIT=1
+--- head-relay-final ---
+EXIT=0
