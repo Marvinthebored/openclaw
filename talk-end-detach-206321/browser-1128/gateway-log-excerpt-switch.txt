@@ -1,0 +1,11 @@
+talkcli Gateway log (build 2a88079a306), HKT, 28 Nov 2026. Recording window 10:43:00-10:43:37. Ids shortened.
+
+10:43:04.038 talk {"talkEventType": "turn.started"}
+10:43:07.179 talk {"talkEventType": "session.ready"}
+10:43:18.693 talk {"talkEventType": "transcript.done"}
+10:43:19.176 talk {"talkEventType": "session.closed"}
+10:43:24.503 agent/cli-backend cli turn: provider=claude-cli model=claude-sonnet-5-5 durationMs=6277 outBytes=358 outHash=3b7d9cd936b3
+10:43:24.575 model-fallback/decision {"event": "model_fallback_chain_stopped", "reason": "caller_signal_aborted"}
+10:43:24.611 diagnostic {"phase": "source-claim", "status": "failed", "reason": "claim-owned"}
+
+Note: no 'detach' or 'disposition' string is written to this log. No chat.abort / stop line in the window.
