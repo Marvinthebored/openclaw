@@ -1,0 +1,12 @@
+talkcli Gateway log (build 2a88079a306), HKT, 28 Nov 2026. Recording window 10:40:44-10:41:11. Session/conn ids shortened.
+
+10:40:47.869 gateway/ws talk.client.create rejected: client-owned; use talk.session.create for gateway-relay (client falls back to relay session)
+10:40:48.159 talk {"talkEventType": "turn.started", "talkMode": "realtime", "talkTransport": "gateway-relay", "talkBrain": "agent-consult"}
+10:40:51.016 talk {"talkEventType": "session.ready", "talkMode": "realtime", "talkTransport": "gateway-relay", "talkBrain": "agent-consult"}
+10:40:57.613 talk {"talkEventType": "transcript.done", "talkMode": "realtime", "talkTransport": "gateway-relay", "talkBrain": "agent-consult"}
+10:40:59.156 talk {"talkEventType": "session.closed", "talkMode": "realtime", "talkTransport": "gateway-relay", "talkBrain": "agent-consult"}
+10:41:03.118 agent/cli-backend cli turn: provider=claude-cli model=claude-sonnet-5-5 durationMs=6213 outBytes=418 outHash=424997c7c0ee
+10:41:03.192 model-fallback/decision {"event": "model_fallback_chain_stopped", "reason": "caller_signal_aborted"}
+10:41:03.227 diagnostic {"phase": "source-claim", "status": "failed", "reason": "claim-owned"}
+
+Note: no 'detach' or 'disposition' string is written to this log. No chat.abort / stop line in the window.
